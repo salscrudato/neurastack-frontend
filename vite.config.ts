@@ -7,10 +7,7 @@ import path             from 'node:path';
 export default defineConfig({
   plugins: [
     react(),     // React + fast-refresh
-    svgr({       // <Logo /> from .svg files
-      exportAsDefault: true,   // `import Logo from './logo.svg'`
-      svgrOptions: { icon: true }
-    })
+  svgr({ exportAsDefault: true } as any),
   ],
 
   resolve: {

@@ -1,9 +1,73 @@
-import { Box, Text } from '@chakra-ui/react';
+import {
+  Box, Flex, IconButton, useColorMode, useColorModeValue, Image,
+} from '@chakra-ui/react';
+import { SunIcon, MoonIcon } from '@chakra-ui/icons';
+import { useEffect, useRef } from 'react';
+import { useChatStore } from '../store/useChatStore';
+import ChatMessage from '../components/ChatMessage';
+import ChatInput from '../components/ChatInput';
+import { useNavigate } from 'react-router-dom';
+import { PiUserLight } from 'react-icons/pi';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
+import { useAuthStore } from '../store/useAuthStore';
+
+import logo from '../assets/icons/logo-full.svg';
 
 export function ChatPage() {
+  const { colorMode, toggleColorMode } = useColorMode();
+  const msgs = useChatStore(s => s.messages);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const navigate = useNavigate();
+  const setUser = useAuthStore(s => s.setUser);
+
+  const handleSignOut = async () => {
+    try { await signOut(auth); } catch { /* ignore for guest */ }
+    setUser(null);
+    navigate('/');
+  };
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); });
+
   return (
-    <Box p={10}>
-      <Text fontSize="lg">🚀 Chat UI placeholder – wires are live.</Text>
-    </Box>
+    <Flex direction="column" h="100vh" p="0px">
+      {/* header */}
+      <Flex px={2} py={2} borderBottom="1px solid" borderColor={useColorModeValue('gray.100', 'gray.700')}>
+        <Image src={logo} alt="Neurastack logo" boxSize="42px" />
+        <IconButton
+          aria-label="Toggle theme"
+          variant="ghost"
+          onClick={toggleColorMode}
+          ml={5}
+          pb={0}
+          icon={
+            colorMode === 'light'
+              ? <MoonIcon boxSize={6} />   // ≈ 20 px
+              : <SunIcon boxSize={6} />   // ≈ 24 px – bigger sun
+          }
+          color={useColorModeValue('gray.600', 'yellow.300')}
+        />
+        <Box flex={1} />
+
+
+        <IconButton
+          aria-label="User menu"
+          icon={<PiUserLight />}
+          onClick={handleSignOut}
+          variant="ghost"
+        />
+      </Flex>
+
+      {/* messages */}
+      <Box flex={1} overflowY="auto" px={4} py={2} bg={useColorModeValue('gray.50', 'gray.900')}>
+        <Flex direction="column" align="stretch" gap={0}>
+          {msgs.map(m => <ChatMessage key={m.id} m={m} />)}
+          <div ref={bottomRef} />
+        </Flex>
+      </Box>
+
+      {/* input */}
+      <ChatInput />
+    </Flex>
   );
 }
