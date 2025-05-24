@@ -11,12 +11,12 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { keyframes, css } from "@emotion/react";
+import { keyframes } from "@emotion/react";
 import { FcGoogle } from "react-icons/fc";
 import { PiUserLight } from "react-icons/pi";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { motion } from "framer-motion";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signInAnonymously } from "firebase/auth";
 import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
@@ -31,11 +31,6 @@ const MotionImage = motion(Image);
 /*───────────────────────────────────────────*/
 /* Small logo bounce + background glow       */
 /*───────────────────────────────────────────*/
-const logoBounce = keyframes`
-  0%   { transform: translateY(0); }
-  50%  { transform: translateY(-6px); }
-  100% { transform: translateY(0); }
-`;
 const glowPulse = keyframes`
   0%   { opacity: .6; transform: scale(.9); }
   50%  { opacity: 1;  transform: scale(1); }
@@ -67,16 +62,27 @@ export function SplashPage() {
     }
   };
 
-  const handleGuest = () => {
-    setLoadingGuest(true);
-    setUser({ uid: "guest", displayName: "Guest" } as any);
-    navigate("/chat", { replace: true });
+  const handleGuest = async () => {
+    try {
+      setLoadingGuest(true);
+      const cred = await signInAnonymously(auth);
+      setUser(cred.user);
+      navigate("/chat", { replace: true });
+    } catch (err: any) {
+      toast({
+        status: "error",
+        title: "Guest sign‑in failed",
+        description: err.message,
+      });
+    } finally {
+      setLoadingGuest(false);
+    }
   };
 
   return (
     <MotionBox
       minH="100vh"
-      bg="bg"               // uses custom theme token
+      bg="#E8EDF5"
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -101,7 +107,7 @@ export function SplashPage() {
           w: "100%",
           h: "50%",
           bgGradient:
-            "radial(circle, rgba(150, 218, 255, 0.50) 60%, transparent 80%)",
+            "radial(circle, rgba(78, 128, 255, 0.45) 60%, transparent 80%)",
           filter: "blur(60px)",
           animation: `${glowPulse} 4s ease-in-out infinite`,
           zIndex: -1,
@@ -113,7 +119,10 @@ export function SplashPage() {
             src={logo}
             boxSize="200px"
             alt="Neurastack Logo"
-            animate={css`${logoBounce} 2s ease-in-out infinite`}
+            animate={{
+              y: [0, -6, 0],
+              transition: { duration: 2, ease: "easeInOut", repeat: Infinity }
+            }}
           />
 
           {/* Google button */}
@@ -144,7 +153,7 @@ export function SplashPage() {
 
           {/* Info button */}
           <Button
-            rightIcon={<Icon as={AiOutlineInfoCircle} />}
+            leftIcon={<Icon as={AiOutlineInfoCircle} />}
             w="full"
             variant="outline"
             onClick={onOpen}
