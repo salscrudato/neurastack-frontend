@@ -59,6 +59,7 @@ export default function ChatMessage({ m }: { m: Message }) {
 
   return (
     <Box
+      mt={2}  
       w="full"
       display="flex"
       justifyContent={isUser ? "flex-end" : "flex-start"}
@@ -67,7 +68,7 @@ export default function ChatMessage({ m }: { m: Message }) {
         maxW="75%"
         px={4}
         py={3}
-        borderRadius="lg"
+        borderRadius="xl"
         bg={bubbleBg}
         color={bubbleText}
         fontSize="sm"
@@ -94,15 +95,15 @@ export default function ChatMessage({ m }: { m: Message }) {
               </Text>
 
               {m.sub && m.sub.length > 0 && (
-                <HStack spacing={4} mb={2}>
+                <HStack spacing={4} mb={5}>
                   {m.sub.map((sa) => {
                     const key = sa.model.split(":")[0];
                     const map = logoMap[key];
                     if (!map) return null;
                     return (
                       <HStack key={sa.model + sa.version} spacing={1}>
-                        <Box as="img" src={map.icon} w="18px" alt={`${key}-logo`} />
-                        <Box as="img" src={map.label} w="42px" alt={`${key}-text`} />
+                        <Box as="img" src={map.icon} w="18px" h="18px" alt={`${key}`} />
+                        <Box as="img" src={map.label} w="42px" h="18px" alt={`${key}-text`} />
                       </HStack>
                     );
                   })}
