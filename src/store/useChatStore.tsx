@@ -1,11 +1,13 @@
-import { create } from 'zustand';
+import { create } from "zustand";
+import { queryStack } from "../lib/api";
+import type { SubAnswer } from "../lib/api";
 
-import { queryStack } from '../lib/api';
-import type { SubAnswer } from '../lib/types';
-
-export type Message =
-  | { id: string; role: 'user' | 'assistant'; text: string }
-  | { id: string; role: 'meta';      text: string };          // “gpt-4, gemini…” fold-out
+export type Message = {
+  id: string;
+  role: "user" | "assistant" | "error";
+  text: string;
+  sub?: SubAnswer[];       // individual model answers (assistant only)
+};
 
 interface ChatState {
   messages: Message[];
@@ -13,44 +15,47 @@ interface ChatState {
   sendMessage: (prompt: string) => Promise<void>;
 }
 
-export const useChatStore = create<ChatState>((set, _get) => ({  // _get is unused
+export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isLoading: false,
 
-  async sendMessage(prompt) {
+  async sendMessage(prompt: string) {
     if (!prompt.trim()) return;
 
+    // ─── 1. push user bubble ──────────────────────────────────────────────────
     const userMsg: Message = {
       id: crypto.randomUUID(),
-      role: 'user',
+      role: "user",
       text: prompt.trim(),
     };
+    set((s) => ({ messages: [...s.messages, userMsg], isLoading: true }));
 
-    set(s => ({ messages: [...s.messages, userMsg], isLoading: true }));
-
+    // ─── 2. call backend ─────────────────────────────────────────────────────
     try {
       const data = await queryStack(prompt);
 
+      // build assistant bubble
       const assistant: Message = {
         id: crypto.randomUUID(),
-        role: 'assistant',
-        text: data.answer,
+        role: "assistant",
+        text: data.answer ?? "No answer",
+        sub: Array.isArray(data.answers) ? (data.answers as SubAnswer[]) : undefined,
       };
 
-      // expand / collapse raw answers later
-      const meta: Message = {
-        id: crypto.randomUUID(),
-        role: 'meta',
-        text: data.answers.map((a: SubAnswer) => `**${a.model}-${a.version}** → ${a.answer}`).join('\n\n'),
-      };
-
-      set(s => ({
-        messages: [...s.messages, assistant, meta],
+      set((s) => ({
+        messages: [...s.messages, assistant],
         isLoading: false,
       }));
-    } catch (e: any) {
-      set(s => ({
-        messages: [...s.messages, { id: crypto.randomUUID(), role: 'assistant', text: `⚠️ ${e.message}` }],
+    } catch (err: any) {
+      set((s) => ({
+        messages: [
+          ...s.messages,
+          {
+            id: crypto.randomUUID(),
+            role: "error",
+            text: `⚠️ ${err?.message ?? "Failed to fetch"}`,
+          },
+        ],
         isLoading: false,
       }));
     }
