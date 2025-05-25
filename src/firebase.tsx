@@ -6,6 +6,7 @@
  */
 import { initializeApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 /** Firebase config, provided via Vite environment variables */
 const firebaseConfig = {
@@ -22,3 +23,6 @@ const app = initializeApp(firebaseConfig);
 
 /** Auth singleton for client-side use */
 export const auth: Auth = getAuth(app);
+
+/** Firestore database singleton */
+export const db = getFirestore(app);

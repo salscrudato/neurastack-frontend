@@ -89,8 +89,8 @@ export function ChatPage() {
             </MenuItem>
             <MenuItem
               onClick={handleSignOut}
-              color={useColorModeValue('gray.700', 'gray.100')}
-              _hover={{ bg: useColorModeValue('gray.50', 'whiteAlpha.100') }}
+              color={useColorModeValue('gray.700', 'white')}
+              _hover={{ bg: useColorModeValue('gray.50', 'whiteAlpha.200') }}
             >
               Sign Out
             </MenuItem>
@@ -112,7 +112,7 @@ export function ChatPage() {
               fontSize="2xl"
               lineHeight="short"
               fontWeight="semibold"
-              color={useColorModeValue("gray.600", "gray.300")}
+              color={useColorModeValue("gray.600", "gray.200")}
             >
               What do you want to know?
             </Text>
