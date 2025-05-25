@@ -12,7 +12,7 @@ import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
 
-import logo from '../assets/icons/logo-full.svg';
+import logo from '../assets/icons/logo.svg';
 
 export function ChatPage() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -33,8 +33,8 @@ export function ChatPage() {
     <Flex direction="column" h="100vh" p="0px">
       {/* header */}
       <Flex
-        px={4}
-        py={3}
+        px={2}
+        py={1}
         align="center"
         gap={4}
         bg={useColorModeValue("white", "#2c2c2e")}
@@ -42,7 +42,7 @@ export function ChatPage() {
         borderColor={useColorModeValue("gray.200", "gray.700")}
         boxShadow={useColorModeValue("sm", "md")}
       >
-        <Image src={logo} alt="Neurastack logo" boxSize="40px" />
+        <Image src={logo} alt="Neurastack logo" boxSize="60px" />
 
         <IconButton
           aria-label="Toggle theme"
