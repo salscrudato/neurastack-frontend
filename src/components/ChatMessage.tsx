@@ -6,6 +6,8 @@ import {
   useColorModeValue,
   VStack,
   Text,
+  OrderedList,
+  ListItem,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -44,6 +46,20 @@ export default function ChatMessage({ m }: { m: Message }) {
   const bgErr  = useColorModeValue("yellow.100", "yellow.600");
   const textErr= useColorModeValue("yellow.800", "yellow.100");
 
+  // filter for inverting logos in dark mode
+  const logoFilter = useColorModeValue("none", "invert(1)");
+
+  // title styles: gradient in light, white in dark
+  const titleStyles = useColorModeValue(
+    {
+      bgGradient: "linear(to-r, rgb(128, 183, 228) 0%, rgb(18, 88, 240) 100%)",
+      bgClip: "text",
+    },
+    {
+      color: "white",
+    }
+  );
+
   const bubbleBg   = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
 
@@ -65,7 +81,7 @@ export default function ChatMessage({ m }: { m: Message }) {
       justifyContent={isUser ? "flex-end" : "flex-start"}
     >
       <MotionBox
-        maxW="75%"
+        maxW="100%"
         px={4}
         py={3}
         borderRadius="xl"
@@ -87,9 +103,7 @@ export default function ChatMessage({ m }: { m: Message }) {
                 fontSize="2xl"
                 fontWeight="extrabold"
                 letterSpacing="-1px"
-                bgGradient="linear(to-r,rgb(128, 183, 228) 0%,rgb(18, 88, 240) 100%)"
-                bgClip="text"
-                mb={1}
+                {...titleStyles}
               >
                 neurastack
               </Text>
@@ -98,8 +112,8 @@ export default function ChatMessage({ m }: { m: Message }) {
               <HStack spacing={4} mb={5} opacity={0.85}>
                 {Object.entries(logoMap).map(([key, { icon, label }]) => (
                   <HStack key={key} spacing={1}>
-                    <Box as="img" src={icon}  w="18px" h="18px" alt={`${key}`} />
-                    <Box as="img" src={label} w="42px" h="18px" alt={`${key}-text`} />
+                    <Box as="img" src={icon}  w="18px" h="18px" alt={`${key}`} filter={logoFilter} />
+                    <Box as="img" src={label} w="42px" h="18px" alt={`${key}-text`} filter={logoFilter} />
                   </HStack>
                 ))}
               </HStack>
@@ -114,7 +128,16 @@ export default function ChatMessage({ m }: { m: Message }) {
               <Box>{m.text}</Box>
             </HStack>
           ) : (
-            <ReactMarkdown>{m.text}</ReactMarkdown>
+            <ReactMarkdown
+              components={{
+                ol: ({ node, ...props }) => (
+                  <OrderedList pl={4} spacing={1} {...props} />
+                ),
+                li: ({ node, ...props }) => <ListItem {...props} />,
+              }}
+            >
+              {m.text}
+            </ReactMarkdown>
           )}
         </VStack>
       </MotionBox>

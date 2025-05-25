@@ -1,9 +1,10 @@
 import {
   Box,
-  Flex,
   IconButton,
   Textarea,
   useColorModeValue,
+  InputGroup,
+  InputRightElement,
 } from "@chakra-ui/react";
 import { FiSend } from "react-icons/fi";
 import { useState } from "react";
@@ -41,7 +42,7 @@ export default function ChatInput() {
       borderTopWidth="1px"
       borderColor={useColorModeValue("gray.200", "gray.700")}
     >
-      <Flex
+      <InputGroup
         w="full"
         bg={shellBg}
         borderWidth="1px"
@@ -49,8 +50,7 @@ export default function ChatInput() {
         borderRadius="2xl"
         px={4}
         py={3}
-        gap={3}
-        align="center"
+        alignItems="center"
         _focusWithin={{
           borderColor: "#3b82f6",                // brand blue
           boxShadow: "0 0 0 1px #3b82f6",
@@ -74,23 +74,28 @@ export default function ChatInput() {
           resize="none"
           _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
           color={useColorModeValue("gray.800", "gray.100")}
+          aria-label="Message to Neurastack"
+          pr="3rem"
         />
 
-        <IconButton
-          aria-label="Send"
-          icon={<FiSend />}
-          onClick={handleSend}
-          isLoading={busy}
-          size="sm"
-          minW="8"
-          h="8"
-          bg={txt.trim() ? "#3b82f6" : btnBg}
-          _hover={{ bg: txt.trim() ? "#2f6fe4" : btnHover }}
-          color={txt.trim() ? "white" : "gray.600"}
-          borderRadius="full"
-          isDisabled={busy || !txt.trim()}
-        />
-      </Flex>
+        <InputRightElement width="3rem" top="50%" transform="translateY(-50%)" pr={1}>
+          <IconButton
+            aria-label="Send message"
+            aria-disabled={busy || !txt.trim()}
+            icon={<FiSend />}
+            onClick={handleSend}
+            isLoading={busy}
+            size="sm"
+            minW="8"
+            h="8"
+            bg={txt.trim() ? "#3b82f6" : btnBg}
+            _hover={{ bg: txt.trim() ? "#2f6fe4" : btnHover }}
+            color={txt.trim() ? "white" : "gray.600"}
+            borderRadius="full"
+            isDisabled={busy || !txt.trim()}
+          />
+        </InputRightElement>
+      </InputGroup>
     </Box>
   );
 }

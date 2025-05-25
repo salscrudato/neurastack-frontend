@@ -10,6 +10,7 @@ import {
   ModalOverlay,
   useDisclosure,
   useToast,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { FcGoogle } from "react-icons/fc";
@@ -38,6 +39,11 @@ const glowPulse = keyframes`
 `;
 
 export function SplashPage() {
+  const bgPage = useColorModeValue("#E8EDF5", "#1c1c1e");
+  const bgCard = useColorModeValue("white", "gray.800");
+  const iconFilter = useColorModeValue("none", "brightness(0) invert(1)");
+  const btnColor = "blue";
+
   const navigate  = useNavigate();
   const setUser   = useAuthStore((s) => s.setUser);
   const toast     = useToast();
@@ -82,7 +88,7 @@ export function SplashPage() {
   return (
     <MotionBox
       minH="100vh"
-      bg="#E8EDF5"
+      bg={bgPage}
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -91,7 +97,7 @@ export function SplashPage() {
     >
       {/* Card */}
       <Box
-        bg="white"
+        bg={bgCard}
         rounded="xl"
         shadow="lg"
         px={8}
@@ -119,20 +125,21 @@ export function SplashPage() {
             src={logo}
             boxSize="200px"
             alt="Neurastack Logo"
+            filter={iconFilter}
             animate={{
               y: [0, -6, 0],
               transition: { duration: 2, ease: "easeInOut", repeat: Infinity }
             }}
           />
 
-          {/* Google button */}
           <Button
-            leftIcon={<FcGoogle fontSize="22px" />}
+            leftIcon={<FcGoogle />}
             w="full"
             isLoading={loadingGoogle}
             onClick={handleGoogle}
             aria-label="Sign in with Google"
             variant="outline"
+            colorScheme={btnColor}
             py={6}
           >
             Sign in with Google
@@ -146,6 +153,7 @@ export function SplashPage() {
             onClick={handleGuest}
             aria-label="Continue as guest"
             variant="outline"
+            colorScheme={btnColor}
             py={6}
           >
             Continue as Guest
@@ -158,6 +166,7 @@ export function SplashPage() {
             variant="outline"
             onClick={onOpen}
             aria-label="What is neurastack?"
+            colorScheme={btnColor}
             py={6}
           >
             neurastack?

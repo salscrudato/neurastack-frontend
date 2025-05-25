@@ -1,5 +1,5 @@
 import {
-  Box, Flex, IconButton, useColorMode, useColorModeValue, Image,
+  Box, Flex, IconButton, useColorMode, useColorModeValue, Image, Text,
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon } from '@chakra-ui/icons';
 import { useEffect, useRef } from 'react';
@@ -30,7 +30,12 @@ export function ChatPage() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); });
 
   return (
-    <Flex direction="column" h="100vh" p="0px">
+    <Flex
+      direction="column"
+      h="100vh"
+      p="0px"
+      bg={useColorModeValue("gray.50", "gray.900")}
+    >
       {/* header */}
       <Flex
         px={2}
@@ -39,10 +44,15 @@ export function ChatPage() {
         gap={4}
         bg={useColorModeValue("white", "#2c2c2e")}
         borderBottomWidth="1px"
-        borderColor={useColorModeValue("gray.200", "gray.700")}
-        boxShadow={useColorModeValue("sm", "md")}
+        borderColor={useColorModeValue("gray.200", "whiteAlpha.200")}
+        boxShadow={useColorModeValue("sm", "none")}
       >
-        <Image src={logo} alt="Neurastack logo" boxSize="60px" />
+        <Image
+          src={logo}
+          alt="Neurastack logo"
+          boxSize="60px"
+          filter={useColorModeValue("none", "invert(0)")}
+        />
 
         <IconButton
           aria-label="Toggle theme"
@@ -55,7 +65,7 @@ export function ChatPage() {
               <SunIcon boxSize={6} />
             )
           }
-          color={useColorModeValue("gray.500", "yellow.300")}
+          color={useColorModeValue("gray.500", "white")}
         />
 
         <Box flex={1} />
@@ -65,13 +75,49 @@ export function ChatPage() {
           icon={<PiUserLight size="22" />}
           onClick={handleSignOut}
           variant="ghost"
-          color={useColorModeValue("gray.500", "gray.300")}
+          color={useColorModeValue("gray.500", "white")}
           _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
         />
       </Flex>
 
+      {/* hero prompt */}
+      {msgs.length === 0 && (
+        <Flex
+          flex={1}
+          align="center"
+          justify="center"
+          px={6}
+          pb={{ base: 24, md: 0 }}   /* avoid overlap with input on mobile */
+        >
+          <Box textAlign="center">
+            <Text
+              fontSize="2xl"
+              lineHeight="short"
+              fontWeight="semibold"
+              color={useColorModeValue("gray.600", "gray.300")}
+            >
+              What do you want to know?
+            </Text>
+            <Text
+              mt={2}
+              fontSize="2xl"
+              color={useColorModeValue("gray.600", "gray.300")}
+              fontWeight="normal"
+            >
+              Our team is happy to assist you...
+            </Text>
+          </Box>
+        </Flex>
+      )}
+
       {/* messages */}
-      <Box flex={1} overflowY="auto" px={4} py={2} bg={useColorModeValue('gray.50', 'gray.900')}>
+      <Box
+        flex="1 1 0"
+        overflowY="auto"
+        px={4}
+        py={2}
+        bg={useColorModeValue("gray.50", "gray.900")}
+      >
         <Flex direction="column" align="stretch" gap={0}>
           {msgs.map(m => <ChatMessage key={m.id} m={m} />)}
           <div ref={bottomRef} />
