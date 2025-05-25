@@ -87,28 +87,22 @@ export default function ChatMessage({ m }: { m: Message }) {
                 fontSize="2xl"
                 fontWeight="extrabold"
                 letterSpacing="-1px"
-                bgGradient="linear(to-r, #4FD1C5 0%, #63B3ED 100%)"
+                bgGradient="linear(to-r,rgb(128, 183, 228) 0%,rgb(18, 88, 240) 100%)"
                 bgClip="text"
                 mb={1}
               >
                 neurastack
               </Text>
 
-              {m.sub && m.sub.length > 0 && (
-                <HStack spacing={4} mb={5}>
-                  {m.sub.map((sa) => {
-                    const key = sa.model.split(":")[0];
-                    const map = logoMap[key];
-                    if (!map) return null;
-                    return (
-                      <HStack key={sa.model + sa.version} spacing={1}>
-                        <Box as="img" src={map.icon} w="18px" h="18px" alt={`${key}`} />
-                        <Box as="img" src={map.label} w="42px" h="18px" alt={`${key}-text`} />
-                      </HStack>
-                    );
-                  })}
-                </HStack>
-              )}
+              {/* provider badges */}
+              <HStack spacing={4} mb={5} opacity={0.85}>
+                {Object.entries(logoMap).map(([key, { icon, label }]) => (
+                  <HStack key={key} spacing={1}>
+                    <Box as="img" src={icon}  w="18px" h="18px" alt={`${key}`} />
+                    <Box as="img" src={label} w="42px" h="18px" alt={`${key}-text`} />
+                  </HStack>
+                ))}
+              </HStack>
             </>
           )}
 
