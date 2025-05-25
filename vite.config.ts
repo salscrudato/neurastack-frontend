@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["logo.svg"],
       manifest: {
-        name: "NeuraStack",
-        short_name: "NeuraStack",
+        name: "neuraStack",
+        short_name: "neuraStack",
         theme_color: "#ffffff"
       },
       devOptions: { enabled: true }               // PWA works on localhost

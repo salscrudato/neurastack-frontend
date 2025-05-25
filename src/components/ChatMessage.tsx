@@ -9,6 +9,7 @@ import {
   OrderedList,
   ListItem,
 } from "@chakra-ui/react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { PiWarningBold } from "react-icons/pi";
@@ -24,6 +25,9 @@ import grokText  from "./grok-text.svg";
 
 const MotionBox = motion(Box);
 
+// utility: collapse height (approx. for ~2 lines of text in sm font)
+const COLLAPSED_HEIGHT = "3.5rem";
+
 // model → { logo, label }
 const logoMap: Record<
   string,
@@ -35,6 +39,9 @@ const logoMap: Record<
 };
 
 export default function ChatMessage({ m }: { m: Message }) {
+  const [expanded, setExpanded] = useState(false);
+  const toggleExpand = () => setExpanded((prev) => !prev);
+
   const isUser  = m.role === "user";
   const isError = m.role === "error";
   const isLoad  = !m.text;
@@ -94,6 +101,11 @@ export default function ChatMessage({ m }: { m: Message }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.18 }}
         {...pointer}
+        onClick={!isUser ? toggleExpand : undefined}
+        cursor={!isUser ? "pointer" : "default"}
+        _focus={{ boxShadow: "none" }}
+        _active={{ bg: bubbleBg }}
+        style={{ WebkitTapHighlightColor: "transparent" }}
       >
         <VStack align="stretch" spacing={2}>
           {!isUser && (
@@ -120,24 +132,55 @@ export default function ChatMessage({ m }: { m: Message }) {
             </>
           )}
 
-          {isLoad ? (
-            <SkeletonText noOfLines={3} skeletonHeight="3" />
-          ) : isError ? (
-            <HStack>
-              <Icon as={PiWarningBold} color={textErr} />
-              <Box>{m.text}</Box>
-            </HStack>
-          ) : (
-            <ReactMarkdown
-              components={{
-                ol: ({ node, ...props }) => (
-                  <OrderedList pl={4} spacing={1} {...props} />
-                ),
-                li: ({ node, ...props }) => <ListItem {...props} />,
-              }}
+          <Box
+            maxH={expanded || isUser ? "none" : COLLAPSED_HEIGHT}
+            overflow={expanded || isUser ? "visible" : "hidden"}
+            position="relative"
+            _after={
+              !expanded && !isUser
+                ? {
+                    content: '""',
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: "2rem",
+                    bgGradient: "linear(to-b, rgba(255,255,255,0), " + bubbleBg + ")",
+                  }
+                : undefined
+            }
+          >
+            {isLoad ? (
+              <SkeletonText noOfLines={3} skeletonHeight="3" />
+            ) : isError ? (
+              <HStack>
+                <Icon as={PiWarningBold} color={textErr} />
+                <Box>{m.text}</Box>
+              </HStack>
+            ) : (
+              <ReactMarkdown
+                components={{
+                  ol: ({ node, ...props }) => (
+                    <OrderedList pl={4} spacing={1} {...props} />
+                  ),
+                  li: ({ node, ...props }) => <ListItem {...props} />,
+                }}
+              >
+                {m.text}
+              </ReactMarkdown>
+            )}
+          </Box>
+
+          {!isUser && (
+            <Text
+              fontSize="xs"
+              color={bubbleText}
+              opacity={0.7}
+              alignSelf="flex-end"
+              mt={1}
             >
-              {m.text}
-            </ReactMarkdown>
+              {expanded ? "Tap to collapse ▲" : "Tap to expand ▼"}
+            </Text>
           )}
         </VStack>
       </MotionBox>

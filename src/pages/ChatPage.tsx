@@ -1,5 +1,6 @@
 import {
-  Box, Flex, IconButton, useColorMode, useColorModeValue, Image, Text,
+  Box, Flex, IconButton, useColorMode, useColorModeValue,
+  Image, Text, Menu, MenuButton, MenuList, MenuItem,
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon } from '@chakra-ui/icons';
 import { useEffect, useRef } from 'react';
@@ -51,7 +52,6 @@ export function ChatPage() {
           src={logo}
           alt="Neurastack logo"
           boxSize="60px"
-          filter={useColorModeValue("none", "invert(0)")}
         />
 
         <IconButton
@@ -70,14 +70,32 @@ export function ChatPage() {
 
         <Box flex={1} />
 
-        <IconButton
-          aria-label="User menu (sign‑out)"
-          icon={<PiUserLight size="22" />}
-          onClick={handleSignOut}
-          variant="ghost"
-          color={useColorModeValue("gray.500", "white")}
-          _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
-        />
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            aria-label="Account menu"
+            icon={<PiUserLight size="22" />}
+            variant="ghost"
+            color={useColorModeValue("gray.500", "white")}
+            _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
+          />
+          <MenuList>
+            <MenuItem
+              isDisabled
+              color={useColorModeValue('gray.600', 'gray.300')}
+              _disabled={{ opacity: 1, cursor: 'not-allowed' }}
+            >
+              Profile (coming soon)
+            </MenuItem>
+            <MenuItem
+              onClick={handleSignOut}
+              color={useColorModeValue('gray.700', 'gray.100')}
+              _hover={{ bg: useColorModeValue('gray.50', 'whiteAlpha.100') }}
+            >
+              Sign Out
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
 
       {/* hero prompt */}
