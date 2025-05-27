@@ -18,6 +18,8 @@ import logo from '../assets/icons/logo.svg';
 export function ChatPage() {
   const { colorMode, toggleColorMode } = useColorMode();
   const msgs = useChatStore(s => s.messages);
+  const sendMessage = useChatStore(s => s.sendMessage);
+  const uid = useAuthStore(s => s.user?.uid);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const setUser = useAuthStore(s => s.setUser);
@@ -29,6 +31,11 @@ export function ChatPage() {
   };
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); });
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [msgs]);
 
   return (
     <Flex
