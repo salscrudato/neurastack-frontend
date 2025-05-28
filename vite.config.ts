@@ -52,12 +52,13 @@ export default defineConfig({
   // Aliases simplify import paths for better readability and maintainability
   resolve: {
     alias: {
-      '@assets': path.resolve(__dirname, 'src/assets'),        // Shortcut for assets directory
-      '@icons' : path.resolve(__dirname, 'src/assets/icons'),  // Shortcut for icons
-      '@img'   : path.resolve(__dirname, 'src/assets/img'),    // Shortcut for images
-      '@pages' : path.resolve(__dirname, 'src/pages'),         // Shortcut for pages
-      '@store' : path.resolve(__dirname, 'src/store'),         // Shortcut for state/store
-      '@theme' : path.resolve(__dirname, 'src/theme'),         // Shortcut for theme
+      '@assets': path.resolve(__dirname, 'src/assets'),  // Shortcut for assets directory
+      '@pages': path.resolve(__dirname, 'src/pages'),    // Shortcut for pages
+      '@store': path.resolve(__dirname, 'src/store'),    // Shortcut for state/store
+      // Keep these if you're using them elsewhere in your codebase
+      // '@icons': path.resolve(__dirname, 'src/assets/icons'),
+      // '@img': path.resolve(__dirname, 'src/assets/img'),
+      // '@theme': path.resolve(__dirname, 'src/theme'),
     },
   },
 
