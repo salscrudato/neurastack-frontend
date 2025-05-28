@@ -50,6 +50,13 @@ export function SplashPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loadingGoogle, setLoadingGoogle] = React.useState(false);
   const [loadingGuest,  setLoadingGuest]  = React.useState(false);
+  const user = useAuthStore((s) => s.user);
+
+  React.useEffect(() => {
+    if (user) {
+      navigate("/chat", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleGoogle = async () => {
     try {
