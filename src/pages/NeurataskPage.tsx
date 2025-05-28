@@ -81,35 +81,22 @@ export default function NeurataskPage() {
     setPinned([]);
     try {
       const apiBase = import.meta.env.VITE_BACKEND_URL || '';
-      const res = await fetch(`${apiBase}/api/query`, {
+      const res = await fetch(`${apiBase}/api/todo`, {
         method : 'POST',
         headers: { 'Content-Type':'application/json' },
-        body   : JSON.stringify({
-          prompt : `Break the following request into a concise to‑do list based on the description:\n\n${description}`,
-          models : ['openai:gpt-4','google:gemini-1.5-flash','xai:grok-3-mini']
-        })
+        body   : JSON.stringify({ prompt: description })
       });
       if (!res.ok) throw new Error(`Backend error ${res.status}`);
-      const data   = await res.json();
-      const answer = (data.answer as string | undefined) ?? '';
+      const data = await res.json();
 
-      /* naive parse – 1 task / line -------------------------------- */
-      const parsed: Task[] = answer
-        .split(/\r?\n/)
-        .map(l => l.replace(/^\s*[-\d\.\)]\s*/,'').trim())
-        .filter(Boolean)
-        .map(line => {
-          /* split into subtasks by ';' for now */
-          const parts = line.split(';').map(s=>s.trim()).filter(Boolean);
-          return {
-            id: crypto.randomUUID(),
-            text: parts[0],
-            subtasks: parts.slice(1),
-            completed: []
-          };
-        });
+      const task: Task = {
+        id: crypto.randomUUID(),
+        text: data.title,
+        subtasks: data.tasks,
+        completed: []
+      };
 
-      setTasks(parsed);
+      setTasks([task]);
     } catch (err: any) {
       console.error(err);
       toast({ title:'Failed to generate', description:err.message, status:'error' });
@@ -158,7 +145,8 @@ export default function NeurataskPage() {
             placeholder="Describe what you need to do…"
             rows={3}
             value={description}
-            onChange={e=>setDescription(e.target.value)}
+            onChange={e => setDescription(e.target.value)}
+            color={useColorModeValue('gray.800', 'whiteAlpha.900')}
           />
           <Button
             colorScheme="blue"
@@ -193,16 +181,16 @@ export default function NeurataskPage() {
           <Box>
             <Heading size="sm" mb={2}>🔧 Task list</Heading>
             <SimpleGrid columns={[1,2]} spacing={3}>
-              {tasks.filter(t=>!pinned.includes(t.id)).map(t=>(
+              {tasks.length === 1 && !pinned.includes(tasks[0].id) && (
                 <TaskCard
-                  key={t.id}
-                  task={t}
+                  key={tasks[0].id}
+                  task={tasks[0]}
                   bg={cardBg}
-                  pin={() => togglePin(t.id)}
-                  pinIcon={pinIcon(t.id)}
-                  open={() => openTask(t)}
+                  pin={() => togglePin(tasks[0].id)}
+                  pinIcon={pinIcon(tasks[0].id)}
+                  open={() => openTask(tasks[0])}
                 />
-              ))}
+              )}
             </SimpleGrid>
           </Box>
         )}
@@ -213,11 +201,15 @@ export default function NeurataskPage() {
         <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
           <ModalOverlay />
           <ModalContent>
-            <ModalHeader>{activeTask.text}</ModalHeader>
+            <ModalHeader color={useColorModeValue('gray.900', 'whiteAlpha.900')}>
+              {activeTask.text}
+            </ModalHeader>
             <ModalCloseButton/>
             <ModalBody pb={6}>
-              {activeTask.subtasks.length===0 ? (
-                <Text color="gray.500">No additional subtasks generated.</Text>
+              {activeTask.subtasks.length === 0 ? (
+                <Text color={useColorModeValue('gray.600', 'gray.400')}>
+                  No additional subtasks generated.
+                </Text>
               ) : (
                 <CheckboxGroup
                   value={activeTask.completed}
@@ -225,10 +217,25 @@ export default function NeurataskPage() {
                     ? {...t, completed:v as string[]}
                     : t))}
                 >
-                  <VStack align="stretch">
-                    {activeTask.subtasks.map((st,i)=>(
-                      <Checkbox key={i} value={String(i)}>
-                        {st}
+                  <VStack align="stretch" spacing={3}>
+                    {activeTask.subtasks.map((st, i) => (
+                      <Checkbox
+                        key={i}
+                        value={String(i)}
+                        colorScheme="blue"
+                        px={2}
+                        py={2}
+                        borderRadius="md"
+                        _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100') }}
+                        _checked={{
+                          bg: useColorModeValue('blue.50', 'blue.900'),
+                          borderColor: useColorModeValue('blue.400', 'blue.300'),
+                        }}
+                        transition="background 0.1s"
+                      >
+                        <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')}>
+                          {st}
+                        </Text>
                       </Checkbox>
                     ))}
                   </VStack>
@@ -251,6 +258,8 @@ interface TaskCardProps {
   open: () => void;
 }
 function TaskCard({ task, bg, pin, pinIcon, open }: TaskCardProps) {
+  // Use strong color for light mode for better clarity
+  const textColor = useColorModeValue('gray.900', 'whiteAlpha.900');
   return (
     <Box
       p={4}
@@ -262,7 +271,9 @@ function TaskCard({ task, bg, pin, pinIcon, open }: TaskCardProps) {
       position="relative"
       onClick={open}
     >
-      <Text noOfLines={2}>{task.text}</Text>
+      <Text noOfLines={2} color={textColor} fontWeight={500}>
+        {task.text}
+      </Text>
       <IconButton
         aria-label="Pin/unpin"
         icon={pinIcon}
