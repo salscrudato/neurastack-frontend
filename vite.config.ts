@@ -31,7 +31,7 @@ export default defineConfig({
         // Web app manifest to define how the app behaves when installed
         name: "neurastack",
         short_name: "neurastack",
-        description: "AI-powered chat assistant by Neurastack",
+        description: "AI-powered chat assistant by neurastack",
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "standalone", // App runs in its own window without browser UI

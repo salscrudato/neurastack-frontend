@@ -12,13 +12,14 @@ export default function useInstallPrompt() {
   const [promptEvent, setPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
-    const handler = (e: any) => {            // Safari still has non-typed event
-      e.preventDefault();
+    const handler = (e: any) => {
+      // Remove this line to fix the warning
+      // e.preventDefault();
       setPromptEvent(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  return promptEvent; // call promptEvent.prompt() on a nice “Install neurastack” button
+  return promptEvent; // call promptEvent.prompt() on a nice "Install neurastack" button
 }
