@@ -1,36 +1,18 @@
 import {
-  Box, Flex, IconButton, useColorMode, useColorModeValue,
-  Image, Text, Menu, MenuButton, MenuList, MenuItem,
+  Box,
+  Flex,
+  Text,
+  useColorModeValue,
 } from '@chakra-ui/react';
-import { SunIcon, MoonIcon } from '@chakra-ui/icons';
 import { useEffect, useRef } from 'react';
 import { useChatStore } from '../store/useChatStore';
 import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
-import { useNavigate } from 'react-router-dom';
-import { PiUserLight } from 'react-icons/pi';
-import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
-import { useAuthStore } from '../store/useAuthStore';
-
-import logo from '../assets/icons/logo.svg';
+import { Header } from '../components/Header';
 
 export function ChatPage() {
-  const { colorMode, toggleColorMode } = useColorMode();
   const msgs = useChatStore(s => s.messages);
-  const sendMessage = useChatStore(s => s.sendMessage);
-  const uid = useAuthStore(s => s.user?.uid);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
-  const setUser = useAuthStore(s => s.setUser);
-
-  const handleSignOut = async () => {
-    try { await signOut(auth); } catch { /* ignore for guest */ }
-    setUser(null);
-    navigate('/');
-  };
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); });
 
   // Auto-scroll when messages change
   useEffect(() => {
@@ -44,66 +26,7 @@ export function ChatPage() {
       p="0px"
       bg={useColorModeValue("gray.50", "gray.900")}
     >
-      {/* header */}
-      <Flex
-        px={2}
-        py={1}
-        align="center"
-        gap={4}
-        bg={useColorModeValue("white", "#2c2c2e")}
-        borderBottomWidth="1px"
-        borderColor={useColorModeValue("gray.200", "whiteAlpha.200")}
-        boxShadow={useColorModeValue("sm", "none")}
-      >
-        <Image
-          src={logo}
-          alt="Neurastack logo"
-          boxSize="60px"
-        />
-
-        <IconButton
-          aria-label="Toggle theme"
-          onClick={toggleColorMode}
-          variant="ghost"
-          icon={
-            colorMode === "light" ? (
-              <MoonIcon boxSize={6} />
-            ) : (
-              <SunIcon boxSize={6} />
-            )
-          }
-          color={useColorModeValue("gray.500", "white")}
-        />
-
-        <Box flex={1} />
-
-        <Menu>
-          <MenuButton
-            as={IconButton}
-            aria-label="Account menu"
-            icon={<PiUserLight size="22" />}
-            variant="ghost"
-            color={useColorModeValue("gray.500", "white")}
-            _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
-          />
-          <MenuList>
-            <MenuItem
-              isDisabled
-              color={useColorModeValue('gray.600', 'gray.300')}
-              _disabled={{ opacity: 1, cursor: 'not-allowed' }}
-            >
-              Profile (coming soon)
-            </MenuItem>
-            <MenuItem
-              onClick={handleSignOut}
-              color={useColorModeValue('gray.700', 'white')}
-              _hover={{ bg: useColorModeValue('gray.50', 'whiteAlpha.200') }}
-            >
-              Sign Out
-            </MenuItem>
-          </MenuList>
-        </Menu>
-      </Flex>
+      <Header />
 
       {/* hero prompt */}
       {msgs.length === 0 && (

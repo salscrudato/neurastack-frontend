@@ -2,6 +2,9 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "./store/useAuthStore";
+import AddToHomeButton from "./components/AddToHomeScreen";
+import AppStorePage from "./pages/AppStorePage";
+import NeurataskPage from "./pages/NeurataskPage";
 
 /* ─────────────────────────────────────────── */
 /* Lazy-loaded pages (code-splitting)          */
@@ -39,6 +42,7 @@ export default function App() {
 
   return (
     <PageWrapper>
+      <AddToHomeButton />
       <Suspense fallback={<Fallback />}>
         <Routes>
           <Route path="/"     element={<SplashPage />} />
@@ -46,6 +50,8 @@ export default function App() {
             path="/chat"
             element={user ? <ChatPage /> : <Navigate to="/" />}
           />
+          <Route path="/apps" element={<AppStorePage />} />
+          <Route path="/apps/neuratask" element={user ? <NeurataskPage /> : <Navigate to="/" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
