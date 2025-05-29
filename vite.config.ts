@@ -45,6 +45,18 @@ export default defineConfig({
       devOptions: {
         enabled: true, // Enables the PWA plugin during development
         type: "module" // Ensures ES Module type is used in development
+      },
+      // Add these configurations to fix the service worker issues
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+      injectRegister: 'auto',
+      injectManifest: {
+        injectionPoint: undefined
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        cleanupOutdatedCaches: true
       }
     })
   ],

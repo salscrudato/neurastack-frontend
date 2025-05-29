@@ -5,7 +5,6 @@ import {
   IconButton,
   Textarea,
   Stack,
-  Heading,
   Text,
   Spinner,
   SimpleGrid,
@@ -21,11 +20,15 @@ import {
   Checkbox,
   CheckboxGroup,
   VStack,
+  Heading,
+  Image,
 } from '@chakra-ui/react';
 import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
 import { PiArrowLeftLight } from 'react-icons/pi';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EditIcon, CheckIcon, DeleteIcon } from '@chakra-ui/icons';
+import Logo from '../assets/icons/logo.svg';
 
 /* ------------------------------------------------------------------ */
 /* 🛰️  neuratask – AI‑assisted to‑do generator (minimal v1)            */
@@ -34,6 +37,7 @@ import { useNavigate } from 'react-router-dom';
 interface Task {
   id: string;
   text: string;
+  description?: string;
   subtasks: string[];
   completed: string[];       // ids of completed subtasks
 }
@@ -92,6 +96,7 @@ export default function NeurataskPage() {
       const task: Task = {
         id: crypto.randomUUID(),
         text: data.title,
+        description: data.description,
         subtasks: data.tasks,
         completed: []
       };
@@ -106,9 +111,10 @@ export default function NeurataskPage() {
   };
 
   /* ui helpers ------------------------------------------------------ */
-  const cardBg  = useColorModeValue('whiteAlpha.600','whiteAlpha.100');
-  const pinIcon = (id:string) =>
-    pinned.includes(id) ? <AiFillPushpin/> : <AiOutlinePushpin/>;
+  const cardBg = useColorModeValue('whiteAlpha.600', 'whiteAlpha.100');
+  const textColor = useColorModeValue('gray.900', 'whiteAlpha.900');
+  const pinIcon = (id: string) =>
+    pinned.includes(id) ? <AiFillPushpin /> : <AiOutlinePushpin />;
 
   /* ---------------------------------------------------------------- */
 
@@ -130,9 +136,9 @@ export default function NeurataskPage() {
           variant="ghost"
           onClick={() => navigate(-1)}
         />
-        <Heading size="md" flex={1} textAlign="center" color={useColorModeValue('gray.700','gray.200')}>
-          <span style={{fontStyle:'italic'}}>neura</span><span style={{fontWeight:600}}>task</span>
-        </Heading>
+        <Box flex={1} display="flex" justifyContent="center" alignItems="center">
+          <Image src={Logo} alt="Logo" height="32px" width="auto" />
+        </Box>
         <Box w="40px"/>
       </Flex>
 
@@ -160,7 +166,7 @@ export default function NeurataskPage() {
         {/* pinned ---------------------------------------------------- */}
         {pinned.length>0 && (
           <Box>
-            <Heading size="sm" mb={2}>📌 Pinned</Heading>
+            <Heading size="sm" mb={2} color={useColorModeValue('gray.800', 'gray.100')}>📌 Pinned</Heading>
             <SimpleGrid columns={[1,2,3]} spacing={3}>
               {tasks.filter(t=>pinned.includes(t.id)).map(t=>(
                 <TaskCard
@@ -170,6 +176,10 @@ export default function NeurataskPage() {
                   pin={() => togglePin(t.id)}
                   pinIcon={pinIcon(t.id)}
                   open={() => openTask(t)}
+                  edit={() => toast({ title: 'Edit coming soon' })}
+                  complete={() => toast({ title: 'Complete triggered' })}
+                  remove={() => setTasks(ts => ts.filter(x => x.id !== t.id))}
+                  textColor={textColor}
                 />
               ))}
             </SimpleGrid>
@@ -179,7 +189,7 @@ export default function NeurataskPage() {
         {/* list ------------------------------------------------------ */}
         {tasks.length>0 && (
           <Box>
-            <Heading size="sm" mb={2}>🔧 Task list</Heading>
+            <Heading size="sm" mb={2} color={useColorModeValue('gray.800', 'gray.100')}>🔧 Task list</Heading>
             <SimpleGrid columns={[1,2]} spacing={3}>
               {tasks.length === 1 && !pinned.includes(tasks[0].id) && (
                 <TaskCard
@@ -189,6 +199,10 @@ export default function NeurataskPage() {
                   pin={() => togglePin(tasks[0].id)}
                   pinIcon={pinIcon(tasks[0].id)}
                   open={() => openTask(tasks[0])}
+                  edit={() => toast({ title: 'Edit coming soon' })}
+                  complete={() => toast({ title: 'Complete triggered' })}
+                  remove={() => setTasks(ts => ts.filter(x => x.id !== tasks[0].id))}
+                  textColor={textColor}
                 />
               )}
             </SimpleGrid>
@@ -198,49 +212,68 @@ export default function NeurataskPage() {
 
       {/* modal ------------------------------------------------------ */}
       {activeTask && (
-        <Modal isOpen={isOpen} onClose={onClose} size="md" isCentered>
-          <ModalOverlay />
+        <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
+          <ModalOverlay backdropFilter="blur(6px)" />
           <ModalContent>
-            <ModalHeader color={useColorModeValue('gray.900', 'whiteAlpha.900')}>
-              {activeTask.text}
+            <ModalHeader px={6} pt={6} pb={0}>
+              <Heading size="md" color={useColorModeValue('gray.900', 'whiteAlpha.900')}>
+                {activeTask.text}
+              </Heading>
             </ModalHeader>
-            <ModalCloseButton/>
+            <ModalCloseButton color={useColorModeValue('gray.600', 'gray.400')} />
             <ModalBody pb={6}>
-              {activeTask.subtasks.length === 0 ? (
-                <Text color={useColorModeValue('gray.600', 'gray.400')}>
-                  No additional subtasks generated.
-                </Text>
-              ) : (
-                <CheckboxGroup
-                  value={activeTask.completed}
-                  onChange={(v)=>setTasks(ts=>ts.map(t=>t.id===activeTask.id
-                    ? {...t, completed:v as string[]}
-                    : t))}
-                >
-                  <VStack align="stretch" spacing={3}>
-                    {activeTask.subtasks.map((st, i) => (
-                      <Checkbox
-                        key={i}
-                        value={String(i)}
-                        colorScheme="blue"
-                        px={2}
-                        py={2}
-                        borderRadius="md"
-                        _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100') }}
-                        _checked={{
-                          bg: useColorModeValue('blue.50', 'blue.900'),
-                          borderColor: useColorModeValue('blue.400', 'blue.300'),
-                        }}
-                        transition="background 0.1s"
-                      >
-                        <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')}>
-                          {st}
-                        </Text>
-                      </Checkbox>
-                    ))}
-                  </VStack>
-                </CheckboxGroup>
-              )}
+              <Stack spacing={4}>
+                <Box>
+                  {activeTask.description && (
+                    <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
+                      {activeTask.description}
+                    </Text>
+                  )}
+                </Box>
+
+                {activeTask.subtasks.length === 0 ? (
+                  <Text color={useColorModeValue('gray.600', 'gray.400')}>
+                    No additional subtasks generated.
+                  </Text>
+                ) : (
+                  <CheckboxGroup
+                    value={activeTask.completed}
+                    onChange={(v) => {
+                      setTasks(ts => ts.map(t => t.id === activeTask.id
+                        ? { ...t, completed: v as string[] }
+                        : t));
+                      setActiveTask(a => a && a.id === activeTask.id
+                        ? { ...a, completed: v as string[] }
+                        : a);
+                    }}
+                  >
+                    <VStack align="stretch" spacing={3}>
+                      {activeTask.subtasks.map((st, i) => (
+                        <Checkbox
+                          key={i}
+                          value={String(i)}
+                          colorScheme="blue"
+                          px={2}
+                          py={2}
+                          borderRadius="md"
+                          iconColor="white"
+                          borderColor={useColorModeValue('gray.400', 'whiteAlpha.500')}
+                          _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100') }}
+                          _checked={{
+                            bg: useColorModeValue('blue.500', 'blue.400'),
+                            borderColor: useColorModeValue('blue.600', 'blue.300'),
+                          }}
+                          transition="background 0.1s"
+                        >
+                          <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')}>
+                            {st}
+                          </Text>
+                        </Checkbox>
+                      ))}
+                    </VStack>
+                  </CheckboxGroup>
+                )}
+              </Stack>
             </ModalBody>
           </ModalContent>
         </Modal>
@@ -256,10 +289,12 @@ interface TaskCardProps {
   pin: () => void;
   pinIcon: React.ReactElement;
   open: () => void;
+  edit?: () => void;
+  complete?: () => void;
+  remove?: () => void;
+  textColor: string;
 }
-function TaskCard({ task, bg, pin, pinIcon, open }: TaskCardProps) {
-  // Use strong color for light mode for better clarity
-  const textColor = useColorModeValue('gray.900', 'whiteAlpha.900');
+function TaskCard({ task, bg, pin, pinIcon, open, edit, complete, remove, textColor }: TaskCardProps) {
   return (
     <Box
       p={4}
@@ -284,6 +319,29 @@ function TaskCard({ task, bg, pin, pinIcon, open }: TaskCardProps) {
         variant="ghost"
         onClick={(e)=>{e.stopPropagation(); pin();}}
       />
+      <Flex justify="flex-end" mt={2} gap={2}>
+        <IconButton
+          aria-label="Edit task"
+          icon={<EditIcon />}
+          size="xs"
+          variant="ghost"
+          onClick={(e) => { e.stopPropagation(); if (edit) edit(); }}
+        />
+        <IconButton
+          aria-label="Mark complete"
+          icon={<CheckIcon />}
+          size="xs"
+          variant="ghost"
+          onClick={(e) => { e.stopPropagation(); if (complete) complete(); }}
+        />
+        <IconButton
+          aria-label="Delete task"
+          icon={<DeleteIcon />}
+          size="xs"
+          variant="ghost"
+          onClick={(e) => { e.stopPropagation(); if (remove) remove(); }}
+        />
+      </Flex>
     </Box>
   );
 }
