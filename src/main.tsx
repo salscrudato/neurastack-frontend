@@ -1,26 +1,58 @@
 // main.tsx
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react';
 import theme from './theme/theme';
 import App from './App';
-import { SplashPage } from './pages/SplashPage';
-import { ChatPage } from './pages/ChatPage';
-import AppStorePage from './pages/AppStorePage';
-import NeurataskPage from './pages/NeurataskPage';
+import ErrorBoundary from './components/ErrorBoundary';
+import { PageLoader } from './components/LoadingSpinner';
+
+// Lazy load pages for better performance
+const SplashPage = React.lazy(() => import('./pages/SplashPage').then(m => ({ default: m.SplashPage })));
+const ChatPage = React.lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })));
+const AppStorePage = React.lazy(() => import('./pages/AppStorePage'));
+const NeurataskPage = React.lazy(() => import('./pages/NeurataskPage'));
 
 // Create router with proper nested routes
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
-    errorElement: <ErrorBoundary />,
+    errorElement: <RouteErrorBoundary />,
     children: [
-      { index: true, element: <SplashPage /> },
-      { path: 'chat', element: <ChatPage /> },
-      { path: 'apps', element: <AppStorePage /> },
-      { path: 'apps/neuratask', element: <NeurataskPage /> },
+      {
+        index: true,
+        element: (
+          <Suspense fallback={<PageLoader message="Loading..." />}>
+            <SplashPage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'chat',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading chat..." />}>
+            <ChatPage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'apps',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading apps..." />}>
+            <AppStorePage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'apps/neuratask',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading Neuratask..." />}>
+            <NeurataskPage />
+          </Suspense>
+        )
+      },
     ]
   }
 ], {
@@ -30,8 +62,8 @@ const router = createBrowserRouter([
   }
 });
 
-// Basic error boundary component
-function ErrorBoundary() {
+// Route-specific error boundary component
+function RouteErrorBoundary() {
   return (
     <div className="error-container">
       <h1>Oops! Something went wrong</h1>
@@ -42,21 +74,19 @@ function ErrorBoundary() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <RouterProvider router={router} />
-    </ChakraProvider>
+    <ErrorBoundary>
+      <ChakraProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ChakraProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 
 // Register service worker for PWA install prompt support
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !import.meta.env.DEV) {
   window.addEventListener('load', () => {
-    // Use the correct path to the service worker file
-    // In development with Vite, we need to use the dev-sw.js file
-    const swPath = import.meta.env.DEV ? '/dev-sw.js' : '/sw.js';
-    
     navigator.serviceWorker
-      .register(swPath)
+      .register('/sw.js')
       .then(reg => console.log('Service worker registered:', reg.scope))
       .catch(err => console.error('Service worker registration failed:', err));
   });

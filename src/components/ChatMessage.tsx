@@ -8,11 +8,15 @@ import {
   Text,
   OrderedList,
   ListItem,
+  IconButton,
+  Tooltip,
+  useClipboard,
+  useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { PiWarningBold } from "react-icons/pi";
+import { PiWarningBold, PiCopyBold, PiCheckBold } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
 
 // provider logos (SVGS now next to this file)
@@ -38,13 +42,26 @@ const logoMap: Record<
   xai:    { icon: grokLogo, label: grokText },
 };
 
-export default function ChatMessage({ m }: { m: Message }) {
+const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const [expanded, setExpanded] = useState(false);
   const toggleExpand = () => setExpanded((prev) => !prev);
+  const { onCopy, setValue, hasCopied } = useClipboard("");
+  const toast = useToast();
 
   const isUser  = m.role === "user";
   const isError = m.role === "error";
   const isLoad  = !m.text;
+
+  const handleCopy = () => {
+    setValue(m.text);
+    onCopy();
+    toast({
+      title: "Message copied to clipboard",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+    });
+  };
 
   /* color tokens */
   const bgUser = useColorModeValue("blue.500", "blue.400");
@@ -67,6 +84,10 @@ export default function ChatMessage({ m }: { m: Message }) {
     }
   );
 
+  // Pre-compute copy button colors to avoid conditional hook calls
+  const copyButtonColor = useColorModeValue("gray.600", "gray.300");
+  const copyButtonHoverColor = useColorModeValue("gray.800", "white");
+
   const bubbleBg   = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
 
@@ -82,7 +103,7 @@ export default function ChatMessage({ m }: { m: Message }) {
 
   return (
     <Box
-      mt={2}  
+      mt={2}
       w="full"
       display="flex"
       justifyContent={isUser ? "flex-end" : "flex-start"}
@@ -110,15 +131,34 @@ export default function ChatMessage({ m }: { m: Message }) {
         <VStack align="stretch" spacing={2}>
           {!isUser && (
             <>
-              <Text
-                fontFamily="Inter, sans-serif"
-                fontSize="2xl"
-                fontWeight="extrabold"
-                letterSpacing="-1px"
-                {...titleStyles}
-              >
-                neurastack
-              </Text>
+              <HStack justify="space-between" align="center" mb={2}>
+                <Text
+                  fontFamily="Inter, sans-serif"
+                  fontSize="2xl"
+                  fontWeight="extrabold"
+                  letterSpacing="-1px"
+                  {...titleStyles}
+                >
+                  neurastack
+                </Text>
+
+                {!isLoad && !isError && (
+                  <Tooltip label={hasCopied ? "Copied!" : "Copy message"} hasArrow>
+                    <IconButton
+                      aria-label="Copy message"
+                      icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopy();
+                      }}
+                      color={copyButtonColor}
+                      _hover={{ color: copyButtonHoverColor }}
+                    />
+                  </Tooltip>
+                )}
+              </HStack>
 
               {/* provider badges */}
               <HStack spacing={4} mb={5} opacity={0.85}>
@@ -186,4 +226,6 @@ export default function ChatMessage({ m }: { m: Message }) {
       </MotionBox>
     </Box>
   );
-}
+});
+
+export default ChatMessage;

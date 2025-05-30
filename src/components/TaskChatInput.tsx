@@ -11,17 +11,14 @@ import {
 } from "@chakra-ui/react";
 import { FiSend } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
-import { useChatStore } from "../store/useChatStore";
 
-/**
- * ChatInput – redesigned to match Grok style:
- *  ╭──────────────────────────────────────────────╮
- *  │ What do you want to know?            ○ ↑     │
- *  ╰──────────────────────────────────────────────╯
- */
-export default function ChatInput() {
-  const send = useChatStore((s) => s.sendMessage);
-  const busy = useChatStore((s) => s.isLoading);
+interface TaskChatInputProps {
+  onSend: (message: string) => Promise<void>;
+  isLoading: boolean;
+  placeholder?: string;
+}
+
+export default function TaskChatInput({ onSend, isLoading, placeholder = "Describe what you need to do..." }: TaskChatInputProps) {
   const [txt, setTxt] = useState("");
   const [charCount, setCharCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -34,7 +31,7 @@ export default function ChatInput() {
   }, [txt]);
 
   const handleSend = async () => {
-    if (busy || !txt.trim()) return;
+    if (isLoading || !txt.trim()) return;
 
     if (txt.trim().length > MAX_CHARS) {
       toast({
@@ -48,7 +45,7 @@ export default function ChatInput() {
     }
 
     try {
-      await send(txt.trim());
+      await onSend(txt.trim());
       setTxt("");
       setCharCount(0);
       // Reset textarea height
@@ -75,11 +72,13 @@ export default function ChatInput() {
   return (
     <Box
       w="full"
-      px={4}
-      py={4}
+      px={{ base: 3, md: 4 }}
+      py={{ base: 3, md: 4 }}
       bg={pageBg}
       borderTopWidth="1px"
       borderColor={useColorModeValue("gray.200", "gray.700")}
+      // Safe area for mobile devices
+      pb={{ base: "env(safe-area-inset-bottom, 16px)", md: 4 }}
     >
       <InputGroup
         w="full"
@@ -87,8 +86,8 @@ export default function ChatInput() {
         borderWidth="1px"
         borderColor={border}
         borderRadius="2xl"
-        px={4}
-        py={3}
+        px={{ base: 3, md: 4 }}
+        py={{ base: 2.5, md: 3 }}
         alignItems="center"
         transition="all 0.2s ease"
         _focusWithin={{
@@ -99,12 +98,13 @@ export default function ChatInput() {
         _hover={{
           borderColor: useColorModeValue("gray.400", "gray.500"),
         }}
+        minH={{ base: "48px", md: "auto" }}
       >
         <Textarea
           ref={textareaRef}
           flex={1}
           variant="unstyled"
-          placeholder="What do you want to know?"
+          placeholder={placeholder}
           value={txt}
           onChange={(e) => setTxt(e.target.value)}
           onKeyDown={(e) => {
@@ -113,49 +113,55 @@ export default function ChatInput() {
               handleSend();
             }
           }}
-          isDisabled={busy}
+          isDisabled={isLoading}
           rows={1}
-          minH="3rem"
-          maxH="6.5rem"
+          minH={{ base: "2.5rem", md: "3rem" }}
+          maxH={{ base: "5rem", md: "6.5rem" }}
           resize="none"
           _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
           color={useColorModeValue("gray.800", "gray.100")}
-          aria-label="Message to Neurastack"
-          pr="5rem"
+          aria-label="Task description"
+          pr={{ base: "4rem", md: "5rem" }}
           borderColor={charCount > MAX_CHARS ? "red.400" : "transparent"}
-          fontSize="16px"
+          fontSize={{ base: "16px", md: "16px" }}
           lineHeight="1.5"
         />
 
-        <InputRightElement width="5rem" top="50%" transform="translateY(-50%)" pr={2}>
+        <InputRightElement
+          width={{ base: "4rem", md: "5rem" }}
+          top="50%"
+          transform="translateY(-50%)"
+          pr={2}
+        >
           <HStack spacing={2} align="center">
             {/* Inline Character Count */}
             <Text
               fontSize="xs"
               color={charCount > MAX_CHARS ? "red.400" : useColorModeValue("gray.400", "gray.500")}
               fontWeight="500"
-              minW="8"
+              minW="6"
               textAlign="right"
               opacity={charCount > 0 ? 1 : 0}
               transition="opacity 0.2s ease"
+              display={{ base: charCount > 100 ? "block" : "none", md: "block" }}
             >
               {charCount > 0 && `${charCount}`}
             </Text>
 
             <IconButton
               aria-label="Send message"
-              aria-disabled={busy || !txt.trim()}
+              aria-disabled={isLoading || !txt.trim()}
               icon={<FiSend />}
               onClick={handleSend}
-              isLoading={busy}
-              size="sm"
-              minW="8"
-              h="8"
+              isLoading={isLoading}
+              size={{ base: "sm", md: "sm" }}
+              minW={{ base: "7", md: "8" }}
+              h={{ base: "7", md: "8" }}
               bg={txt.trim() ? "#3b82f6" : btnBg}
               _hover={{ bg: txt.trim() ? "#2f6fe4" : btnHover }}
               color={txt.trim() ? "white" : "gray.600"}
               borderRadius="full"
-              isDisabled={busy || !txt.trim()}
+              isDisabled={isLoading || !txt.trim()}
               transition="all 0.2s ease"
             />
           </HStack>

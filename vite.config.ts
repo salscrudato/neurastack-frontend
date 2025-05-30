@@ -43,20 +43,25 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true, // Enables the PWA plugin during development
-        type: "module" // Ensures ES Module type is used in development
-      },
-      // Add these configurations to fix the service worker issues
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.js',
-      injectRegister: 'auto',
-      injectManifest: {
-        injectionPoint: undefined
+        enabled: false, // Disable PWA plugin during development to prevent service worker issues
+        type: "module"
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        cleanupOutdatedCaches: true
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+              }
+            }
+          }
+        ]
       }
     })
   ],

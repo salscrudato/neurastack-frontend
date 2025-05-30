@@ -2,6 +2,8 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import AddToHomeButton from "./components/AddToHomeScreen";
+import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
+import LoadingSpinner from "./components/LoadingSpinner";
 
 /* Shared page-enter / exit animation */
 const PageWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -21,14 +23,19 @@ const PageWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-/* Minimal fallback while suspense loads a page */
+/* Enhanced fallback with loading spinner */
 const Fallback = () => (
-  <div className="flex h-full w-full items-center justify-center text-gray-400">
-    Loading…
-  </div>
+  <LoadingSpinner
+    size="lg"
+    message="Loading page..."
+    fullScreen
+  />
 );
 
 export default function App() {
+  // Disable performance monitoring to reduce console noise
+  usePerformanceLogger(false);
+
   return (
     <PageWrapper>
       <AddToHomeButton />

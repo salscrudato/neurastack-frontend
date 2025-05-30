@@ -1,37 +1,25 @@
 import {
   Box,
-  Button,
   Flex,
-  IconButton,
-  Textarea,
-  Stack,
   Text,
-  Spinner,
-  SimpleGrid,
-  useToast,
   useColorModeValue,
+  useToast,
   useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  Checkbox,
-  CheckboxGroup,
   VStack,
-  Heading,
-  Image,
+  IconButton,
 } from '@chakra-ui/react';
-import { AiFillPushpin, AiOutlinePushpin } from 'react-icons/ai';
-import { PiArrowLeftLight } from 'react-icons/pi';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { EditIcon, CheckIcon, DeleteIcon } from '@chakra-ui/icons';
-import Logo from '../assets/icons/logo.svg';
+import { PiListBold } from 'react-icons/pi';
+import { useState, useRef, useEffect } from 'react';
+import { AppShell } from '../components/AppShell';
+import { Message } from '../components/Message';
+import { TaskCardBubble } from '../components/TaskCardBubble';
+import { TaskDrawer } from '../components/TaskDrawer';
+import { TaskRail } from '../components/TaskRail';
+import { useTaskChatStore } from '../store/useTaskChatStore';
+import TaskChatInput from '../components/TaskChatInput';
 
 /* ------------------------------------------------------------------ */
-/* 🛰️  neuratask – AI‑assisted to‑do generator (minimal v1)            */
+/* 🛰️  neuratask – AI‑assisted task coach (chat-style v2)             */
 /* ------------------------------------------------------------------ */
 
 interface Task {
@@ -39,309 +27,328 @@ interface Task {
   text: string;
   description?: string;
   subtasks: string[];
-  completed: string[];       // ids of completed subtasks
+  completed: string[];
 }
 
 export default function NeurataskPage() {
-  /* form state ------------------------------------------------------ */
-  const [description, setDescription] = useState('');
-  const toast             = useToast();
-  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  /* tasks ----------------------------------------------------------- */
-  const [tasks, setTasks]     = useState<Task[]>([]);
-  const [pinned, setPinned]   = useState<string[]>([]);
+  // Task chat store
+  const {
+    messages,
+    tasks,
+    isLoading,
+    addMessage,
+    addTask,
+    updateTask,
+    deleteTask,
+    togglePin,
+    setLoading,
+    getPinnedTasks,
+    getTaskById,
+  } = useTaskChatStore();
 
-  /* modal ----------------------------------------------------------- */
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  // UI state - mobile-first approach
+  const [showTaskRail, setShowTaskRail] = useState(false); // Hidden by default on mobile
+  const { isOpen: isDrawerOpen, onOpen: onDrawerOpen, onClose: onDrawerClose } = useDisclosure();
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const navigate = useNavigate();
+  // Detect mobile screen size
+  const [isMobile, setIsMobile] = useState(false);
 
-  /* helpers --------------------------------------------------------- */
-  const togglePin = (id: string) => {
-    setPinned(p =>
-      p.includes(id)
-        ? p.filter(t => t !== id)
-        : p.length >= 3
-            ? (toast({ title: 'You can pin up to 3 tasks.', status: 'info' }), p)
-            : [...p, id]
-    );
-  };
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768; // md breakpoint
+      setIsMobile(mobile);
+      // Auto-hide task rail on mobile, show on desktop
+      if (mobile) {
+        setShowTaskRail(false);
+      } else {
+        setShowTaskRail(true);
+      }
+    };
 
-  const openTask = (task: Task) => {
-    setActiveTask(task);
-    onOpen();
-  };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-  /* generate tasks via backend ------------------------------------- */
-  const handleGenerate = async () => {
-    if (!description.trim()) {
-      toast({ status: 'warning', title: 'Enter a description first.' });
-      return;
+  // Color tokens (matching ChatPage)
+  const bgColor = useColorModeValue('gray.50', 'gray.900');
+  const heroTextColor = useColorModeValue('gray.600', 'gray.200');
+  const heroSubTextColor = useColorModeValue('gray.600', 'gray.300');
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  }, [messages]);
+
+  // Handle task selection for drawer
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    onDrawerOpen();
+  };
+
+  // Handle task refinement actions
+  const handleRefineTask = async (taskId: string, action: 'split' | 'merge' | 'rewrite') => {
+    const task = getTaskById(taskId);
+    if (!task) return;
+
     setLoading(true);
-    setTasks([]);
-    setPinned([]);
+    addMessage({ from: 'user', text: `${action} this task: "${task.text}"` });
+
     try {
       const apiBase = import.meta.env.VITE_BACKEND_URL || '';
-      const res = await fetch(`${apiBase}/api/todo`, {
-        method : 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body   : JSON.stringify({ prompt: description })
+      const response = await fetch(`${apiBase}/api/todo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-ID': crypto.randomUUID(),
+        },
+        body: JSON.stringify({
+          prompt: `${action} this task: "${task.text}". Description: ${task.description || 'None'}. Subtasks: ${task.subtasks.join(', ')}`,
+        }),
       });
-      if (!res.ok) throw new Error(`Backend error ${res.status}`);
-      const data = await res.json();
 
-      const task: Task = {
-        id: crypto.randomUUID(),
-        text: data.title,
-        description: data.description,
-        subtasks: data.tasks,
-        completed: []
-      };
-
-      setTasks([task]);
-    } catch (err: any) {
-      console.error(err);
-      toast({ title:'Failed to generate', description:err.message, status:'error' });
+      if (response.ok) {
+        const data = await response.json();
+        const newTask: Task = {
+          id: crypto.randomUUID(),
+          text: data.title,
+          description: data.description || '',
+          subtasks: data.tasks,
+          completed: [],
+        };
+        addTask(newTask);
+      }
+    } catch (error) {
+      toast({
+        title: 'Failed to refine task',
+        description: 'Please try again later.',
+        status: 'error',
+        duration: 3000,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  /* ui helpers ------------------------------------------------------ */
-  const cardBg = useColorModeValue('whiteAlpha.600', 'whiteAlpha.100');
-  const textColor = useColorModeValue('gray.900', 'whiteAlpha.900');
-  const pinIcon = (id: string) =>
-    pinned.includes(id) ? <AiFillPushpin /> : <AiOutlinePushpin />;
+  // Handle sending messages (chat input)
+  const handleSendMessage = async (prompt: string) => {
+    if (!prompt.trim()) return;
 
-  /* ---------------------------------------------------------------- */
+    // Add user message
+    addMessage({ from: 'user', text: prompt });
+
+    // Check for network connectivity
+    if (!navigator.onLine) {
+      toast({
+        status: 'error',
+        title: 'No internet connection',
+        description: 'Please check your network and try again.',
+        duration: 5000,
+        isClosable: true
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const apiBase = import.meta.env.VITE_BACKEND_URL || '';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      const response = await fetch(`${apiBase}/api/todo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-ID': crypto.randomUUID(),
+        },
+        body: JSON.stringify({ prompt }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Server error (${response.status})`);
+      }
+
+      const data = await response.json();
+
+      if (!data.title || !Array.isArray(data.tasks)) {
+        throw new Error('Invalid response format from server');
+      }
+
+      const newTask: Task = {
+        id: crypto.randomUUID(),
+        text: data.title,
+        description: data.description || '',
+        subtasks: data.tasks,
+        completed: [],
+      };
+
+      addTask(newTask);
+
+      toast({
+        status: 'success',
+        title: 'Task created!',
+        description: `"${newTask.text}" with ${newTask.subtasks.length} subtasks`,
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      console.error('Error generating task:', error);
+
+      let errorMessage = 'Failed to generate task';
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out. Please try again.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toast({
+        status: 'error',
+        title: 'Generation failed',
+        description: errorMessage,
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pinnedTasks = getPinnedTasks();
 
   return (
-    <Flex direction="column" h="100vh" bg={useColorModeValue('gray.50','gray.900')}>
-      {/* Local header ------------------------------------------------ */}
-      <Flex
-        align="center"
-        px={2}
-        py={1}
-        bg={useColorModeValue('white','#2c2c2e')}
-        borderBottomWidth="1px"
-        borderColor={useColorModeValue('gray.200','whiteAlpha.200')}
-        gap={2}
-      >
-        <IconButton
-          aria-label="Back"
-          icon={<PiArrowLeftLight size={20}/>}
-          variant="ghost"
-          onClick={() => navigate(-1)}
-        />
-        <Box flex={1} display="flex" justifyContent="center" alignItems="center">
-          <Image src={Logo} alt="Logo" height="32px" width="auto" />
-        </Box>
-        <Box w="40px"/>
-      </Flex>
-
-      {/* body -------------------------------------------------------- */}
-      <Flex direction="column" flex="1 1 0" px={4} py={6} gap={6} overflowY="auto">
-        {/* input form ----------------------------------------------- */}
-        <Stack spacing={3}>
-          <Textarea
-            variant="filled"
-            placeholder="Describe what you need to do…"
-            rows={3}
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            color={useColorModeValue('gray.800', 'whiteAlpha.900')}
-          />
-          <Button
-            colorScheme="blue"
-            onClick={handleGenerate}
-            isDisabled={loading}
+    <AppShell showBack title="Neuratask">
+      <Flex h="100%" bg={bgColor}>
+        {/* Main Chat Area */}
+        <Flex direction="column" flex="1" overflow="hidden">
+          {/* Messages Container */}
+          <Box
+            flex="1"
+            overflowY="auto"
+            px={{ base: 2, md: 3 }}
+            py={{ base: 2, md: 3 }}
+            pb={{ base: 4, md: 3 }} // Extra bottom padding on mobile for better input spacing
           >
-            {loading ? <Spinner size="sm"/> : 'Generate a neuratask'}
-          </Button>
-        </Stack>
+            {messages.length === 0 ? (
+              // Hero section when no messages - mobile optimized
+              <Flex
+                direction="column"
+                align="center"
+                justify="center"
+                h="100%"
+                textAlign="center"
+                px={{ base: 4, md: 8 }}
+                py={{ base: 8, md: 0 }}
+              >
+                <Text
+                  fontSize={{ base: "xl", md: "2xl" }}
+                  fontWeight="bold"
+                  mb={2}
+                  color={heroTextColor}
+                  lineHeight="shorter"
+                >
+                  🛰️ Welcome to Neuratask
+                </Text>
+                <Text
+                  fontSize={{ base: "md", md: "lg" }}
+                  color={heroSubTextColor}
+                  mb={6}
+                  lineHeight="base"
+                  maxW={{ base: "100%", md: "md" }}
+                >
+                  Your AI-powered task coach. Describe what you need to do, and I'll break it down into actionable steps.
+                </Text>
+              </Flex>
+            ) : (
+              // Messages list - mobile optimized spacing
+              <VStack spacing={{ base: 2, md: 3 }} align="stretch">
+                {messages.map((message) => {
+                  if (message.taskId) {
+                    const task = getTaskById(message.taskId);
+                    if (task) {
+                      return (
+                        <TaskCardBubble
+                          key={message.id}
+                          task={task}
+                          onOpen={() => handleTaskClick(task)}
+                          onPin={() => togglePin(task.id)}
+                          isPinned={pinnedTasks.some(p => p.id === task.id)}
+                        />
+                      );
+                    }
+                  }
 
-        {/* pinned ---------------------------------------------------- */}
-        {pinned.length>0 && (
-          <Box>
-            <Heading size="sm" mb={2} color={useColorModeValue('gray.800', 'gray.100')}>📌 Pinned</Heading>
-            <SimpleGrid columns={[1,2,3]} spacing={3}>
-              {tasks.filter(t=>pinned.includes(t.id)).map(t=>(
-                <TaskCard
-                  key={t.id}
-                  task={t}
-                  bg={cardBg}
-                  pin={() => togglePin(t.id)}
-                  pinIcon={pinIcon(t.id)}
-                  open={() => openTask(t)}
-                  edit={() => toast({ title: 'Edit coming soon' })}
-                  complete={() => toast({ title: 'Complete triggered' })}
-                  remove={() => setTasks(ts => ts.filter(x => x.id !== t.id))}
-                  textColor={textColor}
-                />
-              ))}
-            </SimpleGrid>
+                  return (
+                    <Message key={message.id} from={message.from}>
+                      <Text fontSize={{ base: "sm", md: "md" }}>{message.text}</Text>
+                    </Message>
+                  );
+                })}
+              </VStack>
+            )}
+            <div ref={bottomRef} />
+          </Box>
+
+          {/* Chat Input */}
+          <TaskChatInput
+            onSend={handleSendMessage}
+            isLoading={isLoading}
+            placeholder="Describe what you need to do..."
+          />
+        </Flex>
+
+        {/* Task Rail - Desktop only or mobile overlay */}
+        {showTaskRail && (
+          <TaskRail
+            tasks={tasks}
+            pinnedTasks={pinnedTasks}
+            onTaskClick={handleTaskClick}
+            onPinTask={togglePin}
+            onToggleCollapse={() => setShowTaskRail(false)}
+            isMobile={isMobile}
+          />
+        )}
+
+        {/* Floating Task Button - Mobile optimized */}
+        {!showTaskRail && (
+          <Box
+            position="fixed"
+            right={{ base: 3, md: 4 }}
+            bottom={{ base: "90px", md: "50%" }} // Above input on mobile, centered on desktop
+            transform={{ base: "none", md: "translateY(-50%)" }}
+            zIndex={10}
+          >
+            <IconButton
+              aria-label="Show tasks"
+              icon={<PiListBold />}
+              size={{ base: "md", md: "lg" }}
+              colorScheme="blue"
+              borderRadius="full"
+              boxShadow="lg"
+              onClick={() => setShowTaskRail(true)}
+            />
           </Box>
         )}
 
-        {/* list ------------------------------------------------------ */}
-        {tasks.length>0 && (
-          <Box>
-            <Heading size="sm" mb={2} color={useColorModeValue('gray.800', 'gray.100')}>🔧 Task list</Heading>
-            <SimpleGrid columns={[1,2]} spacing={3}>
-              {tasks.length === 1 && !pinned.includes(tasks[0].id) && (
-                <TaskCard
-                  key={tasks[0].id}
-                  task={tasks[0]}
-                  bg={cardBg}
-                  pin={() => togglePin(tasks[0].id)}
-                  pinIcon={pinIcon(tasks[0].id)}
-                  open={() => openTask(tasks[0])}
-                  edit={() => toast({ title: 'Edit coming soon' })}
-                  complete={() => toast({ title: 'Complete triggered' })}
-                  remove={() => setTasks(ts => ts.filter(x => x.id !== tasks[0].id))}
-                  textColor={textColor}
-                />
-              )}
-            </SimpleGrid>
-          </Box>
-        )}
-      </Flex>
-
-      {/* modal ------------------------------------------------------ */}
-      {activeTask && (
-        <Modal isOpen={isOpen} onClose={onClose} size="sm" isCentered>
-          <ModalOverlay backdropFilter="blur(6px)" />
-          <ModalContent>
-            <ModalHeader px={6} pt={6} pb={0}>
-              <Heading size="md" color={useColorModeValue('gray.900', 'whiteAlpha.900')}>
-                {activeTask.text}
-              </Heading>
-            </ModalHeader>
-            <ModalCloseButton color={useColorModeValue('gray.600', 'gray.400')} />
-            <ModalBody pb={6}>
-              <Stack spacing={4}>
-                <Box>
-                  {activeTask.description && (
-                    <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')}>
-                      {activeTask.description}
-                    </Text>
-                  )}
-                </Box>
-
-                {activeTask.subtasks.length === 0 ? (
-                  <Text color={useColorModeValue('gray.600', 'gray.400')}>
-                    No additional subtasks generated.
-                  </Text>
-                ) : (
-                  <CheckboxGroup
-                    value={activeTask.completed}
-                    onChange={(v) => {
-                      setTasks(ts => ts.map(t => t.id === activeTask.id
-                        ? { ...t, completed: v as string[] }
-                        : t));
-                      setActiveTask(a => a && a.id === activeTask.id
-                        ? { ...a, completed: v as string[] }
-                        : a);
-                    }}
-                  >
-                    <VStack align="stretch" spacing={3}>
-                      {activeTask.subtasks.map((st, i) => (
-                        <Checkbox
-                          key={i}
-                          value={String(i)}
-                          colorScheme="blue"
-                          px={2}
-                          py={2}
-                          borderRadius="md"
-                          iconColor="white"
-                          borderColor={useColorModeValue('gray.400', 'whiteAlpha.500')}
-                          _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100') }}
-                          _checked={{
-                            bg: useColorModeValue('blue.500', 'blue.400'),
-                            borderColor: useColorModeValue('blue.600', 'blue.300'),
-                          }}
-                          transition="background 0.1s"
-                        >
-                          <Text color={useColorModeValue('gray.800', 'whiteAlpha.900')}>
-                            {st}
-                          </Text>
-                        </Checkbox>
-                      ))}
-                    </VStack>
-                  </CheckboxGroup>
-                )}
-              </Stack>
-            </ModalBody>
-          </ModalContent>
-        </Modal>
-      )}
-    </Flex>
-  );
-}
-
-/* ------------------------- helpers ------------------------------- */
-interface TaskCardProps {
-  task: Task;
-  bg: string;
-  pin: () => void;
-  pinIcon: React.ReactElement;
-  open: () => void;
-  edit?: () => void;
-  complete?: () => void;
-  remove?: () => void;
-  textColor: string;
-}
-function TaskCard({ task, bg, pin, pinIcon, open, edit, complete, remove, textColor }: TaskCardProps) {
-  return (
-    <Box
-      p={4}
-      borderWidth="1px"
-      borderRadius="md"
-      bg={bg}
-      cursor="pointer"
-      _hover={{ shadow:'sm' }}
-      position="relative"
-      onClick={open}
-    >
-      <Text noOfLines={2} color={textColor} fontWeight={500}>
-        {task.text}
-      </Text>
-      <IconButton
-        aria-label="Pin/unpin"
-        icon={pinIcon}
-        size="sm"
-        position="absolute"
-        top="6px"
-        right="6px"
-        variant="ghost"
-        onClick={(e)=>{e.stopPropagation(); pin();}}
-      />
-      <Flex justify="flex-end" mt={2} gap={2}>
-        <IconButton
-          aria-label="Edit task"
-          icon={<EditIcon />}
-          size="xs"
-          variant="ghost"
-          onClick={(e) => { e.stopPropagation(); if (edit) edit(); }}
-        />
-        <IconButton
-          aria-label="Mark complete"
-          icon={<CheckIcon />}
-          size="xs"
-          variant="ghost"
-          onClick={(e) => { e.stopPropagation(); if (complete) complete(); }}
-        />
-        <IconButton
-          aria-label="Delete task"
-          icon={<DeleteIcon />}
-          size="xs"
-          variant="ghost"
-          onClick={(e) => { e.stopPropagation(); if (remove) remove(); }}
+        {/* Task Drawer */}
+        <TaskDrawer
+          isOpen={isDrawerOpen}
+          onClose={onDrawerClose}
+          task={selectedTask}
+          onUpdateTask={updateTask}
+          onDeleteTask={deleteTask}
+          onRefineTask={handleRefineTask}
         />
       </Flex>
-    </Box>
+    </AppShell>
   );
 }
