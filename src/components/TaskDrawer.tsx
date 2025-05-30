@@ -17,7 +17,8 @@ import {
   useColorModeValue,
   Divider,
   Badge,
-  useToast
+  useToast,
+  Box
 } from '@chakra-ui/react';
 import { PiSplitHorizontalBold, PiUniteSquareBold, PiPencilBold, PiTrashBold } from 'react-icons/pi';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -156,25 +157,61 @@ export function TaskDrawer({ isOpen, onClose, task, onUpdateTask, onDeleteTask, 
               defaultValue={localTask.text}
               onSubmit={updateTitle}
               isPreviewFocusable={false}
-              fontSize={{ base: "md", md: "lg" }}
+              fontSize={{ base: "lg", md: "xl" }}
               fontWeight="bold"
+              color={useColorModeValue('gray.800', 'gray.100')}
             >
-              <EditablePreview />
-              <EditableInput />
+              <EditablePreview
+                _hover={{
+                  bg: useColorModeValue('gray.50', 'gray.700'),
+                  borderRadius: 'md'
+                }}
+                p={2}
+                mx={-2}
+                transition="all 0.2s ease"
+              />
+              <EditableInput
+                _focus={{
+                  borderColor: 'blue.400',
+                  boxShadow: '0 0 0 1px blue.400'
+                }}
+              />
             </Editable>
 
             {totalCount > 0 && (
-              <HStack spacing={{ base: 2, md: 2 }} flexWrap="wrap">
-                <Badge
-                  colorScheme={completedCount === totalCount ? 'green' : 'blue'}
-                  fontSize={{ base: "xs", md: "xs" }}
+              <VStack spacing={2} align="stretch">
+                <HStack spacing={{ base: 2, md: 2 }} flexWrap="wrap">
+                  <Badge
+                    colorScheme={completedCount === totalCount ? 'green' : 'blue'}
+                    fontSize={{ base: "xs", md: "xs" }}
+                    px={2}
+                    py={1}
+                    borderRadius="md"
+                  >
+                    {completedCount}/{totalCount} completed
+                  </Badge>
+                  <Text fontSize={{ base: "xs", md: "sm" }} color={mutedColor} fontWeight="500">
+                    {Math.round((completedCount / totalCount) * 100)}% done
+                  </Text>
+                </HStack>
+
+                {/* Progress bar */}
+                <Box
+                  w="full"
+                  h="2"
+                  bg={useColorModeValue('gray.200', 'gray.700')}
+                  borderRadius="full"
+                  overflow="hidden"
                 >
-                  {completedCount}/{totalCount} completed
-                </Badge>
-                <Text fontSize={{ base: "xs", md: "sm" }} color={mutedColor}>
-                  {Math.round((completedCount / totalCount) * 100)}% done
-                </Text>
-              </HStack>
+                  <Box
+                    h="full"
+                    bg={completedCount === totalCount ? 'green.400' : 'blue.400'}
+                    borderRadius="full"
+                    transition="all 0.3s ease"
+                    w={`${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%`}
+                  />
+                </Box>
+              </VStack>
             )}
           </VStack>
         </DrawerHeader>

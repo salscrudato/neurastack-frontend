@@ -226,7 +226,7 @@ export default function NeurataskPage() {
   const pinnedTasks = getPinnedTasks();
 
   return (
-    <AppShell showBack title="Neuratask">
+    <AppShell>
       <Flex h="100%" bg={bgColor}>
         {/* Main Chat Area */}
         <Flex direction="column" flex="1" overflow="hidden">
@@ -239,7 +239,7 @@ export default function NeurataskPage() {
             pb={{ base: 4, md: 3 }} // Extra bottom padding on mobile for better input spacing
           >
             {messages.length === 0 ? (
-              // Hero section when no messages - mobile optimized
+              // Enhanced Hero section - mobile optimized
               <Flex
                 direction="column"
                 align="center"
@@ -249,24 +249,49 @@ export default function NeurataskPage() {
                 px={{ base: 4, md: 8 }}
                 py={{ base: 8, md: 0 }}
               >
-                <Text
-                  fontSize={{ base: "xl", md: "2xl" }}
-                  fontWeight="bold"
-                  mb={2}
-                  color={heroTextColor}
-                  lineHeight="shorter"
+                <Box
+                  p={6}
+                  borderRadius="2xl"
+                  bg={useColorModeValue('whiteAlpha.700', 'whiteAlpha.100')}
+                  backdropFilter="blur(10px)"
+                  border="1px solid"
+                  borderColor={useColorModeValue('whiteAlpha.300', 'whiteAlpha.200')}
+                  maxW="md"
+                  w="full"
                 >
-                  🛰️ Welcome to Neuratask
-                </Text>
-                <Text
-                  fontSize={{ base: "md", md: "lg" }}
-                  color={heroSubTextColor}
-                  mb={6}
-                  lineHeight="base"
-                  maxW={{ base: "100%", md: "md" }}
-                >
-                  Your AI-powered task coach. Describe what you need to do, and I'll break it down into actionable steps.
-                </Text>
+                  <Text
+                    fontSize={{ base: "2xl", md: "3xl" }}
+                    fontWeight="700"
+                    mb={3}
+                    color={heroTextColor}
+                    lineHeight="shorter"
+                  >
+                    🛰️ Neuratask
+                  </Text>
+                  <Text
+                    fontSize={{ base: "md", md: "lg" }}
+                    color={heroSubTextColor}
+                    mb={6}
+                    lineHeight="relaxed"
+                  >
+                    Your AI-powered task coach. Describe what you need to do, and I'll break it down into actionable steps.
+                  </Text>
+                  <Box
+                    p={3}
+                    borderRadius="lg"
+                    bg={useColorModeValue('blue.50', 'blue.900')}
+                    border="1px solid"
+                    borderColor={useColorModeValue('blue.200', 'blue.700')}
+                  >
+                    <Text
+                      fontSize="sm"
+                      color={useColorModeValue('blue.700', 'blue.200')}
+                      fontWeight="500"
+                    >
+                      💡 Try: "Plan a trip to Rome" or "Organize my home office"
+                    </Text>
+                  </Box>
+                </Box>
               </Flex>
             ) : (
               // Messages list - mobile optimized spacing
@@ -318,22 +343,34 @@ export default function NeurataskPage() {
           />
         )}
 
-        {/* Floating Task Button - Mobile optimized */}
+        {/* Enhanced Floating Task Button - Mobile optimized */}
         {!showTaskRail && (
           <Box
             position="fixed"
             right={{ base: 3, md: 4 }}
-            bottom={{ base: "90px", md: "50%" }} // Above input on mobile, centered on desktop
+            bottom={{ base: "90px", md: "50%" }}
             transform={{ base: "none", md: "translateY(-50%)" }}
             zIndex={10}
           >
             <IconButton
               aria-label="Show tasks"
               icon={<PiListBold />}
-              size={{ base: "md", md: "lg" }}
-              colorScheme="blue"
+              size={{ base: "lg", md: "lg" }}
+              bg={useColorModeValue('white', 'gray.800')}
+              color={useColorModeValue('blue.600', 'blue.300')}
               borderRadius="full"
-              boxShadow="lg"
+              boxShadow="xl"
+              border="1px solid"
+              borderColor={useColorModeValue('blue.200', 'blue.700')}
+              _hover={{
+                bg: useColorModeValue('blue.50', 'blue.900'),
+                transform: 'scale(1.05)',
+                boxShadow: '2xl'
+              }}
+              _active={{
+                transform: 'scale(0.95)'
+              }}
+              transition="all 0.2s ease"
               onClick={() => setShowTaskRail(true)}
             />
           </Box>

@@ -54,16 +54,21 @@ function TaskItem({ task, onTaskClick, onPinTask, isPinned = false }: TaskItemPr
 
   return (
     <Box
-      p={{ base: 2.5, md: 3 }}
+      p={{ base: 3, md: 3 }}
       borderWidth="1px"
       borderColor={borderColor}
-      borderRadius="md"
+      borderRadius="lg"
       cursor="pointer"
-      _hover={{ bg: hoverBg }}
+      _hover={{
+        bg: hoverBg,
+        transform: 'translateY(-1px)',
+        boxShadow: 'md'
+      }}
       onClick={() => onTaskClick(task)}
       position="relative"
-      // Better touch targets on mobile
       minH={{ base: "60px", md: "auto" }}
+      transition="all 0.2s ease"
+      bg={useColorModeValue('white', 'gray.700')}
     >
       <HStack spacing={{ base: 2, md: 2 }} align="flex-start">
         <Checkbox

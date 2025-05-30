@@ -32,11 +32,45 @@ export function TaskCardBubble({ task, onOpen, onPin, isPinned = false }: TaskCa
   const isCompleted = completedCount === totalCount && totalCount > 0;
 
   const mutedColor = useColorModeValue('gray.500', 'gray.400');
-  const hoverBg = useColorModeValue('whiteAlpha.300', 'whiteAlpha.100');
 
   return (
     <Message from="ai">
-      <VStack spacing={{ base: 2, md: 3 }} align="stretch" w="full">
+      <VStack
+        spacing={{ base: 2, md: 3 }}
+        align="stretch"
+        w="full"
+        cursor="pointer"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onOpen();
+        }}
+        _hover={{
+          bg: useColorModeValue('whiteAlpha.500', 'whiteAlpha.200'),
+          transform: 'translateY(-1px)',
+          boxShadow: 'md'
+        }}
+        _active={{
+          transform: 'scale(0.98)'
+        }}
+        transition="all 0.2s ease"
+        borderRadius="lg"
+        p={3}
+        mx={-3}
+        border="1px solid transparent"
+        _focus={{
+          borderColor: useColorModeValue('blue.300', 'blue.500'),
+          outline: 'none'
+        }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onOpen();
+          }
+        }}
+      >
         {/* Header - Mobile optimized */}
         <Flex align="center" justify="space-between">
           <HStack spacing={{ base: 2, md: 2 }} flex={1} minW={0}>
@@ -45,6 +79,7 @@ export function TaskCardBubble({ task, onOpen, onPin, isPinned = false }: TaskCa
               colorScheme="green"
               size={{ base: "md", md: "md" }}
               isReadOnly
+              onClick={(e) => e.stopPropagation()}
             />
             <Text
               fontWeight="600"
@@ -101,19 +136,18 @@ export function TaskCardBubble({ task, onOpen, onPin, isPinned = false }: TaskCa
           </VStack>
         )}
 
-        {/* Action button - Mobile optimized */}
-        <Flex justify="flex-end">
-          <IconButton
-            aria-label="Open task details"
-            icon={<PiArrowRightBold />}
-            size={{ base: "sm", md: "sm" }}
-            variant="ghost"
-            colorScheme="blue"
-            onClick={onOpen}
-            _hover={{ bg: hoverBg }}
-            // Better touch target on mobile
-            minW={{ base: "32px", md: "auto" }}
-            minH={{ base: "32px", md: "auto" }}
+        {/* Click hint - Mobile optimized */}
+        <Flex justify="space-between" align="center">
+          <Text
+            fontSize="xs"
+            color={mutedColor}
+            fontStyle="italic"
+          >
+            Click to view subtasks
+          </Text>
+          <PiArrowRightBold
+            size={14}
+            color={useColorModeValue('#718096', '#A0AEC0')}
           />
         </Flex>
       </VStack>

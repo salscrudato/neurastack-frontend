@@ -26,9 +26,25 @@ export function Header() {
   const grayHover = useColorModeValue('gray.700','white');
 
   // Determine header text and navigation based on current route
-  const isOnAppsPage = location.pathname === '/apps' || location.pathname.startsWith('/apps/');
-  const headerText = isOnAppsPage ? 'APPS' : 'CHAT';
-  const headerDestination = isOnAppsPage ? '/chat' : '/apps';
+  const getHeaderInfo = () => {
+    const path = location.pathname;
+
+    if (path === '/chat') {
+      return { text: 'CHAT', destination: '/apps', fontSize: { base: "lg", md: "xl" } };
+    } else if (path === '/apps') {
+      return { text: 'APPS', destination: '/chat', fontSize: { base: "lg", md: "xl" } };
+    } else if (path.startsWith('/apps/neuratask')) {
+      return { text: 'neuratask', destination: '/apps', fontSize: { base: "md", md: "lg" } };
+    } else if (path.startsWith('/apps/')) {
+      // For other apps, extract app name from path
+      const appName = path.split('/')[2];
+      return { text: appName, destination: '/apps', fontSize: { base: "md", md: "lg" } };
+    } else {
+      return { text: 'CHAT', destination: '/apps', fontSize: { base: "lg", md: "xl" } };
+    }
+  };
+
+  const headerInfo = getHeaderInfo();
 
   const handleSignOut = async () => {
     try {
@@ -88,7 +104,7 @@ export function Header() {
           align="center"
           gap={2}
           cursor="pointer"
-          onClick={() => navigate(headerDestination)}
+          onClick={() => navigate(headerInfo.destination)}
           transition="all 0.2s ease"
           userSelect="none"
           px={3}
@@ -101,13 +117,13 @@ export function Header() {
           }}
         >
           <Text
-            fontSize={{ base: "lg", md: "xl" }}
+            fontSize={headerInfo.fontSize}
             fontWeight="600"
             color={useColorModeValue('gray.500', 'gray.400')}
             letterSpacing="1px"
             fontFamily="Inter, system-ui, sans-serif"
           >
-            {headerText}
+            {headerInfo.text}
           </Text>
 
           {/* Switch/Recycling Icon Indicator */}
