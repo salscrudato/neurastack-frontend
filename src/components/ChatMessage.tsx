@@ -16,9 +16,8 @@ import {
 import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { PiWarningBold, PiPushPinSimpleThin, PiPushPinSimpleFill, PiBookmarkBold } from "react-icons/pi";
+import { PiWarningBold, PiBookmarkBold } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
-import { useChatStore } from "../store/useChatStore";
 import SavePromptModal from "./NeuraPrompts/SavePromptModal";
 
 // provider logos (SVGS now next to this file)
@@ -44,6 +43,27 @@ const logoMap: Record<
   xai:    { icon: grokLogo, label: grokText },
 };
 
+// Format timestamp to MMM DD HH:MM AM/PM format
+const formatTimestamp = (timestamp: number): string => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+
+  const options: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  };
+
+  // Add day if not today
+  if (!isToday) {
+    options.day = 'numeric';
+  }
+
+  return date.toLocaleString('en-US', options);
+};
+
 const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const [expanded, setExpanded] = useState(false);
   const toggleExpand = () => setExpanded((prev) => !prev);
@@ -54,18 +74,7 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const isError = m.role === "error";
   const isLoad  = !m.text;
 
-  // Import the store functions
-  const togglePin = useChatStore(s => s.togglePin);
 
-  const handlePin = () => {
-    togglePin(m.id);
-    toast({
-      title: m.isPinned ? "Message unpinned" : "Message pinned",
-      status: "success",
-      duration: 2000,
-      isClosable: true,
-    });
-  };
 
   const handleSavePrompt = () => {
     onSavePromptOpen();
@@ -92,15 +101,7 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const logoFilter = useColorModeValue("none", "invert(1)");
 
   // title styles: gradient in light, white in dark
-  const titleStyles = useColorModeValue(
-    {
-      bgGradient: "linear(to-r, rgb(128, 183, 228) 0%, rgb(18, 88, 240) 100%)",
-      bgClip: "text",
-    },
-    {
-      color: "white",
-    }
-  );
+
 
   // Pre-compute copy button colors to avoid conditional hook calls
 
@@ -120,16 +121,16 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
 
   return (
     <Box
-      mt={2}
+      mt={1}
       w="full"
       display="flex"
       justifyContent={isUser ? "flex-end" : "flex-start"}
     >
       <MotionBox
         maxW="100%"
-        px={4}
-        py={3}
-        borderRadius="xl"
+        px={3}
+        py={2}
+        borderRadius="lg"
         bg={bubbleBg}
         color={bubbleText}
         fontSize="sm"
@@ -145,53 +146,32 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
         _active={{ bg: bubbleBg }}
         style={{ WebkitTapHighlightColor: "transparent" }}
       >
-        <VStack align="stretch" spacing={2}>
+        <VStack align="stretch" spacing={1}>
           {!isUser && (
             <>
-              <HStack justify="space-between" align="center" mb={2}>
+              <HStack justify="flex-start" align="center" mb={1}>
                 <Text
-                  fontFamily="Inter, sans-serif"
-                  fontSize="2xl"
-                  fontWeight="extrabold"
-                  letterSpacing="-1px"
-                  {...titleStyles}
+                  fontSize="xs"
+                  fontWeight="medium"
+                  color={useColorModeValue('gray.500', 'gray.400')}
+                  fontFamily="Inter, system-ui, sans-serif"
                 >
-                  neurastack
+                  {formatTimestamp(m.timestamp)}
                 </Text>
-
-                {!isLoad && !isError && (
-                  <Tooltip label={m.isPinned ? "Unpin message" : "Pin message"} hasArrow>
-                    <IconButton
-                      aria-label={m.isPinned ? "Unpin message" : "Pin message"}
-                      icon={m.isPinned ? <PiPushPinSimpleFill /> : <PiPushPinSimpleThin />}
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePin();
-                      }}
-                      color={m.isPinned ? "blue.500" : useColorModeValue("gray.500", "gray.400")}
-                      _hover={{
-                        color: m.isPinned ? "blue.600" : useColorModeValue("gray.700", "gray.200"),
-                        transform: "scale(1.1)"
-                      }}
-                      transition="all 0.2s ease"
-                    />
-                  </Tooltip>
-                )}
               </HStack>
             </>
           )}
 
           {/* User message header with save prompt button */}
           {isUser && (
-            <HStack justify="space-between" align="center" mb={2}>
+            <HStack justify="space-between" align="center" mb={1}>
               <Text
-                fontSize="sm"
+                fontSize="xs"
                 fontWeight="medium"
-                color="whiteAlpha.800"
+                color="whiteAlpha.700"
+                fontFamily="Inter, system-ui, sans-serif"
               >
-                You
+                {formatTimestamp(m.timestamp)}
               </Text>
 
               <Tooltip label="Save as prompt" hasArrow>
@@ -218,11 +198,11 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
           {!isUser && (
             <>
               {/* provider badges */}
-              <HStack spacing={4} mb={5} opacity={0.85}>
+              <HStack spacing={3} mb={2} opacity={0.85}>
                 {Object.entries(logoMap).map(([key, { icon, label }]) => (
                   <HStack key={key} spacing={1}>
-                    <Box as="img" src={icon}  w="18px" h="18px" alt={`${key}`} filter={logoFilter} />
-                    <Box as="img" src={label} w="42px" h="18px" alt={`${key}-text`} filter={logoFilter} />
+                    <Box as="img" src={icon}  w="16px" h="16px" alt={`${key}`} filter={logoFilter} />
+                    <Box as="img" src={label} w="38px" h="16px" alt={`${key}-text`} filter={logoFilter} />
                   </HStack>
                 ))}
               </HStack>
@@ -274,7 +254,7 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
               color={bubbleText}
               opacity={0.7}
               alignSelf="flex-end"
-              mt={1}
+              mt={0.5}
             >
               {expanded ? "Tap to collapse ▲" : "Tap to expand ▼"}
             </Text>

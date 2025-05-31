@@ -8,10 +8,13 @@ import {
   Text,
   HStack,
   useToast,
+  VStack,
+  Tooltip,
 } from "@chakra-ui/react";
-import { FiSend } from "react-icons/fi";
+import { PiArrowUpBold } from "react-icons/pi";
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
+import { estimateTokenCount, formatTokenCount, getTokenCountColor } from "../utils/tokenCounter";
 
 /**
  * ChatInput – redesigned to match Grok style:
@@ -24,6 +27,7 @@ export default function ChatInput() {
   const busy = useChatStore((s) => s.isLoading);
   const [txt, setTxt] = useState("");
   const [charCount, setCharCount] = useState(0);
+  const [tokenCount, setTokenCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
 
@@ -31,6 +35,7 @@ export default function ChatInput() {
 
   useEffect(() => {
     setCharCount(txt.length);
+    setTokenCount(estimateTokenCount(txt));
   }, [txt]);
 
   const handleSend = async () => {
@@ -51,6 +56,7 @@ export default function ChatInput() {
       await send(txt.trim());
       setTxt("");
       setCharCount(0);
+      setTokenCount(0);
       // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -121,31 +127,50 @@ export default function ChatInput() {
           _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
           color={useColorModeValue("gray.800", "gray.100")}
           aria-label="Message to Neurastack"
-          pr="5rem"
+          pr="6rem"
           borderColor={charCount > MAX_CHARS ? "red.400" : "transparent"}
           fontSize="16px"
           lineHeight="1.5"
         />
 
-        <InputRightElement width="5rem" top="50%" transform="translateY(-50%)" pr={2}>
+        <InputRightElement width="6rem" top="50%" transform="translateY(-50%)" pr={2}>
           <HStack spacing={2} align="center">
-            {/* Inline Character Count */}
-            <Text
-              fontSize="xs"
-              color={charCount > MAX_CHARS ? "red.400" : useColorModeValue("gray.400", "gray.500")}
-              fontWeight="500"
-              minW="8"
-              textAlign="right"
-              opacity={charCount > 0 ? 1 : 0}
-              transition="opacity 0.2s ease"
-            >
-              {charCount > 0 && `${charCount}`}
-            </Text>
+            {/* Token and Character Count */}
+            {(charCount > 0 || tokenCount > 0) && (
+              <Tooltip
+                label={`${charCount} characters, ~${tokenCount} token${tokenCount === 1 ? '' : 's'}`}
+                hasArrow
+                placement="top"
+              >
+                <VStack spacing={0} align="end" minW="10">
+                  <Text
+                    fontSize="xs"
+                    color={`${getTokenCountColor(tokenCount)}.400`}
+                    fontWeight="500"
+                    lineHeight="1"
+                    opacity={tokenCount > 0 ? 1 : 0}
+                    transition="opacity 0.2s ease"
+                  >
+                    {tokenCount > 0 && `${formatTokenCount(tokenCount)} token${tokenCount === 1 ? '' : 's'}`}
+                  </Text>
+                  <Text
+                    fontSize="xs"
+                    color={charCount > MAX_CHARS ? "red.400" : useColorModeValue("gray.400", "gray.500")}
+                    fontWeight="500"
+                    lineHeight="1"
+                    opacity={charCount > 0 ? 1 : 0}
+                    transition="opacity 0.2s ease"
+                  >
+                    {charCount > 0 && `${charCount} count`}
+                  </Text>
+                </VStack>
+              </Tooltip>
+            )}
 
             <IconButton
               aria-label="Send message"
               aria-disabled={busy || !txt.trim()}
-              icon={<FiSend />}
+              icon={<PiArrowUpBold />}
               onClick={handleSend}
               isLoading={busy}
               size="sm"

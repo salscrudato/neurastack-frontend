@@ -423,8 +423,7 @@ export async function searchHotels(
  * Search for restaurants based on location
  */
 export async function searchRestaurants(
-  location: string,
-  date?: string
+  location: string
 ): Promise<TravelApiResponse<RestaurantOption[]>> {
   try {
     // Simulate API delay
@@ -450,7 +449,7 @@ export async function searchRestaurants(
  * Get travel recommendations based on AI analysis
  */
 export async function getTravelRecommendations(
-  prompt: string
+  _prompt: string
 ): Promise<TravelApiResponse<{
   destinations: string[];
   activities: string[];
@@ -487,7 +486,7 @@ export function parseTravelQuery(query: string): TravelSearchParams {
   // Simple regex patterns for extracting travel info
   const originMatch = query.match(/from\s+([a-zA-Z\s]+?)(?:\s+to|\s+$)/i);
   const destinationMatch = query.match(/to\s+([a-zA-Z\s]+?)(?:\s+on|\s+in|\s+$)/i);
-  const dateMatch = query.match(/(?:on|in)\s+([a-zA-Z0-9\s,]+)/i);
+  // const dateMatch = query.match(/(?:on|in)\s+([a-zA-Z0-9\s,]+)/i);
   const passengersMatch = query.match(/(\d+)\s+(?:passenger|person|people)/i);
 
   if (originMatch) params.origin = originMatch[1].trim();

@@ -8,9 +8,12 @@ import {
   Text,
   HStack,
   useToast,
+  VStack,
+  Tooltip,
 } from "@chakra-ui/react";
 import { FiSend } from "react-icons/fi";
 import { useState, useRef, useEffect } from "react";
+import { estimateTokenCount, formatTokenCount, getTokenCountColor } from "../utils/tokenCounter";
 
 interface TaskChatInputProps {
   onSend: (message: string) => Promise<void>;
@@ -21,6 +24,7 @@ interface TaskChatInputProps {
 export default function TaskChatInput({ onSend, isLoading, placeholder = "Describe what you need to do..." }: TaskChatInputProps) {
   const [txt, setTxt] = useState("");
   const [charCount, setCharCount] = useState(0);
+  const [tokenCount, setTokenCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
 
@@ -28,6 +32,7 @@ export default function TaskChatInput({ onSend, isLoading, placeholder = "Descri
 
   useEffect(() => {
     setCharCount(txt.length);
+    setTokenCount(estimateTokenCount(txt));
   }, [txt]);
 
   const handleSend = async () => {
@@ -48,6 +53,7 @@ export default function TaskChatInput({ onSend, isLoading, placeholder = "Descri
       await onSend(txt.trim());
       setTxt("");
       setCharCount(0);
+      setTokenCount(0);
       // Reset textarea height
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -121,32 +127,52 @@ export default function TaskChatInput({ onSend, isLoading, placeholder = "Descri
           _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
           color={useColorModeValue("gray.800", "gray.100")}
           aria-label="Task description"
-          pr={{ base: "4rem", md: "5rem" }}
+          pr={{ base: "5rem", md: "6rem" }}
           borderColor={charCount > MAX_CHARS ? "red.400" : "transparent"}
           fontSize={{ base: "16px", md: "16px" }}
           lineHeight="1.5"
         />
 
         <InputRightElement
-          width={{ base: "4rem", md: "5rem" }}
+          width={{ base: "5rem", md: "6rem" }}
           top="50%"
           transform="translateY(-50%)"
           pr={2}
         >
           <HStack spacing={2} align="center">
-            {/* Inline Character Count */}
-            <Text
-              fontSize="xs"
-              color={charCount > MAX_CHARS ? "red.400" : useColorModeValue("gray.400", "gray.500")}
-              fontWeight="500"
-              minW="6"
-              textAlign="right"
-              opacity={charCount > 0 ? 1 : 0}
-              transition="opacity 0.2s ease"
-              display={{ base: charCount > 100 ? "block" : "none", md: "block" }}
-            >
-              {charCount > 0 && `${charCount}`}
-            </Text>
+            {/* Token and Character Count */}
+            {(charCount > 0 || tokenCount > 0) && (
+              <Tooltip
+                label={`${charCount} characters, ~${tokenCount} tokens`}
+                hasArrow
+                placement="top"
+              >
+                <VStack spacing={0} align="end" minW={{ base: "8", md: "10" }}>
+                  <Text
+                    fontSize="xs"
+                    color={`${getTokenCountColor(tokenCount)}.400`}
+                    fontWeight="500"
+                    lineHeight="1"
+                    opacity={tokenCount > 0 ? 1 : 0}
+                    transition="opacity 0.2s ease"
+                    display={{ base: tokenCount > 50 ? "block" : "none", md: "block" }}
+                  >
+                    {tokenCount > 0 && `${formatTokenCount(tokenCount)}t`}
+                  </Text>
+                  <Text
+                    fontSize="xs"
+                    color={charCount > MAX_CHARS ? "red.400" : useColorModeValue("gray.400", "gray.500")}
+                    fontWeight="500"
+                    lineHeight="1"
+                    opacity={charCount > 0 ? 1 : 0}
+                    transition="opacity 0.2s ease"
+                    display={{ base: charCount > 100 ? "block" : "none", md: "block" }}
+                  >
+                    {charCount > 0 && `${charCount}c`}
+                  </Text>
+                </VStack>
+              </Tooltip>
+            )}
 
             <IconButton
               aria-label="Send message"

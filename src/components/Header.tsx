@@ -1,5 +1,5 @@
 import {
-  Flex, Image, IconButton, Box, Text, Avatar,
+  Flex, IconButton, Box, Text, Avatar,
   Menu, MenuButton, MenuList, MenuItem, MenuDivider,
   useColorMode, useColorModeValue, useToast, Tooltip,
   HStack, Icon
@@ -10,8 +10,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
-
-import logo from '../assets/icons/logo.svg';
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -25,22 +23,33 @@ export function Header() {
   const gray = useColorModeValue('gray.600','gray.300');
   const grayHover = useColorModeValue('gray.700','white');
 
+  // Logo gradient styles - same as in ChatMessage
+  const logoStyles = useColorModeValue(
+    {
+      bgGradient: "linear(to-r, rgb(128, 183, 228) 0%, rgb(18, 88, 240) 100%)",
+      bgClip: "text",
+    },
+    {
+      color: "white",
+    }
+  );
+
   // Determine header text and navigation based on current route
   const getHeaderInfo = () => {
     const path = location.pathname;
 
     if (path === '/chat') {
-      return { text: 'CHAT', destination: '/apps', fontSize: { base: "lg", md: "xl" } };
+      return { text: 'CHAT', destination: '/apps', fontSize: { base: "md", md: "lg" } };
     } else if (path === '/apps') {
-      return { text: 'APPS', destination: '/chat', fontSize: { base: "lg", md: "xl" } };
+      return { text: 'APPS', destination: '/chat', fontSize: { base: "md", md: "lg" } };
     } else if (path.startsWith('/apps/neuratask')) {
-      return { text: 'neuratask', destination: '/apps', fontSize: { base: "md", md: "lg" } };
+      return { text: 'neuratask', destination: '/apps', fontSize: { base: "sm", md: "md" } };
     } else if (path.startsWith('/apps/')) {
       // For other apps, extract app name from path
       const appName = path.split('/')[2];
-      return { text: appName, destination: '/apps', fontSize: { base: "md", md: "lg" } };
+      return { text: appName, destination: '/apps', fontSize: { base: "sm", md: "md" } };
     } else {
-      return { text: 'CHAT', destination: '/apps', fontSize: { base: "lg", md: "xl" } };
+      return { text: 'CHAT', destination: '/apps', fontSize: { base: "md", md: "lg" } };
     }
   };
 
@@ -55,7 +64,7 @@ export function Header() {
         duration: 2000,
         isClosable: true,
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Sign out failed",
         description: "Please try again",
@@ -79,67 +88,88 @@ export function Header() {
   const isGuest = user?.isAnonymous;
 
   return (
-    <Flex as="header" px={2} py={1} gap={4} align="center"
-          bg={useColorModeValue('white','#2c2c2e')}
-          borderBottom="1px solid"
-          borderColor={useColorModeValue('gray.200','whiteAlpha.200')}
-          boxShadow={useColorModeValue('sm','none')}>
+    <Flex
+      as="header"
+      px={{ base: 4, md: 6, lg: 8 }}
+      py={{ base: 3, md: 4 }}
+      gap={3}
+      align="center"
+      position="relative"
+      w="100%"
+      minH={{ base: "60px", md: "64px" }}
+    >
 
-      {/* Logo */}
-      <Tooltip label="Neurastack" hasArrow>
-        <Image
-          src={logo}
-          alt="neurastack"
-          boxSize={{ base: "70px", md: "80px" }}
-          cursor="pointer"
-          onClick={() => navigate('/chat')}
-          _hover={{ opacity: 0.8 }}
-          transition="opacity 0.2s"
-        />
-      </Tooltip>
-
-      {/* Centered Dynamic Header Text with Click Indicator */}
-      <Box flex="1" display="flex" justifyContent="center" alignItems="center">
-        <Flex
-          align="center"
-          gap={2}
-          cursor="pointer"
-          onClick={() => navigate(headerInfo.destination)}
-          transition="all 0.2s ease"
-          userSelect="none"
-          px={3}
-          py={2}
-          borderRadius="full"
-          role="group"
-          _hover={{
-            bg: useColorModeValue('gray.50', 'whiteAlpha.100'),
-            transform: 'translateY(-1px)'
-          }}
+      {/* Dynamic Header Text with Click Indicator - positioned on left */}
+      <Flex
+        align="center"
+        gap={2}
+        cursor="pointer"
+        onClick={() => navigate(headerInfo.destination)}
+        transition="all 0.2s ease"
+        userSelect="none"
+        px={2}
+        py={1}
+        borderRadius="full"
+        role="group"
+        _hover={{
+          bg: useColorModeValue('gray.50', 'whiteAlpha.100'),
+          transform: 'translateY(-1px)'
+        }}
+      >
+        <Text
+          fontSize={headerInfo.fontSize}
+          fontWeight="600"
+          color={useColorModeValue('gray.500', 'gray.400')}
+          letterSpacing="1px"
+          fontFamily="Inter, system-ui, sans-serif"
         >
-          <Text
-            fontSize={headerInfo.fontSize}
-            fontWeight="600"
-            color={useColorModeValue('gray.500', 'gray.400')}
-            letterSpacing="1px"
-            fontFamily="Inter, system-ui, sans-serif"
-          >
-            {headerInfo.text}
-          </Text>
+          {headerInfo.text}
+        </Text>
 
-          {/* Switch/Recycling Icon Indicator */}
-          <Icon
-            as={PiArrowsClockwise}
-            w="14px"
-            h="14px"
-            color={useColorModeValue('gray.400', 'gray.500')}
+        {/* Switch/Recycling Icon Indicator */}
+        <Icon
+          as={PiArrowsClockwise}
+          w="12px"
+          h="12px"
+          color={useColorModeValue('gray.400', 'gray.500')}
+          transition="all 0.2s ease"
+          _groupHover={{
+            color: useColorModeValue('gray.600', 'gray.300'),
+            transform: 'rotate(180deg) scale(1.1)'
+          }}
+        />
+      </Flex>
+
+      {/* Absolutely Centered Logo - independent of left/right content */}
+      <Box
+        position="absolute"
+        left="50%"
+        top="50%"
+        transform="translate(-50%, -50%)"
+        zIndex={1}
+      >
+        <Tooltip label="Neurastack" hasArrow>
+          <Text
+            fontSize={{ base: "xl", md: "2xl" }}
+            fontWeight="700"
+            fontFamily="Inter, system-ui, sans-serif"
+            cursor="pointer"
+            onClick={() => navigate('/chat')}
             transition="all 0.2s ease"
-            _groupHover={{
-              color: useColorModeValue('gray.600', 'gray.300'),
-              transform: 'rotate(180deg) scale(1.1)'
+            userSelect="none"
+            _hover={{
+              transform: "scale(1.05)",
+              opacity: 0.8
             }}
-          />
-        </Flex>
+            {...logoStyles}
+          >
+            neurastack
+          </Text>
+        </Tooltip>
       </Box>
+
+      {/* Spacer to balance the layout */}
+      <Box flex="1" />
 
       {/* User menu */}
       <Menu>

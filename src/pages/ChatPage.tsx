@@ -21,15 +21,16 @@ import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import ChatSearch from '../components/ChatSearch';
 import OfflineIndicator from '../components/OfflineIndicator';
-import { Header } from '../components/Header';
 import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor';
+import { useAuthStore } from '../store/useAuthStore';
 
 export function ChatPage() {
   const msgs = useChatStore(s => s.messages);
   const clearMessages = useChatStore(s => s.clearMessages);
   const isLoading = useChatStore(s => s.isLoading);
   const retryCount = useChatStore(s => s.retryCount);
-  const getPinnedMessages = useChatStore(s => s.getPinnedMessages);
+  const loadChatHistory = useChatStore(s => s.loadChatHistory);
+  const user = useAuthStore(s => s.user);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +54,13 @@ export function ChatPage() {
   const scrollButtonHoverBg = useColorModeValue("gray.50", "gray.600");
   const heroTextColor = useColorModeValue("gray.600", "gray.200");
   const heroSubTextColor = useColorModeValue("gray.600", "gray.300");
+
+  // Load chat history when user is authenticated
+  useEffect(() => {
+    if (user && msgs.length === 0) {
+      loadChatHistory();
+    }
+  }, [user, loadChatHistory, msgs.length]);
 
   // Auto-scroll when messages change
   useEffect(() => {
@@ -124,13 +132,11 @@ export function ChatPage() {
   return (
     <Flex
       direction="column"
-      h="100vh"
+      h="100%"
       p="0px"
       bg={bgColor}
       position="relative"
     >
-      <Header />
-
       {/* Offline indicator */}
       <OfflineIndicator />
 
@@ -176,69 +182,25 @@ export function ChatPage() {
         ref={messagesContainerRef}
         flex="1 1 0"
         overflowY="auto"
-        px={4}
-        py={2}
+        px={3}
+        py={1}
         bg={containerBg}
         position="relative"
       >
 
 
         <Flex direction="column" align="stretch" gap={0}>
-          {(() => {
-            const pinnedMessages = getPinnedMessages();
-            const mostRecentMessage = msgs.length > 0 ? msgs[msgs.length - 1] : null;
-
-            // Create display list: pinned messages + most recent (if not already pinned)
-            const displayMessages = [...pinnedMessages];
-            if (mostRecentMessage && !mostRecentMessage.isPinned) {
-              displayMessages.push(mostRecentMessage);
-            }
-
-            // If no pinned messages and no recent message, show all messages
-            if (displayMessages.length === 0) {
-              return msgs.map(m => (
-                <Box
-                  key={m.id}
-                  id={`message-${m.id}`}
-                  bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
-                  borderRadius="md"
-                  transition="background-color 0.3s"
-                >
-                  <ChatMessage m={m} />
-                </Box>
-              ));
-            }
-
-            return displayMessages.map(m => (
-              <Box
-                key={m.id}
-                id={`message-${m.id}`}
-                bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
-                borderRadius="md"
-                transition="background-color 0.3s"
-                position="relative"
-              >
-                {m.isPinned && (
-                  <Box
-                    position="absolute"
-                    top={2}
-                    left={2}
-                    zIndex={1}
-                    bg={useColorModeValue("blue.100", "blue.900")}
-                    color={useColorModeValue("blue.700", "blue.200")}
-                    px={2}
-                    py={1}
-                    borderRadius="md"
-                    fontSize="xs"
-                    fontWeight="medium"
-                  >
-                    Pinned
-                  </Box>
-                )}
-                <ChatMessage m={m} />
-              </Box>
-            ));
-          })()}
+          {msgs.map(m => (
+            <Box
+              key={m.id}
+              id={`message-${m.id}`}
+              bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
+              borderRadius="md"
+              transition="background-color 0.3s"
+            >
+              <ChatMessage m={m} />
+            </Box>
+          ))}
 
           {/* Loading indicator with retry count */}
           {isLoading && retryCount > 0 && (

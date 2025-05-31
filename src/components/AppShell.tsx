@@ -5,7 +5,6 @@ import {
 import { PiArrowLeftLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import { Header } from './Header';
 
 interface AppShellProps {
   children: ReactNode;
@@ -22,8 +21,8 @@ export function AppShell({ children, showBack = false, title, rightActions }: Ap
   const gray = useColorModeValue('gray.600', 'gray.300');
 
   return (
-    <Flex direction="column" h="100vh" bg={bodyBg}>
-      {showBack ? (
+    <Flex direction="column" h="100%" bg={bodyBg}>
+      {showBack && (
         // Custom header with back button for sub-pages
         <Flex
           as="header"
@@ -64,9 +63,6 @@ export function AppShell({ children, showBack = false, title, rightActions }: Ap
 
           {rightActions}
         </Flex>
-      ) : (
-        // Use the main Header component for main pages
-        <Header />
       )}
 
       {/* Body */}

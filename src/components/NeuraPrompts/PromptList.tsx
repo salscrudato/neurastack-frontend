@@ -8,7 +8,7 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { PiPlusBold, PiMagnifyingGlassBold } from 'react-icons/pi';
-import { PersonalPrompt, CommunityPrompt } from '../../services/promptsService';
+import type { PersonalPrompt, CommunityPrompt } from '../../services/promptsService';
 import PromptCard from './PromptCard';
 
 interface PromptListProps {

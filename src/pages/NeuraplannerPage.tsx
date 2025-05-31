@@ -5,7 +5,7 @@ import {
   useColorModeValue,
   useToast,
   VStack,
-  IconButton,
+
   HStack,
   Badge,
   Button,
@@ -34,11 +34,9 @@ export default function NeuraplannerPage() {
   const {
     messages,
     isLoading,
-    searchResults,
     currentTrip,
     trips,
     sendMessage,
-    clearMessages,
     createTrip,
     setCurrentTrip,
     addFlightToTrip,

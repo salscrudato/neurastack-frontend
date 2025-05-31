@@ -2,13 +2,19 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
 import { queryStack } from '../lib/api';
+import { auth } from '../firebase';
+import {
+  saveMessageToFirebase,
+  loadChatHistoryFromFirebase,
+  clearChatHistoryFromFirebase,
+  deleteMessageFromFirebase
+} from '../services/chatHistoryService';
 
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'error';
   text: string;
   timestamp: number;
-  isPinned?: boolean;
   metadata?: {
     models?: string[];
     responseTime?: number;
@@ -24,8 +30,7 @@ interface ChatState {
   clearMessages: () => void;
   deleteMessage: (id: string) => void;
   retryMessage: (messageId: string) => Promise<void>;
-  togglePin: (messageId: string) => void;
-  getPinnedMessages: () => Message[];
+  loadChatHistory: () => Promise<void>;
 }
 
 const MAX_RETRIES = 3;
@@ -57,6 +62,15 @@ export const useChatStore = create<ChatState>()(
           retryCount: 0
         }));
 
+        // Save user message to Firebase if user is authenticated
+        if (auth.currentUser) {
+          try {
+            await saveMessageToFirebase(userMsg);
+          } catch (error) {
+            console.warn('Failed to save user message to Firebase:', error);
+          }
+        }
+
         // Create placeholder for assistant response
         const assistantId = nanoid();
         set(state => ({
@@ -77,23 +91,35 @@ export const useChatStore = create<ChatState>()(
             const responseTime = Date.now() - startTime;
 
             // Update with actual response
+            const assistantMsg = {
+              id: assistantId,
+              role: 'assistant' as const,
+              text: response.answer,
+              timestamp: Date.now(),
+              metadata: {
+                models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
+                responseTime,
+                retryCount
+              }
+            };
+
             set(state => ({
               messages: state.messages.map(m =>
-                m.id === assistantId
-                  ? {
-                      ...m,
-                      text: response.answer,
-                      metadata: {
-                        models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
-                        responseTime,
-                        retryCount
-                      }
-                    }
-                  : m
+                m.id === assistantId ? assistantMsg : m
               ),
               isLoading: false,
               retryCount: 0
             }));
+
+            // Save assistant message to Firebase if user is authenticated
+            if (auth.currentUser) {
+              try {
+                await saveMessageToFirebase(assistantMsg);
+              } catch (error) {
+                console.warn('Failed to save assistant message to Firebase:', error);
+              }
+            }
+
             return; // Success, exit retry loop
 
           } catch (error) {
@@ -121,11 +147,33 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
-      clearMessages: () => set({ messages: [] }),
+      clearMessages: async () => {
+        set({ messages: [] });
 
-      deleteMessage: (id: string) => set(state => ({
-        messages: state.messages.filter(m => m.id !== id)
-      })),
+        // Clear from Firebase if user is authenticated
+        if (auth.currentUser) {
+          try {
+            await clearChatHistoryFromFirebase();
+          } catch (error) {
+            console.warn('Failed to clear chat history from Firebase:', error);
+          }
+        }
+      },
+
+      deleteMessage: async (id: string) => {
+        set(state => ({
+          messages: state.messages.filter(m => m.id !== id)
+        }));
+
+        // Delete from Firebase if user is authenticated
+        if (auth.currentUser) {
+          try {
+            await deleteMessageFromFirebase(id);
+          } catch (error) {
+            console.warn('Failed to delete message from Firebase:', error);
+          }
+        }
+      },
 
       retryMessage: async (messageId: string) => {
         const state = get();
@@ -152,15 +200,17 @@ export const useChatStore = create<ChatState>()(
         await get().sendMessage(userMessage.text);
       },
 
-      togglePin: (messageId: string) => set(state => ({
-        messages: state.messages.map(m =>
-          m.id === messageId ? { ...m, isPinned: !m.isPinned } : m
-        )
-      })),
+      loadChatHistory: async () => {
+        if (!auth.currentUser) {
+          return;
+        }
 
-      getPinnedMessages: () => {
-        const state = get();
-        return state.messages.filter(m => m.isPinned);
+        try {
+          const messages = await loadChatHistoryFromFirebase(50);
+          set({ messages });
+        } catch (error) {
+          console.warn('Failed to load chat history from Firebase:', error);
+        }
       }
     }),
     {

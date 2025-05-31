@@ -245,12 +245,12 @@ export const useTravelStore = create<TravelState>()(
         }
       },
 
-      searchRestaurants: async (location, date) => {
+      searchRestaurants: async (location, _date) => {
         const { setLoading } = get();
         setLoading(true);
 
         try {
-          const response = await searchRestaurants(location, date);
+          const response = await searchRestaurants(location);
 
           if (response.success) {
             set(state => ({

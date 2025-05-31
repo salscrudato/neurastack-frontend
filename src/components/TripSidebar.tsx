@@ -12,7 +12,7 @@ import {
   Box,
   Badge,
   Icon,
-  Divider,
+
   useColorModeValue,
   IconButton,
   Accordion,
@@ -27,8 +27,7 @@ import {
   PiBuildingsBold,
   PiCookingPotBold,
   PiMapPinBold,
-  PiCalendarBold,
-  PiCurrencyDollarBold,
+
   PiTrashBold,
 } from 'react-icons/pi';
 import type { TripItinerary } from '../lib/types';

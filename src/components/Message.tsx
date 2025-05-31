@@ -2,7 +2,7 @@ import { Box, Flex, useColorModeValue } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
 
 interface MessageProps {
-  from: 'user' | 'ai';
+  from: 'user' | 'ai' | 'assistant';
   children: ReactNode;
 }
 

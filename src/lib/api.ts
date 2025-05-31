@@ -86,7 +86,7 @@ function createUserFriendlyError(error: any, status?: number): ApiError {
 
 const BASE_URL =
   import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") ||
-  "https://neurastack-server-1.onrender.com";
+  "https://neurastack-server-373148373738.us-central1.run.app";
 
 /** Models sent in every request – hard‑coded for now */
 const MODELS = [

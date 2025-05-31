@@ -90,8 +90,8 @@ export default function RestaurantCard({
               h="120px"
               bg={useColorModeValue('gray.100', 'gray.700')}
               display="flex"
-              align="center"
-              justify="center"
+              alignItems="center"
+              justifyContent="center"
             >
               <Icon as={PiCookingPotBold} boxSize={10} color={subtextColor} />
             </Box>

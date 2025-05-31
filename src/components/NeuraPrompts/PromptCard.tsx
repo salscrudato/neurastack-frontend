@@ -35,7 +35,7 @@ import {
   PiUserBold,
 } from 'react-icons/pi';
 import { useState, useRef } from 'react';
-import { PersonalPrompt, CommunityPrompt } from '../../services/promptsService';
+import type { PersonalPrompt, CommunityPrompt } from '../../services/promptsService';
 import {
   deletePrompt,
   sharePrompt,

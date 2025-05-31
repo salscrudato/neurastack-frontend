@@ -167,7 +167,7 @@ export default function TagSelector({
                       {tag}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent size="sm" w="auto">
+                  <PopoverContent w="auto">
                     <PopoverArrow />
                     <PopoverBody>
                       <Text fontSize="xs">

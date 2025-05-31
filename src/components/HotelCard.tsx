@@ -90,8 +90,8 @@ export default function HotelCard({
               h="150px"
               bg={useColorModeValue('gray.100', 'gray.700')}
               display="flex"
-              align="center"
-              justify="center"
+              alignItems="center"
+              justifyContent="center"
             >
               <Icon as={PiBuildingsBold} boxSize={12} color={subtextColor} />
             </Box>
