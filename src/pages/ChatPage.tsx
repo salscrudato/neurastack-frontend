@@ -4,8 +4,6 @@ import {
   Text,
   useColorModeValue,
   IconButton,
-  HStack,
-  Tooltip,
   useToast,
   AlertDialog,
   AlertDialogBody,
@@ -17,12 +15,12 @@ import {
   Button,
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
-import { PiTrashBold, PiArrowUpBold, PiMagnifyingGlassBold } from 'react-icons/pi';
+import { PiArrowUpBold } from 'react-icons/pi';
 import { useChatStore } from '../store/useChatStore';
 import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import ChatSearch from '../components/ChatSearch';
-import OfflineIndicator, { ConnectionQuality } from '../components/OfflineIndicator';
+import OfflineIndicator from '../components/OfflineIndicator';
 import { Header } from '../components/Header';
 import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor';
 
@@ -31,26 +29,23 @@ export function ChatPage() {
   const clearMessages = useChatStore(s => s.clearMessages);
   const isLoading = useChatStore(s => s.isLoading);
   const retryCount = useChatStore(s => s.retryCount);
+  const getPinnedMessages = useChatStore(s => s.getPinnedMessages);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [showSearch] = useState(false);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onClose } = useDisclosure();
   const toast = useToast();
   const { alerts, clearAlerts } = usePerformanceAlerts();
 
   // Pre-compute all color mode values to avoid conditional hook calls
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const containerBg = useColorModeValue("gray.50", "gray.900");
-  const searchIconColor = useColorModeValue("gray.500", "gray.400");
-  const searchIconHoverColor = useColorModeValue("blue.600", "blue.300");
-  const clearIconColor = useColorModeValue("gray.500", "gray.400");
-  const clearIconHoverColor = useColorModeValue("red.500", "red.400");
   const highlightBg = useColorModeValue("yellow.100", "yellow.800");
   const retryTextColor = useColorModeValue("gray.500", "gray.400");
   const scrollButtonBg = useColorModeValue("white", "gray.700");
@@ -139,8 +134,7 @@ export function ChatPage() {
       {/* Offline indicator */}
       <OfflineIndicator />
 
-      {/* Connection quality indicator */}
-      <ConnectionQuality />
+
 
       {/* Search functionality */}
       {showSearch && (
@@ -187,47 +181,64 @@ export function ChatPage() {
         bg={containerBg}
         position="relative"
       >
-        {/* Action buttons */}
-        {msgs.length > 0 && (
-          <HStack justify="flex-end" mb={4} spacing={2}>
-            <Tooltip label="Search messages" hasArrow>
-              <IconButton
-                aria-label="Search messages"
-                icon={<PiMagnifyingGlassBold />}
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowSearch(!showSearch)}
-                color={showSearch ? "blue.500" : searchIconColor}
-                _hover={{ color: searchIconHoverColor }}
-              />
-            </Tooltip>
 
-            <Tooltip label="Clear chat history" hasArrow>
-              <IconButton
-                aria-label="Clear chat"
-                icon={<PiTrashBold />}
-                size="sm"
-                variant="ghost"
-                onClick={onOpen}
-                color={clearIconColor}
-                _hover={{ color: clearIconHoverColor }}
-              />
-            </Tooltip>
-          </HStack>
-        )}
 
         <Flex direction="column" align="stretch" gap={0}>
-          {msgs.map(m => (
-            <Box
-              key={m.id}
-              id={`message-${m.id}`}
-              bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
-              borderRadius="md"
-              transition="background-color 0.3s"
-            >
-              <ChatMessage m={m} />
-            </Box>
-          ))}
+          {(() => {
+            const pinnedMessages = getPinnedMessages();
+            const mostRecentMessage = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+
+            // Create display list: pinned messages + most recent (if not already pinned)
+            const displayMessages = [...pinnedMessages];
+            if (mostRecentMessage && !mostRecentMessage.isPinned) {
+              displayMessages.push(mostRecentMessage);
+            }
+
+            // If no pinned messages and no recent message, show all messages
+            if (displayMessages.length === 0) {
+              return msgs.map(m => (
+                <Box
+                  key={m.id}
+                  id={`message-${m.id}`}
+                  bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
+                  borderRadius="md"
+                  transition="background-color 0.3s"
+                >
+                  <ChatMessage m={m} />
+                </Box>
+              ));
+            }
+
+            return displayMessages.map(m => (
+              <Box
+                key={m.id}
+                id={`message-${m.id}`}
+                bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
+                borderRadius="md"
+                transition="background-color 0.3s"
+                position="relative"
+              >
+                {m.isPinned && (
+                  <Box
+                    position="absolute"
+                    top={2}
+                    left={2}
+                    zIndex={1}
+                    bg={useColorModeValue("blue.100", "blue.900")}
+                    color={useColorModeValue("blue.700", "blue.200")}
+                    px={2}
+                    py={1}
+                    borderRadius="md"
+                    fontSize="xs"
+                    fontWeight="medium"
+                  >
+                    Pinned
+                  </Box>
+                )}
+                <ChatMessage m={m} />
+              </Box>
+            ));
+          })()}
 
           {/* Loading indicator with retry count */}
           {isLoading && retryCount > 0 && (

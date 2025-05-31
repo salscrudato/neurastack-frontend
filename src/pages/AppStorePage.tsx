@@ -2,7 +2,7 @@ import {
   Box, Text, VStack, Grid, GridItem,
   useColorModeValue, Icon, Badge
 } from '@chakra-ui/react';
-import { PiCheckSquareOffsetBold, PiNewspaperLight } from 'react-icons/pi';
+import { PiCheckSquareOffsetBold, PiNewspaperLight, PiAirplaneBold, PiBookmarksBold } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 
@@ -26,6 +26,22 @@ export default function AppStorePage() {
       description: 'AI-powered task management',
       icon: PiCheckSquareOffsetBold,
       route: '/apps/neuratask',
+      available: true,
+    },
+    {
+      id: 'neuraplanner',
+      name: 'neuraplanner',
+      description: 'AI-powered trip planning',
+      icon: PiAirplaneBold,
+      route: '/apps/neuraplanner',
+      available: true,
+    },
+    {
+      id: 'neuraprompts',
+      name: 'neuraprompts',
+      description: 'Reusable prompt library',
+      icon: PiBookmarksBold,
+      route: '/apps/neuraprompts',
       available: true,
     },
     {

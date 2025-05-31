@@ -13,6 +13,8 @@ const SplashPage = React.lazy(() => import('./pages/SplashPage').then(m => ({ de
 const ChatPage = React.lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })));
 const AppStorePage = React.lazy(() => import('./pages/AppStorePage'));
 const NeurataskPage = React.lazy(() => import('./pages/NeurataskPage'));
+const NeuraplannerPage = React.lazy(() => import('./pages/NeuraplannerPage'));
+const NeuraPromptsPage = React.lazy(() => import('./pages/NeuraPromptsPage'));
 
 // Create router with proper nested routes
 const router = createBrowserRouter([
@@ -50,6 +52,22 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader message="Loading Neuratask..." />}>
             <NeurataskPage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'apps/neuraplanner',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading Neuraplanner..." />}>
+            <NeuraplannerPage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'apps/neuraprompts',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading NeuraPrompts..." />}>
+            <NeuraPromptsPage />
           </Suspense>
         )
       },

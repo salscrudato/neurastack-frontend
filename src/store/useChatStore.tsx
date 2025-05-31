@@ -8,6 +8,7 @@ export interface Message {
   role: 'user' | 'assistant' | 'error';
   text: string;
   timestamp: number;
+  isPinned?: boolean;
   metadata?: {
     models?: string[];
     responseTime?: number;
@@ -23,6 +24,8 @@ interface ChatState {
   clearMessages: () => void;
   deleteMessage: (id: string) => void;
   retryMessage: (messageId: string) => Promise<void>;
+  togglePin: (messageId: string) => void;
+  getPinnedMessages: () => Message[];
 }
 
 const MAX_RETRIES = 3;
@@ -147,6 +150,17 @@ export const useChatStore = create<ChatState>()(
         }));
 
         await get().sendMessage(userMessage.text);
+      },
+
+      togglePin: (messageId: string) => set(state => ({
+        messages: state.messages.map(m =>
+          m.id === messageId ? { ...m, isPinned: !m.isPinned } : m
+        )
+      })),
+
+      getPinnedMessages: () => {
+        const state = get();
+        return state.messages.filter(m => m.isPinned);
       }
     }),
     {

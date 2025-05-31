@@ -89,7 +89,7 @@ export default defineConfig({
 
   // Dev server settings
   server: {
-    port: 5173, // Port to serve the app during development
+    port: 3000, // Port to serve the app during development
     open: true  // Automatically open the browser on server start
   },
 

@@ -30,3 +30,98 @@ export interface ChatResponse {
   /** Reasons for any fallbacks */
   fallbackReasons: Record<string, string>;
 }
+
+/* ============================================================================
+ * Travel Planning Types
+ * ========================================================================== */
+
+/** Travel search parameters */
+export interface TravelSearchParams {
+  origin?: string;
+  destination?: string;
+  departureDate?: string;
+  returnDate?: string;
+  passengers?: number;
+  tripType?: 'roundtrip' | 'oneway' | 'multicity';
+  cabinClass?: 'economy' | 'premium_economy' | 'business' | 'first';
+  directFlightsOnly?: boolean;
+  flexibleDates?: boolean;
+  includeNearbyAirports?: boolean;
+  budgetRange?: 'budget' | 'mid' | 'premium' | 'luxury';
+}
+
+/** Flight search result */
+export interface FlightOption {
+  id: string;
+  airline: string;
+  flightNumber: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  duration: string;
+  price: number;
+  currency: string;
+  stops: number;
+  bookingUrl: string;
+  cabinClass: string;
+}
+
+/** Hotel search result */
+export interface HotelOption {
+  id: string;
+  name: string;
+  location: string;
+  rating: number;
+  price: number;
+  currency: string;
+  checkIn: string;
+  checkOut: string;
+  amenities: string[];
+  imageUrl?: string;
+  bookingUrl: string;
+  description?: string;
+}
+
+/** Restaurant reservation option */
+export interface RestaurantOption {
+  id: string;
+  name: string;
+  cuisine: string;
+  location: string;
+  rating: number;
+  priceRange: string;
+  availableTimes: string[];
+  reservationUrl: string;
+  imageUrl?: string;
+  description?: string;
+}
+
+/** Complete trip itinerary */
+export interface TripItinerary {
+  id: string;
+  title: string;
+  destination: string;
+  startDate: string;
+  endDate: string;
+  flights: FlightOption[];
+  hotels: HotelOption[];
+  restaurants: RestaurantOption[];
+  totalCost: number;
+  currency: string;
+  status: 'planning' | 'booked' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Travel API response wrapper */
+export interface TravelApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+  pagination?: {
+    page: number;
+    totalPages: number;
+    totalResults: number;
+  };
+}

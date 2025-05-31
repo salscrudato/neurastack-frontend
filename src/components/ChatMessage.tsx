@@ -10,14 +10,16 @@ import {
   ListItem,
   IconButton,
   Tooltip,
-  useClipboard,
   useToast,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useState, memo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { PiWarningBold, PiCopyBold, PiCheckBold } from "react-icons/pi";
+import { PiWarningBold, PiPushPinSimpleThin, PiPushPinSimpleFill, PiBookmarkBold } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
+import { useChatStore } from "../store/useChatStore";
+import SavePromptModal from "./NeuraPrompts/SavePromptModal";
 
 // provider logos (SVGS now next to this file)
 import gptLogo   from "./openai.svg";
@@ -45,20 +47,36 @@ const logoMap: Record<
 const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const [expanded, setExpanded] = useState(false);
   const toggleExpand = () => setExpanded((prev) => !prev);
-  const { onCopy, setValue, hasCopied } = useClipboard("");
   const toast = useToast();
+  const { isOpen: isSavePromptOpen, onOpen: onSavePromptOpen, onClose: onSavePromptClose } = useDisclosure();
 
   const isUser  = m.role === "user";
   const isError = m.role === "error";
   const isLoad  = !m.text;
 
-  const handleCopy = () => {
-    setValue(m.text);
-    onCopy();
+  // Import the store functions
+  const togglePin = useChatStore(s => s.togglePin);
+
+  const handlePin = () => {
+    togglePin(m.id);
     toast({
-      title: "Message copied to clipboard",
+      title: m.isPinned ? "Message unpinned" : "Message pinned",
       status: "success",
       duration: 2000,
+      isClosable: true,
+    });
+  };
+
+  const handleSavePrompt = () => {
+    onSavePromptOpen();
+  };
+
+  const handlePromptSaved = () => {
+    toast({
+      title: "Prompt saved!",
+      description: "Your prompt has been added to your library",
+      status: "success",
+      duration: 3000,
       isClosable: true,
     });
   };
@@ -85,8 +103,7 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   );
 
   // Pre-compute copy button colors to avoid conditional hook calls
-  const copyButtonColor = useColorModeValue("gray.600", "gray.300");
-  const copyButtonHoverColor = useColorModeValue("gray.800", "white");
+
 
   const bubbleBg   = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
@@ -143,23 +160,63 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
                 </Text>
 
                 {!isLoad && !isError && (
-                  <Tooltip label={hasCopied ? "Copied!" : "Copy message"} hasArrow>
+                  <Tooltip label={m.isPinned ? "Unpin message" : "Pin message"} hasArrow>
                     <IconButton
-                      aria-label="Copy message"
-                      icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
+                      aria-label={m.isPinned ? "Unpin message" : "Pin message"}
+                      icon={m.isPinned ? <PiPushPinSimpleFill /> : <PiPushPinSimpleThin />}
                       size="sm"
                       variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleCopy();
+                        handlePin();
                       }}
-                      color={copyButtonColor}
-                      _hover={{ color: copyButtonHoverColor }}
+                      color={m.isPinned ? "blue.500" : useColorModeValue("gray.500", "gray.400")}
+                      _hover={{
+                        color: m.isPinned ? "blue.600" : useColorModeValue("gray.700", "gray.200"),
+                        transform: "scale(1.1)"
+                      }}
+                      transition="all 0.2s ease"
                     />
                   </Tooltip>
                 )}
               </HStack>
+            </>
+          )}
 
+          {/* User message header with save prompt button */}
+          {isUser && (
+            <HStack justify="space-between" align="center" mb={2}>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color="whiteAlpha.800"
+              >
+                You
+              </Text>
+
+              <Tooltip label="Save as prompt" hasArrow>
+                <IconButton
+                  aria-label="Save as prompt"
+                  icon={<PiBookmarkBold />}
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSavePrompt();
+                  }}
+                  color="whiteAlpha.700"
+                  _hover={{
+                    color: "white",
+                    transform: "scale(1.1)"
+                  }}
+                  transition="all 0.2s ease"
+                />
+              </Tooltip>
+            </HStack>
+          )}
+
+          {!isUser && (
+            <>
               {/* provider badges */}
               <HStack spacing={4} mb={5} opacity={0.85}>
                 {Object.entries(logoMap).map(([key, { icon, label }]) => (
@@ -224,6 +281,17 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
           )}
         </VStack>
       </MotionBox>
+
+      {/* Save Prompt Modal */}
+      {isUser && (
+        <SavePromptModal
+          isOpen={isSavePromptOpen}
+          onClose={onSavePromptClose}
+          onSave={handlePromptSaved}
+          initialContent={m.text}
+          initialTitle=""
+        />
+      )}
     </Box>
   );
 });
