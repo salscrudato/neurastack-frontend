@@ -16,7 +16,6 @@ import {
   StatHelpText,
 } from '@chakra-ui/react';
 import {
-  PiHeartBold,
   PiTargetBold,
   PiTrophyBold,
   PiPlayBold,
