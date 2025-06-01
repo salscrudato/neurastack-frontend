@@ -3,7 +3,7 @@
  * ---------------------------------------------------------------------------
  * Tiny, typed wrapper around the Neurastack backend.
  *  – Reads the base‑url from Vite env and falls back to prod Cloud‑Run URL.
- *  – Aborts after 30 s by default (browser‑side timeout).
+ *  – Aborts after 30s by default (browser‑side timeout).
  *  – Surfaces JSON errors as real `Error` objects (so callers can catch).
  * ---------------------------------------------------------------------------
  */

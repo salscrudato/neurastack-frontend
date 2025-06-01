@@ -44,6 +44,8 @@ export function Header() {
       return { text: 'APPS', destination: '/chat', fontSize: { base: "md", md: "lg" } };
     } else if (path.startsWith('/apps/neuratask')) {
       return { text: 'neuratask', destination: '/apps', fontSize: { base: "sm", md: "md" } };
+    } else if (path.startsWith('/apps/neurafit')) {
+      return { text: 'neurafit', destination: '/apps', fontSize: { base: "sm", md: "md" } };
     } else if (path.startsWith('/apps/')) {
       // For other apps, extract app name from path
       const appName = path.split('/')[2];

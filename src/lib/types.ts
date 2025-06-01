@@ -141,3 +141,35 @@ export interface TravelApiResponse<T> {
     totalResults: number;
   };
 }
+
+// Fitness types
+export interface FitnessProfile {
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  goals: string[];
+  equipment: string[];
+  timeAvailability: {
+    daysPerWeek: number;
+    minutesPerSession: number;
+  };
+  completedOnboarding: boolean;
+}
+
+export interface WorkoutPlan {
+  id: string;
+  name: string;
+  description: string;
+  duration: number; // in minutes
+  exercises: Exercise[];
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+}
+
+export interface Exercise {
+  id: string;
+  name: string;
+  description: string;
+  sets?: number;
+  reps?: number;
+  duration?: number; // in seconds
+  restTime?: number; // in seconds
+  equipment?: string[];
+}

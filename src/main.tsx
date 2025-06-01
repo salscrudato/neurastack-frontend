@@ -15,6 +15,7 @@ const AppStorePage = React.lazy(() => import('./pages/AppStorePage'));
 const NeurataskPage = React.lazy(() => import('./pages/NeurataskPage'));
 const NeuraplannerPage = React.lazy(() => import('./pages/NeuraplannerPage'));
 const NeuraPromptsPage = React.lazy(() => import('./pages/NeuraPromptsPage'));
+const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
 
 // Create router with proper nested routes
 const router = createBrowserRouter([
@@ -68,6 +69,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader message="Loading NeuraPrompts..." />}>
             <NeuraPromptsPage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'apps/neurafit',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
+            <NeuraFitPage />
           </Suspense>
         )
       },

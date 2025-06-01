@@ -2,7 +2,7 @@ import {
   Box, Text, VStack, Grid, GridItem,
   useColorModeValue, Icon, Badge
 } from '@chakra-ui/react';
-import { PiCheckSquareOffsetBold, PiNewspaperLight, PiAirplaneBold, PiBookmarksBold } from 'react-icons/pi';
+import { PiCheckSquareOffsetBold, PiNewspaperLight, PiAirplaneBold, PiBookmarksBold, PiHeartBold } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../components/AppShell';
 
@@ -21,12 +21,20 @@ export default function AppStorePage() {
   // App data
   const apps = [
     {
+      id: 'neurafit',
+      name: 'neurafit',
+      description: 'AI-powered fitness tracking',
+      icon: PiHeartBold,
+      route: '/apps/neurafit',
+      available: true,
+    },
+    {
       id: 'neuratask',
       name: 'neuratask',
       description: 'AI-powered task management',
       icon: PiCheckSquareOffsetBold,
       route: '/apps/neuratask',
-      available: true,
+      available: false,
     },
     {
       id: 'neuraplanner',
@@ -34,7 +42,7 @@ export default function AppStorePage() {
       description: 'AI-powered trip planning',
       icon: PiAirplaneBold,
       route: '/apps/neuraplanner',
-      available: true,
+      available: false,
     },
     {
       id: 'neuraprompts',
@@ -42,7 +50,7 @@ export default function AppStorePage() {
       description: 'Reusable prompt library',
       icon: PiBookmarksBold,
       route: '/apps/neuraprompts',
-      available: true,
+      available: false,
     },
     {
       id: 'neuranews',
