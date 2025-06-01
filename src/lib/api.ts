@@ -8,10 +8,29 @@
  * ---------------------------------------------------------------------------
  */
 
+// Version info - print to console on load
+const VERSION = `v_final_${new Date().toLocaleString('en-US', {
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false
+}).replace(/[\/\s:]/g, '_')}`;
+
+console.log(`🚀 Neurastack Frontend API Module ${VERSION} loaded successfully!`);
+
 export interface SubAnswer {
-  model: string;            // "openai"
-  version: string;          // "gpt-4"
+  model: string;            // Full model key like "openai:gpt-4"
   answer: string;
+  role?: string;            // Role in ensemble mode (e.g., "Scientific Analyst")
+}
+
+export interface EnsembleMetadata {
+  scientificAnalyst?: string;
+  creativeAdvisor?: string;
+  devilsAdvocate?: string;
+  executionTime?: number;
 }
 
 export interface StackResponse {
@@ -19,6 +38,9 @@ export interface StackResponse {
   answers?: SubAnswer[];                       // per‑model answers (optional for backward compatibility)
   modelsUsed: Record<string, boolean>;         // e.g. { 'openai:gpt-4': true }
   fallbackReasons?: Record<string, string>;    // key → reason (optional for backward compatibility)
+  executionTime?: string;                      // execution time in milliseconds
+  ensembleMode?: boolean;                      // whether ensemble mode was used
+  ensembleMetadata?: EnsembleMetadata;         // detailed ensemble breakdown
 }
 
 export interface ApiError extends Error {
@@ -131,7 +153,10 @@ function validateAndSanitizeResponse(data: any): StackResponse {
     answer: sanitizedAnswer,
     answers: Array.isArray(data.answers) ? data.answers : [],
     modelsUsed: data.modelsUsed && typeof data.modelsUsed === 'object' ? data.modelsUsed : {},
-    fallbackReasons: data.fallbackReasons && typeof data.fallbackReasons === 'object' ? data.fallbackReasons : {}
+    fallbackReasons: data.fallbackReasons && typeof data.fallbackReasons === 'object' ? data.fallbackReasons : {},
+    executionTime: typeof data.executionTime === 'string' ? data.executionTime : undefined,
+    ensembleMode: typeof data.ensembleMode === 'boolean' ? data.ensembleMode : undefined,
+    ensembleMetadata: data.ensembleMetadata && typeof data.ensembleMetadata === 'object' ? data.ensembleMetadata : undefined
   };
 
   return validatedResponse;
@@ -149,7 +174,8 @@ function logResponseStructure(data: StackResponse, responseTime: number): void {
   if (data.answers && data.answers.length > 0) {
     console.group(`🔍 Model Breakdown`);
     data.answers.forEach((subAnswer, index) => {
-      console.log(`${index + 1}. ${subAnswer.model}:${subAnswer.version} - ${subAnswer.answer.length} chars`);
+      const roleInfo = subAnswer.role ? ` (${subAnswer.role})` : '';
+      console.log(`${index + 1}. ${subAnswer.model}${roleInfo} - ${subAnswer.answer.length} chars`);
     });
     console.groupEnd();
   }
@@ -169,14 +195,16 @@ function logResponseStructure(data: StackResponse, responseTime: number): void {
  * POST /api/query
  *
  * @param prompt  – user’s natural‑language question
+ * @param useEnsemble – whether to use ensemble mode (default false)
  * @param timeout – ms to abort on the client‑side (default 30 s)
  */
 export async function queryStack(
   prompt: string,
+  useEnsemble = false,
   timeout = 30_000
 ): Promise<StackResponse> {
   // Check for cached request
-  const cacheKey = `${prompt}-${MODELS.join(',')}`;
+  const cacheKey = `${prompt}-${MODELS.join(',')}-${useEnsemble}`;
   const cachedRequest = requestCache.get(cacheKey);
 
   if (cachedRequest) {
@@ -189,7 +217,7 @@ export async function queryStack(
   }
 
   // Create new request
-  const requestPromise = executeQuery(prompt, timeout);
+  const requestPromise = executeQuery(prompt, useEnsemble, timeout);
 
   // Cache the request promise
   requestCache.set(cacheKey, requestPromise);
@@ -202,7 +230,7 @@ export async function queryStack(
   return requestPromise;
 }
 
-async function executeQuery(prompt: string, timeout: number): Promise<StackResponse> {
+async function executeQuery(prompt: string, useEnsemble: boolean, timeout: number): Promise<StackResponse> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeout);
   const startTime = Date.now();
@@ -219,7 +247,7 @@ async function executeQuery(prompt: string, timeout: number): Promise<StackRespo
         "Content-Type": "application/json",
         "X-Request-ID": crypto.randomUUID(), // For request tracking
       },
-      body: JSON.stringify({ prompt, models: MODELS }),
+      body: JSON.stringify({ prompt, models: MODELS, useEnsemble }),
       signal: ctrl.signal,
     });
 

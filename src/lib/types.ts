@@ -10,13 +10,23 @@ export interface ChatRequest {
   prompt: string;
   /** Array of fully‑qualified model keys, e.g. "openai:gpt-4" */
   models: string[];
+  /** Whether to use ensemble mode */
+  useEnsemble?: boolean;
 }
 
 /** Per‑model answer as returned by the backend */
 export interface SubAnswer {
-  model: ModelProvider;   // "openai"
-  version: string;        // "gpt-4"
+  model: string;          // Full model key like "openai:gpt-4"
   answer: string;         // The model's native response
+  role?: string;          // Role in ensemble mode (e.g., "Scientific Analyst")
+}
+
+/** Ensemble metadata for detailed breakdown */
+export interface EnsembleMetadata {
+  scientificAnalyst?: string;
+  creativeAdvisor?: string;
+  devilsAdvocate?: string;
+  executionTime?: number;
 }
 
 /** Full backend payload */
@@ -29,6 +39,12 @@ export interface ChatResponse {
   modelsUsed: Record<string, boolean>;
   /** Reasons for any fallbacks */
   fallbackReasons: Record<string, string>;
+  /** Execution time in milliseconds */
+  executionTime?: string;
+  /** Whether ensemble mode was used */
+  ensembleMode?: boolean;
+  /** Detailed ensemble breakdown */
+  ensembleMetadata?: EnsembleMetadata;
 }
 
 /* ============================================================================

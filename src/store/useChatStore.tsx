@@ -71,6 +71,7 @@ export const useChatStore = create<ChatState>()(
             await saveMessageToFirebase(userMsg);
           } catch (error) {
             console.warn('Failed to save user message to Firebase:', error);
+            // Don't throw error - continue with local storage only
           }
         }
 
@@ -89,8 +90,8 @@ export const useChatStore = create<ChatState>()(
 
         while (retryCount <= MAX_RETRIES) {
           try {
-            // Call API
-            const response = await queryStack(text);
+            // Call API with ensemble mode enabled
+            const response = await queryStack(text, true);
             const responseTime = Date.now() - startTime;
 
             // Validate response before processing
@@ -117,7 +118,11 @@ export const useChatStore = create<ChatState>()(
               metadata: {
                 models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
                 responseTime,
-                retryCount
+                retryCount,
+                executionTime: response.executionTime,
+                ensembleMode: response.ensembleMode,
+                ensembleMetadata: response.ensembleMetadata,
+                answers: response.answers // Store individual model answers
               }
             };
 
@@ -135,6 +140,7 @@ export const useChatStore = create<ChatState>()(
                 await saveMessageToFirebase(assistantMsg);
               } catch (error) {
                 console.warn('Failed to save assistant message to Firebase:', error);
+                // Don't throw error - continue with local storage only
               }
             }
 

@@ -6,6 +6,7 @@ import {
   VStack,
   Text,
   OrderedList,
+  UnorderedList,
   ListItem,
   IconButton,
   Tooltip,
@@ -306,6 +307,9 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
                   components={{
                     ol: ({ node, ...props }) => (
                       <OrderedList pl={4} spacing={1} {...props} />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <UnorderedList pl={4} spacing={1} {...props} />
                     ),
                     li: ({ node, ...props }) => <ListItem {...props} />,
                   }}

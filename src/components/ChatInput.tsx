@@ -77,6 +77,11 @@ export default function ChatInput() {
   const pageBg   = useColorModeValue("#f5f5f7", "#1c1c1e");
   const btnBg    = useColorModeValue("gray.100", "gray.700");
   const btnHover = useColorModeValue("gray.200", "gray.600");
+  const charCountColor = useColorModeValue("gray.400", "gray.500");
+  const borderTopColor = useColorModeValue("gray.200", "gray.700");
+  const hoverBorderColor = useColorModeValue("gray.400", "gray.500");
+  const placeholderColor = useColorModeValue("gray.500", "gray.400");
+  const textColor = useColorModeValue("gray.800", "gray.100");
 
   return (
     <Box
@@ -85,7 +90,7 @@ export default function ChatInput() {
       py={4}
       bg={pageBg}
       borderTopWidth="1px"
-      borderColor={useColorModeValue("gray.200", "gray.700")}
+      borderColor={borderTopColor}
     >
       <InputGroup
         w="full"
@@ -103,7 +108,7 @@ export default function ChatInput() {
           transform: "translateY(-1px)",
         }}
         _hover={{
-          borderColor: useColorModeValue("gray.400", "gray.500"),
+          borderColor: hoverBorderColor,
         }}
       >
         <Textarea
@@ -124,8 +129,8 @@ export default function ChatInput() {
           minH="3rem"
           maxH="6.5rem"
           resize="none"
-          _placeholder={{ color: useColorModeValue("gray.500", "gray.400") }}
-          color={useColorModeValue("gray.800", "gray.100")}
+          _placeholder={{ color: placeholderColor }}
+          color={textColor}
           aria-label="Message to Neurastack"
           pr="6rem"
           borderColor={charCount > MAX_CHARS ? "red.400" : "transparent"}
@@ -155,7 +160,7 @@ export default function ChatInput() {
                   </Text>
                   <Text
                     fontSize="xs"
-                    color={charCount > MAX_CHARS ? "red.400" : useColorModeValue("gray.400", "gray.500")}
+                    color={charCount > MAX_CHARS ? "red.400" : charCountColor}
                     fontWeight="500"
                     lineHeight="1"
                     opacity={charCount > 0 ? 1 : 0}

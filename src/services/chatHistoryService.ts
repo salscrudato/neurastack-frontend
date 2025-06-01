@@ -35,18 +35,27 @@ export async function saveMessageToFirebase(message: Message): Promise<void> {
     throw new Error('User must be authenticated to save messages');
   }
 
-  const userId = auth.currentUser.uid;
-  const messagesRef = collection(db, 'users', userId, 'chatMessages');
+  try {
+    const userId = auth.currentUser.uid;
+    const messagesRef = collection(db, 'users', userId, 'chatMessages');
 
-  const messageData: Omit<StoredMessage, 'id'> = {
-    role: message.role,
-    text: message.text,
-    timestamp: serverTimestamp() as Timestamp,
-    userId,
-    metadata: message.metadata
-  };
+    const messageData: Omit<StoredMessage, 'id'> = {
+      role: message.role,
+      text: message.text,
+      timestamp: serverTimestamp() as Timestamp,
+      userId,
+      metadata: message.metadata
+    };
 
-  await addDoc(messagesRef, messageData);
+    await addDoc(messagesRef, messageData);
+  } catch (error) {
+    console.error('Firebase save error:', error);
+    // Re-throw with more context
+    if (error instanceof Error) {
+      throw new Error(`Failed to save message to Firebase: ${error.message}`);
+    }
+    throw new Error('Failed to save message to Firebase: Unknown error');
+  }
 }
 
 /**
