@@ -1,7 +1,6 @@
 import {
   Box,
   HStack,
-  Icon,
   SkeletonText,
   useColorModeValue,
   VStack,
@@ -13,12 +12,14 @@ import {
   useToast,
   useDisclosure,
 } from "@chakra-ui/react";
-import { useState, memo } from "react";
+import { useState, memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { PiWarningBold, PiBookmarkBold } from "react-icons/pi";
+import { PiBookmarkBold } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
 import SavePromptModal from "./NeuraPrompts/SavePromptModal";
+import ResponseErrorBoundary from "./ResponseErrorBoundary";
+import ErrorMessage from "./ErrorMessage";
 
 // provider logos (SVGS now next to this file)
 import gptLogo   from "./openai.svg";
@@ -64,6 +65,35 @@ const formatTimestamp = (timestamp: number): string => {
   return date.toLocaleString('en-US', options);
 };
 
+// Sanitize and validate message content
+function sanitizeMessageContent(text: string): string {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  // Remove potentially harmful content while preserving markdown
+  return text
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocols
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .trim();
+}
+
+// Log message rendering for debugging
+function logMessageRender(message: Message): void {
+  if (process.env.NODE_ENV === 'development') {
+    console.group(`💬 Rendering Message`);
+    console.log(`🆔 ID: ${message.id}`);
+    console.log(`👤 Role: ${message.role}`);
+    console.log(`📝 Content Length: ${message.text?.length || 0} characters`);
+    console.log(`⏰ Timestamp: ${new Date(message.timestamp).toLocaleTimeString()}`);
+    if (message.metadata) {
+      console.log(`📊 Metadata:`, message.metadata);
+    }
+    console.groupEnd();
+  }
+}
+
 const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const [expanded, setExpanded] = useState(false);
   const toggleExpand = () => setExpanded((prev) => !prev);
@@ -73,6 +103,19 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const isUser  = m.role === "user";
   const isError = m.role === "error";
   const isLoad  = !m.text;
+
+  // Sanitize message content
+  const sanitizedContent = useMemo(() => {
+    if (!m.text) return '';
+    const sanitized = sanitizeMessageContent(m.text);
+
+    // Log message rendering in development
+    if (process.env.NODE_ENV === 'development' && !isLoad) {
+      logMessageRender(m);
+    }
+
+    return sanitized;
+  }, [m.text, m.id, isLoad]);
 
 
 
@@ -230,21 +273,46 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
             {isLoad ? (
               <SkeletonText noOfLines={3} skeletonHeight="3" />
             ) : isError ? (
-              <HStack>
-                <Icon as={PiWarningBold} color={textErr} />
-                <Box>{m.text}</Box>
-              </HStack>
+              <ErrorMessage
+                message={sanitizedContent || 'An error occurred'}
+                metadata={m.metadata}
+                onRetry={() => {
+                  // Could implement retry logic here
+                  toast({
+                    title: "Retry functionality",
+                    description: "Please send your message again",
+                    status: "info",
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }}
+                showRetryButton={false} // Don't show retry for now
+              />
             ) : (
-              <ReactMarkdown
-                components={{
-                  ol: ({ node, ...props }) => (
-                    <OrderedList pl={4} spacing={1} {...props} />
-                  ),
-                  li: ({ node, ...props }) => <ListItem {...props} />,
+              <ResponseErrorBoundary
+                fallback={
+                  <Box p={3} bg="red.50" borderRadius="md" border="1px solid" borderColor="red.200">
+                    <Text fontSize="sm" color="red.600">
+                      Unable to display this response safely. Content may be corrupted.
+                    </Text>
+                  </Box>
+                }
+                onError={(error, errorInfo) => {
+                  console.error('ChatMessage render error:', error, errorInfo);
+                  // Could send to error tracking service here
                 }}
               >
-                {m.text}
-              </ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    ol: ({ node, ...props }) => (
+                      <OrderedList pl={4} spacing={1} {...props} />
+                    ),
+                    li: ({ node, ...props }) => <ListItem {...props} />,
+                  }}
+                >
+                  {sanitizedContent}
+                </ReactMarkdown>
+              </ResponseErrorBoundary>
             )}
           </Box>
 

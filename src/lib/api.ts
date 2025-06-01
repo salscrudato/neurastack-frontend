@@ -95,6 +95,76 @@ const MODELS = [
   "xai:grok-3-mini",
 ];
 
+// Response validation and sanitization
+function validateAndSanitizeResponse(data: any): StackResponse {
+  // Validate core structure
+  if (!data || typeof data !== 'object') {
+    throw createUserFriendlyError(
+      new Error('Invalid response format from server'),
+      undefined
+    );
+  }
+
+  // Validate and sanitize answer field
+  if (!data.answer || typeof data.answer !== 'string') {
+    throw createUserFriendlyError(
+      new Error('Invalid response structure from server'),
+      undefined
+    );
+  }
+
+  // Sanitize answer text - remove potential harmful content
+  const sanitizedAnswer = data.answer
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocols
+    .trim();
+
+  if (!sanitizedAnswer) {
+    throw createUserFriendlyError(
+      new Error('Empty response from server'),
+      undefined
+    );
+  }
+
+  // Ensure backward compatibility and validate other fields
+  const validatedResponse: StackResponse = {
+    answer: sanitizedAnswer,
+    answers: Array.isArray(data.answers) ? data.answers : [],
+    modelsUsed: data.modelsUsed && typeof data.modelsUsed === 'object' ? data.modelsUsed : {},
+    fallbackReasons: data.fallbackReasons && typeof data.fallbackReasons === 'object' ? data.fallbackReasons : {}
+  };
+
+  return validatedResponse;
+}
+
+// Clean console logging for response structure
+function logResponseStructure(data: StackResponse, responseTime: number): void {
+  console.group(`📦 Response Structure Analysis`);
+  console.log(`📝 Answer Length: ${data.answer.length} characters`);
+  console.log(`🤖 Models Used: ${Object.keys(data.modelsUsed).length > 0 ? Object.keys(data.modelsUsed).join(', ') : 'None'}`);
+  console.log(`📊 Sub-answers: ${data.answers?.length || 0}`);
+  console.log(`⚠️  Fallbacks: ${Object.keys(data.fallbackReasons || {}).length}`);
+  console.log(`⏱️  Total Processing: ${responseTime}ms`);
+
+  if (data.answers && data.answers.length > 0) {
+    console.group(`🔍 Model Breakdown`);
+    data.answers.forEach((subAnswer, index) => {
+      console.log(`${index + 1}. ${subAnswer.model}:${subAnswer.version} - ${subAnswer.answer.length} chars`);
+    });
+    console.groupEnd();
+  }
+
+  if (Object.keys(data.fallbackReasons || {}).length > 0) {
+    console.group(`⚠️  Fallback Reasons`);
+    Object.entries(data.fallbackReasons || {}).forEach(([model, reason]) => {
+      console.log(`${model}: ${reason}`);
+    });
+    console.groupEnd();
+  }
+
+  console.groupEnd();
+}
+
 /**
  * POST /api/query
  *
@@ -155,13 +225,14 @@ async function executeQuery(prompt: string, timeout: number): Promise<StackRespo
 
     const responseTime = Date.now() - startTime;
 
-    // Log performance metrics
+    // Enhanced logging with clean formatting
     if (process.env.NODE_ENV === 'development') {
-      console.log(`API Request completed in ${responseTime}ms`, {
-        status: res.status,
-        url: res.url,
-        prompt: prompt.slice(0, 50) + '...',
-      });
+      console.group(`🚀 API Request Completed`);
+      console.log(`⏱️  Response Time: ${responseTime}ms`);
+      console.log(`📊 Status: ${res.status}`);
+      console.log(`🎯 Endpoint: ${res.url}`);
+      console.log(`💬 Prompt: "${prompt.slice(0, 50)}${prompt.length > 50 ? '...' : ''}"`);
+      console.groupEnd();
     }
 
     if (!res.ok) {
@@ -203,30 +274,30 @@ async function executeQuery(prompt: string, timeout: number): Promise<StackRespo
       );
     }
 
-    // Validate response structure
-    if (!data.answer || typeof data.answer !== 'string') {
-      throw createUserFriendlyError(
-        new Error('Invalid response structure from server'),
-        undefined
-      );
+    // Enhanced response validation and sanitization
+    const validatedData = validateAndSanitizeResponse(data);
+
+    // Log clean response structure in development
+    if (process.env.NODE_ENV === 'development') {
+      logResponseStructure(validatedData, responseTime);
     }
 
-    // Ensure backward compatibility by adding missing fields if needed
-    if (!data.answers) {
-      data.answers = [];
-    }
-    if (!data.fallbackReasons) {
-      data.fallbackReasons = {};
-    }
-
-    return data;
+    return validatedData;
 
   } catch (error: any) {
     const responseTime = Date.now() - startTime;
 
-    // Log errors in development
+    // Enhanced error logging
     if (process.env.NODE_ENV === 'development') {
-      console.error(`API Request failed after ${responseTime}ms:`, error);
+      console.group(`❌ API Request Failed`);
+      console.log(`⏱️  Failed after: ${responseTime}ms`);
+      console.log(`🔍 Error Type: ${error.name || 'Unknown'}`);
+      console.log(`💬 Error Message: ${error.message || 'No message'}`);
+      console.log(`🔄 Retryable: ${error.retryable ? 'Yes' : 'No'}`);
+      if (error.status) {
+        console.log(`📊 HTTP Status: ${error.status}`);
+      }
+      console.groupEnd();
     }
 
     // Re-throw user-friendly errors as-is

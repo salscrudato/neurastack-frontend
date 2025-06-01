@@ -19,6 +19,9 @@ export interface Message {
     models?: string[];
     responseTime?: number;
     retryCount?: number;
+    totalTime?: number;
+    errorType?: string;
+    [key: string]: any;
   };
 }
 
@@ -90,6 +93,21 @@ export const useChatStore = create<ChatState>()(
             const response = await queryStack(text);
             const responseTime = Date.now() - startTime;
 
+            // Validate response before processing
+            if (!response || !response.answer) {
+              throw new Error('Invalid response structure received');
+            }
+
+            // Log successful response in development
+            if (process.env.NODE_ENV === 'development') {
+              console.group(`✅ Chat Response Received`);
+              console.log(`⏱️  Total Time: ${responseTime}ms`);
+              console.log(`📝 Response Length: ${response.answer.length} characters`);
+              console.log(`🤖 Models: ${Object.keys(response.modelsUsed || {}).join(', ')}`);
+              console.log(`🔄 Retry Count: ${retryCount}`);
+              console.groupEnd();
+            }
+
             // Update with actual response
             const assistantMsg = {
               id: assistantId,
@@ -126,21 +144,38 @@ export const useChatStore = create<ChatState>()(
             retryCount++;
             set(() => ({ retryCount }));
 
+            // Enhanced error logging
+            if (process.env.NODE_ENV === 'development') {
+              console.group(`🔄 Chat Request Retry ${retryCount}/${MAX_RETRIES}`);
+              console.log(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              console.log(`⏱️  Attempt Duration: ${Date.now() - startTime}ms`);
+              console.log(`🔄 Next Action: ${retryCount > MAX_RETRIES ? 'Give up' : 'Retry'}`);
+              console.groupEnd();
+            }
+
             if (retryCount > MAX_RETRIES) {
-              // Final failure - show error message
+              // Final failure - show elegant error message
+              const errorMessage = error instanceof Error
+                ? error.message
+                : 'An unexpected error occurred';
+
               set(state => ({
                 messages: state.messages.filter(m => m.id !== assistantId).concat([{
                   id: nanoid(),
                   role: 'error',
-                  text: `Failed to get response: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+                  text: `Unable to get response: ${errorMessage}. Please try again.`,
                   timestamp: Date.now(),
-                  metadata: { retryCount: retryCount - 1 }
+                  metadata: {
+                    retryCount: retryCount - 1,
+                    totalTime: Date.now() - startTime,
+                    errorType: error instanceof Error ? error.name : 'Unknown'
+                  }
                 }]),
                 isLoading: false,
                 retryCount: 0
               }));
             } else {
-              // Wait before retry
+              // Wait before retry with exponential backoff
               await sleep(RETRY_DELAY * retryCount);
             }
           }
