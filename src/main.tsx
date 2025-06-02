@@ -108,13 +108,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </React.StrictMode>
 );
-
-// Register service worker for PWA install prompt support
-if ('serviceWorker' in navigator && !import.meta.env.DEV) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then(reg => console.log('Service worker registered:', reg.scope))
-      .catch(err => console.error('Service worker registration failed:', err));
-  });
-}

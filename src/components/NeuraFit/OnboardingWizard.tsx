@@ -83,7 +83,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
     <Box
       h="100%"
       bg={bgColor}
-      overflow="hidden"
+      overflow={{ base: "auto", md: "hidden" }}
+      style={{ WebkitOverflowScrolling: 'touch' }}
     >
       <Container
         maxW="md"

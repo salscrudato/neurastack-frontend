@@ -366,7 +366,12 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
   }
 
   return (
-    <VStack spacing={6} p={4} align="stretch" h="100%">
+    <Box
+      h="100%"
+      overflow={{ base: "auto", md: "auto" }}
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
+      <VStack spacing={6} p={4} align="stretch" minH="100%">
       {/* Workout Header */}
       <Card bg={bgColor} borderColor={borderColor}>
         <CardBody>
@@ -590,6 +595,7 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
           </Button>
         )}
       </VStack>
-    </VStack>
+      </VStack>
+    </Box>
   );
 }

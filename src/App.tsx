@@ -6,6 +6,8 @@ import AddToHomeButton from "./components/AddToHomeScreen";
 import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { Header } from "./components/Header";
+import UpdateNotification from "./components/UpdateNotification";
+import "./styles/mobile-scrolling.css";
 
 /* Enhanced page content transitions with static header */
 const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -113,6 +115,7 @@ export default function App() {
   return (
     <PageContentWrapper>
       <AddToHomeButton />
+      <UpdateNotification />
       <Suspense fallback={<Fallback />}>
         <Outlet />
       </Suspense>

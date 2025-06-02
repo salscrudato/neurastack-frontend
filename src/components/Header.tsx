@@ -5,12 +5,14 @@ import {
   HStack, Icon
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon }   from '@chakra-ui/icons';
-import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise } from 'react-icons/pi';
+import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise, PiDownloadBold } from 'react-icons/pi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
 import { BrandLogo } from './BrandLogo';
+import { useManualUpdateCheck } from './UpdateNotification';
+import { forceRefresh } from '../utils/updateManager';
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -20,6 +22,7 @@ export function Header() {
   const user = useAuthStore(s => s.user);
 
   const toast = useToast();
+  const { checkForUpdates, isChecking } = useManualUpdateCheck();
 
   const gray = useColorModeValue('gray.600','gray.300');
   const grayHover = useColorModeValue('gray.700','white');
@@ -78,6 +81,38 @@ export function Header() {
   };
 
   const isGuest = user?.isAnonymous;
+
+  const handleUpdateCheck = async () => {
+    try {
+      await checkForUpdates();
+      toast({
+        title: "Update Check Complete",
+        description: "Checked for latest version",
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Update Check Failed",
+        description: "Please try again later",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleForceRefresh = () => {
+    toast({
+      title: "Refreshing App",
+      description: "Clearing cache and reloading...",
+      status: "info",
+      duration: 2000,
+      isClosable: true,
+    });
+    setTimeout(() => forceRefresh(), 1000);
+  };
 
   return (
     <Flex
@@ -210,6 +245,27 @@ export function Header() {
             <HStack>
               {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
               <Text>Switch to {colorMode === 'light' ? 'dark' : 'light'} mode</Text>
+            </HStack>
+          </MenuItem>
+
+          <MenuItem
+            onClick={handleUpdateCheck}
+            color={grayHover}
+            isDisabled={isChecking}
+            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            <HStack>
+              <PiDownloadBold />
+              <Text>{isChecking ? 'Checking...' : 'Check for Updates'}</Text>
+            </HStack>
+          </MenuItem>
+
+          <MenuItem
+            onClick={handleForceRefresh}
+            color={grayHover}
+            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            <HStack>
+              <PiArrowsClockwise />
+              <Text>Force Refresh</Text>
             </HStack>
           </MenuItem>
 

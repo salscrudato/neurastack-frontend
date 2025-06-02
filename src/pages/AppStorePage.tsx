@@ -132,12 +132,21 @@ export default function AppStorePage() {
 
   return (
     <AppShell>
-      <Box h="100%" bg={bgColor} pos="relative">
+      <Box
+        h="100%"
+        bg={bgColor}
+        pos="relative"
+        overflow={{ base: "auto", md: "auto" }}
+        style={{ WebkitOverflowScrolling: 'touch' }}
+        data-testid="page-content"
+        className="mobile-scroll-container"
+      >
         <Box
           maxW="6xl"
           mx="auto"
           px={{ base: 4, md: 6, lg: 8 }}
           py={{ base: 6, md: 8 }}
+          minH="100%"
         >
           {/* Header Section */}
           <VStack spacing={6} align="center" mb={8}>

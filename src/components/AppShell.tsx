@@ -66,7 +66,14 @@ export function AppShell({ children, showBack = false, title, rightActions }: Ap
       )}
 
       {/* Body */}
-      <Box flex="1" overflow="hidden">
+      <Box
+        flex="1"
+        overflow={{ base: "auto", md: "hidden" }}
+        position="relative"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+        data-testid="app-shell-body"
+        className="mobile-scroll-container"
+      >
         {children}
       </Box>
     </Flex>

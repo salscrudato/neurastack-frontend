@@ -1,0 +1,108 @@
+/* Mobile Scrolling Fixes */
+
+/* Ensure proper touch scrolling on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for mobile viewport height issues */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Ensure scrollable containers work properly on mobile */
+.mobile-scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Fix for iOS Safari scrolling issues */
+@supports (-webkit-touch-callout: none) {
+  .mobile-scroll-container {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Prevent horizontal scrolling on mobile */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Fix for Android Chrome scrolling */
+@media screen and (max-width: 768px) {
+  .chakra-container,
+  .chakra-stack,
+  .chakra-box {
+    overflow-x: hidden;
+  }
+  
+  /* Ensure proper scrolling for main content areas */
+  [data-testid="app-shell-body"],
+  [data-testid="page-content"] {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+}
+
+/* Fix for momentum scrolling on iOS */
+.ios-momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+}
+
+/* Prevent zoom on input focus (iOS Safari) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Fix for sticky elements on mobile */
+@media screen and (max-width: 768px) {
+  .mobile-sticky-fix {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+}
+
+/* Ensure proper touch targets */
+@media screen and (max-width: 768px) {
+  button,
+  .chakra-button,
+  .chakra-icon-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Fix for 100vh issues on mobile browsers */
+.mobile-full-height {
+  height: 100vh;
+  height: -webkit-fill-available;
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Fix for overscroll behavior */
+body {
+  overscroll-behavior: none;
+}
+
+/* Prevent pull-to-refresh on mobile */
+body {
+  overscroll-behavior-y: contain;
+}

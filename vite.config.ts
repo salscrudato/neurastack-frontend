@@ -30,7 +30,7 @@ export default defineConfig({
       brotliSize: true,
     }),
     VitePWA({
-      registerType: "prompt", // Controls when the service worker registration prompt is shown
+      registerType: "autoUpdate", // Automatically update when new version is available
       includeAssets: [
         // Static assets to include in the service worker cache
         "favicon.svg",
@@ -42,7 +42,7 @@ export default defineConfig({
         name: "neurastack",
         short_name: "neurastack",
         description: "AI-powered chat assistant by neurastack",
-        theme_color: "#ffffff",
+        theme_color: "#4F9CF9",
         background_color: "#ffffff",
         display: "standalone", // App runs in its own window without browser UI
         start_url: "/",         // Start page when the app is launched
@@ -59,15 +59,44 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         cleanupOutdatedCaches: true,
+        skipWaiting: true, // Immediately activate new service worker
+        clientsClaim: true, // Take control of all clients immediately
+        // More aggressive caching strategy for faster updates
         runtimeCaching: [
           {
+            // Cache API responses with network-first strategy
+            urlPattern: /^https:\/\/api\./,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutes
+              },
+              networkTimeoutSeconds: 3
+            }
+          },
+          {
+            // Cache fonts with cache-first strategy
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // <== 365 days
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days (reduced from 365)
+              }
+            }
+          },
+          {
+            // Cache images with cache-first strategy
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
               }
             }
           }

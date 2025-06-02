@@ -64,8 +64,14 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
   };
 
   return (
-    <Box h="100%" bg={bgColor} overflow="auto">
-      <VStack spacing={6} p={{ base: 4, md: 6 }} maxW="4xl" mx="auto">
+    <Box
+      h="100%"
+      bg={bgColor}
+      overflow={{ base: "auto", md: "auto" }}
+      position="relative"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
+      <VStack spacing={6} p={{ base: 4, md: 6 }} maxW="4xl" mx="auto" minH="100%">
         {/* Welcome header */}
         <VStack spacing={2} textAlign="center" w="100%">
           <Text fontSize="2xl" fontWeight="bold" color={textColor}>

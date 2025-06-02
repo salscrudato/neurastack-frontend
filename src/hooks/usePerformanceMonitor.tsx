@@ -16,10 +16,10 @@ interface PerformanceConfig {
 
 export function usePerformanceMonitor(config: PerformanceConfig = {}) {
   const {
-    enableFPSMonitoring = true,
-    enableMemoryMonitoring = true,
-    enableRenderTimeMonitoring = true,
-    reportingInterval = 5000, // 5 seconds
+    enableFPSMonitoring = false, // Disabled by default to reduce overhead
+    enableMemoryMonitoring = false, // Disabled by default to reduce overhead
+    enableRenderTimeMonitoring = false, // Disabled by default to reduce overhead
+    reportingInterval = 30000, // Increased to 30 seconds to reduce frequency
   } = config;
 
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
