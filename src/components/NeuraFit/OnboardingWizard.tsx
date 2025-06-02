@@ -1,6 +1,5 @@
 import {
   Box,
-  VStack,
   useColorModeValue,
   Container,
 } from '@chakra-ui/react';
@@ -81,72 +80,87 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
 
   return (
     <Box
-      h="100%"
+      minH="100vh"
       bg={bgColor}
-      overflow={{ base: "auto", md: "hidden" }}
+      overflow="visible"
+      position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
+      className="neurafit-onboarding-container"
     >
       <Container
         maxW="md"
-        h="100%"
-        py={{ base: 4, md: 8 }}
+        minH="100vh"
+        py={{ base: 6, md: 8 }}
         px={{ base: 4, md: 6 }}
+        display="flex"
+        flexDirection="column"
       >
-        <VStack spacing={6} h="100%" justify="center">
-          {/* Progress indicator */}
+        {/* Progress indicator - fixed at top */}
+        <Box
+          position="sticky"
+          top={0}
+          zIndex={10}
+          bg={bgColor}
+          py={4}
+          mb={6}
+          borderRadius="md"
+          boxShadow="sm"
+        >
           <ProgressIndicator
             currentStep={currentStep}
             totalSteps={totalSteps}
             stepLabels={stepLabels}
           />
+        </Box>
 
-          {/* Step content with animation */}
-          <Box
-            flex={1}
-            w="100%"
-            position="relative"
-            overflow="hidden"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <AnimatePresence mode="wait" custom={currentStep}>
-              <MotionBox
-                key={currentStep}
-                custom={currentStep}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 }
-                }}
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                dragElastic={1}
-                onDragEnd={(_, { offset, velocity }) => {
-                  const swipe = swipePower(offset.x, velocity.x);
+        {/* Step content with animation - scrollable */}
+        <Box
+          flex={1}
+          w="100%"
+          position="relative"
+          overflow="visible"
+          minH="calc(100vh - 200px)"
+          display="flex"
+          flexDirection="column"
+        >
+          <AnimatePresence mode="wait" custom={currentStep}>
+            <MotionBox
+              key={currentStep}
+              custom={currentStep}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={(_, { offset, velocity }) => {
+                const swipe = swipePower(offset.x, velocity.x);
 
-                  if (swipe < -swipeConfidenceThreshold && currentStep < totalSteps - 1) {
-                    handleNext();
-                  } else if (swipe > swipeConfidenceThreshold && currentStep > 0) {
-                    handlePrev();
-                  }
-                }}
-                w="100%"
-                h="100%"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <Box w="100%" maxW="400px">
-                  {renderStep()}
-                </Box>
-              </MotionBox>
-            </AnimatePresence>
-          </Box>
-        </VStack>
+                if (swipe < -swipeConfidenceThreshold && currentStep < totalSteps - 1) {
+                  handleNext();
+                } else if (swipe > swipeConfidenceThreshold && currentStep > 0) {
+                  handlePrev();
+                }
+              }}
+              w="100%"
+              minH="100%"
+              display="flex"
+              flexDirection="column"
+              justifyContent="flex-start"
+              alignItems="center"
+              py={4}
+            >
+              <Box w="100%" maxW="400px" flex={1}>
+                {renderStep()}
+              </Box>
+            </MotionBox>
+          </AnimatePresence>
+        </Box>
       </Container>
     </Box>
   );

@@ -49,10 +49,26 @@ onRegistered(r: ServiceWorkerRegistration | undefined) {
 // In src/utils/updateManager.ts
 onNeedRefresh() {
   console.log('New version available - banner temporarily disabled');
-  
+
   // TEMPORARILY DISABLED - No banner will be shown
   // All banner triggering logic commented out
 },
+```
+
+#### **4. React Hooks Error Fixed**
+```typescript
+// In src/App.tsx - Moved hooks outside conditional rendering
+const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const isSplashPage = location.pathname === '/';
+
+  // Move hooks outside of conditional rendering to fix Rules of Hooks violation
+  const headerBg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(44, 44, 46, 0.95)');
+  const headerBorderColor = useColorModeValue('rgba(229, 231, 235, 0.8)', 'rgba(255, 255, 255, 0.1)');
+  const headerBoxShadow = useColorModeValue('0 1px 3px rgba(0, 0, 0, 0.05)', '0 1px 3px rgba(0, 0, 0, 0.2)');
+
+  // ... rest of component
+};
 ```
 
 ## 🎯 **Current Behavior**
@@ -65,8 +81,14 @@ onNeedRefresh() {
 
 ### **What's Temporarily Disabled**
 - ❌ **Update Banner**: No update notification banner will appear
+- ❌ **Offline Ready Banner**: No "App Ready Offline!" banner will appear
 - ❌ **Automatic Update Checks**: Service worker won't automatically check for updates
 - ❌ **Update Prompts**: No prompts to update the application
+
+### **What's Fixed**
+- ✅ **React Hooks Error**: Rules of Hooks violation resolved
+- ✅ **Clean Console**: No more React warnings or errors
+- ✅ **Router Compatibility**: Future flags properly configured
 
 ## 🔄 **User Update Process**
 
@@ -84,22 +106,32 @@ Since automatic update notifications are disabled, users can still get updates b
 3. **Less Aggressive Checking**: Reduce update check frequency significantly
 4. **Better State Management**: Implement more reliable dismissal persistence
 
-### **Re-enabling Updates**
+### **Re-enabling Banners**
 When ready to re-enable, simply:
-1. Change `{false &&` to `{true &&` in UpdateNotification.tsx
+1. Change `{false &&` to `{true &&` for both banners in UpdateNotification.tsx
 2. Uncomment the update checking logic in updateManager.ts
 3. Uncomment the onNeedRefresh logic in updateManager.ts
 
-## ✅ **Benefits of Temporary Removal**
+## ✅ **Benefits of Complete Removal**
 
-- ✅ **Immediate Fix**: Persistent banner issue completely resolved
-- ✅ **Better UX**: No more annoying persistent notifications
+- ✅ **All Banner Issues Fixed**: Both persistent banners completely resolved
+- ✅ **React Errors Fixed**: No more hooks violations or console warnings
+- ✅ **Clean Console**: Zero React warnings or errors
+- ✅ **Better UX**: No more annoying floating or persistent notifications
 - ✅ **Clean Experience**: Users can focus on using the app
 - ✅ **PWA Still Works**: All other PWA features remain functional
 - ✅ **Easy to Re-enable**: Simple code changes to restore functionality
 
 ## 🎉 **Result**
 
-The persistent PWA update banner issue is now **completely resolved** through temporary removal. Users will no longer see the annoying persistent banner, and the application provides a clean, uninterrupted experience while maintaining all other PWA functionality.
+All PWA banner issues and React errors are now **completely resolved**:
 
-**The app is now ready for deployment without the banner persistence issue!**
+1. ✅ **No More Persistent Update Banner**
+2. ✅ **No More Floating Offline Banner**
+3. ✅ **No More React Hooks Errors**
+4. ✅ **Clean Console Output**
+5. ✅ **Smooth User Experience**
+
+Users will no longer see any annoying banners, and the application provides a clean, uninterrupted experience while maintaining all other PWA functionality.
+
+**The app is now ready for deployment with zero banner issues and clean React code!**

@@ -91,12 +91,12 @@ export default function NeuraFitPage() {
   return (
     <AppShell>
       <Box
-        h="100%"
-        overflow={{ base: "auto", md: "hidden" }}
+        minH="100vh"
+        overflow="visible"
         position="relative"
         style={{ WebkitOverflowScrolling: 'touch' }}
         data-testid="page-content"
-        className="mobile-scroll-container"
+        className="mobile-scroll-container neurafit-page-container"
       >
         {renderCurrentView()}
       </Box>

@@ -106,3 +106,80 @@ body {
 body {
   overscroll-behavior-y: contain;
 }
+
+/* Enhanced NeuraFit onboarding scrolling */
+.neurafit-onboarding-container {
+  /* Ensure proper scrolling on all mobile devices */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  /* Handle dynamic viewport height on mobile */
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+
+  /* Prevent horizontal scrolling */
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Mobile-specific fixes for NeuraFit */
+@media screen and (max-width: 768px) {
+  .neurafit-onboarding-container {
+    /* Use dynamic viewport units for better mobile support */
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+
+    /* Ensure content can scroll past viewport */
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* Fix for iOS Safari address bar */
+  @supports (-webkit-touch-callout: none) {
+    .neurafit-onboarding-container {
+      min-height: -webkit-fill-available;
+    }
+  }
+}
+
+/* Enhanced touch scrolling for goal selection */
+@media screen and (max-width: 768px) {
+  .chakra-wrap {
+    overflow: visible !important;
+  }
+
+  .chakra-wrap__list {
+    overflow: visible !important;
+    flex-wrap: wrap !important;
+  }
+}
+
+/* Ensure buttons are properly touchable */
+@media screen and (max-width: 768px) {
+  .chakra-button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* NeuraFit page container fixes */
+.neurafit-page-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  /* Ensure proper height calculation */
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+@media screen and (max-width: 768px) {
+  .neurafit-page-container {
+    /* Use dynamic viewport units */
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+
+    /* Add safe area padding */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

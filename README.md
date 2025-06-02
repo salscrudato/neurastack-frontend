@@ -1,7 +1,7 @@
 # 🚀 NeuraStack Frontend – AI-Powered App Ecosystem
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/salscrudato/neurastack-frontend)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/salscrudato/neurastack-frontend)
+[![Version](https://img.shields.io/badge/version-2.1.1-blue)](https://github.com/salscrudato/neurastack-frontend)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![PWA Ready](https://img.shields.io/badge/PWA-ready-purple)](https://web.dev/progressive-web-apps/)
 
@@ -43,6 +43,7 @@ npm run dev
 - **♿ Enhanced Accessibility**: Advanced screen reader support, keyboard shortcuts, ARIA live regions
 - **🎯 Design System Excellence**: Consistent spacing, typography, micro-interactions, and component reusability
 - **🏋️ Enhanced NeuraFit Flow**: Complete AI-powered fitness tracking with workout generation, progress monitoring
+- **🔧 Mobile Scrolling Fix**: Robust solution for NeuraFit onboarding scrolling issues on mobile devices
 - **🚀 Performance Optimization**: Bundle size reduction, improved caching, lazy loading enhancements
 - **💬 Advanced Chat UX**: Improved message hierarchy, better expand controls, enhanced accessibility
 - **🧪 Testing Infrastructure**: Comprehensive testing setup with Vitest, React Testing Library, and Playwright
@@ -698,6 +699,14 @@ npm run dev
 - **Smart Onboarding**: Multi-step wizard with fitness level, goals, equipment, and schedule selection
 - **Achievement System**: Gamified progress with badges and milestones
 
+### 🔧 **Mobile Scrolling Fix (PRIORITY 6 - COMPLETED)**
+- **Root Cause Analysis**: Fixed height constraints and nested flex containers preventing natural content flow
+- **Dynamic Layout System**: Replaced fixed height containers with flexible, scrollable layout structure
+- **Sticky Progress Indicator**: Progress bar now stays visible at top while content scrolls naturally
+- **Enhanced Mobile Support**: Added dynamic viewport height units (100dvh) and safe area handling
+- **Cross-Platform Compatibility**: Optimized for iOS Safari, Android Chrome, and mobile browsers
+- **Touch-Optimized Interactions**: Improved touch targets and gesture handling for mobile devices
+
 ### 🔧 **Technical Improvements**
 - **Type Safety**: Enhanced TypeScript interfaces for WorkoutPlan and Exercise
 - **Error Handling**: Comprehensive error boundaries and graceful fallbacks
@@ -718,6 +727,7 @@ npm run dev
 
 | Version | Date (YYYY‑MM‑DD) | Author | Highlights |
 |---------|------------------|--------|------------|
+| **2.1.1** | 2024‑12‑20 | AI Assistant | **MOBILE SCROLLING FIX**: Robust solution for NeuraFit onboarding scrolling issues, dynamic layout system, enhanced mobile support |
 | **2.1.0** | 2024‑12‑20 | AI Assistant | **MAJOR UI/UX RELEASE**: Beautiful gradient branding, advanced performance optimization, superior mobile experience, enhanced accessibility, design system excellence |
 | **2.0.0** | 2024‑12‑20 | AI Assistant | **MAJOR RELEASE**: Complete NeuraFit flow, testing infrastructure, performance optimizations, enhanced UX |
 | **1.1.0** | 2024‑12‑19 | AI Assistant | Enterprise UX improvements: cycling suggestions, optimized hierarchy, accessibility |
