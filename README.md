@@ -1,37 +1,53 @@
-# 🚀 Neurastack Frontend – AI-Powered App Ecosystem
+# 🚀 NeuraStack Frontend – AI-Powered App Ecosystem
 
-Welcome! This document serves as **permanent project memory** for future development sessions and provides everything needed to understand, run, and evolve the Neurastack application ecosystem.
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/salscrudato/neurastack-frontend)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/salscrudato/neurastack-frontend)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![PWA Ready](https://img.shields.io/badge/PWA-ready-purple)](https://web.dev/progressive-web-apps/)
+
+**NeuraStack** is a comprehensive AI-powered application ecosystem featuring enterprise-grade chat interfaces, fitness tracking, trip planning, task management, and more. Built with modern web technologies and designed for performance, accessibility, and user experience excellence.
+
+## 🎯 **Quick Start**
+
+```bash
+# Clone and setup
+git clone git@github.com:salscrudato/neurastack-frontend.git
+cd neurastack-frontend
+npm install
+
+# Configure environment
+cp .env.example .env.local
+# Add your Firebase and API keys
+
+# Start development
+npm run dev
+# Open http://localhost:3000
+```
 
 ---
 
-## 🧠 AI Assistant Memory - READ THIS FIRST
+## 🧠 **AI Assistant Memory - READ THIS FIRST**
 
 **This section contains critical context for AI assistants working on this project:**
 
-### Recent Major Updates (2024-12-20)
-- **Enhanced Brand Identity**: Beautiful blue-to-purple gradient logo in light mode for modern aesthetic
-- **Advanced Performance Optimization**: React.memo implementation, virtual scrolling, enhanced bundle analysis
-- **Superior Mobile Experience**: Improved touch interactions, gesture support, responsive navigation
-- **Enhanced Accessibility**: Advanced screen reader support, keyboard shortcuts, ARIA live regions
-- **Design System Excellence**: Consistent spacing, typography, micro-interactions, and component reusability
-- **Enhanced NeuraFit Flow**: Complete AI-powered fitness tracking with workout generation, progress monitoring, and nutrition guidance
-- **Performance Optimization**: Bundle size reduction, improved caching, lazy loading enhancements
-- **Advanced Chat UX**: Improved message hierarchy, better expand controls, enhanced accessibility
-- **Testing Infrastructure**: Comprehensive testing setup with Vitest, React Testing Library, and Playwright
-- **Mobile Experience**: Enhanced mobile interactions, improved touch targets, better responsive design
-- **Complete App Ecosystem**: Fully integrated AI-powered application suite
-- **Production-Ready Architecture**: Vite + React 18 + TypeScript + Chakra UI
-- **Multi-AI Backend Integration**: OpenAI GPT-4, Google Gemini, XAI Grok ensemble
-- **Progressive Web App**: PWA capabilities with offline support and install prompts
-- **Firebase Integration**: Authentication, Firestore database, and hosting
-- **Advanced State Management**: Zustand with persistence and real-time sync
-- **Performance Optimization**: Code splitting, caching, error boundaries
-- **Mobile-First Design**: Responsive UI with touch-friendly interactions
-- **Revenue-Generating Features**: Affiliate partnerships and commission tracking
-- **Enterprise-Grade UX**: Polished chat interface with cycling suggestions and smart interactions
-- **Modern UI Components**: Chakra UI with custom theming and responsive design patterns
-- **Real-time Collaboration**: Live chat sync across devices with offline-first architecture
-- **Accessibility Compliance**: WCAG 2.1 AA standards with keyboard navigation and screen reader support
+### **🔧 CRITICAL DEPLOYMENT FIX (2024-12-20)** ✅
+**RESOLVED**: Fixed "Cannot read properties of undefined (reading 'createContext')" error that caused blank screens in production.
+- **Root Cause**: Improper chunk splitting in Vite config separated framer-motion from React dependencies
+- **Solution**: Moved framer-motion into UI chunk to ensure proper React dependency resolution
+- **Impact**: Application now deploys successfully without runtime errors
+
+### **📈 Recent Major Updates (2024-12-20)**
+- **🎨 Enhanced Brand Identity**: Beautiful blue-to-purple gradient logo in light mode for modern aesthetic
+- **⚡ Advanced Performance Optimization**: React.memo implementation, virtual scrolling, enhanced bundle analysis
+- **📱 Superior Mobile Experience**: Improved touch interactions, gesture support, responsive navigation
+- **♿ Enhanced Accessibility**: Advanced screen reader support, keyboard shortcuts, ARIA live regions
+- **🎯 Design System Excellence**: Consistent spacing, typography, micro-interactions, and component reusability
+- **🏋️ Enhanced NeuraFit Flow**: Complete AI-powered fitness tracking with workout generation, progress monitoring
+- **🚀 Performance Optimization**: Bundle size reduction, improved caching, lazy loading enhancements
+- **💬 Advanced Chat UX**: Improved message hierarchy, better expand controls, enhanced accessibility
+- **🧪 Testing Infrastructure**: Comprehensive testing setup with Vitest, React Testing Library, and Playwright
+- **📱 Mobile Experience**: Enhanced mobile interactions, improved touch targets, better responsive design
+- **🔄 PWA Improvements**: Enhanced update notifications, better cache management, user-controlled updates
 
 ### Application Architecture
 - **Frontend**: React 18 + TypeScript + Vite + Chakra UI
@@ -106,7 +122,49 @@ const typography = {
 
 ---
 
-## 0. Project Overview
+## 🌟 **Key Features**
+
+### **🤖 AI-Powered Chat Interface**
+- **Multi-Model Ensemble**: OpenAI GPT-4, Google Gemini, XAI Grok integration
+- **Smart Input Suggestions**: Cycling placeholders with contextual hints
+- **Optimized Performance**: Virtual scrolling for large chat histories
+- **Enterprise UX**: Polished interface with smart interactions
+- **Accessibility**: WCAG 2.1 AA compliance with screen reader support
+
+### **🏋️ NeuraFit - AI Fitness Companion**
+- **Personalized Workouts**: AI-generated exercise plans based on goals and equipment
+- **Real-Time Tracking**: Live workout timer with rest periods and progress monitoring
+- **Achievement System**: Gamified progress with badges and milestones
+- **Smart Onboarding**: Multi-step wizard for fitness level and goal selection
+- **Progress Analytics**: Comprehensive tracking with streaks and performance trends
+
+### **✈️ NeuraPlanner - Intelligent Trip Planning**
+- **AI Trip Generation**: Smart itinerary creation with booking integration
+- **Real-Time Pricing**: Live flight and hotel data via TravelPayouts API
+- **Revenue Generation**: Affiliate commissions on bookings (2-7% commission)
+- **Seamless Booking**: Zero visible fees with backend affiliate revenue
+
+### **📝 NeuraPrompts - Prompt Library**
+- **Community Sharing**: Discover and share AI prompts with the community
+- **Smart Organization**: Categorization and tagging system
+- **Usage Analytics**: Track prompt performance and popularity
+- **Personal Library**: Save and organize your favorite prompts
+
+### **✅ NeuraTask - AI Task Management**
+- **Intelligent Breakdown**: AI-powered task decomposition
+- **Smart Prioritization**: Automatic priority analysis and scheduling
+- **Drag & Drop**: Intuitive task organization with sortable lists
+- **Progress Tracking**: Visual progress indicators and completion tracking
+
+### **🔄 Progressive Web App (PWA)**
+- **Offline Support**: Full functionality without internet connection
+- **Install Prompts**: Add to home screen on mobile and desktop
+- **Smart Updates**: User-controlled update notifications
+- **Background Sync**: Queue actions when offline, sync when online
+
+---
+
+## 🏗️ **Architecture Overview**
 
 **Neurastack Frontend** is a comprehensive AI-powered application ecosystem. Under the hood it:
 

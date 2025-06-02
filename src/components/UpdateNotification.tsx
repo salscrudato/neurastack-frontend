@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   Alert,
   AlertIcon,
@@ -83,12 +83,13 @@ export const UpdateNotification = () => {
     }
   };
 
-  const handleDismissUpdate = () => {
+  const handleDismissUpdate = useCallback(() => {
+    if (isDismissed) return; // Prevent multiple dismissals
     console.log('Dismissing update notification');
     setIsDismissed(true);
     setShowNeedRefresh(false);
     dismissUpdate(); // Also dismiss in the PWA state
-  };
+  }, [isDismissed, dismissUpdate]);
 
   const handleDismissOffline = () => {
     setShowOfflineReady(false);

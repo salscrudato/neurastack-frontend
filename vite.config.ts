@@ -30,7 +30,7 @@ export default defineConfig({
       brotliSize: true,
     }),
     VitePWA({
-      registerType: "autoUpdate", // Automatically update when new version is available
+      registerType: "prompt", // Show update prompt instead of auto-update
       includeAssets: [
         // Static assets to include in the service worker cache
         "favicon.svg",
@@ -59,8 +59,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         cleanupOutdatedCaches: true,
-        skipWaiting: true, // Immediately activate new service worker
-        clientsClaim: true, // Take control of all clients immediately
+        skipWaiting: false, // Don't auto-skip waiting - let user control updates
+        clientsClaim: false, // Don't auto-claim clients - let user control updates
         // More aggressive caching strategy for faster updates
         runtimeCaching: [
           {
@@ -155,8 +155,8 @@ export default defineConfig({
           // Vendor chunk for stable dependencies
           vendor: ['react', 'react-dom'],
 
-          // UI library chunk
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
+          // UI library chunk (includes framer-motion to ensure React dependency)
+          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion'],
 
           // State management chunk
           state: ['zustand'],
@@ -166,9 +166,6 @@ export default defineConfig({
 
           // Icons chunk
           icons: ['react-icons/pi', 'lucide-react'],
-
-          // Animation chunk
-          animation: ['framer-motion'],
         },
       },
     },
