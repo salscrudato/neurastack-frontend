@@ -5,6 +5,15 @@
 /** Canonical provider keys we support today */
 export type ModelProvider = "openai" | "google" | "xai";
 
+/** Chat message interface */
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'error';
+  text: string;
+  timestamp: number;
+  metadata?: Record<string, any>;
+}
+
 /** Raw request body sent to /api/query */
 export interface ChatRequest {
   prompt: string;

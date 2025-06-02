@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
+import { BrandLogo } from './BrandLogo';
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -22,17 +23,6 @@ export function Header() {
 
   const gray = useColorModeValue('gray.600','gray.300');
   const grayHover = useColorModeValue('gray.700','white');
-
-  // Logo gradient styles - same as in ChatMessage
-  const logoStyles = useColorModeValue(
-    {
-      bgGradient: "linear(to-r, rgb(128, 183, 228) 0%, rgb(18, 88, 240) 100%)",
-      bgClip: "text",
-    },
-    {
-      color: "white",
-    }
-  );
 
   // Determine header text and navigation based on current route
   const getHeaderInfo = () => {
@@ -151,22 +141,16 @@ export function Header() {
         zIndex={1}
       >
         <Tooltip label="Neurastack" hasArrow>
-          <Text
-            fontSize={{ base: "xl", md: "2xl" }}
-            fontWeight="700"
-            fontFamily="Inter, system-ui, sans-serif"
+          <BrandLogo
+            size={{ base: "md", md: "lg" }}
+            variant="header"
             cursor="pointer"
             onClick={() => navigate('/chat')}
-            transition="all 0.2s ease"
-            userSelect="none"
             _hover={{
               transform: "scale(1.05)",
               opacity: 0.8
             }}
-            {...logoStyles}
-          >
-            neurastack
-          </Text>
+          />
         </Tooltip>
       </Box>
 
