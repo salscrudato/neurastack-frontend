@@ -21,7 +21,7 @@ import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import ChatSearch from '../components/ChatSearch';
 import OfflineIndicator from '../components/OfflineIndicator';
-import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor';
+// import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor'; // Disabled to improve performance
 import { useAuthStore } from '../store/useAuthStore';
 
 export function ChatPage() {
@@ -42,7 +42,7 @@ export function ChatPage() {
 
   const { isOpen, onClose } = useDisclosure();
   const toast = useToast();
-  const { alerts, clearAlerts } = usePerformanceAlerts();
+  // const { alerts, clearAlerts } = usePerformanceAlerts(); // Disabled to improve performance
 
   // Pre-compute all color mode values to avoid conditional hook calls
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -115,19 +115,19 @@ export function ChatPage() {
     }
   };
 
-  // Show performance alerts
-  useEffect(() => {
-    alerts.forEach(alert => {
-      toast({
-        title: "Performance Warning",
-        description: alert,
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-        onCloseComplete: clearAlerts,
-      });
-    });
-  }, [alerts, toast, clearAlerts]);
+  // Performance alerts disabled to improve performance
+  // useEffect(() => {
+  //   alerts.forEach(alert => {
+  //     toast({
+  //       title: "Performance Warning",
+  //       description: alert,
+  //       status: "warning",
+  //       duration: 5000,
+  //       isClosable: true,
+  //       onCloseComplete: clearAlerts,
+  //     });
+  //   });
+  // }, [alerts, toast, clearAlerts]);
 
   return (
     <Flex

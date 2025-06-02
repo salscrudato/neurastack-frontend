@@ -216,22 +216,29 @@ export function usePerformanceLogger(enabled: boolean = false) {
       const now = Date.now();
       const timeSinceLastLog = now - lastLogTime.current;
 
-      // Only log every 10 seconds to reduce console spam
-      if (timeSinceLastLog < 10000) return;
+      // Only log every 60 seconds to reduce console spam
+      if (timeSinceLastLog < 60000) return;
 
-      // Only log if metrics have changed significantly
+      // Only log if there are significant performance issues
       const current = metrics;
-      const last = lastLoggedMetrics.current;
 
-      if (!last ||
-          Math.abs(current.fps - last.fps) > 10 ||
-          (current.memoryUsage && last.memoryUsage && Math.abs(current.memoryUsage - last.memoryUsage) > 20)) {
+      // Only log if there are actual performance problems
+      const hasPerformanceIssues =
+        (current.fps > 0 && current.fps < 20) || // Critically low FPS
+        (current.memoryUsage && current.memoryUsage > 150) || // Very high memory usage
+        (current.renderTime > 200); // Very slow render time
 
-        console.group('🔍 Performance Metrics');
-        console.log('FPS:', current.fps);
-        console.log('Memory Usage:', current.memoryUsage ? `${current.memoryUsage}MB` : 'N/A');
-        console.log('Render Time:', `${current.renderTime.toFixed(2)}ms`);
-        console.log('Load Time:', `${current.loadTime.toFixed(2)}ms`);
+      if (hasPerformanceIssues) {
+        console.group('⚠️ Performance Alert');
+        if (current.fps > 0 && current.fps < 20) {
+          console.warn('Low FPS detected:', current.fps);
+        }
+        if (current.memoryUsage && current.memoryUsage > 150) {
+          console.warn('High memory usage detected:', `${current.memoryUsage}MB`);
+        }
+        if (current.renderTime > 200) {
+          console.warn('Slow render time detected:', `${current.renderTime.toFixed(2)}ms`);
+        }
         console.groupEnd();
 
         lastLoggedMetrics.current = { ...current };
@@ -239,7 +246,7 @@ export function usePerformanceLogger(enabled: boolean = false) {
       }
     };
 
-    const interval = setInterval(logPerformance, 10000); // Log every 10 seconds
+    const interval = setInterval(logPerformance, 60000); // Log every 60 seconds
 
     return () => clearInterval(interval);
   }, [enabled]); // Remove metrics from dependency array

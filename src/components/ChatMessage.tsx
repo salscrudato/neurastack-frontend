@@ -81,18 +81,15 @@ function sanitizeMessageContent(text: string): string {
     .trim();
 }
 
-// Log message rendering for debugging
+// Log message rendering for debugging (disabled to improve performance)
 function logMessageRender(message: Message): void {
-  if (process.env.NODE_ENV === 'development') {
-    console.group(`💬 Rendering Message`);
-    console.log(`🆔 ID: ${message.id}`);
-    console.log(`👤 Role: ${message.role}`);
-    console.log(`📝 Content Length: ${message.text?.length || 0} characters`);
-    console.log(`⏰ Timestamp: ${new Date(message.timestamp).toLocaleTimeString()}`);
-    if (message.metadata) {
-      console.log(`📊 Metadata:`, message.metadata);
-    }
-    console.groupEnd();
+  // Disabled console logging to prevent performance issues
+  // Only log errors or critical issues
+  if (process.env.NODE_ENV === 'development' && message.role === 'error') {
+    console.warn(`❌ Error Message: ${message.id}`, {
+      content: message.text?.substring(0, 100) + '...',
+      metadata: message.metadata
+    });
   }
 }
 

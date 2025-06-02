@@ -99,14 +99,9 @@ export const useChatStore = create<ChatState>()(
               throw new Error('Invalid response structure received');
             }
 
-            // Log successful response in development
-            if (process.env.NODE_ENV === 'development') {
-              console.group(`✅ Chat Response Received`);
-              console.log(`⏱️  Total Time: ${responseTime}ms`);
-              console.log(`📝 Response Length: ${response.answer.length} characters`);
-              console.log(`🤖 Models: ${Object.keys(response.modelsUsed || {}).join(', ')}`);
-              console.log(`🔄 Retry Count: ${retryCount}`);
-              console.groupEnd();
+            // Reduced logging to improve performance
+            if (process.env.NODE_ENV === 'development' && retryCount > 0) {
+              console.log(`✅ Chat response received after ${retryCount} retries (${responseTime}ms)`);
             }
 
             // Update with actual response
@@ -150,13 +145,9 @@ export const useChatStore = create<ChatState>()(
             retryCount++;
             set(() => ({ retryCount }));
 
-            // Enhanced error logging
-            if (process.env.NODE_ENV === 'development') {
-              console.group(`🔄 Chat Request Retry ${retryCount}/${MAX_RETRIES}`);
-              console.log(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-              console.log(`⏱️  Attempt Duration: ${Date.now() - startTime}ms`);
-              console.log(`🔄 Next Action: ${retryCount > MAX_RETRIES ? 'Give up' : 'Retry'}`);
-              console.groupEnd();
+            // Reduced error logging to improve performance
+            if (process.env.NODE_ENV === 'development' && retryCount > MAX_RETRIES) {
+              console.warn(`❌ Chat request failed after ${MAX_RETRIES} retries:`, error instanceof Error ? error.message : 'Unknown error');
             }
 
             if (retryCount > MAX_RETRIES) {
