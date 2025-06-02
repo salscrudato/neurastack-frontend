@@ -11,6 +11,9 @@ export const useUpdateManager = () => {
   const toast = useToast();
   const [localNeedRefresh, setLocalNeedRefresh] = useState(false);
 
+  // Check if update was already dismissed in this session
+  const isDismissedInSession = sessionStorage.getItem('neurastack_update_dismissed') === 'true';
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [pwaNeedRefresh, setPwaNeedRefresh],
@@ -19,10 +22,13 @@ export const useUpdateManager = () => {
     onRegistered(r: ServiceWorkerRegistration | undefined) {
       console.log('SW Registered: ' + r);
 
-      // Check for updates every 30 seconds
+      // Check for updates every 60 seconds (reduced frequency)
       setInterval(() => {
-        r?.update();
-      }, 30000);
+        // Only check if not dismissed in this session
+        if (!sessionStorage.getItem('neurastack_update_dismissed')) {
+          r?.update();
+        }
+      }, 60000);
     },
     onRegisterError(error: any) {
       console.log('SW registration error', error);
@@ -34,17 +40,23 @@ export const useUpdateManager = () => {
     },
     onNeedRefresh() {
       console.log('New version available');
-      setPwaNeedRefresh(true);
-      setLocalNeedRefresh(true);
+      // Only show if not dismissed in this session
+      if (!sessionStorage.getItem('neurastack_update_dismissed')) {
+        setPwaNeedRefresh(true);
+        setLocalNeedRefresh(true);
+      }
       // Note: We'll handle notifications in the component, not here
     },
   });
 
   const handleUpdate = async () => {
     try {
+      // Clear dismissal flag since user is updating
+      sessionStorage.removeItem('neurastack_update_dismissed');
+
       // Clear version cache
       localStorage.removeItem(VERSION_KEY);
-      
+
       // Clear all caches
       if ('caches' in window) {
         const cacheNames = await caches.keys();
@@ -52,15 +64,15 @@ export const useUpdateManager = () => {
           cacheNames.map(cacheName => caches.delete(cacheName))
         );
       }
-      
+
       // Update service worker
       await updateServiceWorker(true);
-      
+
       // Force reload
       window.location.reload();
     } catch (error) {
       console.error('Update failed:', error);
-      
+
       toast({
         title: 'Update Failed',
         description: 'Failed to update. Please refresh manually.',
@@ -101,10 +113,13 @@ export const useUpdateManager = () => {
     console.log('dismissUpdate called, setting needRefresh to false');
     setPwaNeedRefresh(false);
     setLocalNeedRefresh(false);
+    // Mark as dismissed for this session to prevent re-showing
+    sessionStorage.setItem('neurastack_update_dismissed', 'true');
   }, [setPwaNeedRefresh]);
 
   // Use local state as the source of truth, but sync with PWA state
-  const needRefresh = localNeedRefresh || pwaNeedRefresh;
+  // Don't show if dismissed in this session
+  const needRefresh = !isDismissedInSession && (localNeedRefresh || pwaNeedRefresh);
 
   return {
     offlineReady,

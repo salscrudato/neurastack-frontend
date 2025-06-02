@@ -42,20 +42,25 @@ export const UpdateNotification = () => {
   }, [offlineReady]);
 
   useEffect(() => {
-    if (needRefresh && !isDismissed) {
+    // Check if already dismissed in this session
+    const sessionDismissed = sessionStorage.getItem('neurastack_update_dismissed') === 'true';
+
+    if (needRefresh && !isDismissed && !sessionDismissed) {
       setShowNeedRefresh(true);
 
-      // Auto-dismiss after 30 seconds if user doesn't interact
+      // Auto-dismiss after 60 seconds if user doesn't interact
       const autoHideTimer = setTimeout(() => {
         setIsDismissed(true);
         setShowNeedRefresh(false);
         dismissUpdate();
-      }, 30000);
+      }, 60000);
 
       return () => clearTimeout(autoHideTimer);
-    } else if (!needRefresh) {
+    } else if (!needRefresh || sessionDismissed) {
       setShowNeedRefresh(false);
-      setIsDismissed(false); // Reset dismissal when needRefresh becomes false
+      if (!needRefresh) {
+        setIsDismissed(false); // Reset dismissal when needRefresh becomes false
+      }
     }
   }, [needRefresh, isDismissed, dismissUpdate]);
 
