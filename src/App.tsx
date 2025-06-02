@@ -16,6 +16,11 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   // Check if current route should show header
   const isSplashPage = location.pathname === '/';
 
+  // Move hooks outside of conditional rendering to fix Rules of Hooks violation
+  const headerBg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(44, 44, 46, 0.95)');
+  const headerBorderColor = useColorModeValue('rgba(229, 231, 235, 0.8)', 'rgba(255, 255, 255, 0.1)');
+  const headerBoxShadow = useColorModeValue('0 1px 3px rgba(0, 0, 0, 0.05)', '0 1px 3px rgba(0, 0, 0, 0.2)');
+
   // Subtle blur-based transitions for page content
   const getTransitionVariants = (pathname: string) => {
     const isAppRoute = pathname.startsWith('/apps/');
@@ -56,11 +61,11 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           position="relative"
           zIndex={10}
           w="100%"
-          bg={useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(44, 44, 46, 0.95)')}
+          bg={headerBg}
           backdropFilter="blur(10px)"
           borderBottom="1px solid"
-          borderColor={useColorModeValue('rgba(229, 231, 235, 0.8)', 'rgba(255, 255, 255, 0.1)')}
-          boxShadow={useColorModeValue('0 1px 3px rgba(0, 0, 0, 0.05)', '0 1px 3px rgba(0, 0, 0, 0.2)')}
+          borderColor={headerBorderColor}
+          boxShadow={headerBoxShadow}
           flexShrink={0}
         >
           <Header />

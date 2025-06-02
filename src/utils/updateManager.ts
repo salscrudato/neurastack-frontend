@@ -11,8 +11,11 @@ export const useUpdateManager = () => {
   const toast = useToast();
   const [localNeedRefresh, setLocalNeedRefresh] = useState(false);
 
-  // Check if update was already dismissed in this session
+  // Much more conservative approach - check multiple dismissal flags
   const isDismissedInSession = sessionStorage.getItem('neurastack_update_dismissed') === 'true';
+  const isDismissedPermanently = localStorage.getItem('neurastack_update_disabled') === 'true';
+  const lastDismissalTime = localStorage.getItem('neurastack_last_dismissal');
+  const isDismissedRecently = lastDismissalTime && (Date.now() - parseInt(lastDismissalTime)) < 24 * 60 * 60 * 1000; // 24 hours
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -22,13 +25,16 @@ export const useUpdateManager = () => {
     onRegistered(r: ServiceWorkerRegistration | undefined) {
       console.log('SW Registered: ' + r);
 
-      // Check for updates every 60 seconds (reduced frequency)
-      setInterval(() => {
-        // Only check if not dismissed in this session
-        if (!sessionStorage.getItem('neurastack_update_dismissed')) {
-          r?.update();
-        }
-      }, 60000);
+      // TEMPORARILY DISABLED - No automatic update checking
+      // setInterval(() => {
+      //   const shouldCheck = !sessionStorage.getItem('neurastack_update_dismissed') &&
+      //                      !localStorage.getItem('neurastack_update_disabled') &&
+      //                      !isDismissedRecently;
+      //
+      //   if (shouldCheck) {
+      //     r?.update();
+      //   }
+      // }, 300000); // 5 minutes instead of 1 minute
     },
     onRegisterError(error: any) {
       console.log('SW registration error', error);
@@ -39,13 +45,20 @@ export const useUpdateManager = () => {
       // Note: We'll handle notifications in the component, not here
     },
     onNeedRefresh() {
-      console.log('New version available');
-      // Only show if not dismissed in this session
-      if (!sessionStorage.getItem('neurastack_update_dismissed')) {
-        setPwaNeedRefresh(true);
-        setLocalNeedRefresh(true);
-      }
-      // Note: We'll handle notifications in the component, not here
+      console.log('New version available - banner temporarily disabled');
+
+      // TEMPORARILY DISABLED - No banner will be shown
+      // const shouldShow = !sessionStorage.getItem('neurastack_update_dismissed') &&
+      //                   !localStorage.getItem('neurastack_update_disabled') &&
+      //                   !isDismissedRecently;
+      //
+      // if (shouldShow) {
+      //   console.log('Showing update banner');
+      //   setPwaNeedRefresh(true);
+      //   setLocalNeedRefresh(true);
+      // } else {
+      //   console.log('Update available but banner suppressed due to user preferences');
+      // }
     },
   });
 
@@ -110,16 +123,33 @@ export const useUpdateManager = () => {
   };
 
   const dismissUpdate = useCallback(() => {
-    console.log('dismissUpdate called, setting needRefresh to false');
+    console.log('dismissUpdate called - aggressively suppressing future banners');
     setPwaNeedRefresh(false);
     setLocalNeedRefresh(false);
-    // Mark as dismissed for this session to prevent re-showing
+
+    // Multiple layers of dismissal to be absolutely sure
     sessionStorage.setItem('neurastack_update_dismissed', 'true');
+    localStorage.setItem('neurastack_last_dismissal', Date.now().toString());
+
+    // Also set a flag to disable for this browser entirely (can be cleared manually)
+    localStorage.setItem('neurastack_update_disabled', 'true');
+
+    console.log('Update notifications disabled until manually re-enabled');
   }, [setPwaNeedRefresh]);
 
-  // Use local state as the source of truth, but sync with PWA state
-  // Don't show if dismissed in this session
-  const needRefresh = !isDismissedInSession && (localNeedRefresh || pwaNeedRefresh);
+  // Ultra-conservative approach - only show if ALL dismissal checks pass
+  const needRefresh = !isDismissedInSession &&
+                     !isDismissedPermanently &&
+                     !isDismissedRecently &&
+                     (localNeedRefresh || pwaNeedRefresh);
+
+  // Function to manually re-enable update notifications (for debugging/admin)
+  const enableUpdateNotifications = useCallback(() => {
+    sessionStorage.removeItem('neurastack_update_dismissed');
+    localStorage.removeItem('neurastack_update_disabled');
+    localStorage.removeItem('neurastack_last_dismissal');
+    console.log('Update notifications re-enabled');
+  }, []);
 
   return {
     offlineReady,
@@ -127,6 +157,7 @@ export const useUpdateManager = () => {
     handleUpdate,
     checkForUpdates,
     dismissUpdate,
+    enableUpdateNotifications, // For manual re-enabling if needed
   };
 };
 

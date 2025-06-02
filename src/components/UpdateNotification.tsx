@@ -17,11 +17,19 @@ import { PiXBold, PiArrowClockwiseBold, PiDownloadBold } from 'react-icons/pi';
 import { useUpdateManager, setupAutoUpdateOnFocus, setupUpdateOnReconnect } from '../utils/updateManager';
 
 export const UpdateNotification = () => {
-  const { offlineReady, needRefresh, handleUpdate, dismissUpdate } = useUpdateManager();
+  const { offlineReady, needRefresh, handleUpdate, dismissUpdate, enableUpdateNotifications } = useUpdateManager();
   const [showOfflineReady, setShowOfflineReady] = useState(false);
   const [showNeedRefresh, setShowNeedRefresh] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+
+  // Add global function for manual re-enabling (for debugging)
+  useEffect(() => {
+    (window as any).enableNeuraStackUpdates = enableUpdateNotifications;
+    return () => {
+      delete (window as any).enableNeuraStackUpdates;
+    };
+  }, [enableUpdateNotifications]);
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -42,21 +50,41 @@ export const UpdateNotification = () => {
   }, [offlineReady]);
 
   useEffect(() => {
-    // Check if already dismissed in this session
+    // Multiple layers of checks to prevent showing banner
     const sessionDismissed = sessionStorage.getItem('neurastack_update_dismissed') === 'true';
+    const permanentlyDisabled = localStorage.getItem('neurastack_update_disabled') === 'true';
+    const lastDismissalTime = localStorage.getItem('neurastack_last_dismissal');
+    const dismissedRecently = lastDismissalTime && (Date.now() - parseInt(lastDismissalTime)) < 24 * 60 * 60 * 1000;
 
-    if (needRefresh && !isDismissed && !sessionDismissed) {
+    // Ultra-conservative: only show if ALL conditions are false AND needRefresh is true
+    const shouldShow = needRefresh &&
+                      !isDismissed &&
+                      !sessionDismissed &&
+                      !permanentlyDisabled &&
+                      !dismissedRecently;
+
+    if (shouldShow) {
+      console.log('Showing update banner (all checks passed)');
       setShowNeedRefresh(true);
 
-      // Auto-dismiss after 60 seconds if user doesn't interact
+      // Auto-dismiss after 30 seconds and permanently disable
       const autoHideTimer = setTimeout(() => {
+        console.log('Auto-dismissing update banner and disabling permanently');
         setIsDismissed(true);
         setShowNeedRefresh(false);
         dismissUpdate();
-      }, 60000);
+      }, 30000);
 
       return () => clearTimeout(autoHideTimer);
-    } else if (!needRefresh || sessionDismissed) {
+    } else {
+      if (needRefresh) {
+        console.log('Update available but banner suppressed:', {
+          sessionDismissed,
+          permanentlyDisabled,
+          dismissedRecently,
+          isDismissed
+        });
+      }
       setShowNeedRefresh(false);
       if (!needRefresh) {
         setIsDismissed(false); // Reset dismissal when needRefresh becomes false
@@ -102,104 +130,108 @@ export const UpdateNotification = () => {
 
   return (
     <>
-      {/* Update Available Notification */}
-      <Slide direction="top" in={showNeedRefresh} style={{ zIndex: 1000 }}>
-        <Box
-          position="fixed"
-          top={4}
-          left={4}
-          right={4}
-          mx="auto"
-          maxW="md"
-          bg={bgColor}
-          borderWidth="1px"
-          borderColor={borderColor}
-          borderRadius="xl"
-          boxShadow="xl"
-          p={4}
-          backdropFilter="blur(10px)"
-        >
-          <VStack spacing={3} align="stretch">
-            <HStack spacing={3} align="center">
-              <Box
-                p={2}
-                borderRadius="full"
-                bg={useColorModeValue('blue.50', 'blue.900')}
-              >
-                <PiDownloadBold
-                  size={20}
-                  color={useColorModeValue('#3182CE', '#63B3ED')}
-                />
-              </Box>
-              <VStack align="start" spacing={1} flex={1}>
-                <Text fontWeight="semibold" fontSize="sm" color={useColorModeValue('gray.800', 'white')}>
-                  Update Available
-                </Text>
-                <Text fontSize="xs" color={useColorModeValue('gray.700', 'gray.300')}>
-                  A new version of the app is ready
-                </Text>
-              </VStack>
-            </HStack>
+      {/* Update Available Notification - TEMPORARILY DISABLED */}
+      {false && (
+        <Slide direction="top" in={showNeedRefresh} style={{ zIndex: 1000 }}>
+          <Box
+            position="fixed"
+            top={4}
+            left={4}
+            right={4}
+            mx="auto"
+            maxW="md"
+            bg={bgColor}
+            borderWidth="1px"
+            borderColor={borderColor}
+            borderRadius="xl"
+            boxShadow="xl"
+            p={4}
+            backdropFilter="blur(10px)"
+          >
+            <VStack spacing={3} align="stretch">
+              <HStack spacing={3} align="center">
+                <Box
+                  p={2}
+                  borderRadius="full"
+                  bg={useColorModeValue('blue.50', 'blue.900')}
+                >
+                  <PiDownloadBold
+                    size={20}
+                    color={useColorModeValue('#3182CE', '#63B3ED')}
+                  />
+                </Box>
+                <VStack align="start" spacing={1} flex={1}>
+                  <Text fontWeight="semibold" fontSize="sm" color={useColorModeValue('gray.800', 'white')}>
+                    Update Available
+                  </Text>
+                  <Text fontSize="xs" color={useColorModeValue('gray.700', 'gray.300')}>
+                    A new version of the app is ready
+                  </Text>
+                </VStack>
+              </HStack>
 
-            <HStack spacing={2}>
-              <Button
-                size="sm"
-                colorScheme="blue"
-                leftIcon={<PiArrowClockwiseBold />}
-                onClick={handleUpdateClick}
-                isLoading={isUpdating}
-                loadingText="Updating..."
-                flex={1}
-              >
-                Update Now
-              </Button>
-              <Button
+              <HStack spacing={2}>
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  leftIcon={<PiArrowClockwiseBold />}
+                  onClick={handleUpdateClick}
+                  isLoading={isUpdating}
+                  loadingText="Updating..."
+                  flex={1}
+                >
+                  Update Now
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleDismissUpdate}
+                >
+                  Later
+                </Button>
+              </HStack>
+            </VStack>
+          </Box>
+        </Slide>
+      )}
+
+      {/* Offline Ready Notification - TEMPORARILY DISABLED */}
+      {false && (
+        <Slide direction="top" in={showOfflineReady} style={{ zIndex: 999 }}>
+          <Box
+            position="fixed"
+            top={4}
+            left={4}
+            right={4}
+            mx="auto"
+            maxW="md"
+            bg={useColorModeValue('green.50', 'green.900')}
+            borderWidth="1px"
+            borderColor={useColorModeValue('green.200', 'green.600')}
+            borderRadius="xl"
+            boxShadow="lg"
+            p={4}
+          >
+            <Alert status="success" variant="subtle" borderRadius="lg">
+              <AlertIcon />
+              <Box flex="1">
+                <AlertTitle fontSize="sm">App Ready Offline!</AlertTitle>
+                <AlertDescription fontSize="xs">
+                  You can now use the app without an internet connection.
+                </AlertDescription>
+              </Box>
+              <IconButton
+                aria-label="Dismiss offline notification"
+                icon={<PiXBold />}
                 size="sm"
                 variant="ghost"
-                onClick={handleDismissUpdate}
-              >
-                Later
-              </Button>
-            </HStack>
-          </VStack>
-        </Box>
-      </Slide>
-
-      {/* Offline Ready Notification */}
-      <Slide direction="top" in={showOfflineReady} style={{ zIndex: 999 }}>
-        <Box
-          position="fixed"
-          top={4}
-          left={4}
-          right={4}
-          mx="auto"
-          maxW="md"
-          bg={useColorModeValue('green.50', 'green.900')}
-          borderWidth="1px"
-          borderColor={useColorModeValue('green.200', 'green.600')}
-          borderRadius="xl"
-          boxShadow="lg"
-          p={4}
-        >
-          <Alert status="success" variant="subtle" borderRadius="lg">
-            <AlertIcon />
-            <Box flex="1">
-              <AlertTitle fontSize="sm">App Ready Offline!</AlertTitle>
-              <AlertDescription fontSize="xs">
-                You can now use the app without an internet connection.
-              </AlertDescription>
-            </Box>
-            <IconButton
-              aria-label="Dismiss offline notification"
-              icon={<PiXBold />}
-              size="sm"
-              variant="ghost"
-              onClick={handleDismissOffline}
-              ml={2}
-            />
-          </Alert>
-        </Box>
-      </Slide>
+                onClick={handleDismissOffline}
+                ml={2}
+              />
+            </Alert>
+          </Box>
+        </Slide>
+      )}
     </>
   );
 };
