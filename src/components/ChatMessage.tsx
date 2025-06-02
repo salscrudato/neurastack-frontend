@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   HStack,
   SkeletonText,
   useColorModeValue,
@@ -22,28 +23,28 @@ import SavePromptModal from "./NeuraPrompts/SavePromptModal";
 import ResponseErrorBoundary from "./ResponseErrorBoundary";
 import ErrorMessage from "./ErrorMessage";
 
-// provider logos (SVGS now next to this file)
-import gptLogo   from "./openai.svg";
-import gptText   from "./openai-text.svg";
-import gemLogo   from "./google.svg";
-import gemText   from "./gemini-text.svg";
-import grokLogo  from "./xai.svg";
-import grokText  from "./grok-text.svg";
+// provider logos (SVGS now next to this file) - commented out for now
+// import gptLogo   from "./openai.svg";
+// import gptText   from "./openai-text.svg";
+// import gemLogo   from "./google.svg";
+// import gemText   from "./gemini-text.svg";
+// import grokLogo  from "./xai.svg";
+// import grokText  from "./grok-text.svg";
 
 const MotionBox = motion(Box);
 
 // utility: collapse height (approx. for ~2 lines of text in sm font)
 const COLLAPSED_HEIGHT = "3.5rem";
 
-// model → { logo, label }
-const logoMap: Record<
-  string,
-  { icon: string; label: string }
-> = {
-  openai: { icon: gptLogo,  label: gptText },
-  google: { icon: gemLogo,  label: gemText },
-  xai:    { icon: grokLogo, label: grokText },
-};
+// model → { logo, label } (kept for future use)
+// const logoMap: Record<
+//   string,
+//   { icon: string; label: string }
+// > = {
+//   openai: { icon: gptLogo,  label: gptText },
+//   google: { icon: gemLogo,  label: gemText },
+//   xai:    { icon: grokLogo, label: grokText },
+// };
 
 // Format timestamp to MMM DD HH:MM AM/PM format
 const formatTimestamp = (timestamp: number): string => {
@@ -95,7 +96,7 @@ function logMessageRender(message: Message): void {
   }
 }
 
-const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
+const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage = false }: { m: Message; isFirstAssistantMessage?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const toggleExpand = () => setExpanded((prev) => !prev);
   const toast = useToast();
@@ -142,7 +143,7 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
   const textErr= useColorModeValue("yellow.800", "yellow.100");
 
   // filter for inverting logos in dark mode
-  const logoFilter = useColorModeValue("none", "invert(1)");
+  // const logoFilter = useColorModeValue("none", "invert(1)"); // Commented out for now
 
   // title styles: gradient in light, white in dark
 
@@ -172,8 +173,8 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
     >
       <MotionBox
         maxW="100%"
-        px={3}
-        py={2}
+        px={4}
+        py={3}
         borderRadius="lg"
         bg={bubbleBg}
         color={bubbleText}
@@ -189,16 +190,19 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
         _focus={{ boxShadow: "none" }}
         _active={{ bg: bubbleBg }}
         style={{ WebkitTapHighlightColor: "transparent" }}
+        boxShadow={useColorModeValue('sm', 'md')}
+        border="1px solid"
+        borderColor={useColorModeValue('gray.200', 'gray.600')}
       >
         <VStack align="stretch" spacing={1}>
           {!isUser && (
             <>
-              <HStack justify="flex-start" align="center" mb={1}>
+              <HStack justify="space-between" align="center" mb={1}>
                 <Text
                   fontSize="xs"
-                  fontWeight="medium"
-                  color={useColorModeValue('gray.500', 'gray.400')}
+                  color={useColorModeValue('gray.400', 'gray.500')}
                   fontFamily="Inter, system-ui, sans-serif"
+                  opacity={0.8}
                 >
                   {formatTimestamp(m.timestamp)}
                 </Text>
@@ -211,9 +215,9 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
             <HStack justify="space-between" align="center" mb={1}>
               <Text
                 fontSize="xs"
-                fontWeight="medium"
-                color="whiteAlpha.700"
+                color="whiteAlpha.600"
                 fontFamily="Inter, system-ui, sans-serif"
+                opacity={0.8}
               >
                 {formatTimestamp(m.timestamp)}
               </Text>
@@ -239,16 +243,21 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
             </HStack>
           )}
 
-          {!isUser && (
+          {!isUser && isFirstAssistantMessage && (
             <>
-              {/* provider badges */}
-              <HStack spacing={3} mb={2} opacity={0.85}>
-                {Object.entries(logoMap).map(([key, { icon, label }]) => (
-                  <HStack key={key} spacing={1}>
-                    <Box as="img" src={icon}  w="16px" h="16px" alt={`${key}`} filter={logoFilter} />
-                    <Box as="img" src={label} w="38px" h="16px" alt={`${key}-text`} filter={logoFilter} />
-                  </HStack>
-                ))}
+              {/* Consolidated model badge - show only on first assistant message */}
+              <HStack justify="flex-start" align="center" mb={2}>
+                <Text
+                  fontSize="xs"
+                  bg={useColorModeValue('gray.100', 'gray.700')}
+                  px={2}
+                  py={1}
+                  borderRadius="full"
+                  color={useColorModeValue('gray.600', 'gray.300')}
+                  fontWeight="medium"
+                >
+                  Powered by OpenAI, Gemini & Grok
+                </Text>
               </HStack>
             </>
           )}
@@ -321,15 +330,55 @@ const ChatMessage = memo(function ChatMessage({ m }: { m: Message }) {
           </Box>
 
           {!isUser && (
-            <Text
-              fontSize="xs"
-              color={bubbleText}
-              opacity={0.7}
-              alignSelf="flex-end"
-              mt={0.5}
-            >
-              {expanded ? "Tap to collapse ▲" : "Tap to expand ▼"}
-            </Text>
+            <HStack justify="flex-end" mt={2}>
+              <Button
+                size="sm"
+                variant="ghost"
+                fontSize="xs"
+                color={useColorModeValue('blue.500', 'blue.300')}
+                _hover={{
+                  textDecoration: 'underline',
+                  bg: useColorModeValue('blue.50', 'blue.900'),
+                  transform: 'scale(1.05)'
+                }}
+                _focus={{
+                  boxShadow: '0 0 0 2px',
+                  boxShadowColor: useColorModeValue('blue.500', 'blue.300')
+                }}
+                rightIcon={
+                  <Box
+                    as="span"
+                    fontSize="xs"
+                    transform={expanded ? "rotate(180deg)" : "rotate(0deg)"}
+                    transition="transform 0.2s ease"
+                    aria-hidden="true"
+                  >
+                    ▼
+                  </Box>
+                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExpand();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleExpand();
+                  }
+                }}
+                px={3}
+                py={2}
+                h="auto"
+                minH="44px" // Ensure touch-friendly size
+                borderRadius="md"
+                transition="all 0.2s ease"
+                aria-label={expanded ? "Collapse message" : "Expand message"}
+                aria-expanded={expanded}
+              >
+                {expanded ? "Show less" : "Read more"}
+              </Button>
+            </HStack>
           )}
         </VStack>
       </MotionBox>

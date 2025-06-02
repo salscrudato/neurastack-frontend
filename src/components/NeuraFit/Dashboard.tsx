@@ -26,9 +26,10 @@ import { useFitnessStore } from '../../store/useFitnessStore';
 interface DashboardProps {
   onStartWorkout: () => void;
   onEditProfile: () => void;
+  onViewProgress: () => void;
 }
 
-export default function Dashboard({ onStartWorkout, onEditProfile }: DashboardProps) {
+export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgress }: DashboardProps) {
   const { profile } = useFitnessStore();
   
   const textColor = useColorModeValue('gray.900', 'gray.100');
@@ -68,10 +69,10 @@ export default function Dashboard({ onStartWorkout, onEditProfile }: DashboardPr
         {/* Welcome header */}
         <VStack spacing={2} textAlign="center" w="100%">
           <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-            Welcome to NeuraFit! 🎉
+            neurafit
           </Text>
           <Text fontSize="md" color={subtextColor}>
-            Your personalized fitness journey starts here
+            Where your personalized fitness journey begins.
           </Text>
         </VStack>
 
@@ -199,11 +200,35 @@ export default function Dashboard({ onStartWorkout, onEditProfile }: DashboardPr
             onClick={onStartWorkout}
             py={6}
           >
-            Start Your First Workout
+            Generate AI Workout
           </Button>
-          
+
+          <HStack spacing={3} w="100%">
+            <Button
+              variant="outline"
+              colorScheme="blue"
+              size="md"
+              flex={1}
+              leftIcon={<Icon as={PiTrophyBold} />}
+              onClick={onViewProgress}
+            >
+              View Progress
+            </Button>
+
+            <Button
+              variant="outline"
+              colorScheme="gray"
+              size="md"
+              flex={1}
+              leftIcon={<Icon as={PiPersonBold} />}
+              onClick={onEditProfile}
+            >
+              Edit Profile
+            </Button>
+          </HStack>
+
           <Text fontSize="sm" color={subtextColor} textAlign="center">
-            AI-powered workouts coming soon! Your personalized plan will be generated based on your preferences.
+            AI-powered workouts tailored to your fitness level and goals.
           </Text>
         </VStack>
       </VStack>

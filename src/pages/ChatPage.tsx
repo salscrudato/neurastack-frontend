@@ -189,18 +189,24 @@ export function ChatPage() {
       >
 
 
-        <Flex direction="column" align="stretch" gap={0}>
-          {msgs.map(m => (
-            <Box
-              key={m.id}
-              id={`message-${m.id}`}
-              bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
-              borderRadius="md"
-              transition="background-color 0.3s"
-            >
-              <ChatMessage m={m} />
-            </Box>
-          ))}
+        <Flex direction="column" align="stretch" gap={4}>
+          {msgs.map((m, index) => {
+            // Check if this is the first assistant message
+            const isFirstAssistantMessage = m.role === 'assistant' &&
+              msgs.slice(0, index).every(prevMsg => prevMsg.role !== 'assistant');
+
+            return (
+              <Box
+                key={m.id}
+                id={`message-${m.id}`}
+                bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
+                borderRadius="md"
+                transition="background-color 0.3s"
+              >
+                <ChatMessage m={m} isFirstAssistantMessage={isFirstAssistantMessage} />
+              </Box>
+            );
+          })}
 
           {/* Loading indicator with retry count */}
           {isLoading && retryCount > 0 && (

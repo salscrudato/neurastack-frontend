@@ -33,6 +33,8 @@ const defaultProfile: FitnessProfile = {
   fitnessLevel: 'beginner',
   goals: [],
   equipment: [],
+  availableTime: 30,
+  workoutDays: [],
   timeAvailability: {
     daysPerWeek: 3,
     minutesPerSession: 30,

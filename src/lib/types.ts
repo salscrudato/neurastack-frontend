@@ -147,6 +147,8 @@ export interface FitnessProfile {
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
   goals: string[];
   equipment: string[];
+  availableTime: number; // minutes per session
+  workoutDays: string[]; // days of the week
   timeAvailability: {
     daysPerWeek: number;
     minutesPerSession: number;
@@ -157,19 +159,20 @@ export interface FitnessProfile {
 export interface WorkoutPlan {
   id: string;
   name: string;
-  description: string;
   duration: number; // in minutes
   exercises: Exercise[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  createdAt: Date;
+  completedAt: Date | null;
 }
 
 export interface Exercise {
-  id: string;
   name: string;
-  description: string;
-  sets?: number;
-  reps?: number;
-  duration?: number; // in seconds
-  restTime?: number; // in seconds
-  equipment?: string[];
+  sets: number;
+  reps: number;
+  duration: number; // in seconds (0 if not time-based)
+  restTime: number; // in seconds
+  instructions: string;
+  tips: string;
+  targetMuscles: string[];
 }

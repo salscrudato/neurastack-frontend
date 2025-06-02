@@ -13,12 +13,22 @@ import path from 'node:path';
 // Import the PWA plugin to enable Progressive Web App features
 import { VitePWA } from "vite-plugin-pwa";
 
+// Import bundle analyzer for performance optimization
+import { visualizer } from 'rollup-plugin-visualizer';
+
 // Export the Vite configuration object
 export default defineConfig({
   // Plugins extend Vite's functionality
   plugins: [
     react(), // Enables React Fast Refresh and JSX transformation
     svgr(),  // Enables usage of SVGs as React components via import
+    // Bundle analyzer for performance optimization
+    visualizer({
+      filename: 'dist/stats.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+    }),
     VitePWA({
       registerType: "prompt", // Controls when the service worker registration prompt is shown
       includeAssets: [
@@ -96,5 +106,64 @@ export default defineConfig({
   // Preview settings used for `vite preview` (usually post-build preview)
   preview: {
     port: 4173 // Port for preview server
-  }
+  },
+
+  // Build optimizations
+  build: {
+    // Target modern browsers for smaller bundles
+    target: 'esnext',
+
+    // Enable minification
+    minify: 'esbuild',
+
+    // Generate source maps for debugging
+    sourcemap: false,
+
+    // Optimize chunk splitting
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunk for stable dependencies
+          vendor: ['react', 'react-dom'],
+
+          // UI library chunk
+          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
+
+          // State management chunk
+          state: ['zustand'],
+
+          // Firebase chunk
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+
+          // Icons chunk
+          icons: ['react-icons/pi', 'lucide-react'],
+
+          // Animation chunk
+          animation: ['framer-motion'],
+        },
+      },
+    },
+
+    // Chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+
+    // Optimize CSS
+    cssCodeSplit: true,
+  },
+
+  // Optimize dependencies
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@chakra-ui/react',
+      '@emotion/react',
+      '@emotion/styled',
+      'framer-motion',
+      'zustand',
+      'react-icons/pi',
+      'lucide-react',
+    ],
+    exclude: ['firebase'],
+  },
 });

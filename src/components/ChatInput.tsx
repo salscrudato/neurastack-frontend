@@ -28,8 +28,18 @@ export default function ChatInput() {
   const [txt, setTxt] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [tokenCount, setTokenCount] = useState(0);
+  const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
+
+  // Cycling placeholder suggestions
+  const placeholderSuggestions = [
+    "Create a leg workout.",
+    "How do I grill the perfect steak?",
+    "Plan a weekend trip to Paris.",
+    "Write a professional email.",
+    "Explain quantum computing simply."
+  ];
 
   const MAX_CHARS = 4000;
 
@@ -37,6 +47,19 @@ export default function ChatInput() {
     setCharCount(txt.length);
     setTokenCount(estimateTokenCount(txt));
   }, [txt]);
+
+  // Cycle through placeholder suggestions
+  useEffect(() => {
+    if (txt.length === 0) {
+      const interval = setInterval(() => {
+        setCurrentPlaceholderIndex((prev) =>
+          (prev + 1) % placeholderSuggestions.length
+        );
+      }, 3000); // Change every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [txt.length, placeholderSuggestions.length]);
 
   const handleSend = async () => {
     if (busy || !txt.trim()) return;
@@ -115,7 +138,7 @@ export default function ChatInput() {
           ref={textareaRef}
           flex={1}
           variant="unstyled"
-          placeholder="What do you want to know?"
+          placeholder={placeholderSuggestions[currentPlaceholderIndex]}
           value={txt}
           onChange={(e) => setTxt(e.target.value)}
           onKeyDown={(e) => {
@@ -129,7 +152,10 @@ export default function ChatInput() {
           minH="3rem"
           maxH="6.5rem"
           resize="none"
-          _placeholder={{ color: placeholderColor }}
+          _placeholder={{
+            color: placeholderColor,
+            transition: "opacity 0.3s ease"
+          }}
           color={textColor}
           aria-label="Message to Neurastack"
           pr="6rem"
@@ -179,10 +205,20 @@ export default function ChatInput() {
               onClick={handleSend}
               isLoading={busy}
               size="sm"
-              minW="8"
-              h="8"
+              minW="10" // Increased for better touch target
+              h="10"    // Increased for better touch target
               bg={txt.trim() ? "#3b82f6" : btnBg}
-              _hover={{ bg: txt.trim() ? "#2f6fe4" : btnHover }}
+              _hover={{
+                bg: txt.trim() ? "#2f6fe4" : btnHover,
+                transform: "scale(1.05)"
+              }}
+              _focus={{
+                boxShadow: "0 0 0 2px",
+                boxShadowColor: txt.trim() ? "#3b82f6" : "gray.400"
+              }}
+              _active={{
+                transform: "scale(0.95)"
+              }}
               color={txt.trim() ? "white" : "gray.600"}
               borderRadius="full"
               isDisabled={busy || !txt.trim()}
@@ -191,6 +227,19 @@ export default function ChatInput() {
           </HStack>
         </InputRightElement>
       </InputGroup>
+
+      {/* Enter key hint */}
+      {txt.trim() && (
+        <Text
+          fontSize="xs"
+          color={useColorModeValue('gray.500', 'gray.400')}
+          textAlign="center"
+          mt={1}
+          opacity={0.8}
+        >
+          Press ⏎ to submit
+        </Text>
+      )}
     </Box>
   );
 }
