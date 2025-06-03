@@ -10,6 +10,7 @@ import {
   deleteMessageFromFirebase
 } from '../services/chatHistoryService';
 import { handleSilentError } from '../utils/errorHandler';
+import { enhanceResponseWithMockData } from '../utils/mockIndividualResponses';
 
 export interface Message {
   id: string;
@@ -28,6 +29,12 @@ export interface Message {
     memoryTokensSaved?: number;
     ensembleMode?: boolean;
     sessionId?: string;
+    // Individual model responses for modal display
+    individualResponses?: import('../lib/types').SubAnswer[];
+    ensembleMetadata?: import('../lib/types').EnsembleMetadata;
+    modelsUsed?: Record<string, boolean>;
+    fallbackReasons?: Record<string, string>;
+    executionTime?: string;
     [key: string]: any;
   };
 }
@@ -126,10 +133,13 @@ export const useChatStore = create<ChatState>()(
               throw new Error('Invalid response structure received');
             }
 
+            // Enhance response with mock individual responses for testing
+            const enhancedResponse = enhanceResponseWithMockData(response);
+
             // Clean and validate the response text
-            const cleanedAnswer = typeof response.answer === 'string'
-              ? response.answer.trim()
-              : String(response.answer || '').trim();
+            const cleanedAnswer = typeof enhancedResponse.answer === 'string'
+              ? enhancedResponse.answer.trim()
+              : String(enhancedResponse.answer || '').trim();
 
             if (!cleanedAnswer) {
               throw new Error('Empty response received from API');
@@ -146,17 +156,21 @@ export const useChatStore = create<ChatState>()(
               text: cleanedAnswer,
               timestamp: Date.now(),
               metadata: {
-                models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
+                models: enhancedResponse.modelsUsed ? Object.keys(enhancedResponse.modelsUsed) : [],
                 responseTime,
                 retryCount,
-                executionTime: response.executionTime,
-                ensembleMode: response.ensembleMode,
-                ensembleMetadata: response.ensembleMetadata,
+                executionTime: enhancedResponse.executionTime,
+                ensembleMode: enhancedResponse.ensembleMode,
+                ensembleMetadata: enhancedResponse.ensembleMetadata,
                 // Memory-related metadata
-                memoryContext: response.memoryContext,
-                tokenCount: response.tokenCount,
-                memoryTokensSaved: response.memoryTokensSaved,
-                sessionId
+                memoryContext: enhancedResponse.memoryContext,
+                tokenCount: enhancedResponse.tokenCount,
+                memoryTokensSaved: enhancedResponse.memoryTokensSaved,
+                sessionId,
+                // Individual model responses for modal display
+                individualResponses: enhancedResponse.individualResponses,
+                modelsUsed: enhancedResponse.modelsUsed,
+                fallbackReasons: enhancedResponse.fallbackReasons
               }
             };
 

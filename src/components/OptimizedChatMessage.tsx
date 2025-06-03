@@ -10,17 +10,24 @@ import {
   Badge,
   Tooltip,
   useClipboard,
+  VStack,
+  Button,
+  Divider,
 } from '@chakra-ui/react';
 import {
   PiCopyBold,
   PiCaretDownBold,
   PiCaretUpBold,
   PiCheckBold,
+  PiEyeBold,
 } from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Message } from '../store/useChatStore';
 import { formatTokenCount } from '../utils/tokenCounter';
+import { useModelResponses } from '../hooks/useModelResponses';
+import { ModelResponseGrid } from './ModelResponseGrid';
+import { IndividualModelModal } from './IndividualModelModal';
 
 interface OptimizedChatMessageProps {
   message: Message;
@@ -127,9 +134,18 @@ export const OptimizedChatMessage = memo<OptimizedChatMessageProps>(({
   isHighlighted = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Default to expanded
+  const [showModelGrid, setShowModelGrid] = useState(false);
 
   const isUser = message.role === 'user';
   const isError = message.role === 'error';
+
+  // Initialize model responses hook for AI messages
+  const modelResponsesHook = useModelResponses(
+    !isUser && !isError ? message.metadata?.individualResponses : undefined,
+    !isUser && !isError ? message.metadata?.ensembleMetadata : undefined,
+    !isUser && !isError ? message.metadata?.modelsUsed : undefined,
+    !isUser && !isError ? message.metadata?.fallbackReasons : undefined
+  );
 
   // Process and validate message content
   const processedContent = useMemo(() => {
@@ -227,7 +243,7 @@ export const OptimizedChatMessage = memo<OptimizedChatMessageProps>(({
         px={{ base: 3, md: 4 }}
         py={{ base: 2.5, md: 3 }}
         borderRadius="2xl"
-        maxW={{ base: "90%", md: "80%" }}
+        maxW={{ base: "95%", md: "85%" }}
         position="relative"
         boxShadow={useColorModeValue("sm", "md")}
         border={isUser ? "none" : "1px solid"}
@@ -296,7 +312,49 @@ export const OptimizedChatMessage = memo<OptimizedChatMessageProps>(({
             <CopyButton text={processedContent} />
           </HStack>
         </HStack>
+
+        {/* Individual Model Responses Section */}
+        {!isUser && !isError && modelResponsesHook.getAvailableModels().length > 0 && (
+          <VStack spacing={3} mt={4} align="stretch">
+            <Divider />
+
+            {/* Toggle Button */}
+            <Flex justify="space-between" align="center">
+              <Text fontSize="sm" fontWeight="medium" color={useColorModeValue('gray.700', 'gray.300')}>
+                Individual AI Responses ({modelResponsesHook.getAvailableModels().length})
+              </Text>
+              <Button
+                size="sm"
+                variant="ghost"
+                leftIcon={<PiEyeBold />}
+                onClick={() => setShowModelGrid(!showModelGrid)}
+                fontSize="sm"
+              >
+                {showModelGrid ? 'Hide' : 'Show'} Models
+              </Button>
+            </Flex>
+
+            {/* Model Grid */}
+            <Collapse in={showModelGrid} animateOpacity>
+              <Box pt={2}>
+                <ModelResponseGrid
+                  models={modelResponsesHook.getAvailableModels()}
+                  onModelClick={modelResponsesHook.openModelModal}
+                  compact={true}
+                  maxVisible={8}
+                />
+              </Box>
+            </Collapse>
+          </VStack>
+        )}
       </Box>
+
+      {/* Individual Model Modal */}
+      <IndividualModelModal
+        isOpen={modelResponsesHook.isModalOpen}
+        onClose={modelResponsesHook.closeModal}
+        modelData={modelResponsesHook.selectedModel}
+      />
     </Flex>
   );
 });

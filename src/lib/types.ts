@@ -88,6 +88,9 @@ export interface NeuraStackQueryResponse {
 
   /** Any fallback reasons if models failed */
   fallbackReasons?: Record<string, string>;
+
+  /** Individual model responses (enhanced feature) */
+  individualResponses?: SubAnswer[];
 }
 
 /* ============================================================================
