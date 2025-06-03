@@ -1,9 +1,10 @@
 # 🚀 NeuraStack Frontend – AI-Powered App Ecosystem
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/salscrudato/neurastack-frontend)
-[![Version](https://img.shields.io/badge/version-2.1.1-blue)](https://github.com/salscrudato/neurastack-frontend)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue)](https://github.com/salscrudato/neurastack-frontend)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![PWA Ready](https://img.shields.io/badge/PWA-ready-purple)](https://web.dev/progressive-web-apps/)
+[![API Integration](https://img.shields.io/badge/API-latest%20backend-orange)](docs/NEURASTACK_API_INTEGRATION.md)
 
 **NeuraStack** is a comprehensive AI-powered application ecosystem featuring enterprise-grade chat interfaces, fitness tracking, trip planning, task management, and more. Built with modern web technologies and designed for performance, accessibility, and user experience excellence.
 
@@ -37,7 +38,10 @@ npm run dev
 - **Impact**: Application now deploys successfully without runtime errors
 
 ### **📈 Recent Major Updates (2024-12-20)**
-- **🎨 Enhanced Brand Identity**: Beautiful blue-to-purple gradient logo in light mode for modern aesthetic
+- **🔗 Latest Backend API Integration**: Complete integration with enhanced NeuraStack backend specification
+- **🧠 Memory System Support**: User memory tracking, session context, and memory metrics integration
+- **🎯 Enhanced Type Safety**: Full TypeScript definitions matching latest backend API specification
+- **🔄 Backward Compatibility**: Seamless migration path with legacy API support maintained
 - **⚡ Advanced Performance Optimization**: React.memo implementation, virtual scrolling, enhanced bundle analysis
 - **📱 Superior Mobile Experience**: Improved touch interactions, gesture support, responsive navigation
 - **♿ Enhanced Accessibility**: Advanced screen reader support, keyboard shortcuts, ARIA live regions
@@ -291,37 +295,71 @@ communityPrompts (collection)              shared prompts
 
 ## 5. AI Integration Architecture
 
-### Multi-Model Ensemble System
-The application uses a sophisticated AI ensemble approach:
+### Latest Backend API Integration (v2.0.0)
+The application now uses the enhanced NeuraStack backend API with advanced features:
 
 ```typescript
-// src/lib/api.ts - Core AI integration
-const MODELS = [
-  "openai:gpt-4",           // Primary reasoning and analysis
-  "google:gemini-1.5-flash", // Fast responses and creativity
-  "xai:grok-3-mini",        // Alternative perspective
-];
+// New API Client with enhanced features
+import { neuraStackClient } from '../lib/neurastack-client';
 
-// Ensemble mode combines responses for better quality
-const response = await queryStack(prompt, useEnsemble=true);
+// Configure with session and user tracking
+neuraStackClient.configure({
+  sessionId: 'user-session-123',
+  userId: 'user-456',
+  useEnsemble: true
+});
+
+// Enhanced query with memory system
+const response = await neuraStackClient.queryAI('Your prompt', {
+  useEnsemble: true,
+  maxTokens: 1000,
+  temperature: 0.7
+});
+
+// Access memory context and metrics
+console.log(response.memoryContext);
+console.log(response.tokenCount);
+console.log(response.memoryTokensSaved);
+```
+
+### Enhanced Features
+
+| Feature | Description | Benefits |
+|---------|-------------|----------|
+| **Memory System** | User memory tracking, session context, compression | Contextual conversations, token savings |
+| **Session Management** | Automatic session ID generation and tracking | Conversation continuity |
+| **Enhanced Ensemble** | Evidence Analyst + Innovator + Risk Reviewer | Better response quality and analysis |
+| **Type Safety** | Complete TypeScript definitions | Development efficiency, fewer bugs |
+| **Error Handling** | Structured errors with retry logic | Better user experience |
+
+### Multi-Model Ensemble System
+```typescript
+// Enhanced ensemble with specialized roles
+const ensembleResponse = {
+  evidenceAnalyst: "Fact-based analysis",
+  innovator: "Creative solutions",
+  riskReviewer: "Risk assessment",
+  executionTime: 1500
+};
 ```
 
 ### AI Features by App
 
-| App | AI Capabilities | Models Used |
-|-----|----------------|-------------|
-| **Chat** | Multi-model ensemble responses, conversation memory | All models |
-| **NeuraFit** | Workout planning, form analysis, nutrition advice | GPT-4 primary |
-| **Neuraplanner** | Trip planning, itinerary optimization, booking | GPT-4 + Gemini |
-| **NeuraPrompts** | Prompt optimization, categorization, trending | Gemini primary |
-| **Neuratask** | Task breakdown, priority analysis, scheduling | GPT-4 primary |
+| App | AI Capabilities | Enhanced Features |
+|-----|----------------|-------------------|
+| **Chat** | Multi-model ensemble, memory context | Session continuity, token optimization |
+| **NeuraFit** | Workout planning, progress tracking | Personalized memory, fitness history |
+| **Neuraplanner** | Trip planning, booking integration | Travel preferences memory |
+| **NeuraPrompts** | Prompt optimization, community sharing | Usage analytics, trending |
+| **Neuratask** | Task breakdown, priority analysis | Project memory, context awareness |
 
 ### Response Processing
-- **Caching**: 5-second request deduplication
-- **Retry Logic**: 3 attempts with exponential backoff
-- **Error Handling**: User-friendly error messages
-- **Validation**: Response sanitization and structure validation
-- **Performance**: Response time tracking and optimization
+- **Memory Integration**: Automatic context compression and retrieval
+- **Session Tracking**: Conversation continuity across interactions
+- **Enhanced Caching**: 5-second deduplication with session awareness
+- **Retry Logic**: Intelligent retry with exponential backoff
+- **Error Handling**: Structured error responses with user-friendly messages
+- **Performance Monitoring**: Response time tracking and token usage analytics
 
 ---
 
@@ -372,8 +410,10 @@ export const useChatStore = create<ChatState>()(
       messages: [],
       isLoading: false,
       sendMessage: async (text: string) => {
-        // AI integration with retry logic
-        const response = await queryStack(text, true);
+        // AI integration with new memory-aware API
+        const response = await neuraStackClient.queryAI(text, {
+          useEnsemble: true
+        });
         // Firebase sync for authenticated users
         if (auth.currentUser) {
           await saveMessageToFirebase(message);
@@ -727,6 +767,7 @@ npm run dev
 
 | Version | Date (YYYY‑MM‑DD) | Author | Highlights |
 |---------|------------------|--------|------------|
+| **2.2.0** | 2024‑12‑20 | AI Assistant | **LATEST BACKEND API INTEGRATION**: Enhanced NeuraStack API with memory system, session tracking, improved type safety, backward compatibility |
 | **2.1.1** | 2024‑12‑20 | AI Assistant | **MOBILE SCROLLING FIX**: Robust solution for NeuraFit onboarding scrolling issues, dynamic layout system, enhanced mobile support |
 | **2.1.0** | 2024‑12‑20 | AI Assistant | **MAJOR UI/UX RELEASE**: Beautiful gradient branding, advanced performance optimization, superior mobile experience, enhanced accessibility, design system excellence |
 | **2.0.0** | 2024‑12‑20 | AI Assistant | **MAJOR RELEASE**: Complete NeuraFit flow, testing infrastructure, performance optimizations, enhanced UX |

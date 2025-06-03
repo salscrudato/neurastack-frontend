@@ -8,13 +8,13 @@ import {
   Text,
   HStack,
   useToast,
-  VStack,
   Tooltip,
 } from "@chakra-ui/react";
 import { PiArrowUpBold } from "react-icons/pi";
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { estimateTokenCount, formatTokenCount, getTokenCountColor } from "../utils/tokenCounter";
+import { createErrorToast } from "../utils/errorHandler";
 
 /**
  * ChatInput – redesigned to match Grok style:
@@ -85,13 +85,16 @@ export default function ChatInput() {
         textareaRef.current.style.height = "auto";
       }
     } catch (error) {
-      toast({
-        title: "Failed to send message",
-        description: "Please try again.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
+      // Use the new error handling utility
+      const errorToast = createErrorToast(error, {
+        component: 'ChatInput',
+        action: 'sendMessage'
       });
+
+      // Only show toast for non-Firebase errors
+      if (!error || !(error instanceof Error) || !error.message.includes('Firebase')) {
+        toast(errorToast);
+      }
     }
   };
 
@@ -100,17 +103,18 @@ export default function ChatInput() {
   const pageBg   = useColorModeValue("#f5f5f7", "#1c1c1e");
   const btnBg    = useColorModeValue("gray.100", "gray.700");
   const btnHover = useColorModeValue("gray.200", "gray.600");
-  const charCountColor = useColorModeValue("gray.400", "gray.500");
+
   const borderTopColor = useColorModeValue("gray.200", "gray.700");
   const hoverBorderColor = useColorModeValue("gray.400", "gray.500");
   const placeholderColor = useColorModeValue("gray.500", "gray.400");
   const textColor = useColorModeValue("gray.800", "gray.100");
+  const hintTextColor = useColorModeValue('gray.500', 'gray.400');
 
   return (
     <Box
       w="full"
-      px={4}
-      py={4}
+      px={{ base: 3, md: 4 }}
+      py={{ base: 3, md: 4 }}
       bg={pageBg}
       borderTopWidth="1px"
       borderColor={borderTopColor}
@@ -121,8 +125,8 @@ export default function ChatInput() {
         borderWidth="1px"
         borderColor={border}
         borderRadius="2xl"
-        px={4}
-        py={3}
+        px={{ base: 3, md: 4 }}
+        py={{ base: 2.5, md: 3 }}
         alignItems="center"
         transition="all 0.2s ease"
         _focusWithin={{
@@ -149,52 +153,44 @@ export default function ChatInput() {
           }}
           isDisabled={busy}
           rows={1}
-          minH="3rem"
-          maxH="6.5rem"
+          minH={{ base: "2.5rem", md: "3rem" }}
+          maxH={{ base: "5rem", md: "6.5rem" }}
           resize="none"
           _placeholder={{
             color: placeholderColor,
-            transition: "opacity 0.3s ease"
+            transition: "opacity 0.3s ease",
+            fontSize: { base: "15px", md: "16px" }
           }}
           color={textColor}
           aria-label="Message to Neurastack"
-          pr="6rem"
+          pr={{ base: "5rem", md: "6rem" }}
           borderColor={charCount > MAX_CHARS ? "red.400" : "transparent"}
-          fontSize="16px"
+          fontSize={{ base: "15px", md: "16px" }}
           lineHeight="1.5"
         />
 
-        <InputRightElement width="6rem" top="50%" transform="translateY(-50%)" pr={2}>
-          <HStack spacing={2} align="center">
-            {/* Token and Character Count */}
-            {(charCount > 0 || tokenCount > 0) && (
+        <InputRightElement width={{ base: "5rem", md: "6rem" }} top="50%" transform="translateY(-50%)" pr={2}>
+          <HStack spacing={{ base: 1, md: 2 }} align="center">
+            {/* Token Count Only - Simplified for mobile */}
+            {tokenCount > 0 && (
               <Tooltip
-                label={`${charCount} characters, ~${tokenCount} token${tokenCount === 1 ? '' : 's'}`}
+                label={`~${tokenCount} token${tokenCount === 1 ? '' : 's'} (${charCount} characters)`}
                 hasArrow
                 placement="top"
+                fontSize="sm"
               >
-                <VStack spacing={0} align="end" minW="10">
-                  <Text
-                    fontSize="xs"
-                    color={`${getTokenCountColor(tokenCount)}.400`}
-                    fontWeight="500"
-                    lineHeight="1"
-                    opacity={tokenCount > 0 ? 1 : 0}
-                    transition="opacity 0.2s ease"
-                  >
-                    {tokenCount > 0 && `${formatTokenCount(tokenCount)} token${tokenCount === 1 ? '' : 's'}`}
-                  </Text>
-                  <Text
-                    fontSize="xs"
-                    color={charCount > MAX_CHARS ? "red.400" : charCountColor}
-                    fontWeight="500"
-                    lineHeight="1"
-                    opacity={charCount > 0 ? 1 : 0}
-                    transition="opacity 0.2s ease"
-                  >
-                    {charCount > 0 && `${charCount} count`}
-                  </Text>
-                </VStack>
+                <Text
+                  fontSize={{ base: "2xs", md: "xs" }}
+                  color={`${getTokenCountColor(tokenCount)}.400`}
+                  fontWeight="500"
+                  lineHeight="1"
+                  opacity={tokenCount > 0 ? 1 : 0}
+                  transition="opacity 0.2s ease"
+                  minW={{ base: "8", md: "10" }}
+                  textAlign="center"
+                >
+                  {formatTokenCount(tokenCount)}
+                </Text>
               </Tooltip>
             )}
 
@@ -205,8 +201,8 @@ export default function ChatInput() {
               onClick={handleSend}
               isLoading={busy}
               size="sm"
-              minW="10" // Increased for better touch target
-              h="10"    // Increased for better touch target
+              minW={{ base: "9", md: "10" }} // Optimized for mobile touch
+              h={{ base: "9", md: "10" }}    // Optimized for mobile touch
               bg={txt.trim() ? "#3b82f6" : btnBg}
               _hover={{
                 bg: txt.trim() ? "#2f6fe4" : btnHover,
@@ -231,11 +227,12 @@ export default function ChatInput() {
       {/* Enter key hint */}
       {txt.trim() && (
         <Text
-          fontSize="xs"
-          color={useColorModeValue('gray.500', 'gray.400')}
+          fontSize={{ base: "2xs", md: "xs" }}
+          color={hintTextColor}
           textAlign="center"
-          mt={1}
-          opacity={0.8}
+          mt={{ base: 0.5, md: 1 }}
+          opacity={0.7}
+          fontWeight="400"
         >
           Press ⏎ to submit
         </Text>

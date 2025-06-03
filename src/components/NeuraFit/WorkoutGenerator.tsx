@@ -26,7 +26,8 @@ import {
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFitnessStore } from '../../store/useFitnessStore';
-import { queryStack } from '../../lib/api';
+import { neuraStackClient } from '../../lib/neurastack-client';
+import { useAuthStore } from '../../store/useAuthStore';
 import type { WorkoutPlan, Exercise } from '../../lib/types';
 
 const MotionBox = motion(Box);
@@ -38,6 +39,7 @@ interface WorkoutGeneratorProps {
 
 export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutGeneratorProps) {
   const { profile, addWorkoutPlan } = useFitnessStore();
+  const { user } = useAuthStore();
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentWorkout, setCurrentWorkout] = useState<WorkoutPlan | null>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -84,6 +86,13 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
   const generateWorkout = async () => {
     setIsGenerating(true);
     try {
+      // Configure the new API client with session info
+      neuraStackClient.configure({
+        sessionId: crypto.randomUUID(),
+        userId: user?.uid || '',
+        useEnsemble: true
+      });
+
       const prompt = `Generate a personalized workout plan based on this fitness profile:
       - Fitness Level: ${profile.fitnessLevel}
       - Goals: ${profile.goals.join(', ')}
@@ -117,7 +126,11 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
         ]
       }`;
 
-      const response = await queryStack(prompt, false);
+      const response = await neuraStackClient.queryAI(prompt, {
+        useEnsemble: true,
+        maxTokens: 2000,
+        temperature: 0.7
+      });
 
       // Parse the AI response to extract workout data
       const workoutData = parseWorkoutResponse(response.answer);

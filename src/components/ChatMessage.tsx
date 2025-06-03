@@ -93,8 +93,8 @@ function logMessageRender(message: Message): void {
   }
 }
 
-const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage = false }: { m: Message; isFirstAssistantMessage?: boolean }) {
-  const [expanded, setExpanded] = useState(false);
+const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage: _isFirstAssistantMessage = false }: { m: Message; isFirstAssistantMessage?: boolean }) {
+  const [expanded, setExpanded] = useState(true); // Default to expanded
   const toggleExpand = () => setExpanded((prev) => !prev);
   const toast = useToast();
   const { isOpen: isSavePromptOpen, onOpen: onSavePromptOpen, onClose: onSavePromptClose } = useDisclosure();
@@ -207,7 +207,7 @@ const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage = fal
             </>
           )}
 
-          {/* User message header with save prompt button */}
+          {/* User message header - save prompt button hidden */}
           {isUser && (
             <HStack justify="space-between" align="center" mb={1}>
               <Text
@@ -219,30 +219,33 @@ const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage = fal
                 {formatTimestamp(m.timestamp)}
               </Text>
 
-              <Tooltip label="Save as prompt" hasArrow>
-                <IconButton
-                  aria-label="Save as prompt"
-                  icon={<PiBookmarkBold />}
-                  size="sm"
-                  variant="ghost"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSavePrompt();
-                  }}
-                  color="whiteAlpha.700"
-                  _hover={{
-                    color: "white",
-                    transform: "scale(1.1)"
-                  }}
-                  transition="all 0.2s ease"
-                />
-              </Tooltip>
+              {/* Save prompt functionality hidden */}
+              {false && (
+                <Tooltip label="Save as prompt" hasArrow>
+                  <IconButton
+                    aria-label="Save as prompt"
+                    icon={<PiBookmarkBold />}
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSavePrompt();
+                    }}
+                    color="whiteAlpha.700"
+                    _hover={{
+                      color: "white",
+                      transform: "scale(1.1)"
+                    }}
+                    transition="all 0.2s ease"
+                  />
+                </Tooltip>
+              )}
             </HStack>
           )}
 
-          {!isUser && isFirstAssistantMessage && (
+          {!isUser && !isError && !isLoad && (
             <>
-              {/* Consolidated model badge - show only on first assistant message */}
+              {/* Model badge - show on all assistant messages */}
               <HStack justify="flex-start" align="center" mb={2}>
                 <Text
                   fontSize="xs"
@@ -380,8 +383,8 @@ const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage = fal
         </VStack>
       </MotionBox>
 
-      {/* Save Prompt Modal */}
-      {isUser && (
+      {/* Save Prompt Modal - hidden */}
+      {false && isUser && (
         <SavePromptModal
           isOpen={isSavePromptOpen}
           onClose={onSavePromptClose}

@@ -52,7 +52,7 @@ Create `vercel.json`:
     "VITE_SKYSCANNER_API_KEY": "@skyscanner-api-key",
     "VITE_OPENTABLE_API_KEY": "@opentable-api-key",
     "VITE_AFFILIATE_ID": "@affiliate-id",
-    "VITE_BACKEND_URL": "https://neurastack-server-1.onrender.com"
+    "VITE_BACKEND_URL": "https://neurastack-server-373148373738.us-central1.run.app"
   },
   "build": {
     "env": {

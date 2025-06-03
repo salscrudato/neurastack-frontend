@@ -2,17 +2,21 @@ import {
   Flex, IconButton, Box, Text, Avatar,
   Menu, MenuButton, MenuList, MenuItem, MenuDivider,
   useColorMode, useColorModeValue, useToast, Tooltip,
-  HStack, Icon
+  HStack, Icon, Badge, useDisclosure,
+  Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon }   from '@chakra-ui/icons';
-import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise, PiDownloadBold } from 'react-icons/pi';
+import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise, PiDownloadBold, PiDatabase, PiGear } from 'react-icons/pi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
+import { useChatStore } from '../store/useChatStore';
 import { BrandLogo } from './BrandLogo';
 import { useManualUpdateCheck } from './UpdateNotification';
 import { forceRefresh } from '../utils/updateManager';
+import { MemoryVerification } from './MemoryVerification';
+import { CacheManager } from './CacheManager';
 
 export function Header() {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -21,8 +25,24 @@ export function Header() {
   const setUser = useAuthStore(s => s.setUser);
   const user = useAuthStore(s => s.user);
 
+  // Chat store for memory/cache management
+  const sessionId = useChatStore(s => s.sessionId);
+
   const toast = useToast();
   const { checkForUpdates, isChecking } = useManualUpdateCheck();
+
+  // Modal controls for cache management
+  const {
+    isOpen: isMemoryOpen,
+    onOpen: onMemoryOpen,
+    onClose: onMemoryClose
+  } = useDisclosure();
+
+  const {
+    isOpen: isCacheOpen,
+    onOpen: onCacheOpen,
+    onClose: onCacheClose
+  } = useDisclosure();
 
   const gray = useColorModeValue('gray.600','gray.300');
   const grayHover = useColorModeValue('gray.700','white');
@@ -271,6 +291,45 @@ export function Header() {
 
           <MenuDivider />
 
+          {/* Cache Management Section */}
+          <MenuItem
+            onClick={onMemoryOpen}
+            color={grayHover}
+            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            <HStack>
+              <PiDatabase />
+              <Box>
+                <Text>Memory Verification</Text>
+                <HStack spacing={1} mt={1}>
+                  <Badge
+                    size="xs"
+                    colorScheme="green"
+                    variant="subtle"
+                  >
+                    Memory API
+                  </Badge>
+                  {user && (
+                    <Badge size="xs" colorScheme="blue" variant="outline">
+                      Session: {sessionId.slice(0, 6)}...
+                    </Badge>
+                  )}
+                </HStack>
+              </Box>
+            </HStack>
+          </MenuItem>
+
+          <MenuItem
+            onClick={onCacheOpen}
+            color={grayHover}
+            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            <HStack>
+              <PiGear />
+              <Text>Cache Management</Text>
+            </HStack>
+          </MenuItem>
+
+          <MenuDivider />
+
           <MenuItem
             onClick={handleSignOut}
             color={grayHover}
@@ -282,6 +341,30 @@ export function Header() {
           </MenuItem>
         </MenuList>
       </Menu>
+
+      {/* Memory Verification Modal */}
+      <Modal isOpen={isMemoryOpen} onClose={onMemoryClose} size="6xl">
+        <ModalOverlay />
+        <ModalContent maxH="90vh" overflowY="auto">
+          <ModalHeader>Memory System Verification</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <MemoryVerification />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* Cache Management Modal */}
+      <Modal isOpen={isCacheOpen} onClose={onCacheClose} size="6xl">
+        <ModalOverlay />
+        <ModalContent maxH="90vh" overflowY="auto">
+          <ModalHeader>Cache Management</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <CacheManager />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
 }

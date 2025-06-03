@@ -17,10 +17,11 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
 import { useChatStore } from '../store/useChatStore';
-import ChatMessage from '../components/ChatMessage';
+import { OptimizedChatMessage } from '../components/OptimizedChatMessage';
 import ChatInput from '../components/ChatInput';
 import ChatSearch from '../components/ChatSearch';
 import OfflineIndicator from '../components/OfflineIndicator';
+import { MobileOptimizedLoader } from '../components/MobileOptimizedLoader';
 // import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor'; // Disabled to improve performance
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -30,6 +31,8 @@ export function ChatPage() {
   const isLoading = useChatStore(s => s.isLoading);
   const retryCount = useChatStore(s => s.retryCount);
   const loadChatHistory = useChatStore(s => s.loadChatHistory);
+
+  // Auth store
   const user = useAuthStore(s => s.user);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +51,7 @@ export function ChatPage() {
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const containerBg = useColorModeValue("gray.50", "gray.900");
   const highlightBg = useColorModeValue("yellow.100", "yellow.800");
-  const retryTextColor = useColorModeValue("gray.500", "gray.400");
+
   const scrollButtonBg = useColorModeValue("white", "gray.700");
   const scrollButtonColor = useColorModeValue("gray.600", "gray.300");
   const scrollButtonHoverBg = useColorModeValue("gray.50", "gray.600");
@@ -140,8 +143,6 @@ export function ChatPage() {
       {/* Offline indicator */}
       <OfflineIndicator />
 
-
-
       {/* Search functionality */}
       {showSearch && (
         <ChatSearch onResultSelect={handleSearchResultSelect} />
@@ -153,23 +154,24 @@ export function ChatPage() {
           flex={1}
           align="center"
           justify="center"
-          px={6}
-          pb={{ base: 24, md: 0 }}   /* avoid overlap with input on mobile */
+          px={{ base: 4, md: 6 }}
+          pb={{ base: 20, md: 0 }}   /* avoid overlap with input on mobile */
         >
-          <Box textAlign="center">
+          <Box textAlign="center" maxW="md">
             <Text
-              fontSize="2xl"
+              fontSize={{ base: "xl", md: "2xl" }}
               lineHeight="short"
               fontWeight="semibold"
               color={heroTextColor}
+              mb={{ base: 1, md: 2 }}
             >
               What do you want to know?
             </Text>
             <Text
-              mt={2}
-              fontSize="2xl"
+              fontSize={{ base: "lg", md: "2xl" }}
               color={heroSubTextColor}
               fontWeight="normal"
+              opacity={0.8}
             >
               Our team is happy to assist you...
             </Text>
@@ -182,14 +184,12 @@ export function ChatPage() {
         ref={messagesContainerRef}
         flex="1 1 0"
         overflowY="auto"
-        px={3}
-        py={1}
+        px={{ base: 2, md: 3 }}
+        py={{ base: 1, md: 2 }}
         bg={containerBg}
         position="relative"
       >
-
-
-        <Flex direction="column" align="stretch" gap={4}>
+        <Flex direction="column" align="stretch" gap={{ base: 3, md: 4 }}>
           {msgs.map((m, index) => {
             // Check if this is the first assistant message
             const isFirstAssistantMessage = m.role === 'assistant' &&
@@ -202,19 +202,19 @@ export function ChatPage() {
                 bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
                 borderRadius="md"
                 transition="background-color 0.3s"
+                px={{ base: 1, md: 0 }}
               >
-                <ChatMessage m={m} isFirstAssistantMessage={isFirstAssistantMessage} />
+                <OptimizedChatMessage message={m} isFirstAssistantMessage={isFirstAssistantMessage} />
               </Box>
             );
           })}
 
           {/* Loading indicator with retry count */}
-          {isLoading && retryCount > 0 && (
-            <Box textAlign="center" py={4}>
-              <Text fontSize="sm" color={retryTextColor}>
-                Retrying... (attempt {retryCount + 1}/4)
-              </Text>
-            </Box>
+          {isLoading && (
+            <MobileOptimizedLoader
+              retryCount={retryCount}
+              message="Thinking..."
+            />
           )}
 
           <div ref={bottomRef} />
@@ -227,9 +227,9 @@ export function ChatPage() {
           aria-label="Scroll to bottom"
           icon={<PiArrowUpBold />}
           position="absolute"
-          bottom="120px"
-          right="20px"
-          size="md"
+          bottom={{ base: "100px", md: "120px" }}
+          right={{ base: "16px", md: "20px" }}
+          size={{ base: "sm", md: "md" }}
           borderRadius="full"
           bg={scrollButtonBg}
           color={scrollButtonColor}
@@ -241,6 +241,8 @@ export function ChatPage() {
           onClick={scrollToBottom}
           zIndex={10}
           transform="rotate(180deg)"
+          minW={{ base: "40px", md: "48px" }}
+          h={{ base: "40px", md: "48px" }}
         />
       )}
 

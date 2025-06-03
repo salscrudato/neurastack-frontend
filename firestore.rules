@@ -13,7 +13,19 @@ service cloud.firestore {
       }
 
       // Chat messages - users can only access their own chat history
+      // Allow authenticated users (including anonymous) to write to their own chat messages
       match /chatMessages/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Fitness data - users can only access their own fitness data
+      match /fitness/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Trip data - users can only access their own trip data
+      match /trips/{tripId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }

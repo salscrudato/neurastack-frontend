@@ -323,7 +323,8 @@ export default function PromptCard({
                 </>
               )}
               
-              {type !== 'personal' && (
+              {/* Pin/Save to Personal functionality hidden */}
+              {false && type !== 'personal' && (
                 <MenuItem
                   icon={<PiBookmarkBold />}
                   onClick={handleSaveToPersonal}

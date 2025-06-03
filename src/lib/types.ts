@@ -1,5 +1,5 @@
 /* ============================================================================
- * Shared request / response contracts used by api.ts and the chat store
+ * NeuraStack Frontend API Types - Updated for Latest Backend Integration
  * ========================================================================== */
 
 /** Canonical provider keys we support today */
@@ -14,7 +14,168 @@ export interface Message {
   metadata?: Record<string, any>;
 }
 
-/** Raw request body sent to /api/query */
+/* ============================================================================
+ * NeuraStack API Request/Response Types (Latest Backend Version)
+ * ========================================================================== */
+
+/** Request interface for NeuraStack API */
+export interface NeuraStackQueryRequest {
+  /** The user's prompt/question */
+  prompt: string;
+
+  /** Use 4-AI ensemble for better responses (recommended) */
+  useEnsemble?: boolean;
+
+  /** Specific models to use (optional) */
+  models?: string[];
+
+  /** Maximum tokens in response */
+  maxTokens?: number;
+
+  /** Temperature for response creativity (0-1) */
+  temperature?: number;
+}
+
+/** Headers for NeuraStack API requests */
+export interface NeuraStackHeaders {
+  'Content-Type': 'application/json';
+  'X-Session-ID'?: string;
+  'X-User-ID'?: string;
+  'Authorization'?: string;
+  [key: string]: string | undefined;
+}
+
+/** Per‑model answer as returned by the backend */
+export interface SubAnswer {
+  model: string;          // Full model key like "openai:gpt-4"
+  answer: string;         // The model's native response
+  role?: string;          // Role in ensemble mode (e.g., "Evidence Analyst")
+}
+
+/** Updated ensemble metadata structure */
+export interface EnsembleMetadata {
+  evidenceAnalyst: string;
+  innovator: string;
+  riskReviewer: string;
+  executionTime: number;
+}
+
+/** Response interface for NeuraStack API */
+export interface NeuraStackQueryResponse {
+  /** Primary AI response text */
+  answer: string;
+
+  /** Whether ensemble mode was used */
+  ensembleMode: boolean;
+
+  /** Which models successfully responded */
+  modelsUsed: Record<string, boolean>;
+
+  /** Total execution time */
+  executionTime: string;
+
+  /** Memory context summary */
+  memoryContext?: string;
+
+  /** Token count for the response */
+  tokenCount: number;
+
+  /** Tokens saved through memory compression */
+  memoryTokensSaved?: number;
+
+  /** Ensemble-specific metadata */
+  ensembleMetadata?: EnsembleMetadata;
+
+  /** Any fallback reasons if models failed */
+  fallbackReasons?: Record<string, string>;
+}
+
+/* ============================================================================
+ * Memory System Types
+ * ========================================================================== */
+
+export type MemoryType = 'working' | 'short_term' | 'long_term' | 'semantic' | 'episodic';
+
+export interface MemoryMetrics {
+  /** Total number of memories stored */
+  totalMemories: number;
+
+  /** Average importance score (0-1) */
+  averageImportance: number;
+
+  /** Average compression ratio (0-1) */
+  averageCompressionRatio: number;
+
+  /** Total tokens saved through compression */
+  totalTokensSaved: number;
+
+  /** Memory count by type */
+  memoryByType: Record<MemoryType, number>;
+
+  /** Memory retention statistics */
+  retentionStats: {
+    active: number;
+    archived: number;
+    expired: number;
+  };
+
+  /** Access patterns (for analytics) */
+  accessPatterns: {
+    hourly: number[];
+    daily: number[];
+    weekly: number[];
+  };
+}
+
+export interface UserMemory {
+  id: string;
+  userId: string;
+  sessionId: string;
+  memoryType: MemoryType;
+
+  content: {
+    original: string;
+    compressed: string;
+    keywords: string[];
+    concepts: string[];
+    sentiment: number;
+    importance: number;
+  };
+
+  metadata: {
+    timestamp: Date;
+    context: string;
+    conversationTopic: string;
+    userIntent: string;
+    responseQuality: number;
+    tokenCount: number;
+    compressedTokenCount: number;
+  };
+
+  weights: {
+    recency: number;
+    importance: number;
+    frequency: number;
+    emotional: number;
+    composite: number;
+  };
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SessionContext {
+  sessionId: string;
+  memories: UserMemory[];
+  contextSummary: string;
+  totalTokens: number;
+}
+
+/* ============================================================================
+ * Legacy Types (for backward compatibility)
+ * ========================================================================== */
+
+/** @deprecated Use NeuraStackQueryRequest instead */
 export interface ChatRequest {
   prompt: string;
   /** Array of fully‑qualified model keys, e.g. "openai:gpt-4" */
@@ -23,22 +184,7 @@ export interface ChatRequest {
   useEnsemble?: boolean;
 }
 
-/** Per‑model answer as returned by the backend */
-export interface SubAnswer {
-  model: string;          // Full model key like "openai:gpt-4"
-  answer: string;         // The model's native response
-  role?: string;          // Role in ensemble mode (e.g., "Scientific Analyst")
-}
-
-/** Ensemble metadata for detailed breakdown */
-export interface EnsembleMetadata {
-  scientificAnalyst?: string;
-  creativeAdvisor?: string;
-  devilsAdvocate?: string;
-  executionTime?: number;
-}
-
-/** Full backend payload */
+/** @deprecated Use NeuraStackQueryResponse instead */
 export interface ChatResponse {
   /** Synthesised, merged answer */
   answer: string;

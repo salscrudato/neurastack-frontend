@@ -16,8 +16,27 @@ import { VitePWA } from "vite-plugin-pwa";
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
 
+// Generate version information for cache busting
+const generateVersionInfo = () => {
+  const now = Date.now();
+  const gitHash = process.env.VITE_GIT_HASH || 'dev';
+  return {
+    buildTime: now.toString(),
+    gitHash,
+    version: '2.2.0'
+  };
+};
+
+const versionInfo = generateVersionInfo();
+
 // Export the Vite configuration object
 export default defineConfig({
+  // Define environment variables
+  define: {
+    __APP_VERSION__: JSON.stringify(versionInfo.version),
+    __BUILD_TIME__: JSON.stringify(versionInfo.buildTime),
+    __GIT_HASH__: JSON.stringify(versionInfo.gitHash),
+  },
   // Plugins extend Vite's functionality
   plugins: [
     react(), // Enables React Fast Refresh and JSX transformation

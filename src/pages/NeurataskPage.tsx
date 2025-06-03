@@ -17,6 +17,7 @@ import { TaskDrawer } from '../components/TaskDrawer';
 import { TaskRail } from '../components/TaskRail';
 import { useTaskChatStore } from '../store/useTaskChatStore';
 import TaskChatInput from '../components/TaskChatInput';
+import { neuraStackClient } from '../lib/neurastack-client';
 
 /* ------------------------------------------------------------------ */
 /* 🛰️  neuratask – AI‑assisted task coach (chat-style v2)             */
@@ -101,29 +102,48 @@ export default function NeurataskPage() {
     addMessage({ from: 'user', text: `${action} this task: "${task.text}"` });
 
     try {
-      const apiBase = import.meta.env.VITE_BACKEND_URL || '';
-      const response = await fetch(`${apiBase}/api/todo`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Request-ID': crypto.randomUUID(),
-        },
-        body: JSON.stringify({
-          prompt: `${action} this task: "${task.text}". Description: ${task.description || 'None'}. Subtasks: ${task.subtasks.join(', ')}`,
-        }),
+      const prompt = `${action} this task: "${task.text}". Description: ${task.description || 'None'}. Subtasks: ${task.subtasks.join(', ')}`;
+
+      const response = await neuraStackClient.queryAI(prompt, {
+        useEnsemble: true,
+        models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
+        maxTokens: 1000,
+        temperature: 0.7
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const newTask: Task = {
-          id: crypto.randomUUID(),
-          text: data.title,
-          description: data.description || '',
-          subtasks: data.tasks,
-          completed: [],
-        };
-        addTask(newTask);
+      // Parse the AI response to extract task information
+      const answer = response.answer;
+
+      // Simple parsing - look for title and tasks in the response
+      const lines = answer.split('\n').filter(line => line.trim());
+      const title = lines[0]?.replace(/^(Title:|Task:|\*\*|\*)/i, '').trim() || `${action}d task`;
+
+      // Extract subtasks from the response
+      const subtasks: string[] = [];
+      let inTaskList = false;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.match(/^(\d+\.|[-*]|\*\*)/)) {
+          const task = trimmed.replace(/^(\d+\.|[-*]|\*\*|\*)/g, '').trim();
+          if (task && task.length > 3) {
+            subtasks.push(task);
+            inTaskList = true;
+          }
+        } else if (inTaskList && trimmed.length > 0 && !trimmed.includes(':')) {
+          subtasks.push(trimmed);
+        }
       }
+
+      const newTask: Task = {
+        id: crypto.randomUUID(),
+        text: title,
+        description: answer.length > 200 ? answer.substring(0, 200) + '...' : answer,
+        subtasks: subtasks.length > 0 ? subtasks : [answer],
+        completed: [],
+      };
+
+      addTask(newTask);
     } catch (error) {
       toast({
         title: 'Failed to refine task',
@@ -158,37 +178,42 @@ export default function NeurataskPage() {
     setLoading(true);
 
     try {
-      const apiBase = import.meta.env.VITE_BACKEND_URL || '';
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-
-      const response = await fetch(`${apiBase}/api/todo`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Request-ID': crypto.randomUUID(),
-        },
-        body: JSON.stringify({ prompt }),
-        signal: controller.signal,
+      const response = await neuraStackClient.queryAI(prompt, {
+        useEnsemble: true,
+        models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
+        maxTokens: 1500,
+        temperature: 0.7
       });
 
-      clearTimeout(timeoutId);
+      // Parse the AI response to extract task information
+      const answer = response.answer;
 
-      if (!response.ok) {
-        throw new Error(`Server error (${response.status})`);
-      }
+      // Simple parsing - look for title and tasks in the response
+      const lines = answer.split('\n').filter(line => line.trim());
+      const title = lines[0]?.replace(/^(Title:|Task:|\*\*|\*)/i, '').trim() || prompt.substring(0, 50);
 
-      const data = await response.json();
+      // Extract subtasks from the response
+      const subtasks: string[] = [];
+      let inTaskList = false;
 
-      if (!data.title || !Array.isArray(data.tasks)) {
-        throw new Error('Invalid response format from server');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.match(/^(\d+\.|[-*]|\*\*)/)) {
+          const task = trimmed.replace(/^(\d+\.|[-*]|\*\*|\*)/g, '').trim();
+          if (task && task.length > 3) {
+            subtasks.push(task);
+            inTaskList = true;
+          }
+        } else if (inTaskList && trimmed.length > 0 && !trimmed.includes(':')) {
+          subtasks.push(trimmed);
+        }
       }
 
       const newTask: Task = {
         id: crypto.randomUUID(),
-        text: data.title,
-        description: data.description || '',
-        subtasks: data.tasks,
+        text: title,
+        description: answer.length > 200 ? answer.substring(0, 200) + '...' : answer,
+        subtasks: subtasks.length > 0 ? subtasks : [answer],
         completed: [],
       };
 

@@ -2,7 +2,7 @@ import { memo, useMemo, useRef, useEffect } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { Box, Flex } from '@chakra-ui/react';
 import { OptimizedChatMessage } from './OptimizedChatMessage';
-import type { Message } from '../lib/types';
+import type { Message } from '../store/useChatStore';
 
 interface VirtualChatListProps {
   messages: Message[];

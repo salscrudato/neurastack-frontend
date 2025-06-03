@@ -32,7 +32,14 @@ export interface StoredMessage extends Omit<Message, 'timestamp'> {
  */
 export async function saveMessageToFirebase(message: Message): Promise<void> {
   if (!auth.currentUser) {
-    throw new Error('User must be authenticated to save messages');
+    console.warn('User not authenticated, skipping Firebase save');
+    return; // Gracefully handle unauthenticated users
+  }
+
+  // Check if user is anonymous - skip Firebase save for anonymous users
+  if (auth.currentUser.isAnonymous) {
+    console.log('Anonymous user detected, skipping Firebase save');
+    return;
   }
 
   try {
@@ -44,17 +51,29 @@ export async function saveMessageToFirebase(message: Message): Promise<void> {
       text: message.text,
       timestamp: serverTimestamp() as Timestamp,
       userId,
-      metadata: message.metadata
+      metadata: message.metadata || {}
     };
 
     await addDoc(messagesRef, messageData);
+    console.log('✅ Message saved to Firebase successfully');
   } catch (error) {
     console.error('Firebase save error:', error);
-    // Re-throw with more context
+
+    // Handle specific Firebase errors gracefully
     if (error instanceof Error) {
-      throw new Error(`Failed to save message to Firebase: ${error.message}`);
+      if (error.message.includes('permission') || error.message.includes('insufficient')) {
+        console.warn('⚠️ Firebase permissions issue - continuing with local storage only');
+        return; // Don't throw error, just log warning
+      }
+      if (error.message.includes('offline') || error.message.includes('network')) {
+        console.warn('⚠️ Firebase offline - continuing with local storage only');
+        return; // Don't throw error for network issues
+      }
     }
-    throw new Error('Failed to save message to Firebase: Unknown error');
+
+    // Only throw for unexpected errors
+    console.error('❌ Unexpected Firebase error:', error);
+    throw new Error(`Failed to save message to Firebase: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

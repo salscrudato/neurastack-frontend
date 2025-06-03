@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { nanoid } from 'nanoid';
-import { queryStack } from '../lib/api';
+import { neuraStackClient } from '../lib/neurastack-client';
 import { auth } from '../firebase';
 import {
   saveMessageToFirebase,
@@ -9,6 +9,7 @@ import {
   clearChatHistoryFromFirebase,
   deleteMessageFromFirebase
 } from '../services/chatHistoryService';
+import { handleSilentError } from '../utils/errorHandler';
 
 export interface Message {
   id: string;
@@ -21,6 +22,12 @@ export interface Message {
     retryCount?: number;
     totalTime?: number;
     errorType?: string;
+    // New memory-related metadata
+    memoryContext?: string;
+    tokenCount?: number;
+    memoryTokensSaved?: number;
+    ensembleMode?: boolean;
+    sessionId?: string;
     [key: string]: any;
   };
 }
@@ -29,11 +36,13 @@ interface ChatState {
   messages: Message[];
   isLoading: boolean;
   retryCount: number;
+  sessionId: string;
   sendMessage: (text: string) => Promise<void>;
   clearMessages: () => void;
   deleteMessage: (id: string) => void;
   retryMessage: (messageId: string) => Promise<void>;
   loadChatHistory: () => Promise<void>;
+  initializeSession: () => void;
 }
 
 const MAX_RETRIES = 3;
@@ -47,6 +56,7 @@ export const useChatStore = create<ChatState>()(
       messages: [],
       isLoading: false,
       retryCount: 0,
+      sessionId: crypto.randomUUID(),
 
       sendMessage: async (text: string) => {
         const startTime = Date.now();
@@ -65,38 +75,64 @@ export const useChatStore = create<ChatState>()(
           retryCount: 0
         }));
 
-        // Save user message to Firebase if user is authenticated
-        if (auth.currentUser) {
+        // Save user message to Firebase if user is authenticated (non-anonymous)
+        if (auth.currentUser && !auth.currentUser.isAnonymous) {
           try {
             await saveMessageToFirebase(userMsg);
           } catch (error) {
-            console.warn('Failed to save user message to Firebase:', error);
-            // Don't throw error - continue with local storage only
+            handleSilentError(error, {
+              component: 'useChatStore',
+              action: 'saveUserMessage',
+              userId: auth.currentUser?.uid
+            });
           }
         }
 
-        // Create placeholder for assistant response
+        // Set loading state - no placeholder message needed
         const assistantId = nanoid();
-        set(state => ({
-          messages: [...state.messages, {
-            id: assistantId,
-            role: 'assistant',
-            text: '',
-            timestamp: Date.now()
-          }]
-        }));
 
         let retryCount = 0;
 
         while (retryCount <= MAX_RETRIES) {
           try {
-            // Call API with ensemble mode enabled
-            const response = await queryStack(text, true);
+            const { sessionId } = get();
+
+            // Configure the new API client with session info
+            neuraStackClient.configure({
+              sessionId,
+              userId: auth.currentUser?.uid || '',
+              useEnsemble: true
+            });
+
+            // Use the new memory-aware API with specific models
+            const response = await neuraStackClient.queryAI(text, {
+              useEnsemble: true,
+              models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
+              maxTokens: 2000,
+              temperature: 0.7
+            });
+
             const responseTime = Date.now() - startTime;
+
+            // Debug logging for API response
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔍 API Response:', response);
+              console.log('🔍 Token count:', response.tokenCount);
+              console.log('🔍 Ensemble mode:', response.ensembleMode);
+            }
 
             // Validate response before processing
             if (!response || !response.answer) {
               throw new Error('Invalid response structure received');
+            }
+
+            // Clean and validate the response text
+            const cleanedAnswer = typeof response.answer === 'string'
+              ? response.answer.trim()
+              : String(response.answer || '').trim();
+
+            if (!cleanedAnswer) {
+              throw new Error('Empty response received from API');
             }
 
             // Reduced logging to improve performance
@@ -104,11 +140,10 @@ export const useChatStore = create<ChatState>()(
               console.log(`✅ Chat response received after ${retryCount} retries (${responseTime}ms)`);
             }
 
-            // Update with actual response
             const assistantMsg = {
               id: assistantId,
               role: 'assistant' as const,
-              text: response.answer,
+              text: cleanedAnswer,
               timestamp: Date.now(),
               metadata: {
                 models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
@@ -117,25 +152,30 @@ export const useChatStore = create<ChatState>()(
                 executionTime: response.executionTime,
                 ensembleMode: response.ensembleMode,
                 ensembleMetadata: response.ensembleMetadata,
-                answers: response.answers // Store individual model answers
+                // Memory-related metadata
+                memoryContext: response.memoryContext,
+                tokenCount: response.tokenCount,
+                memoryTokensSaved: response.memoryTokensSaved,
+                sessionId
               }
             };
 
             set(state => ({
-              messages: state.messages.map(m =>
-                m.id === assistantId ? assistantMsg : m
-              ),
+              messages: [...state.messages, assistantMsg],
               isLoading: false,
               retryCount: 0
             }));
 
-            // Save assistant message to Firebase if user is authenticated
-            if (auth.currentUser) {
+            // Save assistant message to Firebase if user is authenticated (non-anonymous)
+            if (auth.currentUser && !auth.currentUser.isAnonymous) {
               try {
                 await saveMessageToFirebase(assistantMsg);
               } catch (error) {
-                console.warn('Failed to save assistant message to Firebase:', error);
-                // Don't throw error - continue with local storage only
+                handleSilentError(error, {
+                  component: 'useChatStore',
+                  action: 'saveAssistantMessage',
+                  userId: auth.currentUser?.uid
+                });
               }
             }
 
@@ -145,9 +185,10 @@ export const useChatStore = create<ChatState>()(
             retryCount++;
             set(() => ({ retryCount }));
 
-            // Reduced error logging to improve performance
-            if (process.env.NODE_ENV === 'development' && retryCount > MAX_RETRIES) {
-              console.warn(`❌ Chat request failed after ${MAX_RETRIES} retries:`, error instanceof Error ? error.message : 'Unknown error');
+            // Enhanced error logging for debugging
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`❌ Chat request failed (attempt ${retryCount}/${MAX_RETRIES}):`, error instanceof Error ? error.message : 'Unknown error');
+              console.warn('🔍 Error details:', error);
             }
 
             if (retryCount > MAX_RETRIES) {
@@ -157,7 +198,7 @@ export const useChatStore = create<ChatState>()(
                 : 'An unexpected error occurred';
 
               set(state => ({
-                messages: state.messages.filter(m => m.id !== assistantId).concat([{
+                messages: [...state.messages, {
                   id: nanoid(),
                   role: 'error',
                   text: `Unable to get response: ${errorMessage}. Please try again.`,
@@ -167,7 +208,7 @@ export const useChatStore = create<ChatState>()(
                     totalTime: Date.now() - startTime,
                     errorType: error instanceof Error ? error.name : 'Unknown'
                   }
-                }]),
+                }],
                 isLoading: false,
                 retryCount: 0
               }));
@@ -233,23 +274,31 @@ export const useChatStore = create<ChatState>()(
       },
 
       loadChatHistory: async () => {
-        if (!auth.currentUser) {
+        if (!auth.currentUser || auth.currentUser.isAnonymous) {
+          console.log('User not authenticated or anonymous, skipping Firebase chat history load');
           return;
         }
 
         try {
           const messages = await loadChatHistoryFromFirebase(50);
           set({ messages });
+          console.log('✅ Chat history loaded from Firebase successfully');
         } catch (error) {
           console.warn('Failed to load chat history from Firebase:', error);
+          // Don't throw error - continue with local storage only
         }
+      },
+
+      initializeSession: () => {
+        set({ sessionId: crypto.randomUUID() });
       }
     }),
     {
       name: 'neurastack-chat-storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        messages: state.messages.slice(-50) // Keep only last 50 messages
+        messages: state.messages.slice(-50), // Keep only last 50 messages
+        sessionId: state.sessionId
       }),
     }
   )
