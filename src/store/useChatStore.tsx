@@ -52,8 +52,8 @@ interface ChatState {
   initializeSession: () => void;
 }
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 second
+const MAX_RETRIES = 2; // Reduced from 3
+const RETRY_DELAY = 1500; // Increased to 1.5 seconds
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -121,33 +121,18 @@ export const useChatStore = create<ChatState>()(
 
             const responseTime = Date.now() - startTime;
 
-            // Debug logging for API response
-            if (process.env.NODE_ENV === 'development') {
-              console.log('🔍 API Response:', response);
-              console.log('🔍 Token count:', response.tokenCount);
-              console.log('🔍 Ensemble mode:', response.ensembleMode);
-            }
-
-            // Validate response before processing
-            if (!response || !response.answer) {
-              throw new Error('Invalid response structure received');
+            // Validate response
+            if (!response?.answer) {
+              throw new Error('Invalid response received');
             }
 
             // Enhance response with mock individual responses for testing
             const enhancedResponse = enhanceResponseWithMockData(response);
 
-            // Clean and validate the response text
-            const cleanedAnswer = typeof enhancedResponse.answer === 'string'
-              ? enhancedResponse.answer.trim()
-              : String(enhancedResponse.answer || '').trim();
-
+            // Clean response text
+            const cleanedAnswer = String(enhancedResponse.answer || '').trim();
             if (!cleanedAnswer) {
-              throw new Error('Empty response received from API');
-            }
-
-            // Reduced logging to improve performance
-            if (process.env.NODE_ENV === 'development' && retryCount > 0) {
-              console.log(`✅ Chat response received after ${retryCount} retries (${responseTime}ms)`);
+              throw new Error('Empty response received');
             }
 
             const assistantMsg = {
@@ -199,10 +184,9 @@ export const useChatStore = create<ChatState>()(
             retryCount++;
             set(() => ({ retryCount }));
 
-            // Enhanced error logging for debugging
+            // Simple error logging
             if (process.env.NODE_ENV === 'development') {
               console.warn(`❌ Chat request failed (attempt ${retryCount}/${MAX_RETRIES}):`, error instanceof Error ? error.message : 'Unknown error');
-              console.warn('🔍 Error details:', error);
             }
 
             if (retryCount > MAX_RETRIES) {
@@ -227,8 +211,8 @@ export const useChatStore = create<ChatState>()(
                 retryCount: 0
               }));
             } else {
-              // Wait before retry with exponential backoff
-              await sleep(RETRY_DELAY * retryCount);
+              // Simple retry delay
+              await sleep(RETRY_DELAY);
             }
           }
         }
@@ -289,17 +273,15 @@ export const useChatStore = create<ChatState>()(
 
       loadChatHistory: async () => {
         if (!auth.currentUser || auth.currentUser.isAnonymous) {
-          console.log('User not authenticated or anonymous, skipping Firebase chat history load');
           return;
         }
 
         try {
           const messages = await loadChatHistoryFromFirebase(50);
           set({ messages });
-          console.log('✅ Chat history loaded from Firebase successfully');
         } catch (error) {
-          console.warn('Failed to load chat history from Firebase:', error);
-          // Don't throw error - continue with local storage only
+          console.warn('Failed to load chat history:', error);
+          // Continue with local storage only
         }
       },
 

@@ -23,7 +23,7 @@ const generateVersionInfo = () => {
   return {
     buildTime: now.toString(),
     gitHash,
-    version: '2.2.0'
+    version: '3.0.0'
   };
 };
 
@@ -41,10 +41,10 @@ export default defineConfig({
   plugins: [
     react(), // Enables React Fast Refresh and JSX transformation
     svgr(),  // Enables usage of SVGs as React components via import
-    // Bundle analyzer for performance optimization
-    visualizer({
+    // Bundle analyzer for performance optimization (only in production)
+    process.env.NODE_ENV === 'production' && visualizer({
       filename: 'dist/stats.html',
-      open: true,
+      open: false, // Don't auto-open in CI/CD
       gzipSize: true,
       brotliSize: true,
     }),
@@ -124,16 +124,10 @@ export default defineConfig({
     })
   ],
 
-  // Aliases simplify import paths for better readability and maintainability
+  // Simplified aliases - only include what's actively used
   resolve: {
     alias: {
-      '@assets': path.resolve(__dirname, 'src/assets'),  // Shortcut for assets directory
-      '@pages': path.resolve(__dirname, 'src/pages'),    // Shortcut for pages
-      '@store': path.resolve(__dirname, 'src/store'),    // Shortcut for state/store
-      // Keep these if you're using them elsewhere in your codebase
-      // '@icons': path.resolve(__dirname, 'src/assets/icons'),
-      // '@img': path.resolve(__dirname, 'src/assets/img'),
-      // '@theme': path.resolve(__dirname, 'src/theme'),
+      '@': path.resolve(__dirname, 'src'), // Simple root alias
     },
   },
 
@@ -196,19 +190,9 @@ export default defineConfig({
     cssCodeSplit: true,
   },
 
-  // Optimize dependencies
+  // Simplified dependency optimization
   optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      '@chakra-ui/react',
-      '@emotion/react',
-      '@emotion/styled',
-      'framer-motion',
-      'zustand',
-      'react-icons/pi',
-      'lucide-react',
-    ],
-    exclude: ['firebase'],
+    include: ['react', 'react-dom', '@chakra-ui/react', 'zustand'],
+    exclude: ['firebase'], // Firebase works better when not pre-bundled
   },
 });

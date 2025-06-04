@@ -2,170 +2,133 @@ import {
   Box,
   Spinner,
   Text,
-  VStack,
+  Flex,
+  Skeleton,
+  SkeletonText,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { keyframes } from '@emotion/react';
-import { motion } from 'framer-motion';
+import { memo } from 'react';
 
-const MotionBox = motion(Box);
-
-const pulse = keyframes`
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-`;
-
-interface LoadingSpinnerProps {
+interface LoaderProps {
+  variant?: 'spinner' | 'dots' | 'skeleton';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
-  variant?: 'default' | 'minimal' | 'dots';
+  lines?: number; // For skeleton variant
 }
 
-export default function LoadingSpinner({
+const LoadingDots = memo(({ size = 'md' }: { size?: string }) => {
+  const dotSize = size === 'sm' ? '6px' : size === 'lg' ? '12px' : '8px';
+
+  return (
+    <Flex align="center" gap={1}>
+      {[0, 1, 2].map((i) => (
+        <Box
+          key={i}
+          w={dotSize}
+          h={dotSize}
+          bg="blue.500"
+          borderRadius="full"
+          animation={`pulse 1.4s ease-in-out ${i * 0.16}s infinite both`}
+          sx={{
+            '@keyframes pulse': {
+              '0%, 80%, 100%': { transform: 'scale(0)' },
+              '40%': { transform: 'scale(1)' }
+            }
+          }}
+        />
+      ))}
+    </Flex>
+  );
+});
+
+LoadingDots.displayName = 'LoadingDots';
+
+const SkeletonLoader = memo(({ lines = 3 }: { lines?: number }) => (
+  <Box w="100%" maxW="400px">
+    <Skeleton height="20px" mb={3} />
+    <SkeletonText noOfLines={lines} spacing={2} />
+  </Box>
+));
+
+SkeletonLoader.displayName = 'SkeletonLoader';
+
+export const Loader = memo(({
+  variant = 'spinner',
   size = 'md',
-  message = 'Loading...',
+  message,
   fullScreen = false,
-  variant = 'default'
-}: LoadingSpinnerProps) {
-  const bg = useColorModeValue('white', 'gray.800');
+  lines = 3
+}: LoaderProps) => {
+  const bg = useColorModeValue('rgba(255, 255, 255, 0.9)', 'rgba(0, 0, 0, 0.9)');
   const textColor = useColorModeValue('gray.600', 'gray.300');
 
-  const sizeMap = {
-    sm: { spinner: 'sm', text: 'sm' },
-    md: { spinner: 'md', text: 'md' },
-    lg: { spinner: 'lg', text: 'lg' },
-    xl: { spinner: 'xl', text: 'xl' },
+  const renderLoader = () => {
+    switch (variant) {
+      case 'dots':
+        return <LoadingDots size={size} />;
+      case 'skeleton':
+        return <SkeletonLoader lines={lines} />;
+      default:
+        return <Spinner size={size} color="blue.500" thickness="3px" />;
+    }
   };
 
-  if (variant === 'minimal') {
-    return (
-      <Box display="flex" alignItems="center" justifyContent="center" p={4}>
-        <Spinner size={sizeMap[size].spinner} color="blue.500" />
-      </Box>
-    );
-  }
-
-  if (variant === 'dots') {
-    return (
-      <Box display="flex" alignItems="center" justifyContent="center" p={4}>
-        <VStack spacing={2}>
-          <Box display="flex" gap={1}>
-            {[0, 1, 2].map((i) => (
-              <MotionBox
-                key={i}
-                w="8px"
-                h="8px"
-                bg="blue.500"
-                borderRadius="full"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </Box>
-          {message && (
-            <Text fontSize={sizeMap[size].text} color={textColor}>
-              {message}
-            </Text>
-          )}
-        </VStack>
-      </Box>
-    );
-  }
-
   const content = (
-    <VStack spacing={4}>
-      <MotionBox
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Spinner
-          size={sizeMap[size].spinner}
-          color="blue.500"
-          thickness="3px"
-        />
-      </MotionBox>
-
+    <Flex direction="column" align="center" gap={3}>
+      {renderLoader()}
       {message && (
-        <MotionBox
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <Text
-            fontSize={sizeMap[size].text}
-            color={textColor}
-            textAlign="center"
-            animation={`${pulse} 2s ease-in-out infinite`}
-          >
-            {message}
-          </Text>
-        </MotionBox>
+        <Text fontSize="sm" color={textColor} textAlign="center">
+          {message}
+        </Text>
       )}
-    </VStack>
+    </Flex>
   );
 
   if (fullScreen) {
     return (
-      <Box
+      <Flex
         position="fixed"
         top={0}
         left={0}
         right={0}
         bottom={0}
         bg={bg}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
+        backdropFilter="blur(4px)"
         zIndex={9999}
+        align="center"
+        justify="center"
       >
         {content}
-      </Box>
+      </Flex>
     );
   }
 
-  return (
-    <Box
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      p={8}
-      minH="200px"
-    >
-      {content}
-    </Box>
-  );
-}
+  return content;
+});
 
-// Skeleton loading component for chat messages
+Loader.displayName = 'Loader';
+
+// Simplified message skeleton
 export function MessageSkeleton() {
-  return (
-    <Box p={4} maxW="80%">
-      <VStack align="stretch" spacing={2}>
-        <Box h="20px" bg="gray.200" borderRadius="md" w="60%" />
-        <Box h="16px" bg="gray.200" borderRadius="md" w="80%" />
-        <Box h="16px" bg="gray.200" borderRadius="md" w="40%" />
-      </VStack>
-    </Box>
-  );
+  return <Loader variant="skeleton" lines={2} />;
 }
 
 // Page loading component
 export function PageLoader({ message = 'Loading page...' }: { message?: string }) {
   return (
-    <LoadingSpinner
-      size="lg"
-      message={message}
-      fullScreen
-    />
+    <Flex
+      h="100vh"
+      w="100%"
+      align="center"
+      justify="center"
+      bg="gray.50"
+      _dark={{ bg: 'gray.900' }}
+    >
+      <Loader size="lg" message={message} />
+    </Flex>
   );
 }
+
+// Legacy exports for backward compatibility
+export default Loader;

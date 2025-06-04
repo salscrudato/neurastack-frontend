@@ -21,6 +21,33 @@ import {
 import { auth, db } from '../firebase';
 import type { Message } from '../store/useChatStore';
 
+/**
+ * Recursively remove undefined values from an object to prevent Firebase errors
+ * Firebase doesn't allow undefined values in documents
+ */
+function sanitizeForFirebase(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeForFirebase).filter(item => item !== null && item !== undefined);
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const sanitizedValue = sanitizeForFirebase(value);
+      if (sanitizedValue !== null && sanitizedValue !== undefined) {
+        sanitized[key] = sanitizedValue;
+      }
+    }
+    return sanitized;
+  }
+
+  return obj;
+}
+
 // TypeScript interface for stored chat messages
 export interface StoredMessage extends Omit<Message, 'timestamp'> {
   timestamp: Timestamp;
@@ -51,10 +78,13 @@ export async function saveMessageToFirebase(message: Message): Promise<void> {
       text: message.text,
       timestamp: serverTimestamp() as Timestamp,
       userId,
-      metadata: message.metadata || {}
+      metadata: sanitizeForFirebase(message.metadata || {})
     };
 
-    await addDoc(messagesRef, messageData);
+    // Sanitize the entire message data to remove any undefined values
+    const sanitizedMessageData = sanitizeForFirebase(messageData);
+
+    await addDoc(messagesRef, sanitizedMessageData);
     console.log('✅ Message saved to Firebase successfully');
   } catch (error) {
     console.error('Firebase save error:', error);

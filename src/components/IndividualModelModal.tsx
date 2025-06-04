@@ -131,14 +131,16 @@ export function IndividualModelModal({
   onClose,
   modelData
 }: IndividualModelModalProps) {
-
-  
+  // All hooks must be called before any early returns
   // Color mode values
   const modalBg = useColorModeValue('white', 'gray.800');
   const headerBg = useColorModeValue('gray.50', 'gray.700');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textColor = useColorModeValue('gray.800', 'gray.100');
   const mutedColor = useColorModeValue('gray.600', 'gray.400');
+  const closeButtonColor = useColorModeValue('gray.600', 'gray.300');
+  const closeButtonHoverColor = useColorModeValue('gray.800', 'gray.100');
+  const closeButtonHoverBg = useColorModeValue('gray.100', 'gray.600');
 
   // Keyboard navigation (simplified - only Escape to close)
   useEffect(() => {
@@ -156,6 +158,7 @@ export function IndividualModelModal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Early return after all hooks
   if (!modelData) return null;
 
   const displayInfo = getModelDisplayInfo(modelData.model);
@@ -221,10 +224,10 @@ export function IndividualModelModal({
         </ModalHeader>
 
         <ModalCloseButton
-          color={useColorModeValue('gray.600', 'gray.300')}
+          color={closeButtonColor}
           _hover={{
-            color: useColorModeValue('gray.800', 'gray.100'),
-            bg: useColorModeValue('gray.100', 'gray.600')
+            color: closeButtonHoverColor,
+            bg: closeButtonHoverBg
           }}
         />
 

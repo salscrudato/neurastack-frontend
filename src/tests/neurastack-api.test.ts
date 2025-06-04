@@ -77,7 +77,8 @@ describe('NeuraStack API Integration', () => {
           }),
           body: JSON.stringify({
             prompt: 'Test prompt',
-            useEnsemble: true
+            useEnsemble: true,
+            models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini']
           })
         })
       );

@@ -1,400 +1,360 @@
 import {
   Box,
-  Button,
   HStack,
-  SkeletonText,
+  Flex,
   useColorModeValue,
-  VStack,
   Text,
-  OrderedList,
-  UnorderedList,
-  ListItem,
   IconButton,
   Tooltip,
-  useToast,
-  useDisclosure,
+  useClipboard,
+  Badge,
+  Collapse,
+  Button,
+  VStack,
 } from "@chakra-ui/react";
-import { useState, memo, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, memo, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
-import { PiBookmarkBold } from "react-icons/pi";
+import remarkGfm from "remark-gfm";
+import {
+  PiCopyBold,
+  PiCaretDownBold,
+  PiCaretUpBold,
+  PiCheckBold,
+  PiEyeBold,
+} from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
-import SavePromptModal from "./NeuraPrompts/SavePromptModal";
-import ResponseErrorBoundary from "./ResponseErrorBoundary";
-import ErrorMessage from "./ErrorMessage";
+import { formatTokenCount } from "../utils/tokenCounter";
+import { Loader } from "./LoadingSpinner";
+import { useModelResponses } from "../hooks/useModelResponses";
+import { ModelResponseGrid } from "./ModelResponseGrid";
+import { IndividualModelModal } from "./IndividualModelModal";
 
-// provider logos (SVGS now next to this file) - commented out for now
-// import gptLogo   from "./openai.svg";
-// import gptText   from "./openai-text.svg";
-// import gemLogo   from "./google.svg";
-// import gemText   from "./gemini-text.svg";
-// import grokLogo  from "./xai.svg";
-// import grokText  from "./grok-text.svg";
+interface ChatMessageProps {
+  message: Message;
+  isFirstAssistantMessage?: boolean;
+  isHighlighted?: boolean;
+}
 
-const MotionBox = motion(Box);
+// Simple content processing - basic cleanup only
+const processContent = (text: string): string => {
+  if (!text || typeof text !== 'string') return '';
 
-// utility: collapse height (approx. for ~2 lines of text in sm font)
-const COLLAPSED_HEIGHT = "3.5rem";
-
-// model → { logo, label } (kept for future use)
-// const logoMap: Record<
-//   string,
-//   { icon: string; label: string }
-// > = {
-//   openai: { icon: gptLogo,  label: gptText },
-//   google: { icon: gemLogo,  label: gemText },
-//   xai:    { icon: grokLogo, label: grokText },
-// };
-
-// Format timestamp to MMM DD HH:MM AM/PM format
-const formatTimestamp = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-
-  const options: Intl.DateTimeFormatOptions = {
-    month: 'short',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  };
-
-  // Add day if not today
-  if (!isToday) {
-    options.day = 'numeric';
-  }
-
-  return date.toLocaleString('en-US', options);
+  return text
+    .replace(/\n{4,}/g, '\n\n\n') // Limit consecutive newlines
+    .replace(/[ \t]{3,}/g, '  ') // Limit consecutive spaces
+    .trim();
 };
 
-// Sanitize and validate message content
-function sanitizeMessageContent(text: string): string {
-  if (!text || typeof text !== 'string') {
-    return '';
-  }
+// Format timestamp
+const formatTimestamp = (timestamp: number): string => {
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 
-  // Remove potentially harmful content while preserving markdown
-  return text
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocols
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers
-    .trim();
-}
-
-// Log message rendering for debugging (disabled to improve performance)
-function logMessageRender(message: Message): void {
-  // Disabled console logging to prevent performance issues
-  // Only log errors or critical issues
-  if (process.env.NODE_ENV === 'development' && message.role === 'error') {
-    console.warn(`❌ Error Message: ${message.id}`, {
-      content: message.text?.substring(0, 100) + '...',
-      metadata: message.metadata
-    });
-  }
-}
-
-const ChatMessage = memo(function ChatMessage({ m, isFirstAssistantMessage: _isFirstAssistantMessage = false }: { m: Message; isFirstAssistantMessage?: boolean }) {
-  const [expanded, setExpanded] = useState(true); // Default to expanded
-  const toggleExpand = () => setExpanded((prev) => !prev);
-  const toast = useToast();
-  const { isOpen: isSavePromptOpen, onOpen: onSavePromptOpen, onClose: onSavePromptClose } = useDisclosure();
-
-  const isUser  = m.role === "user";
-  const isError = m.role === "error";
-  const isLoad  = !m.text;
-
-  // Sanitize message content
-  const sanitizedContent = useMemo(() => {
-    if (!m.text) return '';
-    const sanitized = sanitizeMessageContent(m.text);
-
-    // Log message rendering in development
-    if (process.env.NODE_ENV === 'development' && !isLoad) {
-      logMessageRender(m);
-    }
-
-    return sanitized;
-  }, [m.text, m.id, isLoad]);
-
-
-
-  const handleSavePrompt = () => {
-    onSavePromptOpen();
-  };
-
-  const handlePromptSaved = () => {
-    toast({
-      title: "Prompt saved!",
-      description: "Your prompt has been added to your library",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
-  };
-
-  /* color tokens */
-  const bgUser = useColorModeValue("blue.500", "blue.400");
-  const bgAi   = useColorModeValue("#f3f4f6", "gray.700");
-  const textAi = useColorModeValue("gray.800", "gray.100");
-  const bgErr  = useColorModeValue("yellow.100", "yellow.600");
-  const textErr= useColorModeValue("yellow.800", "yellow.100");
-
-  // filter for inverting logos in dark mode
-  // const logoFilter = useColorModeValue("none", "invert(1)"); // Commented out for now
-
-  // title styles: gradient in light, white in dark
-
-
-  // Pre-compute copy button colors to avoid conditional hook calls
-
-
-  const bubbleBg   = isUser ? bgUser : isError ? bgErr : bgAi;
-  const bubbleText = isUser ? "white" : isError ? textErr : textAi;
-
-  /* Tail pointer */
-  const pointerDir = isUser ? "right" : "left";
-  const pointer = pointerDir === "right"
-    ? { _after:{ content:'""',pos:"absolute", right:"-6px", top:"12px",
-                 borderLeft:"6px solid", borderLeftColor:bubbleBg,
-                 borderY:"6px solid transparent" } }
-    : { _after:{ content:'""',pos:"absolute", left:"-6px", top:"12px",
-                 borderRight:"6px solid", borderRightColor:bubbleBg,
-                 borderY:"6px solid transparent" } };
+// Memoized copy button
+const CopyButton = memo(({ text }: { text: string }) => {
+  const { onCopy, hasCopied } = useClipboard(text);
 
   return (
-    <Box
-      mt={1}
-      w="full"
-      display="flex"
-      justifyContent={isUser ? "flex-end" : "flex-start"}
-    >
-      <MotionBox
-        maxW="100%"
-        px={4}
-        py={3}
-        borderRadius="lg"
-        bg={bubbleBg}
-        color={bubbleText}
-        fontSize="sm"
-        whiteSpace="pre-wrap"
-        position="relative"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.18 }}
-        {...pointer}
-        onClick={!isUser ? toggleExpand : undefined}
-        cursor={!isUser ? "pointer" : "default"}
-        _focus={{ boxShadow: "none" }}
-        _active={{ bg: bubbleBg }}
-        style={{ WebkitTapHighlightColor: "transparent" }}
-        boxShadow={useColorModeValue('sm', 'md')}
-        border="1px solid"
-        borderColor={useColorModeValue('gray.200', 'gray.600')}
-      >
-        <VStack align="stretch" spacing={1}>
-          {!isUser && (
-            <>
-              <HStack justify="space-between" align="center" mb={1}>
-                <Text
-                  fontSize="xs"
-                  color={useColorModeValue('gray.400', 'gray.500')}
-                  fontFamily="Inter, system-ui, sans-serif"
-                  opacity={0.8}
-                >
-                  {formatTimestamp(m.timestamp)}
-                </Text>
-              </HStack>
-            </>
-          )}
-
-          {/* User message header - save prompt button hidden */}
-          {isUser && (
-            <HStack justify="space-between" align="center" mb={1}>
-              <Text
-                fontSize="xs"
-                color="whiteAlpha.600"
-                fontFamily="Inter, system-ui, sans-serif"
-                opacity={0.8}
-              >
-                {formatTimestamp(m.timestamp)}
-              </Text>
-
-              {/* Save prompt functionality hidden */}
-              {false && (
-                <Tooltip label="Save as prompt" hasArrow>
-                  <IconButton
-                    aria-label="Save as prompt"
-                    icon={<PiBookmarkBold />}
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSavePrompt();
-                    }}
-                    color="whiteAlpha.700"
-                    _hover={{
-                      color: "white",
-                      transform: "scale(1.1)"
-                    }}
-                    transition="all 0.2s ease"
-                  />
-                </Tooltip>
-              )}
-            </HStack>
-          )}
-
-          {!isUser && !isError && !isLoad && (
-            <>
-              {/* Model badge - show on all assistant messages */}
-              <HStack justify="flex-start" align="center" mb={2}>
-                <Text
-                  fontSize="xs"
-                  bg={useColorModeValue('gray.100', 'gray.700')}
-                  px={2}
-                  py={1}
-                  borderRadius="full"
-                  color={useColorModeValue('gray.600', 'gray.300')}
-                  fontWeight="medium"
-                >
-                  Powered by OpenAI, Gemini & Grok
-                </Text>
-              </HStack>
-            </>
-          )}
-
-          <Box
-            maxH={expanded || isUser ? "none" : COLLAPSED_HEIGHT}
-            overflow={expanded || isUser ? "visible" : "hidden"}
-            position="relative"
-            _after={
-              !expanded && !isUser
-                ? {
-                    content: '""',
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "2rem",
-                    bgGradient: "linear(to-b, rgba(255,255,255,0), " + bubbleBg + ")",
-                  }
-                : undefined
-            }
-          >
-            {isLoad ? (
-              <SkeletonText noOfLines={3} skeletonHeight="3" />
-            ) : isError ? (
-              <ErrorMessage
-                message={sanitizedContent || 'An error occurred'}
-                metadata={m.metadata}
-                onRetry={() => {
-                  // Could implement retry logic here
-                  toast({
-                    title: "Retry functionality",
-                    description: "Please send your message again",
-                    status: "info",
-                    duration: 3000,
-                    isClosable: true,
-                  });
-                }}
-                showRetryButton={false} // Don't show retry for now
-              />
-            ) : (
-              <ResponseErrorBoundary
-                fallback={
-                  <Box p={3} bg="red.50" borderRadius="md" border="1px solid" borderColor="red.200">
-                    <Text fontSize="sm" color="red.600">
-                      Unable to display this response safely. Content may be corrupted.
-                    </Text>
-                  </Box>
-                }
-                onError={(error, errorInfo) => {
-                  console.error('ChatMessage render error:', error, errorInfo);
-                  // Could send to error tracking service here
-                }}
-              >
-                <ReactMarkdown
-                  components={{
-                    ol: ({ node, ...props }) => (
-                      <OrderedList pl={4} spacing={1} {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <UnorderedList pl={4} spacing={1} {...props} />
-                    ),
-                    li: ({ node, ...props }) => <ListItem {...props} />,
-                  }}
-                >
-                  {sanitizedContent}
-                </ReactMarkdown>
-              </ResponseErrorBoundary>
-            )}
-          </Box>
-
-          {!isUser && (
-            <HStack justify="flex-end" mt={2}>
-              <Button
-                size="sm"
-                variant="ghost"
-                fontSize="xs"
-                color={useColorModeValue('blue.500', 'blue.300')}
-                _hover={{
-                  textDecoration: 'underline',
-                  bg: useColorModeValue('blue.50', 'blue.900'),
-                  transform: 'scale(1.05)'
-                }}
-                _focus={{
-                  boxShadow: '0 0 0 2px',
-                  boxShadowColor: useColorModeValue('blue.500', 'blue.300')
-                }}
-                rightIcon={
-                  <Box
-                    as="span"
-                    fontSize="xs"
-                    transform={expanded ? "rotate(180deg)" : "rotate(0deg)"}
-                    transition="transform 0.2s ease"
-                    aria-hidden="true"
-                  >
-                    ▼
-                  </Box>
-                }
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleExpand();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleExpand();
-                  }
-                }}
-                px={3}
-                py={2}
-                h="auto"
-                minH="44px" // Ensure touch-friendly size
-                borderRadius="md"
-                transition="all 0.2s ease"
-                aria-label={expanded ? "Collapse message" : "Expand message"}
-                aria-expanded={expanded}
-              >
-                {expanded ? "Show less" : "Read more"}
-              </Button>
-            </HStack>
-          )}
-        </VStack>
-      </MotionBox>
-
-      {/* Save Prompt Modal - hidden */}
-      {false && isUser && (
-        <SavePromptModal
-          isOpen={isSavePromptOpen}
-          onClose={onSavePromptClose}
-          onSave={handlePromptSaved}
-          initialContent={m.text}
-          initialTitle=""
-        />
-      )}
-    </Box>
+    <Tooltip label={hasCopied ? "Copied!" : "Copy message"} hasArrow fontSize="sm">
+      <IconButton
+        aria-label="Copy message"
+        icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
+        size="sm"
+        variant="ghost"
+        onClick={onCopy}
+        color={useColorModeValue('gray.400', 'gray.500')}
+        _hover={{
+          color: useColorModeValue('gray.600', 'gray.300'),
+          bg: useColorModeValue('gray.100', 'gray.600'),
+        }}
+        minW="32px"
+        h="32px"
+      />
+    </Tooltip>
   );
 });
+
+CopyButton.displayName = 'CopyButton';
+
+export const ChatMessage = memo<ChatMessageProps>(({
+  message,
+  isFirstAssistantMessage: _isFirstAssistantMessage = false,
+  isHighlighted = false,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(true); // Default to expanded
+  const [showIndividualResponses, setShowIndividualResponses] = useState(false);
+
+  const isUser = message.role === 'user';
+  const isError = message.role === 'error';
+  const isLoading = !message.text;
+
+  // Process message content
+  const processedContent = useMemo(() => {
+    if (!message.text) return '';
+    return processContent(message.text);
+  }, [message.text]);
+
+  const shouldTruncate = processedContent.length > 600;
+
+  const toggleExpanded = useCallback(() => {
+    setIsExpanded(prev => !prev);
+  }, []);
+
+  const displayText = shouldTruncate && !isExpanded
+    ? processedContent.slice(0, 600) + '...'
+    : processedContent;
+
+  // Model responses hook
+  const {
+    selectedModel,
+    isModalOpen,
+    openModelModal,
+    closeModal,
+    getAvailableModels
+  } = useModelResponses(
+    message.metadata?.individualResponses,
+    message.metadata?.ensembleMetadata,
+    message.metadata?.modelsUsed,
+    message.metadata?.fallbackReasons
+  );
+
+  const availableModels = getAvailableModels();
+  const hasIndividualResponses = availableModels.length > 0;
+
+  // Color scheme
+  const bgUser = useColorModeValue("blue.500", "blue.400");
+  const bgAi = useColorModeValue("gray.50", "gray.700");
+  const textAi = useColorModeValue("gray.800", "gray.100");
+  const bgErr = useColorModeValue("red.50", "red.900");
+  const textErr = useColorModeValue("red.800", "red.100");
+  const timestampColor = useColorModeValue("gray.400", "gray.500");
+  const tokenCountColor = useColorModeValue("blue.500", "blue.300");
+
+  const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
+  const bubbleText = isUser ? "white" : isError ? textErr : textAi;
+
+  // Get token count from message metadata
+  const tokenCount = message.metadata?.tokenCount || 0;
+
+  return (
+    <Flex
+      direction="column"
+      align={isUser ? "flex-end" : "flex-start"}
+      gap={2}
+      w="100%"
+      bg={isHighlighted ? useColorModeValue('blue.50', 'blue.900') : 'transparent'}
+      borderRadius="md"
+      p={isHighlighted ? 2 : 0}
+      transition="background-color 0.3s ease"
+    >
+      {/* AI Model Badge - show on all assistant messages */}
+      {!isUser && !isError && (
+        <HStack spacing={2} mb={1}>
+          <Badge
+            colorScheme="blue"
+            variant="subtle"
+            fontSize="xs"
+            px={2}
+            py={1}
+            borderRadius="full"
+            fontWeight="medium"
+          >
+            Powered by OpenAI, Gemini & Grok
+          </Badge>
+          {/* Token count badge for AI responses */}
+          {tokenCount > 0 && (
+            <Badge
+              colorScheme="gray"
+              variant="outline"
+              fontSize="xs"
+              px={2}
+              py={1}
+              borderRadius="full"
+              color={tokenCountColor}
+              borderColor={tokenCountColor}
+            >
+              {formatTokenCount(tokenCount)} tokens
+            </Badge>
+          )}
+        </HStack>
+      )}
+
+      {/* Message Bubble - Made wider for better mobile experience */}
+      <Box
+        bg={bubbleBg}
+        color={bubbleText}
+        px={4}
+        py={3}
+        borderRadius="2xl"
+        maxW={{ base: "92%", sm: "88%", md: "85%" }} // Wider on mobile, slightly narrower on larger screens
+        minW={{ base: "60%", sm: "50%" }} // Ensure minimum width
+        position="relative"
+        boxShadow={useColorModeValue("sm", "md")}
+        border={isUser ? "none" : "1px solid"}
+        borderColor={isUser ? "transparent" : useColorModeValue("gray.200", "gray.600")}
+        transition="all 0.2s ease"
+        _hover={{
+          transform: "translateY(-1px)",
+          boxShadow: useColorModeValue("md", "lg"),
+        }}
+      >
+        {/* Message Content */}
+        <Box>
+          {isLoading ? (
+            <Loader variant="skeleton" lines={2} />
+          ) : isError ? (
+            <Text fontSize="sm" color={textErr}>
+              {processedContent || 'An error occurred'}
+            </Text>
+          ) : isUser ? (
+            <Text fontSize="md" lineHeight="1.6" fontWeight="400">
+              {displayText}
+            </Text>
+          ) : (
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({ children }) => <Text mb={1.5} fontSize="md" lineHeight="1.6">{children}</Text>,
+                ul: ({ children }) => <Box as="ul" pl={4} mb={1.5}>{children}</Box>,
+                ol: ({ children }) => <Box as="ol" pl={4} mb={1.5}>{children}</Box>,
+                li: ({ children }) => <Box as="li" mb={0.5} fontSize="md">{children}</Box>,
+                code: ({ children, className }) => {
+                  const isInline = !className;
+                  return isInline ? (
+                    <Text
+                      as="code"
+                      bg={useColorModeValue('gray.100', 'gray.700')}
+                      px={1}
+                      py={0.5}
+                      borderRadius="sm"
+                      fontSize="sm"
+                      fontFamily="mono"
+                    >
+                      {children}
+                    </Text>
+                  ) : (
+                    <Box
+                      as="pre"
+                      bg={useColorModeValue('gray.50', 'gray.800')}
+                      p={3}
+                      borderRadius="md"
+                      overflow="auto"
+                      fontSize="sm"
+                      fontFamily="mono"
+                      mb={1.5}
+                    >
+                      <Text as="code">{children}</Text>
+                    </Box>
+                  );
+                },
+              }}
+            >
+              {displayText}
+            </ReactMarkdown>
+          )}
+        </Box>
+
+        {/* Expand/Collapse for long messages */}
+        {shouldTruncate && (
+          <Collapse in={isExpanded} animateOpacity>
+            <Box mt={1.5}>
+              {isUser ? (
+                <Text fontSize="md" lineHeight="1.6">
+                  {processedContent.slice(600)}
+                </Text>
+              ) : (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => <Text mb={1.5} fontSize="md" lineHeight="1.6">{children}</Text>,
+                  }}
+                >
+                  {processedContent.slice(600)}
+                </ReactMarkdown>
+              )}
+            </Box>
+          </Collapse>
+        )}
+
+        {/* Individual Model Responses Section */}
+        {!isUser && !isError && !isLoading && hasIndividualResponses && (
+          <VStack spacing={3} mt={4} align="stretch">
+            {/* Show Individual Responses Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<PiEyeBold />}
+              onClick={() => setShowIndividualResponses(!showIndividualResponses)}
+              color={useColorModeValue('blue.600', 'blue.300')}
+              _hover={{
+                bg: useColorModeValue('blue.50', 'blue.900'),
+              }}
+              justifyContent="flex-start"
+              fontWeight="medium"
+            >
+              {showIndividualResponses ? 'Hide' : 'Show'} Individual AI Responses ({availableModels.length})
+            </Button>
+
+            {/* Individual Responses Grid */}
+            <Collapse in={showIndividualResponses} animateOpacity>
+              <Box>
+                <ModelResponseGrid
+                  models={availableModels}
+                  onModelClick={openModelModal}
+                  compact={true}
+                />
+              </Box>
+            </Collapse>
+          </VStack>
+        )}
+
+        {/* Message Actions */}
+        <HStack justify="space-between" align="center" mt={2} spacing={2}>
+          <Text
+            fontSize="xs"
+            color={isUser ? "whiteAlpha.600" : timestampColor}
+            opacity={0.7}
+            fontWeight="400"
+          >
+            {formatTimestamp(message.timestamp)}
+          </Text>
+
+          <HStack spacing={1}>
+            {shouldTruncate && (
+              <IconButton
+                aria-label={isExpanded ? "Show less" : "Show more"}
+                icon={isExpanded ? <PiCaretUpBold /> : <PiCaretDownBold />}
+                size="sm"
+                variant="ghost"
+                onClick={toggleExpanded}
+                color={isUser ? "whiteAlpha.600" : useColorModeValue('gray.400', 'gray.500')}
+                _hover={{
+                  color: isUser ? "whiteAlpha.800" : useColorModeValue('gray.600', 'gray.300'),
+                  bg: isUser ? "whiteAlpha.200" : useColorModeValue('gray.100', 'gray.600'),
+                }}
+                minW="32px"
+                h="32px"
+              />
+            )}
+
+            <CopyButton text={processedContent} />
+          </HStack>
+        </HStack>
+      </Box>
+
+      {/* Individual Model Response Modal */}
+      <IndividualModelModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        modelData={selectedModel}
+      />
+    </Flex>
+  );
+});
+
+ChatMessage.displayName = 'ChatMessage';
 
 export default ChatMessage;

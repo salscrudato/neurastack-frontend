@@ -42,16 +42,11 @@ vi.mock('../lib/api', () => ({
   queryStack: vi.fn().mockResolvedValue('Mocked AI response'),
 }));
 
-// Mock performance API
+// Simplified performance API mock
 Object.defineProperty(window, 'performance', {
   value: {
     now: vi.fn(() => Date.now()),
     getEntriesByType: vi.fn(() => []),
-    memory: {
-      usedJSHeapSize: 1000000,
-      totalJSHeapSize: 2000000,
-      jsHeapSizeLimit: 4000000,
-    },
   },
 });
 

@@ -1,12 +1,12 @@
 import { memo, useMemo, useRef, useEffect } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import { Box, Flex } from '@chakra-ui/react';
-import { OptimizedChatMessage } from './OptimizedChatMessage';
+import ChatMessage from './ChatMessage';
 import type { Message } from '../store/useChatStore';
 
-interface VirtualChatListProps {
+interface ChatListProps {
   messages: Message[];
-  height: number;
+  height?: number;
   highlightedMessageId?: string;
   onScrollToBottom?: () => void;
 }
@@ -16,7 +16,7 @@ interface ItemData {
   highlightedMessageId?: string;
 }
 
-// Memoized row component for virtual list
+// Simplified row component for virtual list
 const MessageRow = memo<{
   index: number;
   style: React.CSSProperties;
@@ -24,10 +24,9 @@ const MessageRow = memo<{
 }>(({ index, style, data }) => {
   const { messages, highlightedMessageId } = data;
   const message = messages[index];
-  
+
   if (!message) return null;
 
-  // Check if this is the first assistant message
   const isFirstAssistantMessage = message.role === 'assistant' &&
     messages.slice(0, index).every(prevMsg => prevMsg.role !== 'assistant');
 
@@ -36,7 +35,7 @@ const MessageRow = memo<{
   return (
     <div style={style}>
       <Box px={4} py={2}>
-        <OptimizedChatMessage
+        <ChatMessage
           message={message}
           isFirstAssistantMessage={isFirstAssistantMessage}
           isHighlighted={isHighlighted}
@@ -48,93 +47,50 @@ const MessageRow = memo<{
 
 MessageRow.displayName = 'MessageRow';
 
-// Custom hook for calculating item sizes based on message content
-const useItemSizes = (messages: Message[]) => {
-  return useMemo(() => {
-    return messages.map((message) => {
-      // Base height for message bubble
-      let height = 80;
-      
-      // Add height based on content length
-      const contentLines = Math.ceil(message.text.length / 80);
-      height += contentLines * 20;
-      
-      // Add extra height for first assistant message (badge)
-      if (message.role === 'assistant') {
-        const isFirst = messages.findIndex(m => m.role === 'assistant') === messages.indexOf(message);
-        if (isFirst) height += 30;
-      }
-      
-      // Cap maximum height
-      return Math.min(height, 400);
-    });
-  }, [messages]);
-};
-
-export const VirtualChatList = memo<VirtualChatListProps>(({
+// Simplified chat list with conditional virtual scrolling
+export const ChatList = memo<ChatListProps>(({
   messages,
-  height,
+  height = 400,
   highlightedMessageId,
-  onScrollToBottom,
+  onScrollToBottom: _onScrollToBottom,
 }) => {
   const listRef = useRef<List>(null);
-  const itemSizes = useItemSizes(messages);
-  
-  // Calculate average item height for virtual list
-  const averageItemHeight = useMemo(() => {
-    if (itemSizes.length === 0) return 100;
-    return itemSizes.reduce((sum, size) => sum + size, 0) / itemSizes.length;
-  }, [itemSizes]);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (listRef.current && messages.length > 0) {
-      listRef.current.scrollToItem(messages.length - 1, 'end');
-      onScrollToBottom?.();
-    }
-  }, [messages.length, onScrollToBottom]);
+  // Use virtual scrolling only for large message counts
+  const shouldUseVirtualScrolling = messages.length > 100;
 
-  // Scroll to highlighted message
-  useEffect(() => {
-    if (highlightedMessageId && listRef.current) {
-      const messageIndex = messages.findIndex(m => m.id === highlightedMessageId);
-      if (messageIndex !== -1) {
-        listRef.current.scrollToItem(messageIndex, 'center');
-      }
-    }
-  }, [highlightedMessageId, messages]);
+  // Simple average item height calculation
+  const averageItemHeight = 120;
 
   const itemData: ItemData = useMemo(() => ({
     messages,
     highlightedMessageId,
   }), [messages, highlightedMessageId]);
 
-  // Handle scroll events
-  const handleScroll = ({ scrollOffset, scrollDirection }: any) => {
-    // If user scrolls to bottom, trigger callback
-    const isAtBottom = scrollOffset >= (messages.length * averageItemHeight) - height - 100;
-    if (isAtBottom && scrollDirection === 'forward') {
-      onScrollToBottom?.();
+  // Auto-scroll to bottom for virtual list
+  useEffect(() => {
+    if (shouldUseVirtualScrolling && listRef.current && messages.length > 0) {
+      listRef.current.scrollToItem(messages.length - 1, 'end');
     }
-  };
+  }, [messages.length, shouldUseVirtualScrolling]);
 
   if (messages.length === 0) {
     return null;
   }
 
-  // For small message counts, use regular rendering
-  if (messages.length < 50) {
+  // Simple rendering for smaller lists (most common case)
+  if (!shouldUseVirtualScrolling) {
     return (
       <Flex direction="column" gap={4} px={4}>
         {messages.map((message, index) => {
           const isFirstAssistantMessage = message.role === 'assistant' &&
             messages.slice(0, index).every(prevMsg => prevMsg.role !== 'assistant');
-          
+
           const isHighlighted = highlightedMessageId === message.id;
 
           return (
             <Box key={message.id} id={`message-${message.id}`}>
-              <OptimizedChatMessage
+              <ChatMessage
                 message={message}
                 isFirstAssistantMessage={isFirstAssistantMessage}
                 isHighlighted={isHighlighted}
@@ -146,7 +102,7 @@ export const VirtualChatList = memo<VirtualChatListProps>(({
     );
   }
 
-  // Use virtual scrolling for large message counts
+  // Virtual scrolling for large message counts (rare case)
   return (
     <Box height={height} width="100%">
       <List
@@ -156,8 +112,7 @@ export const VirtualChatList = memo<VirtualChatListProps>(({
         itemCount={messages.length}
         itemSize={averageItemHeight}
         itemData={itemData}
-        onScroll={handleScroll}
-        overscanCount={5} // Render 5 extra items for smooth scrolling
+        overscanCount={3} // Reduced for simplicity
       >
         {MessageRow}
       </List>
@@ -165,4 +120,7 @@ export const VirtualChatList = memo<VirtualChatListProps>(({
   );
 });
 
-VirtualChatList.displayName = 'VirtualChatList';
+ChatList.displayName = 'ChatList';
+
+// Legacy export for backward compatibility
+export const VirtualChatList = ChatList;

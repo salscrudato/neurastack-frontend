@@ -17,11 +17,11 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
 import { useChatStore } from '../store/useChatStore';
-import { OptimizedChatMessage } from '../components/OptimizedChatMessage';
+import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import ChatSearch from '../components/ChatSearch';
 import OfflineIndicator from '../components/OfflineIndicator';
-import { MobileOptimizedLoader } from '../components/MobileOptimizedLoader';
+import { Loader } from '../components/LoadingSpinner';
 // import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor'; // Disabled to improve performance
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -29,7 +29,6 @@ export function ChatPage() {
   const msgs = useChatStore(s => s.messages);
   const clearMessages = useChatStore(s => s.clearMessages);
   const isLoading = useChatStore(s => s.isLoading);
-  const retryCount = useChatStore(s => s.retryCount);
   const loadChatHistory = useChatStore(s => s.loadChatHistory);
 
   // Auth store
@@ -204,17 +203,16 @@ export function ChatPage() {
                 transition="background-color 0.3s"
                 px={{ base: 1, md: 0 }}
               >
-                <OptimizedChatMessage message={m} isFirstAssistantMessage={isFirstAssistantMessage} />
+                <ChatMessage message={m} isFirstAssistantMessage={isFirstAssistantMessage} isHighlighted={highlightedMessageId === m.id} />
               </Box>
             );
           })}
 
-          {/* Loading indicator with retry count */}
+          {/* Loading indicator */}
           {isLoading && (
-            <MobileOptimizedLoader
-              retryCount={retryCount}
-              message="Thinking..."
-            />
+            <Box px={4} py={2}>
+              <Loader message="AI is thinking..." variant="dots" />
+            </Box>
           )}
 
           <div ref={bottomRef} />

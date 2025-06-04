@@ -97,6 +97,25 @@ export const ENSEMBLE_ROLE_INFO = {
     description: 'Identifies potential risks and considerations',
     color: 'orange',
     icon: '⚠️'
+  },
+  // Additional roles that might come from the API
+  creativeAdvisor: {
+    name: 'Creative Advisor',
+    description: 'Provides creative and innovative solutions',
+    color: 'purple',
+    icon: '🎨'
+  },
+  devilsAdvocate: {
+    name: 'Devils Advocate',
+    description: 'Challenges ideas and identifies potential issues',
+    color: 'red',
+    icon: '😈'
+  },
+  scientificAnalyst: {
+    name: 'Scientific Analyst',
+    description: 'Provides scientific and analytical perspectives',
+    color: 'blue',
+    icon: '🔬'
   }
 } as const;
 
@@ -113,23 +132,11 @@ export function useModelResponses(
   const [selectedModel, setSelectedModel] = useState<ModelResponseData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Transform API data into display-ready format
+  // Transform API data into display-ready format - only show ensemble/role-based responses
   const availableModels = useMemo((): ModelResponseData[] => {
     const models: ModelResponseData[] = [];
 
-    // Add individual responses if available
-    if (individualResponses) {
-      individualResponses.forEach(response => {
-        models.push({
-          model: response.model,
-          answer: response.answer,
-          role: response.role,
-          status: 'success'
-        });
-      });
-    }
-
-    // Add ensemble metadata as "virtual" model responses
+    // Only add ensemble metadata as "virtual" model responses (the 3 AI assistants)
     if (ensembleMetadata) {
       Object.entries(ensembleMetadata).forEach(([role, content]) => {
         if (role !== 'executionTime' && typeof content === 'string') {
@@ -144,20 +151,22 @@ export function useModelResponses(
       });
     }
 
-    // Add failed models with error information
-    if (modelsUsed && fallbackReasons) {
-      Object.entries(modelsUsed).forEach(([model, success]) => {
-        if (!success && fallbackReasons[model]) {
+    // Filter individual responses to only include role-based responses (not raw model responses)
+    if (individualResponses) {
+      individualResponses.forEach(response => {
+        // Only include responses that have a meaningful role (not just model names)
+        if (response.role && !response.model.includes(':')) {
           models.push({
-            model,
-            answer: '',
-            status: 'failed',
-            errorReason: fallbackReasons[model]
+            model: response.model,
+            answer: response.answer,
+            role: response.role,
+            status: 'success'
           });
         }
       });
     }
 
+    // Don't show failed raw models - only show the successful ensemble responses
     return models;
   }, [individualResponses, ensembleMetadata, modelsUsed, fallbackReasons]);
 

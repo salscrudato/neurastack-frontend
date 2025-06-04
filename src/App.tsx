@@ -115,7 +115,7 @@ const Fallback = () => (
 
 export default function App() {
   // Disable performance monitoring to reduce console noise
-  usePerformanceLogger(false);
+  usePerformanceLogger();
 
   return (
     <PageContentWrapper>
