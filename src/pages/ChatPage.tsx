@@ -2,7 +2,6 @@ import {
   Box,
   Flex,
   Text,
-  useColorModeValue,
   IconButton,
   useToast,
   AlertDialog,
@@ -46,16 +45,16 @@ export function ChatPage() {
   const toast = useToast();
   // const { alerts, clearAlerts } = usePerformanceAlerts(); // Disabled to improve performance
 
-  // Pre-compute all color mode values to avoid conditional hook calls
-  const bgColor = useColorModeValue("gray.50", "gray.900");
-  const containerBg = useColorModeValue("gray.50", "gray.900");
-  const highlightBg = useColorModeValue("yellow.100", "yellow.800");
+  // Modern color values - light mode only
+  const bgColor = "#FAFBFC";
+  const containerBg = "#FAFBFC";
+  const highlightBg = "rgba(79, 156, 249, 0.1)";
 
-  const scrollButtonBg = useColorModeValue("white", "gray.700");
-  const scrollButtonColor = useColorModeValue("gray.600", "gray.300");
-  const scrollButtonHoverBg = useColorModeValue("gray.50", "gray.600");
-  const heroTextColor = useColorModeValue("gray.600", "gray.200");
-  const heroSubTextColor = useColorModeValue("gray.600", "gray.300");
+  const scrollButtonBg = "#FFFFFF";
+  const scrollButtonColor = "#64748B";
+  const scrollButtonHoverBg = "#F8FAFC";
+  const heroTextColor = "#475569";
+  const heroSubTextColor = "#64748B";
 
   // Load chat history when user is authenticated
   useEffect(() => {

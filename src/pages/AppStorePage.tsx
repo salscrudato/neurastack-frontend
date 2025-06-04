@@ -9,14 +9,14 @@ import { AppShell } from '../components/AppShell';
 export default function AppStorePage() {
   const navigate = useNavigate();
 
-  // Modern black and white color scheme
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const cardBorder = useColorModeValue('gray.200', 'gray.700');
-  const iconColor = useColorModeValue('gray.800', 'gray.200');
-  const textColor = useColorModeValue('gray.900', 'gray.100');
-  const subtextColor = useColorModeValue('gray.600', 'gray.400');
-  const hoverBg = useColorModeValue('gray.50', 'gray.700');
+  // Modern light color scheme
+  const bgColor = '#FAFBFC';
+  const cardBg = '#FFFFFF';
+  const cardBorder = '#E2E8F0';
+  const iconColor = '#1E293B';
+  const textColor = '#0F172A';
+  const subtextColor = '#64748B';
+  const hoverBg = '#F8FAFC';
 
   // App data
   const apps = [

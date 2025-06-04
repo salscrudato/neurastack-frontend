@@ -13,7 +13,6 @@ import {
   VStack,
   HStack,
   useDisclosure,
-  useColorModeValue,
   Icon,
   Box,
   Badge,
@@ -38,11 +37,11 @@ export default function AddToHomeButton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
-  // Pre-compute all color mode values to ensure consistent hook order
-  const bannerBg = useColorModeValue('white', 'gray.800');
-  const bannerBorderColor = useColorModeValue('gray.200', 'gray.600');
-  const modalBg = useColorModeValue('blue.50', 'blue.900');
-  const modalTextColor = useColorModeValue('blue.700', 'blue.200');
+  // Modern color values - light mode only
+  const bannerBg = '#FFFFFF';
+  const bannerBorderColor = '#E2E8F0';
+  const modalBg = 'rgba(79, 156, 249, 0.05)';
+  const modalTextColor = '#1E40AF';
 
   // Check if app is already installed
   useEffect(() => {

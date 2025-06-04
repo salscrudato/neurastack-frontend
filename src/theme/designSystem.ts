@@ -123,64 +123,92 @@ export const designTokens = {
   },
 };
 
-// Component style overrides for consistency
+// Modern component style overrides
 export const componentStyles = {
   Button: {
     baseStyle: {
-      fontWeight: 'medium',
-      borderRadius: 'lg',
-      transition: 'all 150ms ease',
+      fontWeight: 'semibold',
+      borderRadius: 'xl',
+      transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
       _focus: {
         boxShadow: '0 0 0 3px rgba(79, 156, 249, 0.3)',
+        outline: 'none',
+      },
+      _disabled: {
+        opacity: 0.6,
+        cursor: 'not-allowed',
       },
     },
     variants: {
       solid: {
-        bg: 'brand.500',
+        background: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
         color: 'white',
+        boxShadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
         _hover: {
-          bg: 'brand.600',
-          transform: 'translateY(-1px)',
-          boxShadow: 'md',
+          transform: 'translateY(-2px)',
+          boxShadow: '0 8px 20px rgba(79, 156, 249, 0.35)',
+          _disabled: {
+            transform: 'none',
+            boxShadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
+          },
         },
         _active: {
-          bg: 'brand.700',
           transform: 'translateY(0)',
+          boxShadow: '0 2px 8px rgba(79, 156, 249, 0.3)',
         },
       },
       outline: {
-        borderColor: 'brand.500',
-        color: 'brand.500',
+        borderColor: '#4F9CF9',
+        borderWidth: '2px',
+        color: '#4F9CF9',
+        bg: 'transparent',
         _hover: {
-          bg: 'brand.50',
+          bg: 'rgba(79, 156, 249, 0.05)',
           transform: 'translateY(-1px)',
+          boxShadow: '0 4px 12px rgba(79, 156, 249, 0.15)',
         },
       },
       ghost: {
-        color: 'brand.500',
+        color: '#4F9CF9',
+        bg: 'transparent',
         _hover: {
-          bg: 'brand.50',
+          bg: 'rgba(79, 156, 249, 0.08)',
+          transform: 'translateY(-1px)',
+        },
+      },
+      glass: {
+        bg: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        color: '#1E293B',
+        _hover: {
+          bg: 'rgba(255, 255, 255, 0.9)',
+          transform: 'translateY(-1px)',
+          boxShadow: '0 8px 32px rgba(31, 38, 135, 0.2)',
         },
       },
     },
     sizes: {
       sm: {
-        h: '32px',
-        minW: '32px',
+        h: '36px',
+        minW: '36px',
         fontSize: 'sm',
-        px: 3,
+        px: 4,
+        borderRadius: 'lg',
       },
       md: {
-        h: '40px',
-        minW: '40px',
+        h: '44px',
+        minW: '44px',
         fontSize: 'md',
-        px: 4,
+        px: 6,
+        borderRadius: 'xl',
       },
       lg: {
-        h: '48px',
-        minW: '48px',
+        h: '52px',
+        minW: '52px',
         fontSize: 'lg',
-        px: 6,
+        px: 8,
+        borderRadius: 'xl',
       },
     },
   },
@@ -188,11 +216,34 @@ export const componentStyles = {
   Input: {
     baseStyle: {
       field: {
-        borderRadius: 'lg',
-        transition: 'all 150ms ease',
+        borderRadius: 'xl',
+        borderWidth: '2px',
+        borderColor: '#E2E8F0',
+        bg: '#FFFFFF',
+        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         _focus: {
-          borderColor: 'brand.500',
-          boxShadow: '0 0 0 1px rgba(79, 156, 249, 0.3)',
+          borderColor: '#4F9CF9',
+          boxShadow: '0 0 0 3px rgba(79, 156, 249, 0.1)',
+          bg: '#FFFFFF',
+        },
+        _hover: {
+          borderColor: '#CBD5E1',
+        },
+        _placeholder: {
+          color: '#94A3B8',
+        },
+      },
+    },
+    variants: {
+      glass: {
+        field: {
+          bg: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          _focus: {
+            bg: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#4F9CF9',
+          },
         },
       },
     },
@@ -201,12 +252,27 @@ export const componentStyles = {
   Card: {
     baseStyle: {
       container: {
-        borderRadius: 'xl',
-        boxShadow: 'sm',
-        transition: 'all 150ms ease',
+        borderRadius: '2xl',
+        bg: '#FFFFFF',
+        border: '1px solid #F1F5F9',
+        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         _hover: {
-          boxShadow: 'md',
-          transform: 'translateY(-1px)',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+          transform: 'translateY(-2px)',
+        },
+      },
+    },
+    variants: {
+      glass: {
+        container: {
+          bg: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          _hover: {
+            bg: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 8px 32px rgba(31, 38, 135, 0.2)',
+          },
         },
       },
     },
@@ -215,21 +281,51 @@ export const componentStyles = {
   Modal: {
     baseStyle: {
       dialog: {
-        borderRadius: 'xl',
-        boxShadow: '2xl',
+        borderRadius: '2xl',
+        bg: '#FFFFFF',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        border: '1px solid #F1F5F9',
       },
       overlay: {
-        backdropFilter: 'blur(4px)',
+        bg: 'rgba(0, 0, 0, 0.4)',
+        backdropFilter: 'blur(8px)',
+      },
+      closeButton: {
+        borderRadius: 'full',
+        _hover: {
+          bg: 'rgba(79, 156, 249, 0.1)',
+        },
       },
     },
   },
 
   Tooltip: {
     baseStyle: {
-      borderRadius: 'md',
+      borderRadius: 'lg',
       fontSize: 'sm',
       px: 3,
       py: 2,
+      bg: '#1E293B',
+      color: '#FFFFFF',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    },
+  },
+
+  Badge: {
+    baseStyle: {
+      borderRadius: 'full',
+      fontWeight: 'semibold',
+      fontSize: 'xs',
+      px: 3,
+      py: 1,
+    },
+    variants: {
+      glass: {
+        bg: 'rgba(255, 255, 255, 0.8)',
+        color: '#1E293B',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+      },
     },
   },
 };

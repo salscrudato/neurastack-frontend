@@ -2,7 +2,6 @@ import {
   Box,
   HStack,
   Flex,
-  useColorModeValue,
   Text,
   IconButton,
   Tooltip,
@@ -13,8 +12,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useState, memo, useCallback, useMemo } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+
 import {
   PiCopyBold,
   PiCaretDownBold,
@@ -28,6 +26,8 @@ import { Loader } from "./LoadingSpinner";
 import { useModelResponses } from "../hooks/useModelResponses";
 import { ModelResponseGrid } from "./ModelResponseGrid";
 import { IndividualModelModal } from "./IndividualModelModal";
+import { EnhancedAIResponse } from "./EnhancedAIResponse";
+import { AIResponseFormatter } from "./AIResponseFormatter";
 
 interface ChatMessageProps {
   message: Message;
@@ -58,17 +58,17 @@ const CopyButton = memo(({ text }: { text: string }) => {
   const { onCopy, hasCopied } = useClipboard(text);
 
   return (
-    <Tooltip label={hasCopied ? "Copied!" : "Copy message"} hasArrow fontSize="sm">
+    <Tooltip label={hasCopied ? "Copied!" : "Copy message"} hasArrow fontSize="xs">
       <IconButton
         aria-label="Copy message"
         icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
         size="sm"
         variant="ghost"
         onClick={onCopy}
-        color={useColorModeValue('gray.400', 'gray.500')}
+        color="#94A3B8"
         _hover={{
-          color: useColorModeValue('gray.600', 'gray.300'),
-          bg: useColorModeValue('gray.100', 'gray.600'),
+          color: "#475569",
+          bg: "#F8FAFC",
         }}
         minW="32px"
         h="32px"
@@ -91,11 +91,38 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const isError = message.role === 'error';
   const isLoading = !message.text;
 
+  // Consistent font sizing system
+  const fontSizes = {
+    // Micro elements: very small text like timestamps
+    micro: { base: "2xs", md: "xs" },
+    // Small elements: badges, secondary info, buttons
+    small: { base: "xs", md: "sm" },
+    // Main content: message text, paragraphs
+    content: { base: "sm", md: "md" },
+    // Code elements: inline code, code blocks
+    code: { base: "xs", md: "sm" }
+  };
+
   // Process message content
   const processedContent = useMemo(() => {
     if (!message.text) return '';
     return processContent(message.text);
   }, [message.text]);
+
+  // Try to parse AI response as structured data
+  const parseAIResponse = (content: string) => {
+    try {
+      // Check if content looks like JSON
+      if (content.trim().startsWith('{') && content.trim().endsWith('}')) {
+        return JSON.parse(content);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const structuredResponse = !isUser && !isError ? parseAIResponse(processedContent) : null;
 
   const shouldTruncate = processedContent.length > 600;
 
@@ -103,12 +130,34 @@ export const ChatMessage = memo<ChatMessageProps>(({
     setIsExpanded(prev => !prev);
   }, []);
 
+  // Smart truncation that respects word boundaries
+  const getTruncatedText = useCallback((text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+
+    // Find the last space before the max length
+    const truncated = text.slice(0, maxLength);
+    const lastSpaceIndex = truncated.lastIndexOf(' ');
+
+    // If we found a space and it's not too far back (at least 80% of maxLength)
+    if (lastSpaceIndex > maxLength * 0.8) {
+      return truncated.slice(0, lastSpaceIndex);
+    }
+
+    // Otherwise, just truncate at maxLength
+    return truncated;
+  }, []);
+
   // Fix duplication bug: when expanded, only show first part in main section
   const displayText = shouldTruncate && !isExpanded
-    ? processedContent.slice(0, 600) + '...'
+    ? getTruncatedText(processedContent, 600) + '...'
     : shouldTruncate && isExpanded
-    ? processedContent.slice(0, 600) // Only show first 600 chars in main section when expanded
+    ? getTruncatedText(processedContent, 600) // Only show first 600 chars in main section when expanded
     : processedContent; // Show full content for short messages
+
+  // Get the remaining text for the expanded section
+  const remainingText = shouldTruncate
+    ? processedContent.slice(getTruncatedText(processedContent, 600).length)
+    : '';
 
   // Model responses hook
   const {
@@ -127,14 +176,17 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const availableModels = getAvailableModels();
   const hasIndividualResponses = availableModels.length > 0;
 
-  // Color scheme
-  const bgUser = useColorModeValue("blue.500", "blue.400");
-  const bgAi = useColorModeValue("gray.50", "gray.700");
-  const textAi = useColorModeValue("gray.800", "gray.100");
-  const bgErr = useColorModeValue("red.50", "red.900");
-  const textErr = useColorModeValue("red.800", "red.100");
-  const timestampColor = useColorModeValue("gray.400", "gray.500");
-  const tokenCountColor = useColorModeValue("blue.500", "blue.300");
+  // Modern color scheme - light mode only
+  const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)";
+  const bgAi = "#F8FAFC";
+  const textAi = "#1E293B";
+  const bgErr = "#FEF2F2";
+  const textErr = "#DC2626";
+  const timestampColor = "#94A3B8";
+  const tokenCountColor = "#4F9CF9";
+  const borderAi = "#E2E8F0";
+  const shadowUser = "0 4px 12px rgba(79, 156, 249, 0.25)";
+  const shadowAi = "0 2px 8px rgba(0, 0, 0, 0.04)";
 
   const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
@@ -143,65 +195,95 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const tokenCount = message.metadata?.tokenCount || 0;
 
   return (
-    <Flex
-      direction="column"
-      align={isUser ? "flex-end" : "flex-start"}
-      gap={2}
-      w="100%"
-      bg={isHighlighted ? useColorModeValue('blue.50', 'blue.900') : 'transparent'}
-      borderRadius="md"
-      p={isHighlighted ? 2 : 0}
-      transition="background-color 0.3s ease"
-    >
-      {/* AI Model Badge - show on all assistant messages */}
-      {!isUser && !isError && (
-        <HStack spacing={2} mb={1}>
-          <Badge
-            colorScheme="blue"
-            variant="subtle"
-            fontSize="xs"
-            px={2}
-            py={1}
-            borderRadius="full"
-            fontWeight="medium"
+    <VStack spacing={3} w="100%" align="stretch">
+      {/* Centered Timestamp with Line - Only for user messages */}
+      {isUser && (
+        <Flex align="center" w="100%" my={2}>
+          <Box flex="1" h="1px" bg="#E2E8F0" />
+          <Text
+            px={3}
+            fontSize={fontSizes.micro}
+            color={timestampColor}
+            fontWeight="500"
           >
-            Powered by OpenAI, Gemini & Grok
-          </Badge>
-          {/* Token count badge for AI responses */}
-          {tokenCount > 0 && (
+            {formatTimestamp(message.timestamp)}
+          </Text>
+          <Box flex="1" h="1px" bg="#E2E8F0" />
+        </Flex>
+      )}
+
+      {/* Message Container */}
+      <Flex
+        direction="column"
+        align={isUser ? "flex-end" : "flex-start"}
+        w="100%"
+        bg={isHighlighted ? 'rgba(79, 156, 249, 0.05)' : 'transparent'}
+        borderRadius="xl"
+        p={isHighlighted ? 3 : 0}
+        transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+      >
+      {/* AI Model Badge and timestamp - show on all assistant messages */}
+      {!isUser && !isError && (
+        <HStack spacing={2} mb={1} justify="space-between" w="100%">
+          <HStack spacing={2}>
             <Badge
-              colorScheme="gray"
-              variant="outline"
-              fontSize="xs"
+              colorScheme="blue"
+              variant="subtle"
+              fontSize={fontSizes.micro}
               px={2}
               py={1}
               borderRadius="full"
-              color={tokenCountColor}
-              borderColor={tokenCountColor}
+              fontWeight="medium"
             >
-              {formatTokenCount(tokenCount)} tokens
+              Powered by OpenAI, Gemini & Grok
             </Badge>
-          )}
+            {/* Token count badge for AI responses */}
+            {tokenCount > 0 && (
+              <Badge
+                colorScheme="gray"
+                variant="outline"
+                fontSize={fontSizes.micro}
+                px={2}
+                py={1}
+                borderRadius="full"
+                color={tokenCountColor}
+                borderColor={tokenCountColor}
+              >
+                {formatTokenCount(tokenCount)} tokens
+              </Badge>
+            )}
+          </HStack>
+          {/* Simple timestamp for AI responses */}
+          <Text
+            fontSize={fontSizes.micro}
+            color={timestampColor}
+            opacity={0.7}
+            fontWeight="400"
+          >
+            {formatTimestamp(message.timestamp)}
+          </Text>
         </HStack>
       )}
 
-      {/* Message Bubble - Made wider for better mobile experience */}
+      {/* Message Bubble - Enhanced with modern styling */}
       <Box
         bg={bubbleBg}
         color={bubbleText}
-        px={4}
-        py={3}
+        px={5}
+        py={4}
         borderRadius="2xl"
-        maxW={{ base: "92%", sm: "88%", md: "85%" }} // Wider on mobile, slightly narrower on larger screens
-        minW={{ base: "60%", sm: "50%" }} // Ensure minimum width
+        maxW={{ base: "92%", sm: "88%", md: "85%" }}
+        minW={{ base: "60%", sm: "50%" }}
         position="relative"
-        boxShadow={useColorModeValue("sm", "md")}
+        boxShadow={isUser ? shadowUser : shadowAi}
         border={isUser ? "none" : "1px solid"}
-        borderColor={isUser ? "transparent" : useColorModeValue("gray.200", "gray.600")}
-        transition="all 0.2s ease"
+        borderColor={isUser ? "transparent" : borderAi}
+        transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translateY(-1px)",
-          boxShadow: useColorModeValue("md", "lg"),
+          transform: "translateY(-2px)",
+          boxShadow: isUser
+            ? "0 8px 20px rgba(79, 156, 249, 0.35)"
+            : "0 4px 12px rgba(0, 0, 0, 0.08)",
         }}
       >
         {/* Message Content */}
@@ -209,54 +291,33 @@ export const ChatMessage = memo<ChatMessageProps>(({
           {isLoading ? (
             <Loader variant="skeleton" lines={2} />
           ) : isError ? (
-            <Text fontSize="sm" color={textErr}>
+            <Text fontSize={fontSizes.content} color={textErr}>
               {processedContent || 'An error occurred'}
             </Text>
           ) : isUser ? (
-            <Text fontSize="md" lineHeight="1.6" fontWeight="400">
+            <Text fontSize={fontSizes.content} lineHeight="1.5" fontWeight="400">
               {displayText}
             </Text>
-          ) : (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                p: ({ children }) => <Text mb={1.5} fontSize="md" lineHeight="1.6">{children}</Text>,
-                ul: ({ children }) => <Box as="ul" pl={4} mb={1.5}>{children}</Box>,
-                ol: ({ children }) => <Box as="ol" pl={4} mb={1.5}>{children}</Box>,
-                li: ({ children }) => <Box as="li" mb={0.5} fontSize="md">{children}</Box>,
-                code: ({ children, className }) => {
-                  const isInline = !className;
-                  return isInline ? (
-                    <Text
-                      as="code"
-                      bg={useColorModeValue('gray.100', 'gray.700')}
-                      px={1}
-                      py={0.5}
-                      borderRadius="sm"
-                      fontSize="sm"
-                      fontFamily="mono"
-                    >
-                      {children}
-                    </Text>
-                  ) : (
-                    <Box
-                      as="pre"
-                      bg={useColorModeValue('gray.50', 'gray.800')}
-                      p={3}
-                      borderRadius="md"
-                      overflow="auto"
-                      fontSize="sm"
-                      fontFamily="mono"
-                      mb={1.5}
-                    >
-                      <Text as="code">{children}</Text>
-                    </Box>
-                  );
-                },
+          ) : structuredResponse ? (
+            <EnhancedAIResponse
+              data={structuredResponse}
+              fontSize={{
+                content: fontSizes.content as any,
+                heading: { base: "md", md: "lg" } as any,
+                code: fontSizes.code as any,
+                small: fontSizes.small as any,
               }}
-            >
-              {displayText}
-            </ReactMarkdown>
+            />
+          ) : (
+            <AIResponseFormatter
+              content={displayText}
+              fontSize={{
+                content: fontSizes.content as any,
+                heading: { base: "md", md: "lg" } as any,
+                code: fontSizes.code as any,
+                small: fontSizes.small as any,
+              }}
+            />
           )}
         </Box>
 
@@ -265,18 +326,19 @@ export const ChatMessage = memo<ChatMessageProps>(({
           <Collapse in={isExpanded} animateOpacity>
             <Box mt={1.5}>
               {isUser ? (
-                <Text fontSize="md" lineHeight="1.6">
-                  {processedContent.slice(600)}
+                <Text fontSize={fontSizes.content} lineHeight="1.5">
+                  {remainingText}
                 </Text>
               ) : (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    p: ({ children }) => <Text mb={1.5} fontSize="md" lineHeight="1.6">{children}</Text>,
+                <AIResponseFormatter
+                  content={remainingText}
+                  fontSize={{
+                    content: fontSizes.content as any,
+                    heading: { base: "md", md: "lg" } as any,
+                    code: fontSizes.code as any,
+                    small: fontSizes.small as any,
                   }}
-                >
-                  {processedContent.slice(600)}
-                </ReactMarkdown>
+                />
               )}
             </Box>
           </Collapse>
@@ -291,12 +353,13 @@ export const ChatMessage = memo<ChatMessageProps>(({
               size="sm"
               leftIcon={<PiEyeBold />}
               onClick={() => setShowIndividualResponses(!showIndividualResponses)}
-              color={useColorModeValue('blue.600', 'blue.300')}
+              color="#4F9CF9"
               _hover={{
-                bg: useColorModeValue('blue.50', 'blue.900'),
+                bg: "rgba(79, 156, 249, 0.05)",
               }}
               justifyContent="flex-start"
               fontWeight="medium"
+              fontSize={fontSizes.small}
             >
               {showIndividualResponses ? 'Hide' : 'Show'} Individual AI Responses ({availableModels.length})
             </Button>
@@ -314,18 +377,9 @@ export const ChatMessage = memo<ChatMessageProps>(({
           </VStack>
         )}
 
-        {/* Message Actions */}
-        <HStack justify="space-between" align="center" mt={2} spacing={2}>
-          <Text
-            fontSize="xs"
-            color={isUser ? "whiteAlpha.600" : timestampColor}
-            opacity={0.7}
-            fontWeight="400"
-          >
-            {formatTimestamp(message.timestamp)}
-          </Text>
-
-          <HStack spacing={1}>
+        {/* Message Actions - Only show for AI messages or expandable user messages */}
+        {(!isUser || shouldTruncate) && (
+          <HStack justify="flex-end" align="center" mt={2} spacing={1}>
             {shouldTruncate && (
               <IconButton
                 aria-label={isExpanded ? "Show less" : "Show more"}
@@ -333,20 +387,22 @@ export const ChatMessage = memo<ChatMessageProps>(({
                 size="sm"
                 variant="ghost"
                 onClick={toggleExpanded}
-                color={isUser ? "whiteAlpha.600" : useColorModeValue('gray.400', 'gray.500')}
+                color={isUser ? "rgba(255, 255, 255, 0.6)" : "#94A3B8"}
                 _hover={{
-                  color: isUser ? "whiteAlpha.800" : useColorModeValue('gray.600', 'gray.300'),
-                  bg: isUser ? "whiteAlpha.200" : useColorModeValue('gray.100', 'gray.600'),
+                  color: isUser ? "rgba(255, 255, 255, 0.8)" : "#475569",
+                  bg: isUser ? "rgba(255, 255, 255, 0.2)" : "#F8FAFC",
                 }}
                 minW="32px"
                 h="32px"
               />
             )}
 
-            <CopyButton text={processedContent} />
+            {/* Only show copy button for AI messages */}
+            {!isUser && <CopyButton text={processedContent} />}
           </HStack>
-        </HStack>
+        )}
       </Box>
+      </Flex>
 
       {/* Individual Model Response Modal */}
       <IndividualModelModal
@@ -354,7 +410,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
         onClose={closeModal}
         modelData={selectedModel}
       />
-    </Flex>
+    </VStack>
   );
 });
 

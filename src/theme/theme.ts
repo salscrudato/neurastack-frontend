@@ -6,28 +6,74 @@ import {
 import { designSystemTheme, componentStyles } from './designSystem';
 
 /*─────────────────────────────────────────────*/
-/* Color palette                               */
+/* Modern Light-Only Color Palette             */
 /*─────────────────────────────────────────────*/
-const customColors = {
-  bg:    "#1c1c1e",   // darkest grey
-  panel: "#2c2c2e",   // lighter grey
-  bubble: {
-    user: { bg: "#3b82f6", text: "#ffffff" },  // Tailwind blue-500
-    ai:   { bg: "#3a3a3c", text: "#f3f4f6" }, // grey bubble
+const modernColors = {
+  // Primary background - clean white with subtle warmth
+  bg: "#FAFBFC",
+
+  // Surface colors for cards and panels
+  surface: {
+    primary: "#FFFFFF",
+    secondary: "#F8FAFC",
+    tertiary: "#F1F5F9",
+    glass: "rgba(255, 255, 255, 0.8)",
   },
-  // Brand gradient colors for light mode
+
+  // Modern chat bubbles
+  bubble: {
+    user: {
+      bg: "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)",
+      text: "#FFFFFF",
+      shadow: "0 4px 12px rgba(79, 156, 249, 0.25)"
+    },
+    ai: {
+      bg: "#F8FAFC",
+      text: "#1E293B",
+      border: "#E2E8F0",
+      shadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+    },
+  },
+
+  // Enhanced brand colors
   brand: {
     gradient: {
-      start: "#4F9CF9",  // Blue (top-left)
-      end: "#8B5CF6",    // Purple (bottom-right)
+      primary: "linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)",
+      secondary: "linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)",
+      accent: "linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)",
     },
     primary: "#4F9CF9",
     secondary: "#8B5CF6",
+    accent: "#06B6D4",
   },
+
+  // Semantic colors with modern palette
+  semantic: {
+    success: "#10B981",
+    warning: "#F59E0B",
+    error: "#EF4444",
+    info: "#3B82F6",
+  },
+
+  // Text colors with proper contrast
+  text: {
+    primary: "#0F172A",
+    secondary: "#475569",
+    tertiary: "#64748B",
+    muted: "#94A3B8",
+    inverse: "#FFFFFF",
+  },
+
+  // Border colors
+  border: {
+    light: "#F1F5F9",
+    medium: "#E2E8F0",
+    strong: "#CBD5E1",
+  }
 };
 
 const config: ThemeConfig = {
-  initialColorMode: "dark",      // default to dark UI
+  initialColorMode: "light",
   useSystemColorMode: false,
 };
 
@@ -35,29 +81,93 @@ const theme = extendTheme(
   {
     config,
     colors: {
-      bg:    customColors.bg,
-      panel: customColors.panel,
-      bubbleUserBg: customColors.bubble.user.bg,
-      bubbleUserText: customColors.bubble.user.text,
-      bubbleAiBg: customColors.bubble.ai.bg,
-      bubbleAiText: customColors.bubble.ai.text,
+      // Background colors
+      bg: modernColors.bg,
+      surface: modernColors.surface,
+
+      // Chat bubble colors
+      bubbleUserBg: modernColors.bubble.user.bg,
+      bubbleUserText: modernColors.bubble.user.text,
+      bubbleAiBg: modernColors.bubble.ai.bg,
+      bubbleAiText: modernColors.bubble.ai.text,
+
       // Brand colors
-      brandPrimary: customColors.brand.primary,
-      brandSecondary: customColors.brand.secondary,
-      brandGradientStart: customColors.brand.gradient.start,
-      brandGradientEnd: customColors.brand.gradient.end,
+      brandPrimary: modernColors.brand.primary,
+      brandSecondary: modernColors.brand.secondary,
+      brandAccent: modernColors.brand.accent,
+
+      // Text colors
+      textPrimary: modernColors.text.primary,
+      textSecondary: modernColors.text.secondary,
+      textTertiary: modernColors.text.tertiary,
+      textMuted: modernColors.text.muted,
+
+      // Semantic colors
+      success: modernColors.semantic.success,
+      warning: modernColors.semantic.warning,
+      error: modernColors.semantic.error,
+      info: modernColors.semantic.info,
+
+      // Border colors
+      borderLight: modernColors.border.light,
+      borderMedium: modernColors.border.medium,
+      borderStrong: modernColors.border.strong,
     },
     fonts: {
-      heading: "Inter, sans-serif",
-      body:    "Inter, sans-serif",
+      heading: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+      body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+    },
+    fontSizes: {
+      xs: "0.75rem",    // 12px
+      sm: "0.875rem",   // 14px
+      md: "1rem",       // 16px
+      lg: "1.125rem",   // 18px
+      xl: "1.25rem",    // 20px
+      "2xl": "1.5rem",  // 24px
+      "3xl": "1.875rem", // 30px
+      "4xl": "2.25rem", // 36px
+      "5xl": "3rem",    // 48px
+    },
+    lineHeights: {
+      shorter: 1.25,
+      short: 1.375,
+      base: 1.5,
+      tall: 1.625,
+      taller: 2,
     },
     styles: {
       global: {
+        "html": {
+          scrollBehavior: "smooth",
+        },
         "html, body": {
-          bg: "bg",                 // use the bg token
-          color: "gray.100",
+          bg: modernColors.bg,
+          color: modernColors.text.primary,
+          fontFeatureSettings: '"cv02", "cv03", "cv04", "cv11"',
+          fontVariantNumeric: "oldstyle-nums",
+          lineHeight: "base",
+        },
+        "*, *::before, *::after": {
+          borderColor: modernColors.border.light,
+        },
+        // Enhanced focus styles
+        "*:focus": {
+          outline: "2px solid",
+          outlineColor: modernColors.brand.primary,
+          outlineOffset: "2px",
         },
       },
+    },
+    // Enhanced shadows for depth
+    shadows: {
+      xs: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+      sm: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+      md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+      lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+      glass: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+      glow: "0 0 20px rgba(79, 156, 249, 0.3)",
     },
     // Merge with design system components
     components: {
@@ -69,5 +179,5 @@ const theme = extendTheme(
 
 export default theme;
 
-/* Convenience export for non-Chakra (e.g., className strings) */
-export const colors = customColors;
+/* Convenience export for modern colors */
+export const colors = modernColors;

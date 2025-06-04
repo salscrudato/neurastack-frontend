@@ -1,11 +1,10 @@
 import {
   Flex, IconButton, Box, Text, Avatar,
   Menu, MenuButton, MenuList, MenuItem, MenuDivider,
-  useColorMode, useColorModeValue, useToast, Tooltip,
+  useToast, Tooltip,
   HStack, Icon, Badge, useDisclosure,
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton
 } from '@chakra-ui/react';
-import { SunIcon, MoonIcon }   from '@chakra-ui/icons';
 import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise, PiDownloadBold, PiDatabase, PiGear } from 'react-icons/pi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
@@ -19,7 +18,6 @@ import { MemoryVerification } from './MemoryVerification';
 import { CacheManager } from './CacheManager';
 
 export function Header() {
-  const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
   const location = useLocation();
   const setUser = useAuthStore(s => s.setUser);
@@ -44,8 +42,12 @@ export function Header() {
     onClose: onCacheClose
   } = useDisclosure();
 
-  const gray = useColorModeValue('gray.600','gray.300');
-  const grayHover = useColorModeValue('gray.700','white');
+  // Modern color values - light mode only
+  const gray = '#64748B';
+  const grayHover = '#475569';
+  const menuBg = '#FFFFFF';
+  const menuBorder = '#E2E8F0';
+  const hoverBg = '#F8FAFC';
 
   // Determine header text and navigation based on current route
   const getHeaderInfo = () => {
@@ -152,23 +154,28 @@ export function Header() {
         gap={2}
         cursor="pointer"
         onClick={() => navigate(headerInfo.destination)}
-        transition="all 0.2s ease"
+        transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
         userSelect="none"
-        px={2}
-        py={1}
-        borderRadius="full"
+        px={3}
+        py={2}
+        borderRadius="xl"
         role="group"
+        bg="rgba(255, 255, 255, 0.8)"
+        backdropFilter="blur(10px)"
+        border="1px solid rgba(255, 255, 255, 0.2)"
+        boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
         _hover={{
-          bg: useColorModeValue('gray.50', 'whiteAlpha.100'),
-          transform: 'translateY(-1px)'
+          bg: "rgba(255, 255, 255, 0.95)",
+          transform: 'translateY(-1px)',
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)"
         }}
       >
         <Text
           fontSize={headerInfo.fontSize}
-          fontWeight="600"
-          color={useColorModeValue('gray.500', 'gray.400')}
-          letterSpacing="1px"
-          fontFamily="Inter, system-ui, sans-serif"
+          fontWeight="700"
+          color="#475569"
+          letterSpacing="0.5px"
+          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
         >
           {headerInfo.text}
         </Text>
@@ -176,12 +183,12 @@ export function Header() {
         {/* Switch/Recycling Icon Indicator */}
         <Icon
           as={PiArrowsClockwise}
-          w="12px"
-          h="12px"
-          color={useColorModeValue('gray.400', 'gray.500')}
-          transition="all 0.2s ease"
+          w="14px"
+          h="14px"
+          color="#94A3B8"
+          transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
           _groupHover={{
-            color: useColorModeValue('gray.600', 'gray.300'),
+            color: "#4F9CF9",
             transform: 'rotate(180deg) scale(1.1)'
           }}
         />
@@ -218,8 +225,17 @@ export function Header() {
           <MenuButton as={IconButton}
             aria-label="Account menu"
             variant="ghost"
-            color={useColorModeValue('gray.500','white')}
-            _hover={{ bg: useColorModeValue('gray.100','whiteAlpha.100') }}>
+            color="#64748B"
+            bg="rgba(255, 255, 255, 0.8)"
+            backdropFilter="blur(10px)"
+            border="1px solid rgba(255, 255, 255, 0.2)"
+            borderRadius="xl"
+            boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+            _hover={{
+              bg: "rgba(255, 255, 255, 0.95)",
+              transform: 'translateY(-1px)',
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)"
+            }}>
             {user?.photoURL ? (
               <Avatar size="sm" src={user.photoURL} />
             ) : (
@@ -228,7 +244,15 @@ export function Header() {
           </MenuButton>
         </Tooltip>
 
-        <MenuList>
+        <MenuList
+          bg={menuBg}
+          border="1px solid"
+          borderColor={menuBorder}
+          borderRadius="xl"
+          boxShadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+          backdropFilter="blur(10px)"
+          p={2}
+        >
           {/* User info */}
           <MenuItem isDisabled>
             <HStack>
@@ -251,7 +275,8 @@ export function Header() {
           <MenuItem
             onClick={() => navigate('/apps')}
             color={grayHover}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            borderRadius="lg"
+            _hover={{ bg: hoverBg }}>
             <HStack>
               <PiHouseLight />
               <Text>Dashboard</Text>
@@ -259,20 +284,11 @@ export function Header() {
           </MenuItem>
 
           <MenuItem
-            onClick={toggleColorMode}
-            color={grayHover}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
-            <HStack>
-              {colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-              <Text>Switch to {colorMode === 'light' ? 'dark' : 'light'} mode</Text>
-            </HStack>
-          </MenuItem>
-
-          <MenuItem
             onClick={handleUpdateCheck}
             color={grayHover}
             isDisabled={isChecking}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            borderRadius="lg"
+            _hover={{ bg: hoverBg }}>
             <HStack>
               <PiDownloadBold />
               <Text>{isChecking ? 'Checking...' : 'Check for Updates'}</Text>
@@ -282,7 +298,8 @@ export function Header() {
           <MenuItem
             onClick={handleForceRefresh}
             color={grayHover}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            borderRadius="lg"
+            _hover={{ bg: hoverBg }}>
             <HStack>
               <PiArrowsClockwise />
               <Text>Force Refresh</Text>
@@ -295,7 +312,8 @@ export function Header() {
           <MenuItem
             onClick={onMemoryOpen}
             color={grayHover}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            borderRadius="lg"
+            _hover={{ bg: hoverBg }}>
             <HStack>
               <PiDatabase />
               <Box>
@@ -305,11 +323,17 @@ export function Header() {
                     size="xs"
                     colorScheme="green"
                     variant="subtle"
+                    borderRadius="full"
                   >
                     Memory API
                   </Badge>
                   {user && (
-                    <Badge size="xs" colorScheme="blue" variant="outline">
+                    <Badge
+                      size="xs"
+                      colorScheme="blue"
+                      variant="outline"
+                      borderRadius="full"
+                    >
                       Session: {sessionId.slice(0, 6)}...
                     </Badge>
                   )}
@@ -321,7 +345,8 @@ export function Header() {
           <MenuItem
             onClick={onCacheOpen}
             color={grayHover}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            borderRadius="lg"
+            _hover={{ bg: hoverBg }}>
             <HStack>
               <PiGear />
               <Text>Cache Management</Text>
@@ -333,7 +358,8 @@ export function Header() {
           <MenuItem
             onClick={handleSignOut}
             color={grayHover}
-            _hover={{ bg: useColorModeValue('gray.50','whiteAlpha.200') }}>
+            borderRadius="lg"
+            _hover={{ bg: hoverBg }}>
             <HStack>
               <PiSignOutBold />
               <Text>Sign Out</Text>

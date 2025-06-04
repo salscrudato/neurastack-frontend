@@ -16,6 +16,7 @@ const NeurataskPage = React.lazy(() => import('./pages/NeurataskPage'));
 const NeuraplannerPage = React.lazy(() => import('./pages/NeuraplannerPage'));
 const NeuraPromptsPage = React.lazy(() => import('./pages/NeuraPromptsPage'));
 const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
+const AIResponseDemo = React.lazy(() => import('./components/AIResponseDemo').then(m => ({ default: m.AIResponseDemo })));
 
 // Create router with proper nested routes
 const router = createBrowserRouter([
@@ -77,6 +78,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
             <NeuraFitPage />
+          </Suspense>
+        )
+      },
+      {
+        path: 'demo/ai-response',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading AI Response Demo..." />}>
+            <AIResponseDemo />
           </Suspense>
         )
       },

@@ -62,12 +62,12 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
   const isFailed = model.status === 'failed';
   const isSuccess = model.status === 'success';
   
-  // Color mode values
-  const cardBg = useColorModeValue('white', 'gray.700');
-  const cardHoverBg = useColorModeValue('gray.50', 'gray.600');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const textColor = useColorModeValue('gray.800', 'gray.100');
-  const mutedColor = useColorModeValue('gray.600', 'gray.400');
+  // Modern color values - light mode only
+  const cardBg = '#FFFFFF';
+  const cardHoverBg = '#F8FAFC';
+  const borderColor = '#E2E8F0';
+  const textColor = '#1E293B';
+  const mutedColor = '#64748B';
   
   // Status colors
   const statusColor = isFailed ? 'red' : isSuccess ? 'green' : 'yellow';

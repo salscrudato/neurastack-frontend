@@ -31,8 +31,8 @@ export const UpdateNotification = () => {
     };
   }, [enableUpdateNotifications]);
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const bgColor = '#FFFFFF';
+  const borderColor = '#E2E8F0';
 
   useEffect(() => {
     if (offlineReady) {

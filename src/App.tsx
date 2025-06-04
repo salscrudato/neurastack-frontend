@@ -1,13 +1,14 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex } from "@chakra-ui/react";
 import AddToHomeButton from "./components/AddToHomeScreen";
 import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { Header } from "./components/Header";
 import UpdateNotification from "./components/UpdateNotification";
 import "./styles/mobile-scrolling.css";
+import "./styles/modern-enhancements.css";
 
 /* Enhanced page content transitions with static header */
 const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -16,10 +17,10 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   // Check if current route should show header
   const isSplashPage = location.pathname === '/';
 
-  // Move hooks outside of conditional rendering to fix Rules of Hooks violation
-  const headerBg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(44, 44, 46, 0.95)');
-  const headerBorderColor = useColorModeValue('rgba(229, 231, 235, 0.8)', 'rgba(255, 255, 255, 0.1)');
-  const headerBoxShadow = useColorModeValue('0 1px 3px rgba(0, 0, 0, 0.05)', '0 1px 3px rgba(0, 0, 0, 0.2)');
+  // Modern header styling - light mode only
+  const headerBg = 'rgba(255, 255, 255, 0.95)';
+  const headerBorderColor = 'rgba(229, 231, 235, 0.8)';
+  const headerBoxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
 
   // Subtle blur-based transitions for page content
   const getTransitionVariants = (pathname: string) => {

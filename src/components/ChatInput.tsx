@@ -2,7 +2,6 @@ import {
   Box,
   IconButton,
   Textarea,
-  useColorModeValue,
   InputGroup,
   InputRightElement,
   Text,
@@ -98,17 +97,17 @@ export default function ChatInput() {
     }
   };
 
-  const shellBg  = useColorModeValue("#ffffff", "#2c2c2e");
-  const border   = useColorModeValue("gray.300", "gray.600");
-  const pageBg   = useColorModeValue("#f5f5f7", "#1c1c1e");
-  const btnBg    = useColorModeValue("gray.100", "gray.700");
-  const btnHover = useColorModeValue("gray.200", "gray.600");
+  const shellBg  = "#FFFFFF";
+  const border   = "#CBD5E1";
+  const pageBg   = "#FAFBFC";
+  const btnBg    = "#F1F5F9";
+  const btnHover = "#E2E8F0";
 
-  const borderTopColor = useColorModeValue("gray.200", "gray.700");
-  const hoverBorderColor = useColorModeValue("gray.400", "gray.500");
-  const placeholderColor = useColorModeValue("gray.500", "gray.400");
-  const textColor = useColorModeValue("gray.800", "gray.100");
-  const hintTextColor = useColorModeValue('gray.500', 'gray.400');
+  const borderTopColor = "#E2E8F0";
+  const hoverBorderColor = "#94A3B8";
+  const placeholderColor = "#94A3B8";
+  const textColor = "#1E293B";
+  const hintTextColor = '#94A3B8';
 
   return (
     <Box

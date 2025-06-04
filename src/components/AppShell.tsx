@@ -1,6 +1,5 @@
 import {
-  Flex, IconButton, Box, Text,
-  useColorModeValue
+  Flex, IconButton, Box, Text
 } from '@chakra-ui/react';
 import { PiArrowLeftLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
@@ -15,10 +14,10 @@ interface AppShellProps {
 
 export function AppShell({ children, showBack = false, title, rightActions }: AppShellProps) {
   const navigate = useNavigate();
-  const bodyBg = useColorModeValue('gray.50', 'gray.900');
-  const headerBg = useColorModeValue('white', '#2c2c2e');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.200');
-  const gray = useColorModeValue('gray.600', 'gray.300');
+  const bodyBg = '#FAFBFC';
+  const headerBg = 'rgba(255, 255, 255, 0.95)';
+  const borderColor = '#E2E8F0';
+  const gray = '#64748B';
 
   return (
     <Flex direction="column" h="100%" bg={bodyBg}>
@@ -33,7 +32,7 @@ export function AppShell({ children, showBack = false, title, rightActions }: Ap
           bg={headerBg}
           borderBottom="1px solid"
           borderColor={borderColor}
-          boxShadow={useColorModeValue('sm', 'none')}
+          boxShadow="sm"
           minH={{ base: "56px", md: "auto" }}
         >
           <IconButton
@@ -41,8 +40,8 @@ export function AppShell({ children, showBack = false, title, rightActions }: Ap
             icon={<PiArrowLeftLight size={20} />}
             variant="ghost"
             onClick={() => navigate(-1)}
-            color={useColorModeValue('gray.500', 'white')}
-            _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100') }}
+            color="#64748B"
+            _hover={{ bg: "#F1F5F9" }}
             size={{ base: "md", md: "md" }}
             minW={{ base: "40px", md: "auto" }}
             minH={{ base: "40px", md: "auto" }}

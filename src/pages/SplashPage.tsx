@@ -10,7 +10,6 @@ import {
   ModalOverlay,
   useDisclosure,
   useToast,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { FcGoogle } from "react-icons/fc";
@@ -39,9 +38,8 @@ const glowPulse = keyframes`
 `;
 
 export function SplashPage() {
-  const bgPage = useColorModeValue("#E8EDF5", "#1c1c1e");
-  const bgCard = useColorModeValue("white", "gray.800");
-  const iconFilter = useColorModeValue("none", "brightness(0) invert(1)");
+  const bgPage = "linear-gradient(135deg, #FAFBFC 0%, #F1F5F9 100%)";
+  const iconFilter = "none";
   const btnColor = "blue";
 
   const navigate  = useNavigate();
@@ -102,14 +100,16 @@ export function SplashPage() {
       position="relative"
       overflow="hidden"
     >
-      {/* Card */}
+      {/* Modern Glass Card */}
       <Box
-        bg={bgCard}
-        rounded="xl"
-        shadow="lg"
-        px={8}
-        py={10}
-        maxW="sm"
+        bg="rgba(255, 255, 255, 0.9)"
+        backdropFilter="blur(20px)"
+        rounded="3xl"
+        shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+        border="1px solid rgba(255, 255, 255, 0.2)"
+        px={10}
+        py={12}
+        maxW="md"
         w="full"
         position="relative"
         _before={{
@@ -117,12 +117,12 @@ export function SplashPage() {
           pos: "absolute",
           inset: 0,
           transform: "translate(-50%, -50%)",
-          w: "100%",
-          h: "50%",
+          w: "120%",
+          h: "60%",
           bgGradient:
-            "radial(circle, rgba(78, 128, 255, 0.45) 60%, transparent 80%)",
-          filter: "blur(60px)",
-          animation: `${glowPulse} 4s ease-in-out infinite`,
+            "radial(circle, rgba(79, 156, 249, 0.3) 40%, transparent 70%)",
+          filter: "blur(80px)",
+          animation: `${glowPulse} 6s ease-in-out infinite`,
           zIndex: -1,
         }}
       >
@@ -142,12 +142,23 @@ export function SplashPage() {
           <Button
             leftIcon={<FcGoogle />}
             w="full"
+            h="56px"
             isLoading={loadingGoogle}
             onClick={handleGoogle}
             aria-label="Sign in with Google"
             variant="outline"
             colorScheme={btnColor}
-            py={6}
+            borderWidth="2px"
+            borderRadius="xl"
+            fontSize="md"
+            fontWeight="600"
+            bg="rgba(255, 255, 255, 0.8)"
+            backdropFilter="blur(10px)"
+            _hover={{
+              bg: "rgba(255, 255, 255, 0.95)",
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 20px rgba(79, 156, 249, 0.25)"
+            }}
           >
             Sign in with Google
           </Button>
@@ -156,12 +167,23 @@ export function SplashPage() {
           <Button
             leftIcon={<PiUserLight />}
             w="full"
+            h="56px"
             isLoading={loadingGuest}
             onClick={handleGuest}
             aria-label="Continue as guest"
             variant="outline"
             colorScheme={btnColor}
-            py={6}
+            borderWidth="2px"
+            borderRadius="xl"
+            fontSize="md"
+            fontWeight="600"
+            bg="rgba(255, 255, 255, 0.8)"
+            backdropFilter="blur(10px)"
+            _hover={{
+              bg: "rgba(255, 255, 255, 0.95)",
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 20px rgba(79, 156, 249, 0.25)"
+            }}
           >
             Continue as Guest
           </Button>
