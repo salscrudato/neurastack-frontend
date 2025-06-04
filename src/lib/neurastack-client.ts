@@ -146,6 +146,18 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
+    // Log the outgoing request
+    console.group('🚀 NeuraStack API Request');
+    console.log('📤 Endpoint:', `${this.config.baseUrl}/api/query`);
+    console.log('📋 Request Body:', JSON.stringify(requestBody, null, 2));
+    console.log('🔧 Headers:', headers);
+    console.log('⚙️ Config:', {
+      sessionId: this.config.sessionId,
+      userId: this.config.userId,
+      timeout: this.config.timeout
+    });
+    console.groupEnd();
+
     // Add optional headers
     const sessionId = options.sessionId || this.config.sessionId;
     const userId = options.userId || this.config.userId;
@@ -274,10 +286,26 @@ export class NeuraStackClient {
 
       if (!response.ok) {
         const errorData = await this.parseErrorResponse(response);
+
+        // Log API errors
+        console.group('❌ NeuraStack API Error');
+        console.log('🚫 Status:', response.status, response.statusText);
+        console.log('📋 Error Data:', JSON.stringify(errorData, null, 2));
+        console.log('🔗 URL:', `${this.config.baseUrl}${endpoint}`);
+        console.groupEnd();
+
         throw new NeuraStackApiError(errorData);
       }
 
       const data = await response.json();
+
+      // Log the API response
+      console.group('📥 NeuraStack API Response');
+      console.log('✅ Status:', response.status, response.statusText);
+      console.log('📊 Response Data:', JSON.stringify(data, null, 2));
+      console.log('⏱️ Response Headers:', Object.fromEntries(response.headers.entries()));
+      console.groupEnd();
+
       return data as T;
 
     } catch (error) {

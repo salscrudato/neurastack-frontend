@@ -151,8 +151,9 @@ export function useModelResponses(
       });
     }
 
-    // Filter individual responses to only include role-based responses (not raw model responses)
-    if (individualResponses) {
+    // Only show ensemble responses since we removed mock individual responses
+    // Individual responses from the API (if any) would be processed here
+    if (individualResponses && individualResponses.length > 0) {
       individualResponses.forEach(response => {
         // Only include responses that have a meaningful role (not just model names)
         if (response.role && !response.model.includes(':')) {
@@ -166,7 +167,6 @@ export function useModelResponses(
       });
     }
 
-    // Don't show failed raw models - only show the successful ensemble responses
     return models;
   }, [individualResponses, ensembleMetadata, modelsUsed, fallbackReasons]);
 

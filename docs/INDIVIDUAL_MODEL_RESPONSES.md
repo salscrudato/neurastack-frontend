@@ -32,11 +32,9 @@ src/
 ├── components/
 │   ├── IndividualModelModal.tsx      # Main modal component
 │   ├── ModelResponseGrid.tsx         # Grid of clickable model cards
-│   └── OptimizedChatMessage.tsx      # Enhanced with model grid
-├── hooks/
-│   └── useModelResponses.ts          # State management hook
-└── utils/
-    └── mockIndividualResponses.ts    # Mock data for testing
+│   └── ChatMessage.tsx               # Enhanced with model grid
+└── hooks/
+    └── useModelResponses.ts          # State management hook
 ```
 
 ### **Data Flow**
@@ -139,41 +137,25 @@ const columns = useBreakpointValue({
 
 ## 🧪 Testing & Development
 
-### **Mock Data Generation**
-For development and testing, the system automatically generates mock individual responses:
+### **Real API Integration**
+The system now uses only real API responses from the backend:
 
 ```typescript
-// Enable mock responses in development
-setMockResponsesEnabled(true);
+// Individual responses come directly from the API
+const response = await neuraStackClient.queryAI(prompt, {
+  useEnsemble: true,
+  models: ['openai:gpt-4', 'google:gemini-1.5-flash', 'xai:grok-3-mini']
+});
 
-// Generates variations based on:
-// - Model characteristics
-// - Ensemble roles
-// - Response content
+// Access ensemble metadata and individual responses
+console.log(response.ensembleMetadata);
+console.log(response.individualResponses); // If provided by API
 ```
 
-### **Mock Response Types**
-- **Gemini**: Structured, analytical responses
-- **Grok**: Creative, conversational responses  
-- **GPT-4**: Balanced, comprehensive responses
-- **Ensemble**: Role-specific analysis
-
-## 🔧 Configuration
-
-### **Environment Variables**
-```bash
-# Enable mock responses (development only)
-VITE_ENABLE_MOCK_RESPONSES=true
-```
-
-### **Local Storage Settings**
-```javascript
-// Enable/disable mock responses
-localStorage.setItem('neurastack-enable-mock-responses', 'true');
-
-// Check if enabled
-const enabled = localStorage.getItem('neurastack-enable-mock-responses') === 'true';
-```
+### **Response Processing**
+- **Direct Display**: Raw API responses displayed without modification
+- **Basic Formatting**: Only whitespace cleanup applied
+- **No Mock Data**: All responses come from the actual backend API
 
 ## 🚀 Future Enhancements
 
@@ -185,12 +167,12 @@ const enabled = localStorage.getItem('neurastack-enable-mock-responses') === 'tr
 - **Advanced Filtering**: Filter by model, role, or performance
 
 ### **API Integration**
-When the backend API is updated to return individual responses:
+The system is now fully integrated with the real backend API:
 
-1. Remove mock data generation
-2. Use actual `response.individualResponses`
-3. Enhanced metadata from real API responses
-4. Real-time model performance metrics
+1. ✅ Direct API response usage (no mock data)
+2. ✅ Real `response.ensembleMetadata` display
+3. ✅ Actual model performance metrics
+4. ✅ Clean response formatting without content modification
 
 ## 📱 Mobile Experience
 

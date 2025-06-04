@@ -103,9 +103,12 @@ export const ChatMessage = memo<ChatMessageProps>(({
     setIsExpanded(prev => !prev);
   }, []);
 
+  // Fix duplication bug: when expanded, only show first part in main section
   const displayText = shouldTruncate && !isExpanded
     ? processedContent.slice(0, 600) + '...'
-    : processedContent;
+    : shouldTruncate && isExpanded
+    ? processedContent.slice(0, 600) // Only show first 600 chars in main section when expanded
+    : processedContent; // Show full content for short messages
 
   // Model responses hook
   const {

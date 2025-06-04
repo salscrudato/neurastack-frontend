@@ -10,7 +10,6 @@ import {
   deleteMessageFromFirebase
 } from '../services/chatHistoryService';
 import { handleSilentError } from '../utils/errorHandler';
-import { enhanceResponseWithMockData } from '../utils/mockIndividualResponses';
 
 export interface Message {
   id: string;
@@ -114,7 +113,7 @@ export const useChatStore = create<ChatState>()(
             // Use the new memory-aware API with specific models
             const response = await neuraStackClient.queryAI(text, {
               useEnsemble: true,
-              models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
+              models: ['openai:gpt-4', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
               maxTokens: 2000,
               temperature: 0.7
             });
@@ -126,14 +125,24 @@ export const useChatStore = create<ChatState>()(
               throw new Error('Invalid response received');
             }
 
-            // Enhance response with mock individual responses for testing
-            const enhancedResponse = enhanceResponseWithMockData(response);
-
-            // Clean response text
-            const cleanedAnswer = String(enhancedResponse.answer || '').trim();
+            // Clean response text - basic formatting only
+            const cleanedAnswer = String(response.answer || '').trim();
             if (!cleanedAnswer) {
               throw new Error('Empty response received');
             }
+
+            // Log the processed response for debugging
+            console.group('🎯 Chat Store Processing');
+            console.log('📝 Original Answer Length:', response.answer?.length || 0);
+            console.log('✂️ Cleaned Answer Length:', cleanedAnswer.length);
+            console.log('🔍 Answer Preview:', cleanedAnswer.substring(0, 200) + (cleanedAnswer.length > 200 ? '...' : ''));
+            console.log('📊 Metadata:', {
+              ensembleMode: response.ensembleMode,
+              modelsUsed: response.modelsUsed,
+              executionTime: response.executionTime,
+              tokenCount: response.tokenCount
+            });
+            console.groupEnd();
 
             const assistantMsg = {
               id: assistantId,
@@ -141,21 +150,20 @@ export const useChatStore = create<ChatState>()(
               text: cleanedAnswer,
               timestamp: Date.now(),
               metadata: {
-                models: enhancedResponse.modelsUsed ? Object.keys(enhancedResponse.modelsUsed) : [],
+                models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
                 responseTime,
                 retryCount,
-                executionTime: enhancedResponse.executionTime,
-                ensembleMode: enhancedResponse.ensembleMode,
-                ensembleMetadata: enhancedResponse.ensembleMetadata,
+                executionTime: response.executionTime,
+                ensembleMode: response.ensembleMode,
+                ensembleMetadata: response.ensembleMetadata,
                 // Memory-related metadata
-                memoryContext: enhancedResponse.memoryContext,
-                tokenCount: enhancedResponse.tokenCount,
-                memoryTokensSaved: enhancedResponse.memoryTokensSaved,
+                memoryContext: response.memoryContext,
+                tokenCount: response.tokenCount,
+                memoryTokensSaved: response.memoryTokensSaved,
                 sessionId,
-                // Individual model responses for modal display
-                individualResponses: enhancedResponse.individualResponses,
-                modelsUsed: enhancedResponse.modelsUsed,
-                fallbackReasons: enhancedResponse.fallbackReasons
+                // Raw API response data only
+                modelsUsed: response.modelsUsed,
+                fallbackReasons: response.fallbackReasons
               }
             };
 
