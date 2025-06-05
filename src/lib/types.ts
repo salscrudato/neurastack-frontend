@@ -18,7 +18,12 @@ export interface Message {
  * NeuraStack API Request/Response Types (Latest Backend Version)
  * ========================================================================== */
 
-/** Request interface for NeuraStack API */
+/** Request interface for NeuraStack Ensemble API */
+export interface EnsembleRequest {
+  prompt: string;
+}
+
+/** Legacy request interface for backward compatibility */
 export interface NeuraStackQueryRequest {
   /** The user's prompt/question */
   prompt: string;
@@ -40,8 +45,9 @@ export interface NeuraStackQueryRequest {
 export interface NeuraStackHeaders {
   'Content-Type': 'application/json';
   'X-Session-ID'?: string;
-  'X-User-ID'?: string;
+  'X-User-Id'?: string;
   'Authorization'?: string;
+  'X-Requested-With'?: string;
   [key: string]: string | undefined;
 }
 
@@ -52,8 +58,51 @@ export interface SubAnswer {
   role?: string;          // Role in ensemble mode (e.g., "Evidence Analyst")
 }
 
-/** Updated ensemble metadata structure */
+/** New Ensemble API Response Types */
+export interface EnsembleRole {
+  role: "evidence_analyst" | "innovator" | "risk_reviewer";
+  content: string;
+  model: string;
+  provider: "openai" | "gemini" | "claude";
+  status: "fulfilled" | "rejected";
+  wordCount: number;
+}
+
+export interface EnsembleSynthesis {
+  content: string;
+  model: string;
+  provider: "openai" | "gemini" | "claude";
+  status: "success" | "failed";
+  error?: string;
+}
+
 export interface EnsembleMetadata {
+  totalRoles: number;
+  successfulRoles: number;
+  failedRoles: number;
+  synthesisStatus: "success" | "failed";
+  processingTimeMs: number;
+  timestamp: string; // ISO 8601 format
+}
+
+export interface EnsembleData {
+  prompt: string;
+  userId: string;
+  synthesis: EnsembleSynthesis;
+  roles: EnsembleRole[];
+  metadata: EnsembleMetadata;
+}
+
+export interface EnsembleResponse {
+  status: "success" | "error";
+  data?: EnsembleData;
+  message?: string;
+  error?: string;
+  timestamp?: string;
+}
+
+/** Legacy ensemble metadata structure for backward compatibility */
+export interface LegacyEnsembleMetadata {
   evidenceAnalyst: string;
   innovator: string;
   riskReviewer: string;
@@ -84,7 +133,7 @@ export interface NeuraStackQueryResponse {
   memoryTokensSaved?: number;
 
   /** Ensemble-specific metadata */
-  ensembleMetadata?: EnsembleMetadata;
+  ensembleMetadata?: LegacyEnsembleMetadata;
 
   /** Any fallback reasons if models failed */
   fallbackReasons?: Record<string, string>;
@@ -202,7 +251,7 @@ export interface ChatResponse {
   /** Whether ensemble mode was used */
   ensembleMode?: boolean;
   /** Detailed ensemble breakdown */
-  ensembleMetadata?: EnsembleMetadata;
+  ensembleMetadata?: LegacyEnsembleMetadata;
 }
 
 /* ============================================================================

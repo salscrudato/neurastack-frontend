@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import type { SubAnswer, EnsembleMetadata } from '../lib/types';
+import type { SubAnswer, LegacyEnsembleMetadata } from '../lib/types';
 
 // ============================================================================
 // Types
@@ -125,7 +125,7 @@ export const ENSEMBLE_ROLE_INFO = {
 
 export function useModelResponses(
   individualResponses?: SubAnswer[],
-  ensembleMetadata?: EnsembleMetadata,
+  ensembleMetadata?: LegacyEnsembleMetadata,
   modelsUsed?: Record<string, boolean>,
   fallbackReasons?: Record<string, string>
 ): UseModelResponsesResult {
@@ -145,7 +145,7 @@ export function useModelResponses(
             answer: content,
             role: role,
             status: 'success',
-            executionTime: ensembleMetadata.executionTime
+            executionTime: (ensembleMetadata as any).executionTime || 0
           });
         }
       });

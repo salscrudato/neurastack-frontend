@@ -229,7 +229,7 @@ export function useSessionContext(sessionId?: string): UseSessionContextResult {
 export function useHealthCheck() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<{ status: string; timestamp: string } | null>(null);
+  const [status, setStatus] = useState<{ status: string; message: string } | null>(null);
 
   const checkHealth = useCallback(async () => {
     setLoading(true);

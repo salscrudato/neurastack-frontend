@@ -217,7 +217,7 @@ export const MemoryVerification: React.FC = () => {
                   </HStack>
                 </StatNumber>
                 <StatHelpText>
-                  {status?.timestamp && new Date(status.timestamp).toLocaleTimeString()}
+                  {status?.message || 'Health check completed'}
                 </StatHelpText>
               </Stat>
 

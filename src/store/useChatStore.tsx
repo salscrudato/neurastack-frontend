@@ -30,7 +30,7 @@ export interface Message {
     sessionId?: string;
     // Individual model responses for modal display
     individualResponses?: import('../lib/types').SubAnswer[];
-    ensembleMetadata?: import('../lib/types').EnsembleMetadata;
+    ensembleMetadata?: import('../lib/types').LegacyEnsembleMetadata;
     modelsUsed?: Record<string, boolean>;
     fallbackReasons?: Record<string, string>;
     executionTime?: string;

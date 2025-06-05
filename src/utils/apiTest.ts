@@ -8,40 +8,69 @@ import { neuraStackClient } from '../lib/neurastack-client';
 
 export async function testApiConfiguration() {
   try {
-    console.log('🧪 Testing API configuration...');
-    
-    const testPrompt = "plan a trip to paris";
-    
-    console.log('📤 Sending request with parameters:');
-    console.log({
-      prompt: testPrompt,
-      useEnsemble: true,
-      models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini']
-    });
-    
-    const response = await neuraStackClient.queryAI(testPrompt, {
-      useEnsemble: true,
-      models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
-      maxTokens: 1000,
-      temperature: 0.7
-    });
-    
-    console.log('✅ API Response received:');
+    console.log('🧪 Testing Ensemble API configuration...');
+
+    // First test health check
+    console.log('🏥 Testing health check...');
+    try {
+      const healthResponse = await neuraStackClient.healthCheck();
+      console.log('✅ Health check response:', healthResponse);
+    } catch (healthError) {
+      console.warn('⚠️ Health check failed (continuing with ensemble test):', healthError);
+    }
+
+    // Test direct fetch to ensemble endpoint with minimal headers
+    console.log('🧪 Testing direct fetch with minimal headers...');
+    try {
+      const directResponse = await fetch('https://neurastack-backend-638289111765.us-central1.run.app/ensemble-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt: "Quick test: explain AI in 1-2 lines." })
+      });
+
+      if (directResponse.ok) {
+        const directData = await directResponse.json();
+        console.log('✅ Direct fetch successful:', directData);
+      } else {
+        console.error('❌ Direct fetch failed:', directResponse.status, directResponse.statusText);
+      }
+    } catch (directError) {
+      console.error('❌ Direct fetch error:', directError);
+    }
+
+    const testPrompt = "Should we migrate our monolithic application to microservices?";
+
+    console.log('📤 Sending ensemble request with prompt:', testPrompt);
+
+    const response = await neuraStackClient.queryAI(testPrompt);
+
+    console.log('✅ Ensemble API Response received:');
     console.log('📊 Response details:', {
       answerLength: response.answer.length,
       ensembleMode: response.ensembleMode,
       modelsUsed: response.modelsUsed,
       executionTime: response.executionTime,
-      tokenCount: response.tokenCount
+      tokenCount: response.tokenCount,
+      individualResponsesCount: response.individualResponses?.length || 0,
+      ensembleMetadata: response.ensembleMetadata
     });
-    
-    console.log('📝 Answer preview:', response.answer.substring(0, 200) + '...');
-    
+
+    console.log('📝 Synthesis preview:', response.answer.substring(0, 300) + '...');
+
+    if (response.individualResponses) {
+      console.log('🎭 Individual AI Roles:');
+      response.individualResponses.forEach((resp, index) => {
+        console.log(`  ${index + 1}. ${resp.role}: ${resp.answer.substring(0, 100)}...`);
+      });
+    }
+
     return {
       success: true,
       response
     };
-    
+
   } catch (error) {
     console.error('❌ API Test failed:', error);
     return {

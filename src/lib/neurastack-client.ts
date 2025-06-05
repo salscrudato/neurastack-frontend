@@ -9,7 +9,11 @@ import type {
   NeuraStackQueryRequest,
   NeuraStackQueryResponse,
   MemoryMetrics,
-  SessionContext
+  SessionContext,
+  EnsembleRequest,
+  EnsembleResponse,
+  LegacyEnsembleMetadata,
+  SubAnswer
 } from './types';
 import { cacheManager } from './cacheManager';
 
@@ -72,7 +76,8 @@ export interface NeuraStackRequestOptions {
 // ============================================================================
 
 export const NEURASTACK_ENDPOINTS = {
-  QUERY: '/api/query',
+  ENSEMBLE: '/ensemble-test',
+  QUERY: '/api/query', // Legacy endpoint for backward compatibility
   MEMORY_METRICS: '/api/memory/metrics',
   MEMORY_CONTEXT: '/api/memory/context',
   HEALTH: '/health'
@@ -109,13 +114,13 @@ export class NeuraStackClient {
 
   constructor(config: NeuraStackClientConfig = {}) {
     this.config = {
-      baseUrl: config.baseUrl || 
+      baseUrl: config.baseUrl ||
         import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") ||
-        "https://neurastack-server-373148373738.us-central1.run.app",
+        "https://neurastack-backend-638289111765.us-central1.run.app",
       sessionId: config.sessionId || crypto.randomUUID(),
       userId: config.userId || '',
       authToken: config.authToken || '',
-      timeout: config.timeout || 30000,
+      timeout: config.timeout || 60000, // 60 seconds to accommodate ensemble processing
       useEnsemble: config.useEnsemble ?? true
     };
   }
@@ -128,18 +133,14 @@ export class NeuraStackClient {
   }
 
   /**
-   * Query the AI with a prompt
+   * Query the AI with a prompt using the new Ensemble API
    */
   async queryAI(
     prompt: string,
     options: NeuraStackRequestOptions & Partial<NeuraStackQueryRequest> = {}
   ): Promise<NeuraStackQueryResponse> {
-    const requestBody: NeuraStackQueryRequest = {
-      prompt,
-      useEnsemble: options.useEnsemble ?? this.config.useEnsemble,
-      models: options.models ?? [...DEFAULT_MODELS], // Use default models if none specified
-      maxTokens: options.maxTokens,
-      temperature: options.temperature
+    const requestBody: EnsembleRequest = {
+      prompt
     };
 
     const headers: Record<string, string> = {
@@ -147,8 +148,8 @@ export class NeuraStackClient {
     };
 
     // Log the outgoing request
-    console.group('🚀 NeuraStack API Request');
-    console.log('📤 Endpoint:', `${this.config.baseUrl}/api/query`);
+    console.group('🚀 NeuraStack Ensemble API Request');
+    console.log('📤 Endpoint:', `${this.config.baseUrl}/ensemble-test`);
     console.log('📋 Request Body:', JSON.stringify(requestBody, null, 2));
     console.log('🔧 Headers:', headers);
     console.log('⚙️ Config:', {
@@ -158,17 +159,30 @@ export class NeuraStackClient {
     });
     console.groupEnd();
 
-    // Add optional headers
+    // Only add headers that are explicitly allowed by the API CORS configuration
     const sessionId = options.sessionId || this.config.sessionId;
     const userId = options.userId || this.config.userId;
     const authToken = options.authToken || this.config.authToken;
 
-    if (sessionId) headers['X-Session-ID'] = sessionId;
-    if (userId) headers['X-User-ID'] = userId;
+    // According to API docs, only these headers are allowed:
+    // Content-Type, Authorization, X-Requested-With, X-User-Id
+
+    // Temporarily removing all custom headers due to CORS restrictions
+    // The API documentation shows these are allowed, but the server CORS config seems more restrictive
+    // if (sessionId) headers['X-Session-ID'] = sessionId;
+    // if (userId && userId.trim() !== '') headers['X-User-Id'] = userId;
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
-    return this.makeRequest<NeuraStackQueryResponse>(
-      NEURASTACK_ENDPOINTS.QUERY,
+    // Log session and user info for debugging without sending in headers
+    if (sessionId) {
+      console.log('🔗 Session ID (not sent due to CORS):', sessionId);
+    }
+    if (userId) {
+      console.log('🆔 User ID (not sent due to CORS):', userId);
+    }
+
+    const ensembleResponse = await this.makeRequest<EnsembleResponse>(
+      NEURASTACK_ENDPOINTS.ENSEMBLE,
       {
         method: 'POST',
         headers,
@@ -177,6 +191,9 @@ export class NeuraStackClient {
         timeout: options.timeout || this.config.timeout
       }
     );
+
+    // Transform the ensemble response to match the expected NeuraStackQueryResponse format
+    return this.transformEnsembleResponse(ensembleResponse);
   }
 
   /**
@@ -196,7 +213,8 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    if (targetUserId) headers['X-User-ID'] = targetUserId;
+    // Temporarily commented out due to CORS policy restrictions
+    // if (targetUserId) headers['X-User-Id'] = targetUserId;
     if (this.config.authToken) headers['Authorization'] = `Bearer ${this.config.authToken}`;
 
     const result = await this.makeRequest<MemoryMetrics>(
@@ -219,13 +237,14 @@ export class NeuraStackClient {
   /**
    * Get session context
    */
-  async getSessionContext(sessionId?: string): Promise<SessionContext> {
+  async getSessionContext(_sessionId?: string): Promise<SessionContext> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     };
 
-    const targetSessionId = sessionId || this.config.sessionId;
-    if (targetSessionId) headers['X-Session-ID'] = targetSessionId;
+    // Temporarily commented out due to CORS policy restrictions
+    // const targetSessionId = sessionId || this.config.sessionId;
+    // if (targetSessionId) headers['X-Session-ID'] = targetSessionId;
     if (this.config.authToken) headers['Authorization'] = `Bearer ${this.config.authToken}`;
 
     return this.makeRequest<SessionContext>(
@@ -240,7 +259,7 @@ export class NeuraStackClient {
   /**
    * Check service health (with caching)
    */
-  async healthCheck(): Promise<{ status: string; timestamp: string }> {
+  async healthCheck(): Promise<{ status: string; message: string }> {
     const cacheKey = 'health-check';
 
     // Try cache first (short TTL for health checks)
@@ -249,7 +268,7 @@ export class NeuraStackClient {
       return cached;
     }
 
-    const result = await this.makeRequest<{ status: string; timestamp: string }>(
+    const result = await this.makeRequest<{ status: string; message: string }>(
       NEURASTACK_ENDPOINTS.HEALTH,
       {
         method: 'GET',
@@ -264,6 +283,74 @@ export class NeuraStackClient {
     });
 
     return result;
+  }
+
+  /**
+   * Transform ensemble response to legacy format for backward compatibility
+   */
+  private transformEnsembleResponse(ensembleResponse: EnsembleResponse): NeuraStackQueryResponse {
+    if (ensembleResponse.status !== 'success' || !ensembleResponse.data) {
+      throw new NeuraStackApiError({
+        error: ensembleResponse.error || 'Ensemble API Error',
+        message: ensembleResponse.message || 'Failed to get successful response from ensemble API',
+        statusCode: 500,
+        timestamp: ensembleResponse.timestamp || new Date().toISOString()
+      });
+    }
+
+    const { data } = ensembleResponse;
+
+    // Create individual responses for UI display
+    const individualResponses: SubAnswer[] = data.roles.map(role => ({
+      model: role.model,
+      answer: role.content,
+      role: this.mapRoleToDisplayName(role.role)
+    }));
+
+    // Create models used mapping
+    const modelsUsed: Record<string, boolean> = {};
+    data.roles.forEach(role => {
+      modelsUsed[role.model] = role.status === 'fulfilled';
+    });
+
+    // Create legacy ensemble metadata
+    const ensembleMetadata: LegacyEnsembleMetadata = {
+      evidenceAnalyst: data.roles.find(r => r.role === 'evidence_analyst')?.content || '',
+      innovator: data.roles.find(r => r.role === 'innovator')?.content || '',
+      riskReviewer: data.roles.find(r => r.role === 'risk_reviewer')?.content || '',
+      executionTime: data.metadata.processingTimeMs
+    };
+
+    // Estimate token count (rough approximation: 1 token ≈ 4 characters)
+    const tokenCount = Math.ceil(data.synthesis.content.length / 4);
+
+    return {
+      answer: data.synthesis.content,
+      ensembleMode: true,
+      modelsUsed,
+      executionTime: `${data.metadata.processingTimeMs}ms`,
+      tokenCount,
+      ensembleMetadata,
+      individualResponses,
+      fallbackReasons: data.roles
+        .filter(role => role.status === 'rejected')
+        .reduce((acc, role) => {
+          acc[role.model] = 'Role execution failed';
+          return acc;
+        }, {} as Record<string, string>)
+    };
+  }
+
+  /**
+   * Map API role names to display names
+   */
+  private mapRoleToDisplayName(role: string): string {
+    switch (role) {
+      case 'evidence_analyst': return 'Evidence Analyst';
+      case 'innovator': return 'Innovator';
+      case 'risk_reviewer': return 'Risk Reviewer';
+      default: return role;
+    }
   }
 
   /**
