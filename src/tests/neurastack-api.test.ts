@@ -50,12 +50,16 @@ describe('NeuraStack API Integration', () => {
         executionTime: '1500ms',
         tokenCount: 150,
         memoryContext: 'Test context',
-        ensembleMetadata: {
-          evidenceAnalyst: 'Evidence analysis',
-          innovator: 'Creative solution',
-          riskReviewer: 'Risk assessment',
-          executionTime: 1500
-        }
+        individualResponses: [
+          {
+            model: 'gpt-4o',
+            answer: 'Individual response from GPT-4',
+            role: 'gpt4o',
+            provider: 'openai',
+            status: 'success',
+            wordCount: 25
+          }
+        ]
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -159,12 +163,16 @@ describe('NeuraStack API Integration', () => {
         tokenCount: 100,
         memoryContext: 'Test context',
         memoryTokensSaved: 50,
-        ensembleMetadata: {
-          evidenceAnalyst: 'Evidence analysis',
-          innovator: 'Creative solution',
-          riskReviewer: 'Risk assessment',
-          executionTime: 1000
-        },
+        individualResponses: [
+          {
+            model: 'gpt-4o',
+            answer: 'Individual response from GPT-4',
+            role: 'gpt4o',
+            provider: 'openai',
+            status: 'success',
+            wordCount: 25
+          }
+        ],
         fallbackReasons: { 'model-x': 'timeout' }
       };
 
@@ -176,7 +184,7 @@ describe('NeuraStack API Integration', () => {
       expect(typeof response.tokenCount).toBe('number');
       expect(typeof response.memoryContext).toBe('string');
       expect(typeof response.memoryTokensSaved).toBe('number');
-      expect(typeof response.ensembleMetadata?.executionTime).toBe('number');
+      expect(Array.isArray(response.individualResponses)).toBe(true);
     });
 
     it('should have correct TypeScript types for MemoryMetrics', () => {
@@ -271,12 +279,16 @@ describe('NeuraStack API Integration', () => {
         tokenCount: 150,
         memoryContext: 'Previous conversation context',
         memoryTokensSaved: 75,
-        ensembleMetadata: {
-          evidenceAnalyst: 'Factual analysis of the query',
-          innovator: 'Creative approach to the problem',
-          riskReviewer: 'Potential risks and considerations',
-          executionTime: 1500
-        },
+        individualResponses: [
+          {
+            model: 'gpt-4o',
+            answer: 'Individual response from GPT-4',
+            role: 'gpt4o',
+            provider: 'openai',
+            status: 'success',
+            wordCount: 25
+          }
+        ],
         fallbackReasons: {
           'google:gemini-1.5-flash': 'Rate limit exceeded'
         }
@@ -292,7 +304,7 @@ describe('NeuraStack API Integration', () => {
       // Validate optional fields work correctly
       expect(response.memoryContext).toBeDefined();
       expect(response.memoryTokensSaved).toBeDefined();
-      expect(response.ensembleMetadata).toBeDefined();
+      expect(response.individualResponses).toBeDefined();
       expect(response.fallbackReasons).toBeDefined();
     });
   });

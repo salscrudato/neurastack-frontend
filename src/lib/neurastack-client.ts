@@ -12,7 +12,7 @@ import type {
   SessionContext,
   EnsembleRequest,
   EnsembleResponse,
-  LegacyEnsembleMetadata,
+
   SubAnswer,
   StoreMemoryRequest,
   StoreMemoryResponse,
@@ -467,7 +467,7 @@ export class NeuraStackClient {
   }
 
   /**
-   * Transform ensemble response to legacy format for backward compatibility
+   * Transform ensemble response to simplified format for new API
    */
   private transformEnsembleResponse(ensembleResponse: EnsembleResponse): NeuraStackQueryResponse {
     if (ensembleResponse.status !== 'success' || !ensembleResponse.data) {
@@ -481,11 +481,14 @@ export class NeuraStackClient {
 
     const { data } = ensembleResponse;
 
-    // Create individual responses for UI display
+    // Create individual responses for UI display using new format
     const individualResponses: SubAnswer[] = data.roles.map(role => ({
       model: role.model,
       answer: role.content,
-      role: this.mapRoleToDisplayName(role.role)
+      role: role.role, // Keep the original role for reference
+      provider: role.provider, // Add provider information
+      status: role.status === 'fulfilled' ? 'success' : 'failed',
+      wordCount: role.wordCount
     }));
 
     // Create models used mapping
@@ -493,14 +496,6 @@ export class NeuraStackClient {
     data.roles.forEach(role => {
       modelsUsed[role.model] = role.status === 'fulfilled';
     });
-
-    // Create legacy ensemble metadata
-    const ensembleMetadata: LegacyEnsembleMetadata = {
-      evidenceAnalyst: data.roles.find(r => r.role === 'evidence_analyst')?.content || '',
-      innovator: data.roles.find(r => r.role === 'innovator')?.content || '',
-      riskReviewer: data.roles.find(r => r.role === 'risk_reviewer')?.content || '',
-      executionTime: data.metadata.processingTimeMs
-    };
 
     // Estimate token count (rough approximation: 1 token ≈ 4 characters)
     const tokenCount = Math.ceil(data.synthesis.content.length / 4);
@@ -511,7 +506,6 @@ export class NeuraStackClient {
       modelsUsed,
       executionTime: `${data.metadata.processingTimeMs}ms`,
       tokenCount,
-      ensembleMetadata,
       individualResponses,
       fallbackReasons: data.roles
         .filter(role => role.status === 'rejected')
@@ -522,17 +516,7 @@ export class NeuraStackClient {
     };
   }
 
-  /**
-   * Map API role names to display names
-   */
-  private mapRoleToDisplayName(role: string): string {
-    switch (role) {
-      case 'evidence_analyst': return 'Evidence Analyst';
-      case 'innovator': return 'Innovator';
-      case 'risk_reviewer': return 'Risk Reviewer';
-      default: return role;
-    }
-  }
+
 
   /**
    * Generic request method with error handling and timeout

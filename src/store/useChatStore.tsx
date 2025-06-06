@@ -30,7 +30,6 @@ export interface Message {
     sessionId?: string;
     // Individual model responses for modal display
     individualResponses?: import('../lib/types').SubAnswer[];
-    ensembleMetadata?: import('../lib/types').LegacyEnsembleMetadata;
     modelsUsed?: Record<string, boolean>;
     fallbackReasons?: Record<string, string>;
     executionTime?: string;
@@ -155,7 +154,6 @@ export const useChatStore = create<ChatState>()(
                 retryCount,
                 executionTime: response.executionTime,
                 ensembleMode: response.ensembleMode,
-                ensembleMetadata: response.ensembleMetadata,
                 // Memory-related metadata
                 memoryContext: response.memoryContext,
                 tokenCount: response.tokenCount,
@@ -163,7 +161,9 @@ export const useChatStore = create<ChatState>()(
                 sessionId,
                 // Raw API response data only
                 modelsUsed: response.modelsUsed,
-                fallbackReasons: response.fallbackReasons
+                fallbackReasons: response.fallbackReasons,
+                // Individual model responses for modal display
+                individualResponses: response.individualResponses
               }
             };
 

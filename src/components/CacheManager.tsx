@@ -69,7 +69,7 @@ export const CacheManager: React.FC = () => {
 
   // Listen for version changes
   useEffect(() => {
-    const handleVersionChange = (_event: CustomEvent) => {
+    const handleVersionChange = () => {
       setVersionChangeDetected(true);
       toast({
         title: 'New Version Available',

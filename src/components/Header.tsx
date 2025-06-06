@@ -2,20 +2,14 @@ import {
   Flex, IconButton, Box, Text, Avatar,
   Menu, MenuButton, MenuList, MenuItem, MenuDivider,
   useToast, Tooltip,
-  HStack, Icon, Badge, useDisclosure,
-  Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton
+  HStack, Icon
 } from '@chakra-ui/react';
-import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise, PiDownloadBold, PiDatabase, PiGear } from 'react-icons/pi';
+import { PiUserLight, PiHouseLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise } from 'react-icons/pi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
-import { useChatStore } from '../store/useChatStore';
 import { BrandLogo } from './BrandLogo';
-import { useManualUpdateCheck } from './UpdateNotification';
-import { forceRefresh } from '../utils/updateManager';
-import { MemoryVerification } from './MemoryVerification';
-import { CacheManager } from './CacheManager';
 
 export function Header() {
   const navigate = useNavigate();
@@ -23,24 +17,7 @@ export function Header() {
   const setUser = useAuthStore(s => s.setUser);
   const user = useAuthStore(s => s.user);
 
-  // Chat store for memory/cache management
-  const sessionId = useChatStore(s => s.sessionId);
-
   const toast = useToast();
-  const { checkForUpdates, isChecking } = useManualUpdateCheck();
-
-  // Modal controls for cache management
-  const {
-    isOpen: isMemoryOpen,
-    onOpen: onMemoryOpen,
-    onClose: onMemoryClose
-  } = useDisclosure();
-
-  const {
-    isOpen: isCacheOpen,
-    onOpen: onCacheOpen,
-    onClose: onCacheClose
-  } = useDisclosure();
 
   // Modern color values - light mode only
   const gray = '#64748B';
@@ -95,38 +72,6 @@ export function Header() {
   };
 
   const isGuest = user?.isAnonymous;
-
-  const handleUpdateCheck = async () => {
-    try {
-      await checkForUpdates();
-      toast({
-        title: "Update Check Complete",
-        description: "Checked for latest version",
-        status: "info",
-        duration: 2000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: "Update Check Failed",
-        description: "Please try again later",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-
-  const handleForceRefresh = () => {
-    toast({
-      title: "Refreshing App",
-      description: "Clearing cache and reloading...",
-      status: "info",
-      duration: 2000,
-      isClosable: true,
-    });
-    setTimeout(() => forceRefresh(), 1000);
-  };
 
   return (
     <Flex
@@ -275,76 +220,6 @@ export function Header() {
             </HStack>
           </MenuItem>
 
-          <MenuItem
-            onClick={handleUpdateCheck}
-            color={grayHover}
-            isDisabled={isChecking}
-            borderRadius="lg"
-            _hover={{ bg: hoverBg }}>
-            <HStack>
-              <PiDownloadBold />
-              <Text>{isChecking ? 'Checking...' : 'Check for Updates'}</Text>
-            </HStack>
-          </MenuItem>
-
-          <MenuItem
-            onClick={handleForceRefresh}
-            color={grayHover}
-            borderRadius="lg"
-            _hover={{ bg: hoverBg }}>
-            <HStack>
-              <PiArrowsClockwise />
-              <Text>Force Refresh</Text>
-            </HStack>
-          </MenuItem>
-
-          <MenuDivider />
-
-          {/* Cache Management Section */}
-          <MenuItem
-            onClick={onMemoryOpen}
-            color={grayHover}
-            borderRadius="lg"
-            _hover={{ bg: hoverBg }}>
-            <HStack>
-              <PiDatabase />
-              <Box>
-                <Text>Memory Verification</Text>
-                <HStack spacing={1} mt={1}>
-                  <Badge
-                    size="xs"
-                    colorScheme="green"
-                    variant="subtle"
-                    borderRadius="full"
-                  >
-                    Memory API
-                  </Badge>
-                  {user && (
-                    <Badge
-                      size="xs"
-                      colorScheme="blue"
-                      variant="outline"
-                      borderRadius="full"
-                    >
-                      Session: {sessionId.slice(0, 6)}...
-                    </Badge>
-                  )}
-                </HStack>
-              </Box>
-            </HStack>
-          </MenuItem>
-
-          <MenuItem
-            onClick={onCacheOpen}
-            color={grayHover}
-            borderRadius="lg"
-            _hover={{ bg: hoverBg }}>
-            <HStack>
-              <PiGear />
-              <Text>Cache Management</Text>
-            </HStack>
-          </MenuItem>
-
           <MenuDivider />
 
           <MenuItem
@@ -359,30 +234,6 @@ export function Header() {
           </MenuItem>
         </MenuList>
       </Menu>
-
-      {/* Memory Verification Modal */}
-      <Modal isOpen={isMemoryOpen} onClose={onMemoryClose} size="6xl">
-        <ModalOverlay />
-        <ModalContent maxH="90vh" overflowY="auto">
-          <ModalHeader>Memory System Verification</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <MemoryVerification />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-
-      {/* Cache Management Modal */}
-      <Modal isOpen={isCacheOpen} onClose={onCacheClose} size="6xl">
-        <ModalOverlay />
-        <ModalContent maxH="90vh" overflowY="auto">
-          <ModalHeader>Cache Management</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <CacheManager />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
     </Flex>
   );
 }

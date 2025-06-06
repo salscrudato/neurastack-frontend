@@ -178,7 +178,7 @@ export default defineConfig({
           firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
 
           // Icons chunk
-          icons: ['react-icons/pi', 'lucide-react'],
+          icons: ['react-icons/pi'],
         },
       },
     },

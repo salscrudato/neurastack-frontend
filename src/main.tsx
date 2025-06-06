@@ -8,9 +8,18 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
 
-// Lazy load pages for better performance - streamlined to only essential features
-const SplashPage = React.lazy(() => import('./pages/SplashPage').then(m => ({ default: m.SplashPage })));
-const ChatPage = React.lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })));
+// Debug logging
+console.log('🚀 NeuraStack starting...');
+console.log('📦 Environment variables:', {
+  NODE_ENV: import.meta.env.NODE_ENV,
+  VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+  VITE_DEBUG_MODE: import.meta.env.VITE_DEBUG_MODE,
+  hasFirebaseConfig: !!(import.meta.env.VITE_FIREBASE_API_KEY)
+});
+
+// Import pages directly for debugging
+import { SplashPage } from './pages/SplashPage';
+import { ChatPage } from './pages/ChatPage';
 const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
 
 // Create router with streamlined routes - only Chat and NeuraFit
@@ -22,19 +31,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: (
-          <Suspense fallback={<PageLoader message="Loading..." />}>
-            <SplashPage />
-          </Suspense>
-        )
+        element: <SplashPage />
       },
       {
         path: 'chat',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading chat..." />}>
-            <ChatPage />
-          </Suspense>
-        )
+        element: <ChatPage />
       },
       {
         path: 'neurafit',

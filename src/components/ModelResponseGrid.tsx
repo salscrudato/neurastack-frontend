@@ -58,7 +58,6 @@ interface ModelCardProps {
 
 function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
   const displayInfo = getModelDisplayInfo(model.model);
-  const isEnsembleRole = model.model.startsWith('ensemble:');
   const isFailed = model.status === 'failed';
   const isSuccess = model.status === 'success';
 
@@ -80,9 +79,7 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
       label={
         isFailed
           ? `Failed: ${model.errorReason || 'Unknown error'}`
-          : isEnsembleRole
-          ? ('description' in displayInfo ? displayInfo.description : 'AI ensemble analysis')
-          : `Click to view ${formatModelName(model.model)} response`
+          : `Click to view ${formatModelName(model.model, model.role, model.provider)} response`
       }
       placement="top"
       hasArrow
@@ -125,7 +122,7 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
               flex="1"
               letterSpacing="-0.025em"
             >
-              {isEnsembleRole ? displayInfo.name : formatModelName(model.model, model.role)}
+              {formatModelName(model.model, model.role, model.provider)}
             </Text>
 
             <Icon
@@ -139,37 +136,22 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
           {!compact && (
             <HStack justify="space-between" w="100%" spacing={2} align="flex-start">
               <VStack spacing={1.5} align="start" flex="1">
-                {isEnsembleRole ? (
-                  <Badge
-                    colorScheme={displayInfo.color}
-                    variant="subtle"
-                    size="sm"
-                    borderRadius="full"
-                    px={3}
-                    py={1}
-                    fontSize="xs"
-                    fontWeight="600"
-                  >
-                    Ensemble
-                  </Badge>
-                ) : (
-                  <Badge
-                    colorScheme={displayInfo.color}
-                    variant="subtle"
-                    size="sm"
-                    borderRadius="full"
-                    px={3}
-                    py={1}
-                    fontSize="xs"
-                    fontWeight="600"
-                  >
-                    {'provider' in displayInfo ? displayInfo.provider : 'AI Model'}
-                  </Badge>
-                )}
+                <Badge
+                  colorScheme={displayInfo.color}
+                  variant="subtle"
+                  size="sm"
+                  borderRadius="full"
+                  px={3}
+                  py={1}
+                  fontSize="xs"
+                  fontWeight="600"
+                >
+                  {model.provider?.toUpperCase() || 'AI MODEL'}
+                </Badge>
 
-                {model.role && !isEnsembleRole && (
+                {model.wordCount && (
                   <Text fontSize="xs" color={mutedColor} noOfLines={1} fontWeight="500">
-                    {model.role}
+                    {model.wordCount} words
                   </Text>
                 )}
               </VStack>
@@ -228,14 +210,12 @@ export function ModelResponseGrid({
     // Successful models first
     if (a.status === 'success' && b.status !== 'success') return -1;
     if (b.status === 'success' && a.status !== 'success') return 1;
-    
-    // Ensemble roles before regular models
-    const aIsEnsemble = a.model.startsWith('ensemble:');
-    const bIsEnsemble = b.model.startsWith('ensemble:');
-    if (aIsEnsemble && !bIsEnsemble) return -1;
-    if (bIsEnsemble && !aIsEnsemble) return 1;
-    
-    // Alphabetical within same category
+
+    // Alphabetical by provider then model
+    const aProvider = a.provider || '';
+    const bProvider = b.provider || '';
+    if (aProvider !== bProvider) return aProvider.localeCompare(bProvider);
+
     return a.model.localeCompare(b.model);
   });
 

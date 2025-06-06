@@ -18,7 +18,6 @@ import { PiArrowUpBold } from 'react-icons/pi';
 import { useChatStore } from '../store/useChatStore';
 import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
-import ChatSearch from '../components/ChatSearch';
 import OfflineIndicator from '../components/OfflineIndicator';
 import { Loader } from '../components/LoadingSpinner';
 // import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor'; // Disabled to improve performance
@@ -38,8 +37,6 @@ export function ChatPage() {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
-  const [showSearch] = useState(false);
-  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
   const { isOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -48,7 +45,6 @@ export function ChatPage() {
   // Modern color values - light mode only
   const bgColor = "#FAFBFC";
   const containerBg = "#FAFBFC";
-  const highlightBg = "rgba(79, 156, 249, 0.1)";
 
   const scrollButtonBg = "#FFFFFF";
   const scrollButtonColor = "#64748B";
@@ -98,23 +94,7 @@ export function ChatPage() {
     });
   };
 
-  const handleSearchResultSelect = (messageId: string) => {
-    setHighlightedMessageId(messageId);
 
-    // Scroll to the message
-    const messageElement = document.getElementById(`message-${messageId}`);
-    if (messageElement) {
-      messageElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-
-      // Clear highlight after a few seconds
-      setTimeout(() => {
-        setHighlightedMessageId(null);
-      }, 3000);
-    }
-  };
 
   // Performance alerts disabled to improve performance
   // useEffect(() => {
@@ -140,11 +120,6 @@ export function ChatPage() {
     >
       {/* Offline indicator */}
       <OfflineIndicator />
-
-      {/* Search functionality */}
-      {showSearch && (
-        <ChatSearch onResultSelect={handleSearchResultSelect} />
-      )}
 
       {/* hero prompt */}
       {msgs.length === 0 && (
@@ -197,12 +172,9 @@ export function ChatPage() {
               <Box
                 key={m.id}
                 id={`message-${m.id}`}
-                bg={highlightedMessageId === m.id ? highlightBg : "transparent"}
-                borderRadius="md"
-                transition="background-color 0.3s"
                 px={{ base: 1, md: 0 }}
               >
-                <ChatMessage message={m} isFirstAssistantMessage={isFirstAssistantMessage} isHighlighted={highlightedMessageId === m.id} />
+                <ChatMessage message={m} isFirstAssistantMessage={isFirstAssistantMessage} isHighlighted={false} />
               </Box>
             );
           })}

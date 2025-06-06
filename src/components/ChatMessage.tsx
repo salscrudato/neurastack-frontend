@@ -158,7 +158,6 @@ export const ChatMessage = memo<ChatMessageProps>(({
     getAvailableModels
   } = useModelResponses(
     message.metadata?.individualResponses,
-    message.metadata?.ensembleMetadata,
     message.metadata?.modelsUsed,
     message.metadata?.fallbackReasons
   );

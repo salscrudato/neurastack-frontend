@@ -161,7 +161,6 @@ export function IndividualModelModal({
   if (!modelData) return null;
 
   const displayInfo = getModelDisplayInfo(modelData.model);
-  const isEnsembleRole = modelData.model.startsWith('ensemble:');
   const isFailed = modelData.status === 'failed';
 
   return (
@@ -193,25 +192,17 @@ export function IndividualModelModal({
             <Flex justify="space-between" align="center">
               <VStack align="start" spacing={1}>
                 <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                  {formatModelName(modelData.model, modelData.role)}
+                  {formatModelName(modelData.model, modelData.role, modelData.provider)}
                 </Text>
-                {/* Show actual model used for ensemble roles */}
-                {isEnsembleRole && (
+                {modelData.provider && (
                   <Text fontSize="sm" color={mutedColor} fontWeight="medium">
-                    Powered by AI Ensemble
-                  </Text>
-                )}
-                {!isEnsembleRole && displayInfo && 'provider' in displayInfo && (
-                  <Text fontSize="sm" color={mutedColor} fontWeight="medium">
-                    {displayInfo.provider} • {displayInfo.name}
+                    {modelData.provider.toUpperCase()} • {modelData.wordCount || 0} words
                   </Text>
                 )}
               </VStack>
-              {isEnsembleRole && (
-                <Badge colorScheme={displayInfo.color} variant="subtle">
-                  Ensemble Role
-                </Badge>
-              )}
+              <Badge colorScheme={displayInfo.color} variant="subtle">
+                AI Model
+              </Badge>
             </Flex>
 
             {/* Model Info - Left aligned execution time */}

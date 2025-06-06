@@ -57,6 +57,9 @@ export interface SubAnswer {
   model: string;          // Full model key like "openai:gpt-4"
   answer: string;         // The model's native response
   role?: string;          // Role in ensemble mode (e.g., "Evidence Analyst")
+  provider?: string;      // Provider name (e.g., "openai", "gemini", "claude")
+  status?: 'success' | 'failed'; // Response status
+  wordCount?: number;     // Word count of the response
 }
 
 /** New Ensemble API Response Types */
@@ -173,14 +176,6 @@ export interface MemoryHealthResponse {
   };
 }
 
-/** Legacy ensemble metadata structure for backward compatibility */
-export interface LegacyEnsembleMetadata {
-  evidenceAnalyst: string;
-  innovator: string;
-  riskReviewer: string;
-  executionTime: number;
-}
-
 /** Response interface for NeuraStack API */
 export interface NeuraStackQueryResponse {
   /** Primary AI response text */
@@ -203,9 +198,6 @@ export interface NeuraStackQueryResponse {
 
   /** Tokens saved through memory compression */
   memoryTokensSaved?: number;
-
-  /** Ensemble-specific metadata */
-  ensembleMetadata?: LegacyEnsembleMetadata;
 
   /** Any fallback reasons if models failed */
   fallbackReasons?: Record<string, string>;
@@ -312,23 +304,7 @@ export interface ChatRequest {
   useEnsemble?: boolean;
 }
 
-/** @deprecated Use NeuraStackQueryResponse instead */
-export interface ChatResponse {
-  /** Synthesised, merged answer */
-  answer: string;
-  /** All individual model answers (order not guaranteed) */
-  answers: SubAnswer[];
-  /** Which models actually ran (true) vs. errored (false) */
-  modelsUsed: Record<string, boolean>;
-  /** Reasons for any fallbacks */
-  fallbackReasons: Record<string, string>;
-  /** Execution time in milliseconds */
-  executionTime?: string;
-  /** Whether ensemble mode was used */
-  ensembleMode?: boolean;
-  /** Detailed ensemble breakdown */
-  ensembleMetadata?: LegacyEnsembleMetadata;
-}
+
 
 /* ============================================================================
  * Travel Planning Types
