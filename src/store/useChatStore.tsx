@@ -47,6 +47,7 @@ interface ChatState {
   deleteMessage: (id: string) => void;
   retryMessage: (messageId: string) => Promise<void>;
   loadChatHistory: () => Promise<void>;
+  loadChatFromSession: (messages: Message[]) => void;
   initializeSession: () => void;
 }
 
@@ -291,6 +292,13 @@ export const useChatStore = create<ChatState>()(
           console.warn('Failed to load chat history:', error);
           // Continue with local storage only
         }
+      },
+
+      loadChatFromSession: (messages: Message[]) => {
+        set({
+          messages,
+          sessionId: crypto.randomUUID() // Generate new session ID for loaded chat
+        });
       },
 
       initializeSession: () => {

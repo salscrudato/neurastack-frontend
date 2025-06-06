@@ -25,9 +25,10 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   // Simplified transitions for streamlined app structure
   const getTransitionVariants = (pathname: string) => {
     const isChatRoute = pathname === '/chat';
+    const isHistoryRoute = pathname === '/history';
     const isNeuraFitRoute = pathname === '/neurafit';
 
-    if (isChatRoute || isNeuraFitRoute) {
+    if (isChatRoute || isHistoryRoute || isNeuraFitRoute) {
       // Main pages have gentle horizontal slide with blur
       return {
         initial: { opacity: 0, x: 15, filter: "blur(6px)" },

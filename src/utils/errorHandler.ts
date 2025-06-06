@@ -93,7 +93,7 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
   }
 
   // Log error for debugging (only in development)
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.group(`🚨 Error Analysis [${errorInfo.type}]`);
     console.log('📍 Context:', context);
     console.log('⚠️ Severity:', errorInfo.severity);
@@ -211,7 +211,7 @@ export function handleSilentError(error: unknown, context?: ErrorContext): void 
   const errorInfo = analyzeError(error, context);
   
   // Only log in development
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.warn(`🔇 Silent error [${errorInfo.type}]:`, errorInfo.technicalMessage);
   }
   

@@ -161,24 +161,30 @@ export default defineConfig({
     // Generate source maps for debugging
     sourcemap: false,
 
-    // Optimize chunk splitting
+    // Optimize chunk splitting for better caching and loading
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunk for stable dependencies
+          // Core React chunk (most stable)
           vendor: ['react', 'react-dom'],
 
           // UI library chunk (includes framer-motion to ensure React dependency)
           ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion'],
 
-          // State management chunk
+          // State management and utilities
           state: ['zustand'],
 
-          // Firebase chunk
+          // Firebase services
           firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
 
-          // Icons chunk
+          // Icons (separate for better caching)
           icons: ['react-icons/pi'],
+
+          // Markdown rendering (used in chat)
+          markdown: ['react-markdown', 'remark-gfm'],
+
+          // Router (separate for better caching)
+          router: ['react-router-dom'],
         },
       },
     },
@@ -190,9 +196,20 @@ export default defineConfig({
     cssCodeSplit: true,
   },
 
-  // Simplified dependency optimization
+  // Enhanced dependency optimization for better performance
   optimizeDeps: {
-    include: ['react', 'react-dom', '@chakra-ui/react', 'zustand'],
+    include: [
+      'react',
+      'react-dom',
+      '@chakra-ui/react',
+      '@emotion/react',
+      '@emotion/styled',
+      'zustand',
+      'react-markdown',
+      'remark-gfm',
+      'react-router-dom',
+      'framer-motion'
+    ],
     exclude: ['firebase'], // Firebase works better when not pre-bundled
   },
 });

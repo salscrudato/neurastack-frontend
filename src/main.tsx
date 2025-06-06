@@ -8,21 +8,24 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
 
-// Debug logging
-console.log('🚀 NeuraStack starting...');
-console.log('📦 Environment variables:', {
-  NODE_ENV: import.meta.env.NODE_ENV,
-  VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
-  VITE_DEBUG_MODE: import.meta.env.VITE_DEBUG_MODE,
-  hasFirebaseConfig: !!(import.meta.env.VITE_FIREBASE_API_KEY)
-});
+// Debug logging (development only)
+if (import.meta.env.DEV) {
+  console.log('🚀 NeuraStack starting...');
+  console.log('📦 Environment variables:', {
+    NODE_ENV: import.meta.env.NODE_ENV,
+    VITE_BACKEND_URL: import.meta.env.VITE_BACKEND_URL,
+    VITE_DEBUG_MODE: import.meta.env.VITE_DEBUG_MODE,
+    hasFirebaseConfig: !!(import.meta.env.VITE_FIREBASE_API_KEY)
+  });
+}
 
 // Import pages directly for debugging
 import { SplashPage } from './pages/SplashPage';
 import { ChatPage } from './pages/ChatPage';
+const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
 
-// Create router with streamlined routes - only Chat and NeuraFit
+// Create router with Chat and History routes
 const router = createBrowserRouter([
   {
     path: '/',
@@ -36,6 +39,14 @@ const router = createBrowserRouter([
       {
         path: 'chat',
         element: <ChatPage />
+      },
+      {
+        path: 'history',
+        element: (
+          <Suspense fallback={<PageLoader message="Loading History..." />}>
+            <HistoryPage />
+          </Suspense>
+        )
       },
       {
         path: 'neurafit',

@@ -20,8 +20,10 @@ import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import OfflineIndicator from '../components/OfflineIndicator';
 import { Loader } from '../components/LoadingSpinner';
+import { SaveSessionButton } from '../components/SaveSessionButton';
 // import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor'; // Disabled to improve performance
 import { useAuthStore } from '../store/useAuthStore';
+import { useHistoryStore } from '../store/useHistoryStore';
 
 export function ChatPage() {
   const msgs = useChatStore(s => s.messages);
@@ -31,6 +33,9 @@ export function ChatPage() {
 
   // Auth store
   const user = useAuthStore(s => s.user);
+
+  // History store
+  const { loadAllSessions } = useHistoryStore();
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -52,12 +57,13 @@ export function ChatPage() {
   const heroTextColor = "#475569";
   const heroSubTextColor = "#64748B";
 
-  // Load chat history when user is authenticated
+  // Load chat history and sessions when user is authenticated
   useEffect(() => {
     if (user && msgs.length === 0) {
       loadChatHistory();
+      loadAllSessions();
     }
-  }, [user, loadChatHistory, msgs.length]);
+  }, [user, loadChatHistory, loadAllSessions, msgs.length]);
 
   // Auto-scroll when messages change
   useEffect(() => {
@@ -184,6 +190,11 @@ export function ChatPage() {
             <Box px={4} py={2}>
               <Loader message="AI is thinking..." variant="dots" />
             </Box>
+          )}
+
+          {/* Save Session Button - appears after messages */}
+          {msgs.length > 0 && !isLoading && (
+            <SaveSessionButton />
           )}
 
           <div ref={bottomRef} />

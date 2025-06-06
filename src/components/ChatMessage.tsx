@@ -9,12 +9,10 @@ import {
   Badge,
   VStack,
 } from "@chakra-ui/react";
-import { useState, memo, useCallback, useMemo } from "react";
+import { memo, useMemo } from "react";
 
 import {
   PiCopyBold,
-  PiCaretDownBold,
-  PiCaretUpBold,
   PiCheckBold,
 } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
@@ -22,8 +20,7 @@ import { Loader } from "./LoadingSpinner";
 import { useModelResponses } from "../hooks/useModelResponses";
 import { ModelResponseGrid } from "./ModelResponseGrid";
 import { IndividualModelModal } from "./IndividualModelModal";
-import { EnhancedAIResponse } from "./EnhancedAIResponse";
-import { AIResponseFormatter } from "./AIResponseFormatter";
+import { UnifiedAIResponse } from "./UnifiedAIResponse";
 
 interface ChatMessageProps {
   message: Message;
@@ -81,7 +78,6 @@ export const ChatMessage = memo<ChatMessageProps>(({
   isFirstAssistantMessage: _isFirstAssistantMessage = false,
   isHighlighted = false,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true); // Default to expanded
   // Always show individual responses - removed toggle state
 
   const isUser = message.role === 'user';
@@ -121,33 +117,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
 
   const structuredResponse = !isUser && !isError ? parseAIResponse(processedContent) : null;
 
-  const shouldTruncate = processedContent.length > 600;
-
-  const toggleExpanded = useCallback(() => {
-    setIsExpanded(prev => !prev);
-  }, []);
-
-  // Smart truncation that respects word boundaries
-  const getTruncatedText = useCallback((text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-
-    // Find the last space before the max length
-    const truncated = text.slice(0, maxLength);
-    const lastSpaceIndex = truncated.lastIndexOf(' ');
-
-    // If we found a space and it's not too far back (at least 80% of maxLength)
-    if (lastSpaceIndex > maxLength * 0.8) {
-      return truncated.slice(0, lastSpaceIndex);
-    }
-
-    // Otherwise, just truncate at maxLength
-    return truncated;
-  }, []);
-
-  // Fixed: Show full content when expanded to prevent markdown breaking
-  const displayText = shouldTruncate && !isExpanded
-    ? getTruncatedText(processedContent, 600) + '...'
-    : processedContent; // Always show full content when expanded or for short messages
+  // Always show full content - no truncation
+  const displayText = processedContent;
 
   // Model responses hook
   const {
@@ -280,19 +251,10 @@ export const ChatMessage = memo<ChatMessageProps>(({
             <Text fontSize={fontSizes.content} lineHeight="1.5" fontWeight="400">
               {displayText}
             </Text>
-          ) : structuredResponse ? (
-            <EnhancedAIResponse
-              data={structuredResponse}
-              fontSize={{
-                content: fontSizes.content as any,
-                heading: { base: "md", md: "lg" } as any,
-                code: fontSizes.code as any,
-                small: fontSizes.small as any,
-              }}
-            />
           ) : (
-            <AIResponseFormatter
-              content={displayText}
+            <UnifiedAIResponse
+              content={structuredResponse ? undefined : displayText}
+              data={structuredResponse || undefined}
               fontSize={{
                 content: fontSizes.content as any,
                 heading: { base: "md", md: "lg" } as any,
@@ -302,8 +264,6 @@ export const ChatMessage = memo<ChatMessageProps>(({
             />
           )}
         </Box>
-
-        {/* Removed expand/collapse section since we show full content when expanded */}
 
         {/* Enhanced Individual Model Responses Section */}
         {!isUser && !isError && !isLoading && hasIndividualResponses && (
@@ -316,28 +276,10 @@ export const ChatMessage = memo<ChatMessageProps>(({
           </Box>
         )}
 
-        {/* Message Actions - Only show for AI messages or expandable user messages */}
-        {(!isUser || shouldTruncate) && (
+        {/* Message Actions - Only show copy button for AI messages */}
+        {!isUser && (
           <HStack justify="flex-end" align="center" mt={2} spacing={1}>
-            {shouldTruncate && (
-              <IconButton
-                aria-label={isExpanded ? "Show less" : "Show more"}
-                icon={isExpanded ? <PiCaretUpBold /> : <PiCaretDownBold />}
-                size="sm"
-                variant="ghost"
-                onClick={toggleExpanded}
-                color={isUser ? "rgba(255, 255, 255, 0.6)" : "#94A3B8"}
-                _hover={{
-                  color: isUser ? "rgba(255, 255, 255, 0.8)" : "#475569",
-                  bg: isUser ? "rgba(255, 255, 255, 0.2)" : "#F8FAFC",
-                }}
-                minW="32px"
-                h="32px"
-              />
-            )}
-
-            {/* Only show copy button for AI messages */}
-            {!isUser && <CopyButton text={processedContent} />}
+            <CopyButton text={processedContent} />
           </HStack>
         )}
       </Box>
