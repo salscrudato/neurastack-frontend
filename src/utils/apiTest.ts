@@ -8,7 +8,7 @@ import { neuraStackClient } from '../lib/neurastack-client';
 
 export async function testApiConfiguration() {
   try {
-    console.log('🧪 Testing Ensemble API configuration...');
+    console.log('🧪 Testing Ensemble API with Memory Integration...');
 
     // First test health check
     console.log('🏥 Testing health check...');
@@ -19,15 +19,29 @@ export async function testApiConfiguration() {
       console.warn('⚠️ Health check failed (continuing with ensemble test):', healthError);
     }
 
-    // Test direct fetch to ensemble endpoint with minimal headers
-    console.log('🧪 Testing direct fetch with minimal headers...');
+    // Test memory health check
+    console.log('🧠 Testing memory health check...');
+    try {
+      const memoryHealthResponse = await neuraStackClient.checkMemoryHealth();
+      console.log('✅ Memory health response:', memoryHealthResponse);
+    } catch (memoryHealthError) {
+      console.warn('⚠️ Memory health check failed:', memoryHealthError);
+    }
+
+    // Test direct fetch to ensemble endpoint with headers
+    console.log('🧪 Testing direct fetch with updated headers...');
     try {
       const directResponse = await fetch('https://neurastack-backend-638289111765.us-central1.run.app/ensemble-test', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-User-Id': 'test-user-123',
+          'X-Session-Id': 'test-session-456'
         },
-        body: JSON.stringify({ prompt: "Quick test: explain AI in 1-2 lines." })
+        body: JSON.stringify({
+          prompt: "Quick test: explain AI in 1-2 lines.",
+          sessionId: "test-session-456"
+        })
       });
 
       if (directResponse.ok) {
@@ -42,7 +56,7 @@ export async function testApiConfiguration() {
 
     const testPrompt = "Should we migrate our monolithic application to microservices?";
 
-    console.log('📤 Sending ensemble request with prompt:', testPrompt);
+    console.log('📤 Sending ensemble request with memory context...');
 
     const response = await neuraStackClient.queryAI(testPrompt);
 
@@ -64,6 +78,21 @@ export async function testApiConfiguration() {
       response.individualResponses.forEach((resp, index) => {
         console.log(`  ${index + 1}. ${resp.role}: ${resp.answer.substring(0, 100)}...`);
       });
+    }
+
+    // Test memory storage
+    console.log('💾 Testing memory storage...');
+    try {
+      const storeResponse = await neuraStackClient.storeMemory({
+        userId: 'test-user-123',
+        sessionId: 'test-session-456',
+        content: testPrompt,
+        isUserPrompt: true,
+        ensembleMode: true
+      });
+      console.log('✅ Memory stored:', storeResponse);
+    } catch (memoryError) {
+      console.warn('⚠️ Memory storage failed:', memoryError);
     }
 
     return {

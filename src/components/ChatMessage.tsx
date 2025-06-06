@@ -7,8 +7,6 @@ import {
   Tooltip,
   useClipboard,
   Badge,
-  Collapse,
-  Button,
   VStack,
 } from "@chakra-ui/react";
 import { useState, memo, useCallback, useMemo } from "react";
@@ -18,10 +16,8 @@ import {
   PiCaretDownBold,
   PiCaretUpBold,
   PiCheckBold,
-  PiEyeBold,
 } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
-import { formatTokenCount } from "../utils/tokenCounter";
 import { Loader } from "./LoadingSpinner";
 import { useModelResponses } from "../hooks/useModelResponses";
 import { ModelResponseGrid } from "./ModelResponseGrid";
@@ -35,13 +31,14 @@ interface ChatMessageProps {
   isHighlighted?: boolean;
 }
 
-// Simple content processing - basic cleanup only
+// Minimal content processing - avoid breaking markdown
 const processContent = (text: string): string => {
   if (!text || typeof text !== 'string') return '';
 
   return text
-    .replace(/\n{4,}/g, '\n\n\n') // Limit consecutive newlines
-    .replace(/[ \t]{3,}/g, '  ') // Limit consecutive spaces
+    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '') // Remove emojis
+    .replace(/\n{5,}/g, '\n\n\n\n') // Only limit excessive newlines
+    .replace(/[ \t]{4,}/g, '   ') // Only limit excessive spaces
     .trim();
 };
 
@@ -85,19 +82,19 @@ export const ChatMessage = memo<ChatMessageProps>(({
   isHighlighted = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Default to expanded
-  const [showIndividualResponses, setShowIndividualResponses] = useState(false);
+  // Always show individual responses - removed toggle state
 
   const isUser = message.role === 'user';
   const isError = message.role === 'error';
   const isLoading = !message.text;
 
-  // Consistent font sizing system
+  // Refined font sizing system - slightly smaller for better content density
   const fontSizes = {
     // Micro elements: very small text like timestamps
-    micro: { base: "2xs", md: "xs" },
+    micro: { base: "xs", md: "sm" },
     // Small elements: badges, secondary info, buttons
-    small: { base: "xs", md: "sm" },
-    // Main content: message text, paragraphs
+    small: { base: "sm", md: "md" },
+    // Main content: message text, paragraphs - slightly smaller for better readability
     content: { base: "sm", md: "md" },
     // Code elements: inline code, code blocks
     code: { base: "xs", md: "sm" }
@@ -147,17 +144,10 @@ export const ChatMessage = memo<ChatMessageProps>(({
     return truncated;
   }, []);
 
-  // Fix duplication bug: when expanded, only show first part in main section
+  // Fixed: Show full content when expanded to prevent markdown breaking
   const displayText = shouldTruncate && !isExpanded
     ? getTruncatedText(processedContent, 600) + '...'
-    : shouldTruncate && isExpanded
-    ? getTruncatedText(processedContent, 600) // Only show first 600 chars in main section when expanded
-    : processedContent; // Show full content for short messages
-
-  // Get the remaining text for the expanded section
-  const remainingText = shouldTruncate
-    ? processedContent.slice(getTruncatedText(processedContent, 600).length)
-    : '';
+    : processedContent; // Always show full content when expanded or for short messages
 
   // Model responses hook
   const {
@@ -176,39 +166,38 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const availableModels = getAvailableModels();
   const hasIndividualResponses = availableModels.length > 0;
 
-  // Modern color scheme - light mode only
+  // Enhanced modern color scheme - optimized for readability and mobile
   const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)";
-  const bgAi = "#F8FAFC";
+  const bgAi = "#FFFFFF";
   const textAi = "#1E293B";
   const bgErr = "#FEF2F2";
   const textErr = "#DC2626";
   const timestampColor = "#94A3B8";
-  const tokenCountColor = "#4F9CF9";
   const borderAi = "#E2E8F0";
-  const shadowUser = "0 4px 12px rgba(79, 156, 249, 0.25)";
-  const shadowAi = "0 2px 8px rgba(0, 0, 0, 0.04)";
+  const shadowUser = "0 3px 10px rgba(79, 156, 249, 0.2)";
+  const shadowAi = "0 1px 6px rgba(0, 0, 0, 0.06)";
 
   const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
 
-  // Get token count from message metadata
-  const tokenCount = message.metadata?.tokenCount || 0;
-
   return (
-    <VStack spacing={3} w="100%" align="stretch">
-      {/* Centered Timestamp with Line - Only for user messages */}
+    <VStack spacing={{ base: 4, md: 5 }} w="100%" align="stretch">
+      {/* Enhanced Centered Timestamp with Line - Only for user messages */}
       {isUser && (
-        <Flex align="center" w="100%" my={2}>
-          <Box flex="1" h="1px" bg="#E2E8F0" />
+        <Flex align="center" w="100%" my={{ base: 3, md: 4 }}>
+          <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.6} />
           <Text
-            px={3}
+            px={{ base: 4, md: 5 }}
             fontSize={fontSizes.micro}
             color={timestampColor}
-            fontWeight="500"
+            fontWeight="600"
+            bg="#FAFBFC"
+            borderRadius="full"
+            py={1}
           >
             {formatTimestamp(message.timestamp)}
           </Text>
-          <Box flex="1" h="1px" bg="#E2E8F0" />
+          <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.6} />
         </Flex>
       )}
 
@@ -222,68 +211,62 @@ export const ChatMessage = memo<ChatMessageProps>(({
         p={isHighlighted ? 3 : 0}
         transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
       >
-      {/* AI Model Badge and timestamp - show on all assistant messages */}
+      {/* Simplified AI Model Badge and timestamp - show on all assistant messages */}
       {!isUser && !isError && (
-        <HStack spacing={2} mb={1} justify="space-between" w="100%">
-          <HStack spacing={2}>
-            <Badge
-              colorScheme="blue"
-              variant="subtle"
-              fontSize={fontSizes.micro}
-              px={2}
-              py={1}
-              borderRadius="full"
-              fontWeight="medium"
-            >
-              Powered by OpenAI, Gemini & Grok
-            </Badge>
-            {/* Token count badge for AI responses */}
-            {tokenCount > 0 && (
-              <Badge
-                colorScheme="gray"
-                variant="outline"
-                fontSize={fontSizes.micro}
-                px={2}
-                py={1}
-                borderRadius="full"
-                color={tokenCountColor}
-                borderColor={tokenCountColor}
-              >
-                {formatTokenCount(tokenCount)} tokens
-              </Badge>
-            )}
-          </HStack>
-          {/* Simple timestamp for AI responses */}
+        <HStack spacing={3} mb={2} justify="space-between" w="100%" align="center">
+          <Badge
+            colorScheme="blue"
+            variant="subtle"
+            fontSize={fontSizes.micro}
+            px={3}
+            py={1.5}
+            borderRadius="full"
+            fontWeight="600"
+            bg="rgba(79, 156, 249, 0.1)"
+            color="#4F9CF9"
+            border="1px solid"
+            borderColor="rgba(79, 156, 249, 0.2)"
+          >
+            Powered by OpenAI, Gemini & Grok
+          </Badge>
+          {/* Enhanced timestamp for AI responses */}
           <Text
             fontSize={fontSizes.micro}
             color={timestampColor}
-            opacity={0.7}
-            fontWeight="400"
+            opacity={0.8}
+            fontWeight="500"
+            minW="fit-content"
           >
             {formatTimestamp(message.timestamp)}
           </Text>
         </HStack>
       )}
 
-      {/* Message Bubble - Enhanced with modern styling */}
+      {/* Message Bubble - Enhanced with modern styling and better mobile optimization */}
       <Box
         bg={bubbleBg}
         color={bubbleText}
-        px={5}
-        py={4}
+        px={{ base: 4, md: 5 }}
+        py={{ base: 3, md: 4 }}
         borderRadius="2xl"
-        maxW={{ base: "92%", sm: "88%", md: "85%" }}
-        minW={{ base: "60%", sm: "50%" }}
+        maxW={{ base: "95%", sm: "90%", md: "85%" }}
+        minW={{ base: "40%", sm: "45%" }}
         position="relative"
         boxShadow={isUser ? shadowUser : shadowAi}
         border={isUser ? "none" : "1px solid"}
         borderColor={isUser ? "transparent" : borderAi}
         transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translateY(-2px)",
+          transform: "translateY(-1px)",
           boxShadow: isUser
-            ? "0 8px 20px rgba(79, 156, 249, 0.35)"
-            : "0 4px 12px rgba(0, 0, 0, 0.08)",
+            ? "0 6px 16px rgba(79, 156, 249, 0.3)"
+            : "0 3px 10px rgba(0, 0, 0, 0.06)",
+        }}
+        // Enhanced touch targets for mobile
+        sx={{
+          '@media (max-width: 768px)': {
+            minHeight: '44px', // Minimum touch target size
+          }
         }}
       >
         {/* Message Content */}
@@ -321,60 +304,17 @@ export const ChatMessage = memo<ChatMessageProps>(({
           )}
         </Box>
 
-        {/* Expand/Collapse for long messages */}
-        {shouldTruncate && (
-          <Collapse in={isExpanded} animateOpacity>
-            <Box mt={1.5}>
-              {isUser ? (
-                <Text fontSize={fontSizes.content} lineHeight="1.5">
-                  {remainingText}
-                </Text>
-              ) : (
-                <AIResponseFormatter
-                  content={remainingText}
-                  fontSize={{
-                    content: fontSizes.content as any,
-                    heading: { base: "md", md: "lg" } as any,
-                    code: fontSizes.code as any,
-                    small: fontSizes.small as any,
-                  }}
-                />
-              )}
-            </Box>
-          </Collapse>
-        )}
+        {/* Removed expand/collapse section since we show full content when expanded */}
 
-        {/* Individual Model Responses Section */}
+        {/* Enhanced Individual Model Responses Section */}
         {!isUser && !isError && !isLoading && hasIndividualResponses && (
-          <VStack spacing={3} mt={4} align="stretch">
-            {/* Show Individual Responses Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              leftIcon={<PiEyeBold />}
-              onClick={() => setShowIndividualResponses(!showIndividualResponses)}
-              color="#4F9CF9"
-              _hover={{
-                bg: "rgba(79, 156, 249, 0.05)",
-              }}
-              justifyContent="flex-start"
-              fontWeight="medium"
-              fontSize={fontSizes.small}
-            >
-              {showIndividualResponses ? 'Hide' : 'Show'} Individual AI Responses ({availableModels.length})
-            </Button>
-
-            {/* Individual Responses Grid */}
-            <Collapse in={showIndividualResponses} animateOpacity>
-              <Box>
-                <ModelResponseGrid
-                  models={availableModels}
-                  onModelClick={openModelModal}
-                  compact={true}
-                />
-              </Box>
-            </Collapse>
-          </VStack>
+          <Box mt={6}>
+            <ModelResponseGrid
+              models={availableModels}
+              onModelClick={openModelModal}
+              compact={true}
+            />
+          </Box>
         )}
 
         {/* Message Actions - Only show for AI messages or expandable user messages */}

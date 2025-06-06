@@ -3,7 +3,6 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { AppShell } from '../components/AppShell';
 import { useFitnessStore } from '../store/useFitnessStore';
 import OnboardingWizard from '../components/NeuraFit/OnboardingWizard';
 import Dashboard from '../components/NeuraFit/Dashboard';
@@ -89,17 +88,16 @@ export default function NeuraFitPage() {
   };
 
   return (
-    <AppShell>
-      <Box
-        minH="100vh"
-        overflow="visible"
-        position="relative"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-        data-testid="page-content"
-        className="mobile-scroll-container neurafit-page-container"
-      >
-        {renderCurrentView()}
-      </Box>
-    </AppShell>
+    <Box
+      h="100%"
+      bg="#FAFBFC"
+      overflow="auto"
+      position="relative"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+      data-testid="page-content"
+      className="mobile-scroll-container neurafit-page-container"
+    >
+      {renderCurrentView()}
+    </Box>
   );
 }

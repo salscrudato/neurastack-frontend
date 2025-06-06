@@ -8,17 +8,12 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
 
-// Lazy load pages for better performance
+// Lazy load pages for better performance - streamlined to only essential features
 const SplashPage = React.lazy(() => import('./pages/SplashPage').then(m => ({ default: m.SplashPage })));
 const ChatPage = React.lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })));
-const AppStorePage = React.lazy(() => import('./pages/AppStorePage'));
-const NeurataskPage = React.lazy(() => import('./pages/NeurataskPage'));
-const NeuraplannerPage = React.lazy(() => import('./pages/NeuraplannerPage'));
-const NeuraPromptsPage = React.lazy(() => import('./pages/NeuraPromptsPage'));
 const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
-const AIResponseDemo = React.lazy(() => import('./components/AIResponseDemo').then(m => ({ default: m.AIResponseDemo })));
 
-// Create router with proper nested routes
+// Create router with streamlined routes - only Chat and NeuraFit
 const router = createBrowserRouter([
   {
     path: '/',
@@ -42,50 +37,10 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: 'apps',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading apps..." />}>
-            <AppStorePage />
-          </Suspense>
-        )
-      },
-      {
-        path: 'apps/neuratask',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading Neuratask..." />}>
-            <NeurataskPage />
-          </Suspense>
-        )
-      },
-      {
-        path: 'apps/neuraplanner',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading Neuraplanner..." />}>
-            <NeuraplannerPage />
-          </Suspense>
-        )
-      },
-      {
-        path: 'apps/neuraprompts',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading NeuraPrompts..." />}>
-            <NeuraPromptsPage />
-          </Suspense>
-        )
-      },
-      {
-        path: 'apps/neurafit',
+        path: 'neurafit',
         element: (
           <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
             <NeuraFitPage />
-          </Suspense>
-        )
-      },
-      {
-        path: 'demo/ai-response',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading AI Response Demo..." />}>
-            <AIResponseDemo />
           </Suspense>
         )
       },

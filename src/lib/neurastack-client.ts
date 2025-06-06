@@ -13,7 +13,14 @@ import type {
   EnsembleRequest,
   EnsembleResponse,
   LegacyEnsembleMetadata,
-  SubAnswer
+  SubAnswer,
+  StoreMemoryRequest,
+  StoreMemoryResponse,
+  RetrieveMemoryRequest,
+  MemoryContextRequest,
+  MemoryContextResponse,
+  MemoryAnalyticsResponse,
+  MemoryHealthResponse
 } from './types';
 import { cacheManager } from './cacheManager';
 
@@ -78,8 +85,11 @@ export interface NeuraStackRequestOptions {
 export const NEURASTACK_ENDPOINTS = {
   ENSEMBLE: '/ensemble-test',
   QUERY: '/api/query', // Legacy endpoint for backward compatibility
-  MEMORY_METRICS: '/api/memory/metrics',
-  MEMORY_CONTEXT: '/api/memory/context',
+  MEMORY_STORE: '/memory/store',
+  MEMORY_RETRIEVE: '/memory/retrieve',
+  MEMORY_CONTEXT: '/memory/context',
+  MEMORY_ANALYTICS: '/memory/analytics',
+  MEMORY_HEALTH: '/memory/health',
   HEALTH: '/health'
 } as const;
 
@@ -139,8 +149,10 @@ export class NeuraStackClient {
     prompt: string,
     options: NeuraStackRequestOptions & Partial<NeuraStackQueryRequest> = {}
   ): Promise<NeuraStackQueryResponse> {
+    const sessionId = options.sessionId || this.config.sessionId;
     const requestBody: EnsembleRequest = {
-      prompt
+      prompt,
+      sessionId
     };
 
     const headers: Record<string, string> = {
@@ -159,26 +171,19 @@ export class NeuraStackClient {
     });
     console.groupEnd();
 
-    // Only add headers that are explicitly allowed by the API CORS configuration
-    const sessionId = options.sessionId || this.config.sessionId;
+    // Headers now working! Backend CORS has been updated
     const userId = options.userId || this.config.userId;
     const authToken = options.authToken || this.config.authToken;
 
-    // According to API docs, only these headers are allowed:
-    // Content-Type, Authorization, X-Requested-With, X-User-Id
-
-    // Temporarily removing all custom headers due to CORS restrictions
-    // The API documentation shows these are allowed, but the server CORS config seems more restrictive
-    // if (sessionId) headers['X-Session-ID'] = sessionId;
-    // if (userId && userId.trim() !== '') headers['X-User-Id'] = userId;
+    // Re-enabling headers since API is working and memory context is active
+    if (sessionId) headers['X-Session-Id'] = sessionId;
+    if (userId && userId.trim() !== '') headers['X-User-Id'] = userId;
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
 
-    // Log session and user info for debugging without sending in headers
-    if (sessionId) {
-      console.log('🔗 Session ID (not sent due to CORS):', sessionId);
-    }
-    if (userId) {
-      console.log('🆔 User ID (not sent due to CORS):', userId);
+    // Log headers being sent for debugging
+    const headerKeys = Object.keys(headers).filter(k => k !== 'Content-Type');
+    if (headerKeys.length > 0) {
+      console.log('📋 Headers being sent:', headerKeys);
     }
 
     const ensembleResponse = await this.makeRequest<EnsembleResponse>(
@@ -201,6 +206,34 @@ export class NeuraStackClient {
    */
   async getMemoryMetrics(userId?: string): Promise<MemoryMetrics> {
     const targetUserId = userId || this.config.userId;
+
+    if (!targetUserId) {
+      // Return empty metrics if no user ID
+      return {
+        totalMemories: 0,
+        averageImportance: 0,
+        averageCompressionRatio: 0,
+        totalTokensSaved: 0,
+        memoryByType: {
+          working: 0,
+          short_term: 0,
+          long_term: 0,
+          semantic: 0,
+          episodic: 0
+        },
+        retentionStats: {
+          active: 0,
+          archived: 0,
+          expired: 0
+        },
+        accessPatterns: {
+          hourly: new Array(24).fill(0),
+          daily: new Array(7).fill(0),
+          weekly: new Array(4).fill(0)
+        }
+      };
+    }
+
     const cacheKey = `memory-metrics-${targetUserId}`;
 
     // Try cache first
@@ -209,51 +242,106 @@ export class NeuraStackClient {
       return cached;
     }
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+    try {
+      const analyticsResponse = await this.getMemoryAnalytics(targetUserId);
 
-    // Temporarily commented out due to CORS policy restrictions
-    // if (targetUserId) headers['X-User-Id'] = targetUserId;
-    if (this.config.authToken) headers['Authorization'] = `Bearer ${this.config.authToken}`;
+      // Transform analytics response to legacy MemoryMetrics format
+      const result: MemoryMetrics = {
+        totalMemories: analyticsResponse.metrics.totalMemories,
+        averageImportance: analyticsResponse.metrics.averageImportance,
+        averageCompressionRatio: 0.7, // Default value since not in new API
+        totalTokensSaved: 0, // Default value since not in new API
+        memoryByType: analyticsResponse.metrics.memoryTypes as Record<string, number>,
+        retentionStats: {
+          active: analyticsResponse.metrics.totalMemories - analyticsResponse.metrics.archivedCount,
+          archived: analyticsResponse.metrics.archivedCount,
+          expired: 0 // Default value since not in new API
+        },
+        accessPatterns: {
+          hourly: new Array(24).fill(0),
+          daily: new Array(7).fill(0),
+          weekly: new Array(4).fill(0)
+        }
+      };
 
-    const result = await this.makeRequest<MemoryMetrics>(
-      NEURASTACK_ENDPOINTS.MEMORY_METRICS,
-      {
-        method: 'GET',
-        headers
-      }
-    );
+      // Cache the result for 2 minutes
+      cacheManager.set(cacheKey, result, {
+        ttl: 2 * 60 * 1000,
+        tags: ['api', 'memory', 'metrics']
+      });
 
-    // Cache the result for 2 minutes
-    cacheManager.set(cacheKey, result, {
-      ttl: 2 * 60 * 1000,
-      tags: ['api', 'memory', 'metrics']
-    });
-
-    return result;
+      return result;
+    } catch (error) {
+      console.warn('Failed to get memory analytics:', error);
+      // Return empty metrics on error
+      return {
+        totalMemories: 0,
+        averageImportance: 0,
+        averageCompressionRatio: 0,
+        totalTokensSaved: 0,
+        memoryByType: {
+          working: 0,
+          short_term: 0,
+          long_term: 0,
+          semantic: 0,
+          episodic: 0
+        },
+        retentionStats: {
+          active: 0,
+          archived: 0,
+          expired: 0
+        },
+        accessPatterns: {
+          hourly: new Array(24).fill(0),
+          daily: new Array(7).fill(0),
+          weekly: new Array(4).fill(0)
+        }
+      };
+    }
   }
 
   /**
    * Get session context
    */
-  async getSessionContext(_sessionId?: string): Promise<SessionContext> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
-    };
+  async getSessionContext(sessionId?: string): Promise<SessionContext> {
+    const targetSessionId = sessionId || this.config.sessionId;
+    const userId = this.config.userId;
 
-    // Temporarily commented out due to CORS policy restrictions
-    // const targetSessionId = sessionId || this.config.sessionId;
-    // if (targetSessionId) headers['X-Session-ID'] = targetSessionId;
-    if (this.config.authToken) headers['Authorization'] = `Bearer ${this.config.authToken}`;
+    if (!userId || !targetSessionId) {
+      // Return empty context if no user or session
+      return {
+        sessionId: targetSessionId || '',
+        userId: userId || '',
+        context: '',
+        memoryCount: 0,
+        lastActivity: new Date().toISOString()
+      };
+    }
 
-    return this.makeRequest<SessionContext>(
-      NEURASTACK_ENDPOINTS.MEMORY_CONTEXT,
-      {
-        method: 'GET',
-        headers
-      }
-    );
+    try {
+      const memoryContext = await this.getMemoryContext({
+        userId,
+        sessionId: targetSessionId,
+        maxTokens: 2048
+      });
+
+      return {
+        sessionId: targetSessionId,
+        userId,
+        context: memoryContext.context,
+        memoryCount: memoryContext.estimatedTokens,
+        lastActivity: new Date().toISOString()
+      };
+    } catch (error) {
+      console.warn('Failed to get memory context:', error);
+      return {
+        sessionId: targetSessionId,
+        userId,
+        context: '',
+        memoryCount: 0,
+        lastActivity: new Date().toISOString()
+      };
+    }
   }
 
   /**
@@ -283,6 +371,99 @@ export class NeuraStackClient {
     });
 
     return result;
+  }
+
+  /**
+   * Store a memory for future context
+   */
+  async storeMemory(request: StoreMemoryRequest): Promise<StoreMemoryResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (request.userId) headers['X-User-Id'] = request.userId;
+
+    return this.makeRequest<StoreMemoryResponse>(
+      NEURASTACK_ENDPOINTS.MEMORY_STORE,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request)
+      }
+    );
+  }
+
+  /**
+   * Retrieve memories based on criteria
+   */
+  async retrieveMemories(request: RetrieveMemoryRequest): Promise<any> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (request.userId) headers['X-User-Id'] = request.userId;
+
+    return this.makeRequest<any>(
+      NEURASTACK_ENDPOINTS.MEMORY_RETRIEVE,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request)
+      }
+    );
+  }
+
+  /**
+   * Get memory context for AI prompts
+   */
+  async getMemoryContext(request: MemoryContextRequest): Promise<MemoryContextResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (request.userId) headers['X-User-Id'] = request.userId;
+    if (request.sessionId) headers['X-Session-Id'] = request.sessionId;
+
+    return this.makeRequest<MemoryContextResponse>(
+      NEURASTACK_ENDPOINTS.MEMORY_CONTEXT,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request)
+      }
+    );
+  }
+
+  /**
+   * Get memory analytics for a user
+   */
+  async getMemoryAnalytics(userId: string): Promise<MemoryAnalyticsResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    if (userId) headers['X-User-Id'] = userId;
+
+    return this.makeRequest<MemoryAnalyticsResponse>(
+      `${NEURASTACK_ENDPOINTS.MEMORY_ANALYTICS}/${userId}`,
+      {
+        method: 'GET',
+        headers
+      }
+    );
+  }
+
+  /**
+   * Check memory system health
+   */
+  async checkMemoryHealth(): Promise<MemoryHealthResponse> {
+    return this.makeRequest<MemoryHealthResponse>(
+      NEURASTACK_ENDPOINTS.MEMORY_HEALTH,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   }
 
   /**

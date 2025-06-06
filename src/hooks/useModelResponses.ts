@@ -56,26 +56,22 @@ export const MODEL_DISPLAY_INFO = {
   'openai:gpt-4': {
     name: 'GPT-4',
     provider: 'OpenAI',
-    color: 'green',
-    icon: '🤖'
+    color: 'green'
   },
   'openai:gpt-3.5-turbo': {
     name: 'GPT-3.5',
     provider: 'OpenAI',
-    color: 'green',
-    icon: '🤖'
+    color: 'green'
   },
   'google:gemini-1.5-flash': {
     name: 'Gemini 1.5 Flash',
     provider: 'Google',
-    color: 'blue',
-    icon: '💎'
+    color: 'blue'
   },
   'xai:grok-3-mini': {
     name: 'Grok 3 Mini',
     provider: 'xAI',
-    color: 'purple',
-    icon: '🚀'
+    color: 'purple'
   }
 } as const;
 
@@ -83,39 +79,33 @@ export const ENSEMBLE_ROLE_INFO = {
   evidenceAnalyst: {
     name: 'Evidence Analyst',
     description: 'Provides fact-based analysis and verification',
-    color: 'blue',
-    icon: '🔍'
+    color: 'blue'
   },
   innovator: {
     name: 'Innovator',
     description: 'Offers creative solutions and fresh perspectives',
-    color: 'purple',
-    icon: '💡'
+    color: 'purple'
   },
   riskReviewer: {
     name: 'Risk Reviewer',
     description: 'Identifies potential risks and considerations',
-    color: 'orange',
-    icon: '⚠️'
+    color: 'orange'
   },
   // Additional roles that might come from the API
   creativeAdvisor: {
     name: 'Creative Advisor',
     description: 'Provides creative and innovative solutions',
-    color: 'purple',
-    icon: '🎨'
+    color: 'purple'
   },
   devilsAdvocate: {
     name: 'Devils Advocate',
     description: 'Challenges ideas and identifies potential issues',
-    color: 'red',
-    icon: '😈'
+    color: 'red'
   },
   scientificAnalyst: {
     name: 'Scientific Analyst',
     description: 'Provides scientific and analytical perspectives',
-    color: 'blue',
-    icon: '🔬'
+    color: 'blue'
   }
 } as const;
 
@@ -244,8 +234,7 @@ export function getModelDisplayInfo(modelKey: string) {
     return ENSEMBLE_ROLE_INFO[role] || {
       name: transformCamelCaseToDisplay(role),
       description: 'AI ensemble analysis',
-      color: 'gray',
-      icon: '🤖'
+      color: 'gray'
     };
   }
 
@@ -253,8 +242,7 @@ export function getModelDisplayInfo(modelKey: string) {
   return MODEL_DISPLAY_INFO[modelKey as keyof typeof MODEL_DISPLAY_INFO] || {
     name: modelKey.split(':')[1] || modelKey,
     provider: modelKey.split(':')[0] || 'Unknown',
-    color: 'gray',
-    icon: '🤖'
+    color: 'gray'
   };
 }
 

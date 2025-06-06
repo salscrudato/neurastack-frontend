@@ -219,23 +219,18 @@ npm run dev                         # http://localhost:3000
 
 ### Core Applications
 
-| App | Status | Description | Revenue Model |
-|-----|--------|-------------|---------------|
-| **Chat** | ✅ Live | Multi-AI chat with ensemble responses | Subscription potential |
-| **NeuraFit** | ✅ Live | AI-powered fitness tracking | Freemium model |
-| **Neuraplanner** | 🚧 Ready | AI trip planning with booking | Affiliate commissions |
-| **NeuraPrompts** | 🚧 Ready | Reusable prompt library | Community features |
-| **Neuratask** | 🚧 Ready | AI task management | Productivity suite |
-| **NeuraNews** | 📋 Planned | Intelligent news aggregation | Ad revenue |
+| App | Status | Description | Focus |
+|-----|--------|-------------|-------|
+| **Chat** | ✅ Live | Multi-AI chat with ensemble responses | Primary feature - enhanced UI/UX |
+| **NeuraFit** | ✅ Live | AI-powered fitness tracking | Secondary feature - full functionality |
 
-### Navigation Flow
+### Streamlined Navigation Flow
 ```
 Splash Page (/)
 ├── Google/Anonymous Auth
 └── Main App
-    ├── Chat (/chat) - Primary AI interface
-    ├── Apps (/apps) - App ecosystem hub
-    └── Individual Apps (/apps/{app-name})
+    ├── Chat (/chat) - Primary AI interface with enhanced mobile experience
+    └── NeuraFit (/neurafit) - AI-powered fitness tracking
 ```
 
 ---
@@ -281,13 +276,9 @@ communityPrompts (collection)              shared prompts
 | `src/components/AppShell.tsx`          | Consistent layout wrapper for all app pages            |
 | `src/components/Header.tsx`            | Main navigation header with app switcher               |
 | `src/pages/SplashPage.tsx`             | Landing page with authentication                       |
-| `src/pages/ChatPage.tsx`               | Primary AI chat interface                              |
-| `src/pages/AppStorePage.tsx`           | App ecosystem hub and launcher                         |
-| `src/pages/NeuraFitPage.tsx`           | AI-powered fitness tracking                           |
-| `src/pages/NeuraplannerPage.tsx`       | AI trip planning with booking integration             |
-| `src/pages/NeuraPromptsPage.tsx`       | Reusable prompt library management                    |
-| `src/pages/NeurataskPage.tsx`          | AI task management and productivity                   |
-| `src/store/`                           | Zustand stores for state management                   |
+| `src/pages/ChatPage.tsx`               | Enhanced AI chat interface with mobile optimization   |
+| `src/pages/NeuraFitPage.tsx`           | AI-powered fitness tracking with full functionality  |
+| `src/store/`                           | Streamlined Zustand stores (Chat, Auth, Fitness)     |
 | `src/lib/api.ts`                       | Multi-AI backend integration                          |
 | `src/lib/travelApi.ts`                 | Travel booking API integrations                       |
 | `src/firebase.tsx`                     | Firebase configuration and exports                    |

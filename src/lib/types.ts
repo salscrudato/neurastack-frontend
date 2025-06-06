@@ -20,7 +20,8 @@ export interface Message {
 
 /** Request interface for NeuraStack Ensemble API */
 export interface EnsembleRequest {
-  prompt: string;
+  prompt?: string; // Optional. Defaults to "Quick sanity check: explain AI in 1-2 lines."
+  sessionId?: string; // Optional. Session ID for memory context
 }
 
 /** Legacy request interface for backward compatibility */
@@ -44,7 +45,7 @@ export interface NeuraStackQueryRequest {
 /** Headers for NeuraStack API requests */
 export interface NeuraStackHeaders {
   'Content-Type': 'application/json';
-  'X-Session-ID'?: string;
+  'X-Session-Id'?: string; // Updated to match API documentation
   'X-User-Id'?: string;
   'Authorization'?: string;
   'X-Requested-With'?: string;
@@ -99,6 +100,77 @@ export interface EnsembleResponse {
   message?: string;
   error?: string;
   timestamp?: string;
+}
+
+/* ============================================================================
+ * Memory Management Types
+ * ========================================================================== */
+
+
+
+export interface StoreMemoryRequest {
+  userId: string;
+  sessionId: string;
+  content: string;
+  isUserPrompt?: boolean; // Default: true
+  responseQuality?: number; // 0-1 scale, optional
+  modelUsed?: string; // Optional
+  ensembleMode?: boolean; // Default: false
+}
+
+export interface StoreMemoryResponse {
+  success: boolean;
+  memoryId: string;
+  memoryType: MemoryType;
+  importance: number;
+  compositeScore: number;
+}
+
+export interface RetrieveMemoryRequest {
+  userId: string;
+  sessionId?: string; // Optional - filter by session
+  memoryTypes?: MemoryType[]; // Optional - filter by types
+  maxResults?: number; // Default: 10, max: 50
+  minImportance?: number; // Default: 0.3, range: 0-1
+  includeArchived?: boolean; // Default: false
+  query?: string; // Optional - text search
+}
+
+export interface MemoryContextRequest {
+  userId: string;
+  sessionId: string;
+  maxTokens?: number; // Default: 2048, range: 100-8000
+}
+
+export interface MemoryContextResponse {
+  success: boolean;
+  context: string;
+  estimatedTokens: number;
+}
+
+export interface MemoryAnalyticsResponse {
+  success: boolean;
+  userId: string;
+  metrics: {
+    totalMemories: number;
+    memoryTypes: Record<string, number>;
+    averageImportance: number;
+    averageCompositeScore: number;
+    archivedCount: number;
+    recentMemories: number;
+  };
+}
+
+export interface MemoryHealthResponse {
+  status: "healthy" | "degraded" | "unhealthy";
+  message: string;
+  timestamp: string;
+  details: {
+    firestoreAvailable: boolean;
+    localCacheSize: number;
+    testMemoryStored: boolean;
+    testMemoryRetrieved: boolean;
+  };
 }
 
 /** Legacy ensemble metadata structure for backward compatibility */
@@ -218,9 +290,13 @@ export interface UserMemory {
 
 export interface SessionContext {
   sessionId: string;
-  memories: UserMemory[];
-  contextSummary: string;
-  totalTokens: number;
+  userId: string;
+  context: string;
+  memoryCount: number;
+  lastActivity: string;
+  memories?: UserMemory[];
+  contextSummary?: string;
+  totalTokens?: number;
 }
 
 /* ============================================================================

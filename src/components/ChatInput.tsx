@@ -31,13 +31,18 @@ export default function ChatInput() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const toast = useToast();
 
-  // Cycling placeholder suggestions
+  // Enhanced smart suggestions for streamlined chat experience
   const placeholderSuggestions = [
-    "Create a leg workout.",
-    "How do I grill the perfect steak?",
-    "Plan a weekend trip to Paris.",
-    "Write a professional email.",
-    "Explain quantum computing simply."
+    "What do you want to know?",
+    "Ask me anything...",
+    "How can I help you today?",
+    "What's on your mind?",
+    "Need help with something?",
+    "Tell me about...",
+    "Help me understand...",
+    "Explain how to...",
+    "Give me ideas for...",
+    "What are the benefits of..."
   ];
 
   const MAX_CHARS = 4000;
@@ -152,20 +157,27 @@ export default function ChatInput() {
           }}
           isDisabled={busy}
           rows={1}
-          minH={{ base: "2.5rem", md: "3rem" }}
-          maxH={{ base: "5rem", md: "6.5rem" }}
+          minH={{ base: "44px", md: "48px" }} // Enhanced minimum touch target
+          maxH={{ base: "120px", md: "140px" }} // Better mobile scrolling
           resize="none"
           _placeholder={{
             color: placeholderColor,
             transition: "opacity 0.3s ease",
-            fontSize: { base: "15px", md: "16px" }
+            fontSize: { base: "16px", md: "16px" } // Prevent zoom on iOS
           }}
           color={textColor}
           aria-label="Message to Neurastack"
           pr={{ base: "5rem", md: "6rem" }}
           borderColor={charCount > MAX_CHARS ? "red.400" : "transparent"}
-          fontSize={{ base: "15px", md: "16px" }}
+          fontSize={{ base: "16px", md: "16px" }} // Prevent zoom on iOS
           lineHeight="1.5"
+          // Enhanced mobile experience
+          sx={{
+            '@media (max-width: 768px)': {
+              WebkitAppearance: 'none',
+              WebkitTapHighlightColor: 'transparent',
+            }
+          }}
         />
 
         <InputRightElement width={{ base: "5rem", md: "6rem" }} top="50%" transform="translateY(-50%)" pr={2}>

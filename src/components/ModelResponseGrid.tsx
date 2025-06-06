@@ -61,14 +61,16 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
   const isEnsembleRole = model.model.startsWith('ensemble:');
   const isFailed = model.status === 'failed';
   const isSuccess = model.status === 'success';
-  
-  // Modern color values - light mode only
-  const cardBg = '#FFFFFF';
-  const cardHoverBg = '#F8FAFC';
+
+  // Enhanced modern color values with subtle gradients
+  const cardBg = 'linear-gradient(135deg, #FFFFFF 0%, #FAFBFC 100%)';
+  const cardHoverBg = 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)';
   const borderColor = '#E2E8F0';
   const textColor = '#1E293B';
   const mutedColor = '#64748B';
-  
+  const shadowColor = 'rgba(0, 0, 0, 0.04)';
+  const hoverShadowColor = 'rgba(79, 156, 249, 0.15)';
+
   // Status colors
   const statusColor = isFailed ? 'red' : isSuccess ? 'green' : 'yellow';
   const StatusIcon = isFailed ? PiXCircleBold : isSuccess ? PiCheckCircleBold : PiClockBold;
@@ -89,78 +91,98 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
         onClick={onClick}
         variant="outline"
         size={compact ? "sm" : "md"}
-        h={compact ? "auto" : "80px"}
+        h={compact ? "auto" : "72px"}
         w="100%"
         bg={cardBg}
         borderColor={borderColor}
+        borderWidth="1px"
+        boxShadow={`0 2px 8px ${shadowColor}`}
         _hover={{
           bg: cardHoverBg,
-          transform: "translateY(-2px)",
-          boxShadow: "md"
+          transform: "translateY(-3px)",
+          boxShadow: `0 8px 25px ${hoverShadowColor}`,
+          borderColor: "#4F9CF9"
         }}
         _active={{
-          transform: "translateY(0px)"
+          transform: "translateY(-1px)",
+          boxShadow: `0 4px 12px ${hoverShadowColor}`
         }}
-        transition="all 0.2s ease"
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         isDisabled={isFailed}
         cursor={isFailed ? "not-allowed" : "pointer"}
-        p={compact ? 2 : 3}
+        p={compact ? 3 : 4}
+        borderRadius="xl"
       >
-        <VStack spacing={compact ? 1 : 2} w="100%">
-          {/* Header */}
-          <HStack justify="space-between" w="100%" spacing={2}>
-            <HStack spacing={1} flex="1" minW="0">
-              <Text fontSize={compact ? "xs" : "sm"}>
-                {displayInfo.icon}
-              </Text>
-              <Text
-                fontSize={compact ? "xs" : "sm"}
-                fontWeight="medium"
-                color={textColor}
-                noOfLines={1}
-                textAlign="left"
-              >
-                {isEnsembleRole ? displayInfo.name : formatModelName(model.model, model.role)}
-              </Text>
-            </HStack>
-            
+        <VStack spacing={compact ? 2 : 3} w="100%" align="stretch">
+          {/* Enhanced Header with better typography */}
+          <HStack justify="space-between" w="100%" spacing={3} align="center">
+            <Text
+              fontSize={compact ? "sm" : "md"}
+              fontWeight="600"
+              color={textColor}
+              noOfLines={1}
+              textAlign="left"
+              flex="1"
+              letterSpacing="-0.025em"
+            >
+              {isEnsembleRole ? displayInfo.name : formatModelName(model.model, model.role)}
+            </Text>
+
             <Icon
               as={StatusIcon}
               color={`${statusColor}.500`}
-              boxSize={compact ? 3 : 4}
+              boxSize={compact ? 4 : 5}
             />
           </HStack>
 
-          {/* Badges and Info */}
+          {/* Enhanced Badges and Info */}
           {!compact && (
-            <HStack justify="space-between" w="100%" spacing={1}>
-              <VStack spacing={1} align="start" flex="1">
+            <HStack justify="space-between" w="100%" spacing={2} align="flex-start">
+              <VStack spacing={1.5} align="start" flex="1">
                 {isEnsembleRole ? (
-                  <Badge colorScheme={displayInfo.color} variant="subtle" size="sm">
+                  <Badge
+                    colorScheme={displayInfo.color}
+                    variant="subtle"
+                    size="sm"
+                    borderRadius="full"
+                    px={3}
+                    py={1}
+                    fontSize="xs"
+                    fontWeight="600"
+                  >
                     Ensemble
                   </Badge>
                 ) : (
-                  <Badge colorScheme={displayInfo.color} variant="subtle" size="sm">
+                  <Badge
+                    colorScheme={displayInfo.color}
+                    variant="subtle"
+                    size="sm"
+                    borderRadius="full"
+                    px={3}
+                    py={1}
+                    fontSize="xs"
+                    fontWeight="600"
+                  >
                     {'provider' in displayInfo ? displayInfo.provider : 'AI Model'}
                   </Badge>
                 )}
-                
+
                 {model.role && !isEnsembleRole && (
-                  <Text fontSize="xs" color={mutedColor} noOfLines={1}>
+                  <Text fontSize="xs" color={mutedColor} noOfLines={1} fontWeight="500">
                     {model.role}
                   </Text>
                 )}
               </VStack>
-              
-              {/* Metrics */}
-              <VStack spacing={0} align="end">
+
+              {/* Enhanced Metrics */}
+              <VStack spacing={1} align="end">
                 {model.tokenCount && (
-                  <Text fontSize="xs" color={mutedColor}>
+                  <Text fontSize="xs" color={mutedColor} fontWeight="500">
                     {model.tokenCount}t
                   </Text>
                 )}
                 {model.executionTime && (
-                  <Text fontSize="xs" color={mutedColor}>
+                  <Text fontSize="xs" color={mutedColor} fontWeight="500">
                     {model.executionTime}ms
                   </Text>
                 )}
@@ -193,12 +215,12 @@ export function ModelResponseGrid({
   compact = false,
   maxVisible
 }: ModelResponseGridProps) {
-  // Responsive grid columns
+  // Enhanced responsive grid columns with better spacing
   const columns = useBreakpointValue({
-    base: compact ? 2 : 1,
-    sm: compact ? 3 : 2,
-    md: compact ? 4 : 3,
-    lg: compact ? 5 : 4
+    base: compact ? 1 : 1,
+    sm: compact ? 2 : 2,
+    md: compact ? 3 : 3,
+    lg: compact ? 3 : 3
   });
 
   // Filter and sort models
@@ -234,11 +256,11 @@ export function ModelResponseGrid({
   }
 
   return (
-    <VStack spacing={3} w="100%">
-      {/* Grid */}
+    <VStack spacing={4} w="100%">
+      {/* Enhanced Grid with better spacing */}
       <SimpleGrid
         columns={columns}
-        spacing={compact ? 2 : 3}
+        spacing={compact ? 3 : 4}
         w="100%"
       >
         {visibleModels.map((model) => (

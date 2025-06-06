@@ -191,16 +191,27 @@ export function IndividualModelModal({
           <VStack align="stretch" spacing={3}>
             {/* Title and Badge */}
             <Flex justify="space-between" align="center">
-              <HStack spacing={3}>
+              <VStack align="start" spacing={1}>
                 <Text fontSize="lg" fontWeight="bold" color={textColor}>
                   {formatModelName(modelData.model, modelData.role)}
                 </Text>
+                {/* Show actual model used for ensemble roles */}
                 {isEnsembleRole && (
-                  <Badge colorScheme={displayInfo.color} variant="subtle">
-                    Ensemble Role
-                  </Badge>
+                  <Text fontSize="sm" color={mutedColor} fontWeight="medium">
+                    Powered by AI Ensemble
+                  </Text>
                 )}
-              </HStack>
+                {!isEnsembleRole && displayInfo && 'provider' in displayInfo && (
+                  <Text fontSize="sm" color={mutedColor} fontWeight="medium">
+                    {displayInfo.provider} • {displayInfo.name}
+                  </Text>
+                )}
+              </VStack>
+              {isEnsembleRole && (
+                <Badge colorScheme={displayInfo.color} variant="subtle">
+                  Ensemble Role
+                </Badge>
+              )}
             </Flex>
 
             {/* Model Info - Left aligned execution time */}
@@ -214,7 +225,6 @@ export function IndividualModelModal({
 
               {modelData.tokenCount && (
                 <HStack spacing={1}>
-                  <Text>📊</Text>
                   <Text>{modelData.tokenCount} tokens</Text>
                 </HStack>
               )}

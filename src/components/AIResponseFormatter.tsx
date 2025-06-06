@@ -98,26 +98,36 @@ export const AIResponseFormatter = memo(({
       </Text>
     ),
 
-    // Paragraphs with optimal mobile spacing
+    // Fixed paragraphs to prevent mid-content line breaks
     p: ({ children }: any) => (
       <Text
         mb={3}
         fontSize={fontSize.content}
-        lineHeight={{ base: "1.6", md: "1.5" }}
+        lineHeight={{ base: "1.5", md: "1.4" }}
         color="#1E293B"
         wordBreak="break-word"
+        sx={{
+          '&:empty': {
+            display: 'none'
+          }
+        }}
       >
         {children}
       </Text>
     ),
 
-    // Mobile-optimized lists
+    // Restored mobile-optimized lists with proper bullet points
     ul: ({ children }: any) => (
       <UnorderedList
         pl={{ base: 4, md: 5 }}
         mb={3}
         spacing={1}
         styleType="disc"
+        sx={{
+          '& li::marker': {
+            color: '#64748B'
+          }
+        }}
       >
         {children}
       </UnorderedList>
@@ -127,6 +137,12 @@ export const AIResponseFormatter = memo(({
         pl={{ base: 4, md: 5 }}
         mb={3}
         spacing={1}
+        sx={{
+          '& li::marker': {
+            color: '#64748B',
+            fontWeight: '600'
+          }
+        }}
       >
         {children}
       </OrderedList>
@@ -134,7 +150,7 @@ export const AIResponseFormatter = memo(({
     li: ({ children }: any) => (
       <ListItem
         fontSize={fontSize.content}
-        lineHeight={{ base: "1.6", md: "1.5" }}
+        lineHeight={{ base: "1.5", md: "1.4" }}
         color="#1E293B"
         mb={1}
       >

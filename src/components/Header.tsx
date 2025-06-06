@@ -49,24 +49,16 @@ export function Header() {
   const menuBorder = '#E2E8F0';
   const hoverBg = '#F8FAFC';
 
-  // Determine header text and navigation based on current route
+  // Determine header text and navigation based on current route - simplified for Chat/NeuraFit only
   const getHeaderInfo = () => {
     const path = location.pathname;
 
     if (path === '/chat') {
-      return { text: 'CHAT', destination: '/apps', fontSize: { base: "md", md: "lg" } };
-    } else if (path === '/apps') {
-      return { text: 'APPS', destination: '/chat', fontSize: { base: "md", md: "lg" } };
-    } else if (path.startsWith('/apps/neuratask')) {
-      return { text: 'neuratask', destination: '/apps', fontSize: { base: "sm", md: "md" } };
-    } else if (path.startsWith('/apps/neurafit')) {
-      return { text: 'neurafit', destination: '/apps', fontSize: { base: "sm", md: "md" } };
-    } else if (path.startsWith('/apps/')) {
-      // For other apps, extract app name from path
-      const appName = path.split('/')[2];
-      return { text: appName, destination: '/apps', fontSize: { base: "sm", md: "md" } };
+      return { text: 'CHAT', destination: '/neurafit', fontSize: { base: "md", md: "lg" } };
+    } else if (path === '/neurafit') {
+      return { text: 'NEURAFIT', destination: '/chat', fontSize: { base: "md", md: "lg" } };
     } else {
-      return { text: 'CHAT', destination: '/apps', fontSize: { base: "md", md: "lg" } };
+      return { text: 'CHAT', destination: '/neurafit', fontSize: { base: "md", md: "lg" } };
     }
   };
 
@@ -273,13 +265,13 @@ export function Header() {
           <MenuDivider />
 
           <MenuItem
-            onClick={() => navigate('/apps')}
+            onClick={() => navigate('/neurafit')}
             color={grayHover}
             borderRadius="lg"
             _hover={{ bg: hoverBg }}>
             <HStack>
               <PiHouseLight />
-              <Text>Dashboard</Text>
+              <Text>NeuraFit</Text>
             </HStack>
           </MenuItem>
 
