@@ -13,9 +13,10 @@ import {
   useDisclosure,
   Button,
 } from '@chakra-ui/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
 import { useChatStore } from '../store/useChatStore';
+import { useReducedMotion } from '../hooks/useAccessibility';
 import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
 import OfflineIndicator from '../components/OfflineIndicator';
@@ -42,10 +43,13 @@ export function ChatPage() {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   const { isOpen, onClose } = useDisclosure();
   const toast = useToast();
   // const { alerts, clearAlerts } = usePerformanceAlerts(); // Disabled to improve performance
+
+
 
   // Modern color values - light mode only
   const bgColor = "#FAFBFC";
@@ -56,6 +60,31 @@ export function ChatPage() {
   const scrollButtonHoverBg = "#F8FAFC";
   const heroTextColor = "#475569";
   const heroSubTextColor = "#64748B";
+
+  // Enhanced responsive configuration
+  const chatConfig = useMemo(() => ({
+    container: {
+      padding: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
+      gap: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 }
+    },
+    hero: {
+      fontSize: { xs: "lg", sm: "xl", md: "2xl", lg: "3xl", xl: "4xl" },
+      subFontSize: { xs: "md", sm: "lg", md: "xl", lg: "2xl", xl: "3xl" },
+      padding: { xs: 4, sm: 5, md: 6, lg: 8, xl: 10 }
+    },
+    scrollButton: {
+      size: { xs: "sm", sm: "md", md: "md", lg: "lg" },
+      bottom: { xs: "80px", sm: "90px", md: "100px", lg: "110px", xl: "120px" },
+      right: { xs: "12px", sm: "16px", md: "20px", lg: "24px", xl: "28px" }
+    }
+  }), []);
+
+  // Animation configuration
+  const animationConfig = useMemo(() => ({
+    transition: prefersReducedMotion ? 'none' : 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+    transform: prefersReducedMotion ? 'none' : 'translateY(-2px)',
+    scale: prefersReducedMotion ? 'none' : 'scale(1.05)'
+  }), [prefersReducedMotion]);
 
   // Load chat history and sessions when user is authenticated
   useEffect(() => {
@@ -70,26 +99,63 @@ export function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [msgs]);
 
-  // Check if user has scrolled up to show scroll-to-bottom button
+  // Enhanced scroll handling with performance optimization
+  const handleScroll = useCallback(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollToBottom(!isNearBottom && msgs.length > 0);
+  }, [msgs.length]);
+
+  // Debounced scroll handler for performance
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      setShowScrollToBottom(!isNearBottom && msgs.length > 0);
+    let timeoutId: NodeJS.Timeout;
+    const debouncedHandleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleScroll, 16); // ~60fps
     };
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [msgs.length]);
+    container.addEventListener('scroll', debouncedHandleScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', debouncedHandleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [handleScroll]);
 
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = useCallback(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth'
+    });
+  }, [prefersReducedMotion]);
 
-  const handleClearChat = () => {
+  // Enhanced keyboard navigation
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Scroll to bottom with 'End' key
+    if (e.key === 'End' && e.ctrlKey) {
+      e.preventDefault();
+      scrollToBottom();
+    }
+    // Scroll to top with 'Home' key
+    if (e.key === 'Home' && e.ctrlKey) {
+      e.preventDefault();
+      messagesContainerRef.current?.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth'
+      });
+    }
+  }, [scrollToBottom, prefersReducedMotion]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  const handleClearChat = useCallback(() => {
     clearMessages();
     onClose();
     toast({
@@ -98,7 +164,7 @@ export function ChatPage() {
       duration: 2000,
       isClosable: true,
     });
-  };
+  }, [clearMessages, onClose, toast]);
 
 
 
@@ -123,34 +189,54 @@ export function ChatPage() {
       p="0px"
       bg={bgColor}
       position="relative"
+      // Enhanced mobile support
+      sx={{
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        // Dynamic viewport height for mobile
+        minHeight: ['100vh', '100dvh'],
+        '@supports (-webkit-touch-callout: none)': {
+          minHeight: '-webkit-fill-available',
+        }
+      }}
     >
       {/* Offline indicator */}
       <OfflineIndicator />
 
-      {/* hero prompt */}
+      {/* Enhanced hero prompt */}
       {msgs.length === 0 && (
         <Flex
           flex={1}
           align="center"
           justify="center"
-          px={{ base: 4, md: 6 }}
-          pb={{ base: 20, md: 0 }}   /* avoid overlap with input on mobile */
+          px={chatConfig.hero.padding}
+          pb={{ xs: 24, sm: 20, md: 16, lg: 0 }} // Enhanced mobile spacing
+          role="main"
+          aria-label="Welcome message"
         >
-          <Box textAlign="center" maxW="md">
+          <Box textAlign="center" maxW={{ xs: "sm", sm: "md", md: "lg", lg: "xl" }}>
             <Text
-              fontSize={{ base: "xl", md: "2xl" }}
+              fontSize={chatConfig.hero.fontSize}
               lineHeight="short"
               fontWeight="semibold"
               color={heroTextColor}
-              mb={{ base: 1, md: 2 }}
+              mb={{ xs: 2, sm: 2, md: 3, lg: 4 }}
+              // Enhanced accessibility
+              as="h1"
+              role="heading"
+              aria-level={1}
             >
               What do you want to know?
             </Text>
             <Text
-              fontSize={{ base: "lg", md: "2xl" }}
+              fontSize={chatConfig.hero.subFontSize}
               color={heroSubTextColor}
               fontWeight="normal"
               opacity={0.8}
+              lineHeight="relaxed"
+              // Enhanced accessibility
+              as="p"
+              role="text"
             >
               Our team is happy to assist you...
             </Text>
@@ -158,17 +244,42 @@ export function ChatPage() {
         </Flex>
       )}
 
-      {/* messages */}
+      {/* Enhanced messages container */}
       <Box
         ref={messagesContainerRef}
         flex="1 1 0"
         overflowY="auto"
-        px={{ base: 2, md: 3 }}
-        py={{ base: 1, md: 2 }}
+        px={chatConfig.container.padding}
+        py={{ xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 }}
         bg={containerBg}
         position="relative"
+        // Enhanced scrolling performance
+        sx={{
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          scrollBehavior: prefersReducedMotion ? 'auto' : 'smooth',
+          // Enhanced mobile support
+          '@media (max-width: 768px)': {
+            paddingX: 2,
+            paddingY: 1,
+          }
+        }}
+        // Enhanced accessibility
+        role="log"
+        aria-label="Chat messages"
+        aria-live="polite"
+        aria-atomic="false"
       >
-        <Flex direction="column" align="stretch" gap={{ base: 3, md: 4 }}>
+        <Flex
+          direction="column"
+          align="stretch"
+          gap={chatConfig.container.gap}
+          // Enhanced performance
+          sx={{
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+          }}
+        >
           {msgs.map((m, index) => {
             // Check if this is the first assistant message
             const isFirstAssistantMessage = m.role === 'assistant' &&
@@ -178,9 +289,16 @@ export function ChatPage() {
               <Box
                 key={m.id}
                 id={`message-${m.id}`}
-                px={{ base: 1, md: 0 }}
+                px={{ xs: 0.5, sm: 1, md: 0 }}
+                // Enhanced accessibility
+                role="article"
+                aria-label={`Message ${index + 1} from ${m.role}`}
               >
-                <ChatMessage message={m} isFirstAssistantMessage={isFirstAssistantMessage} isHighlighted={false} />
+                <ChatMessage
+                  message={m}
+                  isFirstAssistantMessage={isFirstAssistantMessage}
+                  isHighlighted={false}
+                />
               </Box>
             );
           })}
@@ -201,28 +319,45 @@ export function ChatPage() {
         </Flex>
       </Box>
 
-      {/* Scroll to bottom button */}
+      {/* Enhanced Scroll to bottom button */}
       {showScrollToBottom && (
         <IconButton
-          aria-label="Scroll to bottom"
+          aria-label="Scroll to bottom of chat"
           icon={<PiArrowUpBold />}
           position="absolute"
-          bottom={{ base: "100px", md: "120px" }}
-          right={{ base: "16px", md: "20px" }}
-          size={{ base: "sm", md: "md" }}
+          bottom={chatConfig.scrollButton.bottom}
+          right={chatConfig.scrollButton.right}
+          size={chatConfig.scrollButton.size}
           borderRadius="full"
           bg={scrollButtonBg}
           color={scrollButtonColor}
           boxShadow="lg"
+          transition={animationConfig.transition}
+          // Enhanced touch targets
+          minW={{ xs: "44px", sm: "46px", md: "48px", lg: "52px" }}
+          h={{ xs: "44px", sm: "46px", md: "48px", lg: "52px" }}
           _hover={{
             bg: scrollButtonHoverBg,
-            transform: "translateY(-2px)"
+            transform: animationConfig.transform,
+            boxShadow: "xl"
+          }}
+          _focus={{
+            outline: "2px solid #4F9CF9",
+            outlineOffset: "2px",
+            bg: scrollButtonHoverBg
+          }}
+          _active={{
+            transform: prefersReducedMotion ? 'none' : 'scale(0.95)',
+            bg: scrollButtonHoverBg
           }}
           onClick={scrollToBottom}
           zIndex={10}
           transform="rotate(180deg)"
-          minW={{ base: "40px", md: "48px" }}
-          h={{ base: "40px", md: "48px" }}
+          // Enhanced touch interactions
+          sx={{
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+          }}
         />
       )}
 

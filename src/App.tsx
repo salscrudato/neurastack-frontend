@@ -17,10 +17,10 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   // Check if current route should show header
   const isSplashPage = location.pathname === '/';
 
-  // Modern header styling - light mode only
-  const headerBg = 'rgba(255, 255, 255, 0.95)';
-  const headerBorderColor = 'rgba(229, 231, 235, 0.8)';
-  const headerBoxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+  // Modern header styling - transparent
+  const headerBg = 'transparent';
+  const headerBorderColor = 'transparent';
+  const headerBoxShadow = 'none';
 
   // Simplified transitions for streamlined app structure
   const getTransitionVariants = (pathname: string) => {
@@ -56,7 +56,6 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           zIndex={10}
           w="100%"
           bg={headerBg}
-          backdropFilter="blur(10px)"
           borderBottom="1px solid"
           borderColor={headerBorderColor}
           boxShadow={headerBoxShadow}
