@@ -10,43 +10,39 @@ import FitnessLevelStep from './FitnessLevelStep';
 import GoalsStep from './GoalsStep';
 import EquipmentStep from './EquipmentStep';
 import TimeStep from './TimeStep';
+import { memo, useMemo, useCallback } from 'react';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.div;
 
-const stepLabels = [
-  'Choose your fitness level',
-  'Select your goals',
-  'Pick your equipment',
-  'Set your schedule'
-];
+
 
 interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
+const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const { currentStep, totalSteps, nextStep, prevStep } = useFitnessStore();
-  
+
   const bgColor = useColorModeValue('gray.50', 'gray.900');
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentStep < totalSteps - 1) {
       nextStep();
     } else {
       onComplete();
     }
-  };
+  }, [currentStep, totalSteps, nextStep, onComplete]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     prevStep();
-  };
+  }, [prevStep]);
 
-  const renderStep = () => {
+  const currentStepComponent = useMemo(() => {
     switch (currentStep) {
       case 0:
         return <FitnessLevelStep onNext={handleNext} />;
       case 1:
-        return <GoalsStep onNext={handleNext} onPrev={handlePrev} />;
+        return <GoalsStep onNext={handleNext} onBack={handlePrev} />;
       case 2:
         return <EquipmentStep onNext={handleNext} onPrev={handlePrev} />;
       case 3:
@@ -54,7 +50,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       default:
         return <FitnessLevelStep onNext={handleNext} />;
     }
-  };
+  }, [currentStep, handleNext, handlePrev]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -109,7 +105,6 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           <ProgressIndicator
             currentStep={currentStep}
             totalSteps={totalSteps}
-            stepLabels={stepLabels}
           />
         </Box>
 
@@ -147,16 +142,19 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                   handlePrev();
                 }
               }}
-              w="100%"
-              minH="100%"
-              display="flex"
-              flexDirection="column"
-              justifyContent="flex-start"
-              alignItems="center"
-              py={4}
+              style={{
+                width: "100%",
+                minHeight: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-start",
+                alignItems: "center",
+                paddingTop: "1rem",
+                paddingBottom: "1rem"
+              }}
             >
               <Box w="100%" maxW="400px" flex={1}>
-                {renderStep()}
+                {currentStepComponent}
               </Box>
             </MotionBox>
           </AnimatePresence>
@@ -164,4 +162,6 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       </Container>
     </Box>
   );
-}
+});
+
+export default OnboardingWizard;

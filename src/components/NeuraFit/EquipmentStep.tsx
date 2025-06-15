@@ -1,68 +1,16 @@
+import { useState } from 'react';
 import {
   VStack,
   Text,
   Button,
-  useColorModeValue,
   Icon,
-  HStack,
   Wrap,
   WrapItem,
   Badge,
 } from '@chakra-ui/react';
-import {
-  PiPersonBold,
-  PiHeartBold,
-  PiTargetBold,
-  PiTrophyBold,
-  PiPlayBold,
-  PiBarbell,
-} from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
-
-const equipmentOptions = [
-  {
-    value: 'none',
-    label: 'No Equipment',
-    description: 'Bodyweight exercises only',
-    icon: PiPersonBold,
-    color: 'green',
-  },
-  {
-    value: 'dumbbells',
-    label: 'Dumbbells',
-    description: 'Adjustable or fixed weights',
-    icon: PiBarbell,
-    color: 'blue',
-  },
-  {
-    value: 'resistance_bands',
-    label: 'Resistance Bands',
-    description: 'Elastic bands for strength training',
-    icon: PiTargetBold,
-    color: 'purple',
-  },
-  {
-    value: 'yoga_mat',
-    label: 'Yoga Mat',
-    description: 'For floor exercises and stretching',
-    icon: PiPlayBold,
-    color: 'pink',
-  },
-  {
-    value: 'cardio_machine',
-    label: 'Cardio Machine',
-    description: 'Treadmill, bike, elliptical, etc.',
-    icon: PiHeartBold,
-    color: 'red',
-  },
-  {
-    value: 'kettlebell',
-    label: 'Kettlebell',
-    description: 'For functional strength training',
-    icon: PiTrophyBold,
-    color: 'orange',
-  },
-];
+import equipmentOptions, { type EquipmentOption } from '../../constants/equipmentOptions';
+import NavigationButtons from './NavigationButtons';
 
 interface EquipmentStepProps {
   onNext: () => void;
@@ -71,75 +19,104 @@ interface EquipmentStepProps {
 
 export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
   const { profile, updateProfile } = useFitnessStore();
-  
-  const textColor = useColorModeValue('gray.900', 'gray.100');
-  const subtextColor = useColorModeValue('gray.600', 'gray.400');
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  const handleEquipmentToggle = (equipmentValue: string) => {
+  // Updated color scheme to match new design system (light mode only as per user preferences)
+  const textColor = '#0F172A'; // text.primary
+  const subtextColor = '#64748B'; // text.tertiary
+  const cardBg = '#FFFFFF'; // surface.primary
+  const borderColor = '#E2E8F0'; // border.medium
+  const hoverBg = '#F8FAFC'; // surface.secondary
+
+  // State to track last changed equipment for aria-live announcement
+  const [lastChanged, setLastChanged] = useState<string | null>(null);
+
+  // Handle toggling equipment selection with exclusive logic for "No Equipment"
+  const handleEquipmentToggle = (equipmentCode: string) => {
     const currentEquipment = profile.equipment || [];
-    const isSelected = currentEquipment.includes(equipmentValue);
+    const isSelected = currentEquipment.includes(equipmentCode);
     
-    let newEquipment;
+    let newEquipment: string[];
     if (isSelected) {
-      newEquipment = currentEquipment.filter(eq => eq !== equipmentValue);
+      newEquipment = currentEquipment.filter(eq => eq !== equipmentCode);
     } else {
-      // If selecting "none", clear all other equipment
-      if (equipmentValue === 'none') {
-        newEquipment = ['none'];
+      if (equipmentCode === 'NO') {
+        newEquipment = ['NO'];
       } else {
-        // If selecting other equipment, remove "none" if it exists
-        newEquipment = currentEquipment.filter(eq => eq !== 'none');
-        newEquipment = [...newEquipment, equipmentValue];
+        newEquipment = currentEquipment.filter(eq => eq !== 'NO');
+        newEquipment = [...newEquipment, equipmentCode];
       }
     }
-    
     updateProfile({ equipment: newEquipment });
+    setLastChanged(equipmentOptions.find((opt: EquipmentOption) => opt.code === equipmentCode)?.label || null);
   };
 
-  const isEquipmentSelected = (equipmentValue: string) => {
-    return profile.equipment?.includes(equipmentValue) || false;
+  // Check if equipment is selected by code
+  const isEquipmentSelected = (equipmentCode: string) => {
+    return profile.equipment?.includes(equipmentCode) || false;
   };
 
   const canProceed = profile.equipment && profile.equipment.length > 0;
 
+  // Accessibility label id prefix
+  const labelIdPrefix = "equipment-label-";
+
+  // Compose announcement text for screen readers
+  const selectedCount = profile.equipment?.length || 0;
+  const announcement = lastChanged
+    ? `${selectedCount} item${selectedCount !== 1 ? 's' : ''} selected. Last changed: ${lastChanged}.`
+    : selectedCount > 0
+      ? `${selectedCount} item${selectedCount !== 1 ? 's' : ''} selected.`
+      : 'No equipment selected.';
+
   return (
-    <VStack spacing={6} align="stretch" w="100%">
+    <VStack spacing={4} align="stretch" w="100%">
       {/* Header */}
-      <VStack spacing={2} textAlign="center">
-        <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+      <VStack spacing={2} textAlign="center" mb={2}>
+        <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color={textColor}>
           What equipment do you have?
         </Text>
-        <Text fontSize="md" color={subtextColor}>
+        <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor}>
           Select all available equipment to personalize your workouts
         </Text>
-        {profile.equipment && profile.equipment.length > 0 && (
-          <Badge colorScheme="blue" variant="subtle">
-            {profile.equipment.length} item{profile.equipment.length !== 1 ? 's' : ''} selected
+        {selectedCount > 0 && (
+          <Badge colorScheme="blue" variant="subtle" mt={1}>
+            {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
           </Badge>
         )}
       </VStack>
 
+      {/* Aria-live region for announcing selection changes */}
+      <Text
+        aria-live="polite"
+        role="status"
+        srOnly
+        mt={-4}
+        mb={2}
+        id="equipment-selection-status"
+      >
+        {announcement}
+      </Text>
+
       {/* Equipment grid */}
-      <Wrap spacing={3} justify="center">
-        {equipmentOptions.map((equipment) => {
-          const isSelected = isEquipmentSelected(equipment.value);
-          
+      <Wrap spacing={{ base: 2, md: 3 }} justify="center" aria-describedby="equipment-selection-status">
+        {equipmentOptions.map((equipment: EquipmentOption) => {
+          const isSelected = isEquipmentSelected(equipment.code);
+          const labelId = `${labelIdPrefix}${equipment.code}`;
+
           return (
-            <WrapItem key={equipment.value}>
+            <WrapItem key={equipment.code}>
               <Button
-                w={{ base: "140px", md: "160px" }}
-                h="120px"
-                bg={isSelected ? `${equipment.color}.50` : cardBg}
+                w={{ base: "130px", md: "150px" }}
+                h={{ base: "100px", md: "110px" }}
+                bg={isSelected ? `${equipment.color}.100` : cardBg}
                 border="2px solid"
                 borderColor={isSelected ? `${equipment.color}.500` : borderColor}
                 borderRadius="xl"
-                onClick={() => handleEquipmentToggle(equipment.value)}
+                onClick={() => handleEquipmentToggle(equipment.code)}
                 _hover={{
-                  bg: isSelected 
-                    ? `${equipment.color}.100` 
-                    : useColorModeValue('gray.50', 'gray.700'),
+                  bg: isSelected
+                    ? `${equipment.color}.200`
+                    : hoverBg,
                   transform: 'translateY(-2px)',
                   boxShadow: 'lg',
                 }}
@@ -150,6 +127,10 @@ export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
                 variant="ghost"
                 flexDirection="column"
                 p={4}
+                role="checkbox"
+                aria-checked={isSelected}
+                aria-labelledby={labelId}
+                data-cy={`equipment-card-${equipment.code}`}
               >
                 <VStack spacing={2}>
                   <Icon
@@ -158,6 +139,7 @@ export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
                     color={isSelected ? `${equipment.color}.500` : subtextColor}
                   />
                   <Text
+                    id={labelId}
                     fontSize="sm"
                     fontWeight="semibold"
                     color={textColor}
@@ -174,25 +156,11 @@ export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
       </Wrap>
 
       {/* Navigation buttons */}
-      <HStack spacing={4} justify="space-between" pt={4}>
-        <Button
-          variant="outline"
-          onClick={onPrev}
-          size="lg"
-          flex={1}
-        >
-          Back
-        </Button>
-        <Button
-          colorScheme="blue"
-          onClick={onNext}
-          size="lg"
-          flex={1}
-          isDisabled={!canProceed}
-        >
-          Continue
-        </Button>
-      </HStack>
+      <NavigationButtons
+        onBack={onPrev}
+        onNext={onNext}
+        canProceed={canProceed}
+      />
     </VStack>
   );
 }

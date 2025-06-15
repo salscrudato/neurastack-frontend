@@ -23,7 +23,7 @@ import {
   PiTargetBold,
   PiLightningBold,
 } from 'react-icons/pi';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import { neuraStackClient } from '../../lib/neurastack-client';
@@ -50,17 +50,23 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
   const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
 
   const toast = useToast();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const textColor = useColorModeValue('gray.800', 'white');
-  const subtextColor = useColorModeValue('gray.600', 'gray.300');
-  const activeColor = useColorModeValue('blue.500', 'blue.300');
-  const completedColor = useColorModeValue('green.500', 'green.300');
 
-  // Timer effect for exercise and rest periods
+  // Memoized color values for better performance
+  const colors = useMemo(() => ({
+    bg: useColorModeValue('white', 'gray.800'),
+    border: useColorModeValue('gray.200', 'gray.600'),
+    text: useColorModeValue('gray.800', 'white'),
+    subtext: useColorModeValue('gray.600', 'gray.300'),
+    active: useColorModeValue('blue.500', 'blue.300'),
+    completed: useColorModeValue('green.500', 'green.300')
+  }), []);
+
+  const { bg: bgColor, border: borderColor, text: textColor, subtext: subtextColor, active: activeColor, completed: completedColor } = colors;
+
+  // Optimized timer effect for exercise and rest periods with better cleanup
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
+    let interval: NodeJS.Timeout | null = null;
+
     if (isWorkoutActive && currentWorkout) {
       interval = setInterval(() => {
         if (isResting) {
@@ -79,12 +85,19 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
     };
   }, [isWorkoutActive, isResting, currentWorkout]);
 
-  const generateWorkout = async () => {
+  const generateWorkout = useCallback(async () => {
+    if (isGenerating) return; // Prevent multiple simultaneous generations
+
     setIsGenerating(true);
+    const startTime = performance.now();
+
     try {
       // Configure the new API client with session info
       neuraStackClient.configure({
@@ -137,6 +150,10 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
       
       if (workoutData) {
         setCurrentWorkout(workoutData);
+
+        const endTime = performance.now();
+        console.log(`Workout generated in ${endTime - startTime}ms`);
+
         toast({
           title: 'Workout Generated!',
           description: `Your personalized ${workoutData.name} is ready.`,
@@ -159,9 +176,9 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
     } finally {
       setIsGenerating(false);
     }
-  };
+  }, [isGenerating, profile, user?.uid, toast]);
 
-  const parseWorkoutResponse = (response: string): WorkoutPlan | null => {
+  const parseWorkoutResponse = useCallback((response: string): WorkoutPlan | null => {
     try {
       // Try to extract JSON from the response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -184,9 +201,9 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
       console.error('Error parsing workout response:', error);
       return createFallbackWorkout();
     }
-  };
+  }, [profile]);
 
-  const createFallbackWorkout = (): WorkoutPlan => {
+  const createFallbackWorkout = useCallback((): WorkoutPlan => {
     const basicExercises: Exercise[] = [
       {
         name: 'Bodyweight Squats',
@@ -229,9 +246,9 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
       createdAt: new Date(),
       completedAt: null,
     };
-  };
+  }, [profile]);
 
-  const startWorkout = () => {
+  const startWorkout = useCallback(() => {
     setIsWorkoutActive(true);
     setCurrentExerciseIndex(0);
     setExerciseTimer(0);
@@ -243,7 +260,7 @@ export default function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutG
       duration: 2000,
       isClosable: true,
     });
-  };
+  }, [toast]);
 
   const completeExercise = () => {
     if (!currentWorkout) return;

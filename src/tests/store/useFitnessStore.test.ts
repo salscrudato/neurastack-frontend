@@ -1,5 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useFitnessStore } from '../../store/useFitnessStore';
+
+// Mock the Firestore service
+vi.mock('../../services/fitnessDataService', () => ({
+  saveFitnessProfile: vi.fn().mockResolvedValue(undefined),
+  loadFitnessProfile: vi.fn().mockResolvedValue(null),
+  updateFitnessLevel: vi.fn().mockResolvedValue(undefined),
+  saveWorkoutPlan: vi.fn().mockResolvedValue(undefined),
+  loadWorkoutPlans: vi.fn().mockResolvedValue([]),
+  subscribeFitnessProfile: vi.fn().mockReturnValue(() => {}),
+  trackFitnessLevelSelection: vi.fn()
+}));
 import type { WorkoutPlan } from '../../lib/types';
 
 describe('useFitnessStore', () => {
@@ -24,7 +35,7 @@ describe('useFitnessStore', () => {
 
   it('updates profile correctly', () => {
     const store = useFitnessStore.getState();
-    
+
     store.updateProfile({
       fitnessLevel: 'intermediate',
       goals: ['weight_loss', 'muscle_gain'],
@@ -35,6 +46,28 @@ describe('useFitnessStore', () => {
     expect(updatedState.profile.fitnessLevel).toBe('intermediate');
     expect(updatedState.profile.goals).toEqual(['weight_loss', 'muscle_gain']);
     expect(updatedState.profile.equipment).toEqual(['dumbbells', 'resistance_bands']);
+  });
+
+  it('updates fitness level with token-efficient codes', async () => {
+    const store = useFitnessStore.getState();
+
+    // Test beginner level
+    await store.updateFitnessLevel('beginner', 'B');
+    let state = useFitnessStore.getState();
+    expect(state.profile.fitnessLevel).toBe('beginner');
+    expect(state.profile.fitnessLevelCode).toBe('B');
+
+    // Test intermediate level
+    await store.updateFitnessLevel('intermediate', 'I');
+    state = useFitnessStore.getState();
+    expect(state.profile.fitnessLevel).toBe('intermediate');
+    expect(state.profile.fitnessLevelCode).toBe('I');
+
+    // Test advanced level
+    await store.updateFitnessLevel('advanced', 'A');
+    state = useFitnessStore.getState();
+    expect(state.profile.fitnessLevel).toBe('advanced');
+    expect(state.profile.fitnessLevelCode).toBe('A');
   });
 
   it('navigates through onboarding steps correctly', () => {

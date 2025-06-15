@@ -7,15 +7,18 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
 
-/** Firebase config, provided via Vite environment variables */
+/** Firebase config for NeuraStack AI Frontend */
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY as string,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID as string,
+  apiKey: "AIzaSyCfyS_9czRJnYUsf3LESgSEQftmxSAUaGw",
+  authDomain: "neurastackai-frontend.firebaseapp.com",
+  databaseURL: "https://neurastackai-frontend-default-rtdb.firebaseio.com",
+  projectId: "neurastackai-frontend",
+  storageBucket: "neurastackai-frontend.firebasestorage.app",
+  messagingSenderId: "1049090262427",
+  appId: "1:1049090262427:web:63e1d05c8df0388a1d0d3e",
+  measurementId: "G-YP4HY7MFT2"
 };
 
 /** Initialize Firebase once */
@@ -26,3 +29,6 @@ export const auth: Auth = getAuth(app);
 
 /** Firestore database singleton */
 export const db = getFirestore(app);
+
+/** Analytics singleton */
+export const analytics = getAnalytics(app);

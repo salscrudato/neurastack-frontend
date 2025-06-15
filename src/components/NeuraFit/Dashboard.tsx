@@ -31,36 +31,31 @@ interface DashboardProps {
 
 export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgress }: DashboardProps) {
   const { profile } = useFitnessStore();
-  
+
   const textColor = useColorModeValue('gray.900', 'gray.100');
   const subtextColor = useColorModeValue('gray.600', 'gray.400');
   const cardBg = useColorModeValue('white', 'gray.800');
   const bgColor = useColorModeValue('gray.50', 'gray.900');
 
-  const totalMinutesPerWeek = profile.timeAvailability.daysPerWeek * profile.timeAvailability.minutesPerSession;
+  // Calculate total weekly time commitment
+  const totalMinutesPerWeek = (profile.timeAvailability?.daysPerWeek || 0) * (profile.timeAvailability?.minutesPerSession || 0);
 
-  const getGoalLabels = (goals: string[]) => {
-    const goalMap: Record<string, string> = {
-      'lose_weight': 'Lose Weight',
-      'build_muscle': 'Build Muscle',
-      'improve_cardio': 'Improve Cardio',
-      'increase_flexibility': 'Increase Flexibility',
-      'general_fitness': 'General Fitness',
-      'athletic_performance': 'Athletic Performance',
-    };
-    return goals.map(goal => goalMap[goal] || goal);
+  // Helper function to format fitness level
+  const formatFitnessLevel = (level: string) => {
+    return level.charAt(0).toUpperCase() + level.slice(1);
   };
 
-  const getEquipmentLabels = (equipment: string[]) => {
-    const equipmentMap: Record<string, string> = {
-      'none': 'No Equipment',
-      'dumbbells': 'Dumbbells',
-      'resistance_bands': 'Resistance Bands',
-      'yoga_mat': 'Yoga Mat',
-      'cardio_machine': 'Cardio Machine',
-      'kettlebell': 'Kettlebell',
+  // Helper function to format goal codes
+  const formatGoalCode = (code: string) => {
+    const goalMap: Record<string, string> = {
+      'LW': 'Lose Weight',
+      'BM': 'Build Muscle',
+      'IC': 'Improve Cardio',
+      'IF': 'Improve Flexibility',
+      'GF': 'General Fitness',
+      'AP': 'Athletic Performance'
     };
-    return equipment.map(eq => equipmentMap[eq] || eq);
+    return goalMap[code] || code;
   };
 
   return (
@@ -72,12 +67,18 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
       <VStack spacing={6} p={{ base: 4, md: 6 }} maxW="4xl" mx="auto" minH="100%">
-        {/* Welcome header */}
-        <VStack spacing={2} textAlign="center" w="100%">
-          <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+        {/* Welcome header - Mobile Optimized */}
+        <VStack spacing={2} textAlign="center" w="100%" py={2}>
+          <Text
+            fontSize={{ base: "xl", md: "2xl" }}
+            fontWeight="bold"
+            bgGradient="linear(to-r, blue.400, purple.500)"
+            bgClip="text"
+            letterSpacing="tight"
+          >
             neurafit
           </Text>
-          <Text fontSize="md" color={subtextColor}>
+          <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor}>
             Where your personalized fitness journey begins.
           </Text>
         </VStack>
@@ -89,7 +90,7 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
               <Stat>
                 <StatLabel fontSize="xs" color={subtextColor}>Fitness Level</StatLabel>
                 <StatNumber fontSize="lg" color="blue.500">
-                  {profile.fitnessLevel.charAt(0).toUpperCase() + profile.fitnessLevel.slice(1)}
+                  {formatFitnessLevel(profile.fitnessLevel)}
                 </StatNumber>
               </Stat>
             </CardBody>
@@ -158,9 +159,15 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
                     Fitness Goals
                   </Text>
                   <HStack wrap="wrap" spacing={2}>
-                    {getGoalLabels(profile.goals).map((goal, index) => (
-                      <Badge key={index} colorScheme="blue" variant="subtle">
-                        {goal}
+                    {/* Display short codes and use title attribute for full label tooltip */}
+                    {profile.goals.map((goalCode, index) => (
+                      <Badge
+                        key={index}
+                        colorScheme="blue"
+                        variant="subtle"
+                        title={formatGoalCode(goalCode)}
+                      >
+                        {goalCode}
                       </Badge>
                     ))}
                   </HStack>
@@ -173,9 +180,15 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
                     Available Equipment
                   </Text>
                   <HStack wrap="wrap" spacing={2}>
-                    {getEquipmentLabels(profile.equipment).map((equipment, index) => (
-                      <Badge key={index} colorScheme="green" variant="subtle">
-                        {equipment}
+                    {/* Display short codes and use title attribute for full label tooltip */}
+                    {profile.equipment.map((equipmentCode, index) => (
+                      <Badge
+                        key={index}
+                        colorScheme="green"
+                        variant="subtle"
+                        title={equipmentCode}
+                      >
+                        {equipmentCode}
                       </Badge>
                     ))}
                   </HStack>
@@ -188,7 +201,7 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
                     Workout Schedule
                   </Text>
                   <Text fontSize="sm" color={subtextColor}>
-                    {profile.timeAvailability.daysPerWeek} days per week, {profile.timeAvailability.minutesPerSession} minutes per session
+                    {profile.timeAvailability?.daysPerWeek || 0} days per week, {profile.timeAvailability?.minutesPerSession || 0} minutes per session
                   </Text>
                 </Box>
               </VStack>
@@ -196,15 +209,24 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
           </CardBody>
         </Card>
 
-        {/* Action buttons */}
+        {/* Action buttons - Mobile Optimized */}
         <VStack spacing={4} w="100%">
           <Button
             colorScheme="blue"
-            size="lg"
+            size={{ base: "md", md: "lg" }}
             w="100%"
             leftIcon={<Icon as={PiPlayBold} />}
             onClick={onStartWorkout}
-            py={6}
+            py={{ base: 4, md: 6 }}
+            fontSize={{ base: "md", md: "lg" }}
+            _hover={{
+              transform: "translateY(-1px)",
+              boxShadow: "lg",
+            }}
+            _active={{
+              transform: "translateY(0)",
+            }}
+            transition="all 0.2s"
           >
             Generate AI Workout
           </Button>
@@ -213,10 +235,11 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
             <Button
               variant="outline"
               colorScheme="blue"
-              size="md"
+              size={{ base: "sm", md: "md" }}
               flex={1}
               leftIcon={<Icon as={PiTrophyBold} />}
               onClick={onViewProgress}
+              fontSize={{ base: "sm", md: "md" }}
             >
               View Progress
             </Button>
@@ -224,16 +247,17 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
             <Button
               variant="outline"
               colorScheme="gray"
-              size="md"
+              size={{ base: "sm", md: "md" }}
               flex={1}
               leftIcon={<Icon as={PiPersonBold} />}
               onClick={onEditProfile}
+              fontSize={{ base: "sm", md: "md" }}
             >
               Edit Profile
             </Button>
           </HStack>
 
-          <Text fontSize="sm" color={subtextColor} textAlign="center">
+          <Text fontSize={{ base: "xs", md: "sm" }} color={subtextColor} textAlign="center" px={2}>
             AI-powered workouts tailored to your fitness level and goals.
           </Text>
         </VStack>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Box, Flex } from "@chakra-ui/react";
 import AddToHomeButton from "./components/AddToHomeScreen";
 import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
+import { useFitnessSync } from "./hooks/useFitnessSync";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { Header } from "./components/Header";
 import UpdateNotification from "./components/UpdateNotification";
@@ -110,6 +111,9 @@ const Fallback = () => (
 export default function App() {
   // Disable performance monitoring to reduce console noise
   usePerformanceLogger();
+
+  // Initialize fitness data sync with Firestore
+  useFitnessSync();
 
   return (
     <PageContentWrapper>

@@ -541,6 +541,7 @@ export interface ChatRequest {
 
 export interface FitnessProfile {
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  fitnessLevelCode?: 'B' | 'I' | 'A'; // Token-efficient storage codes
   goals: string[];
   equipment: string[];
   availableTime: number; // minutes per session
