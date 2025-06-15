@@ -56,7 +56,7 @@ body {
   overflow-y: scroll;
 }
 
-/* Prevent zoom on input focus (iOS Safari) */
+/* Enhanced input handling for mobile devices */
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="email"],
@@ -65,6 +65,26 @@ body {
   textarea,
   select {
     font-size: 16px !important;
+    /* Enhanced touch interactions */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Enhanced textarea specific optimizations */
+  textarea {
+    /* Improved scrolling on mobile */
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    resize: none;
+
+    /* Better text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    word-wrap: break-word;
+    white-space: pre-wrap;
   }
 }
 
@@ -76,13 +96,39 @@ body {
   }
 }
 
-/* Ensure proper touch targets */
+/* Enhanced touch targets and interactions */
 @media screen and (max-width: 768px) {
   button,
   .chakra-button,
   .chakra-icon-button {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px;
+    min-width: 48px;
+    /* Enhanced touch interactions */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    /* Better visual feedback */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Enhanced input group styling for mobile */
+  .chakra-input__group {
+    /* Better touch interactions */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Enhanced textarea styling for mobile */
+  .chakra-textarea {
+    /* Improved mobile scrolling */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+
+    /* Better text selection */
+    -webkit-user-select: text;
+    user-select: text;
+
+    /* Enhanced visual feedback */
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 

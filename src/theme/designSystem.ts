@@ -216,18 +216,22 @@ export const componentStyles = {
   Input: {
     baseStyle: {
       field: {
-        borderRadius: 'xl',
-        borderWidth: '2px',
-        borderColor: '#E2E8F0',
-        bg: '#FFFFFF',
-        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+        borderRadius: '3xl', // More rounded for elegant design
+        borderWidth: '1px',
+        borderColor: 'rgba(203, 213, 225, 0.8)',
+        bg: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(8px)',
+        transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
         _focus: {
           borderColor: '#4F9CF9',
-          boxShadow: '0 0 0 3px rgba(79, 156, 249, 0.1)',
-          bg: '#FFFFFF',
+          boxShadow: '0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15)',
+          bg: 'rgba(255, 255, 255, 0.98)',
+          transform: 'translateY(-1px)',
         },
         _hover: {
-          borderColor: '#CBD5E1',
+          borderColor: '#94A3B8',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+          transform: 'translateY(-1px)',
         },
         _placeholder: {
           color: '#94A3B8',
@@ -237,14 +241,41 @@ export const componentStyles = {
     variants: {
       glass: {
         field: {
-          bg: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
+          bg: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          borderRadius: '3xl',
           _focus: {
-            bg: 'rgba(255, 255, 255, 0.95)',
+            bg: 'rgba(255, 255, 255, 0.98)',
             borderColor: '#4F9CF9',
+            boxShadow: '0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15)',
           },
         },
+      },
+    },
+  },
+
+  Textarea: {
+    baseStyle: {
+      borderRadius: '3xl', // Elegant rounded design
+      borderWidth: '1px',
+      borderColor: 'rgba(203, 213, 225, 0.8)',
+      bg: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(8px)',
+      transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+      _focus: {
+        borderColor: '#4F9CF9',
+        boxShadow: '0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15)',
+        bg: 'rgba(255, 255, 255, 0.98)',
+        transform: 'translateY(-1px)',
+      },
+      _hover: {
+        borderColor: '#94A3B8',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+        transform: 'translateY(-1px)',
+      },
+      _placeholder: {
+        color: '#94A3B8',
       },
     },
   },

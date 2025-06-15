@@ -354,6 +354,104 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+/* Enhanced Chat Input Styling with Elegant Rounded Design */
+.chat-input-container {
+  /* Performance optimizations */
+  will-change: transform;
+  backface-visibility: hidden;
+
+  /* Enhanced mobile support */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  /* Elegant rounded design */
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-input-focused {
+  /* Enhanced focus state with elegant elevation */
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px #3b82f6, 0 16px 40px rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+}
+
+.chat-input-container:hover {
+  /* Subtle hover state */
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: #94A3B8;
+}
+
+.chat-input-textarea {
+  /* Enhanced scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+.chat-input-textarea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.chat-input-textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-input-textarea::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 2px;
+}
+
+.chat-input-textarea::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Enhanced send button animations */
+.chat-send-button {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+}
+
+.chat-send-button:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.chat-send-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.chat-send-button-ready {
+  background: #374151; /* Dark grey */
+  box-shadow: 0 2px 8px rgba(55, 65, 81, 0.3);
+}
+
+.chat-send-button-ready:hover {
+  background: #1F2937; /* Darker grey on hover */
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.4);
+}
+
+/* Smaller circular send button styling */
+.chat-send-button-small {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  border-radius: 50% !important;
+}
+
+@media screen and (min-width: 768px) {
+  .chat-send-button-small {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+}
+
 /* Mobile-optimized AI response formatting */
 @media (max-width: 768px) {
   .ai-response-container {
@@ -451,17 +549,25 @@
   }
 }
 
-/* Modern form elements */
+/* Modern form elements with elegant rounded design */
 .modern-input {
-  background: #FFFFFF;
-  border: 2px solid #E2E8F0;
-  border-radius: 0.75rem;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 1.5rem; /* More rounded for elegance */
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
 }
 
 .modern-input:focus {
   border-color: #4F9CF9;
-  box-shadow: 0 0 0 3px rgba(79, 156, 249, 0.1);
+  box-shadow: 0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15);
+  transform: translateY(-1px);
+}
+
+.modern-input:hover {
+  border-color: #94A3B8;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
 }
 
 .modern-button {

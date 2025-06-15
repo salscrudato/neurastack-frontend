@@ -109,7 +109,7 @@ const createMarkdownComponents = (fontSize: any) => ({
       mb={4}
       mt={6}
       lineHeight="1.3"
-      sx={{ '&:first-child': { mt: 0 } }}
+      sx={{ '&:first-of-type': { mt: 0 } }}
     >
       {children}
     </Text>
@@ -124,7 +124,7 @@ const createMarkdownComponents = (fontSize: any) => ({
       mb={3}
       mt={5}
       lineHeight="1.3"
-      sx={{ '&:first-child': { mt: 0 } }}
+      sx={{ '&:first-of-type': { mt: 0 } }}
     >
       {children}
     </Text>
@@ -139,7 +139,7 @@ const createMarkdownComponents = (fontSize: any) => ({
       mb={2}
       mt={4}
       lineHeight="1.3"
-      sx={{ '&:first-child': { mt: 0 } }}
+      sx={{ '&:first-of-type': { mt: 0 } }}
     >
       {children}
     </Text>
@@ -462,7 +462,7 @@ export const UnifiedAIResponse = memo(({
         wordWrap: 'break-word',
         overflowWrap: 'break-word',
         hyphens: 'auto',
-        '& > *:first-child': { mt: 0 },
+        '& > *:first-of-type': { mt: 0 },
         '& > *:last-child': { mb: 0 },
       }}
     >
