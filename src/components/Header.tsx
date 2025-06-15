@@ -1,12 +1,18 @@
 import {
   Flex, IconButton, Box, Text, Avatar,
   Menu, MenuButton, MenuList, MenuItem, MenuDivider,
-  useToast, Tooltip,
+  useToast, Tooltip, Drawer, DrawerBody, DrawerHeader,
+  DrawerOverlay, DrawerContent, DrawerCloseButton,
+  useDisclosure, VStack, useBreakpointValue,
   HStack, Icon
 } from '@chakra-ui/react';
-import { PiUserLight, PiSignOutBold, PiUserCircleBold, PiArrowsClockwise } from 'react-icons/pi';
+import {
+  PiUserLight, PiSignOutBold, PiUserCircleBold,
+  PiListBold, PiChatCircleBold, PiClockCounterClockwiseBold,
+  PiHeartBold, PiHouseBold
+} from 'react-icons/pi';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
@@ -19,8 +25,19 @@ export function Header() {
   const setUser = useAuthStore(s => s.setUser);
   const user = useAuthStore(s => s.user);
   const prefersReducedMotion = useReducedMotion();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const toast = useToast();
+
+  // Responsive navigation menu configuration
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  // Performance optimization: Close drawer on route change
+  const prevPathname = useRef(location.pathname);
+  if (prevPathname.current !== location.pathname) {
+    prevPathname.current = location.pathname;
+    if (isOpen) onClose();
+  }
 
 
 
@@ -39,33 +56,39 @@ export function Header() {
     fontSize: { xs: "sm", sm: "md", md: "md", lg: "lg", xl: "lg" }
   }), []);
 
-  // Enhanced header info with memoization
-  const headerInfo = useMemo(() => {
-    const path = location.pathname;
-
-    if (path === '/chat') {
-      return {
-        text: 'CHAT',
-        destination: '/history',
-        fontSize: headerConfig.fontSize,
-        ariaLabel: 'Switch to chat history'
-      };
-    } else if (path === '/history') {
-      return {
-        text: 'HISTORY',
-        destination: '/chat',
-        fontSize: headerConfig.fontSize,
-        ariaLabel: 'Switch to chat'
-      };
-    } else {
-      return {
-        text: 'CHAT',
-        destination: '/history',
-        fontSize: headerConfig.fontSize,
-        ariaLabel: 'Switch to chat history'
-      };
+  // Navigation menu items configuration
+  const navigationItems = useMemo(() => [
+    {
+      label: 'Home',
+      path: '/',
+      icon: PiHouseBold,
+      description: 'Go to home page'
+    },
+    {
+      label: 'Chat',
+      path: '/chat',
+      icon: PiChatCircleBold,
+      description: 'Start a new conversation'
+    },
+    {
+      label: 'History',
+      path: '/history',
+      icon: PiClockCounterClockwiseBold,
+      description: 'View chat history'
+    },
+    {
+      label: 'NeuraFit',
+      path: '/neurafit',
+      icon: PiHeartBold,
+      description: 'AI-powered fitness training'
     }
-  }, [location.pathname, headerConfig.fontSize]);
+  ], []);
+
+  // Get current page info for accessibility
+  const currentPageInfo = useMemo(() => {
+    const currentItem = navigationItems.find(item => item.path === location.pathname);
+    return currentItem || navigationItems[1]; // Default to Chat
+  }, [location.pathname, navigationItems]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -90,17 +113,19 @@ export function Header() {
     }
   }, [toast, setUser, navigate]);
 
-  const handleNavigation = useCallback(() => {
-    navigate(headerInfo.destination);
-  }, [navigate, headerInfo.destination]);
+  // Enhanced navigation handlers
+  const handleNavigationClick = useCallback((path: string) => {
+    navigate(path);
+    onClose(); // Close mobile menu after navigation
+  }, [navigate, onClose]);
 
-  // Enhanced keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  // Enhanced keyboard navigation for menu items
+  const handleMenuKeyDown = useCallback((e: React.KeyboardEvent, path: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleNavigation();
+      handleNavigationClick(path);
     }
-  }, [handleNavigation]);
+  }, [handleNavigationClick]);
 
   const getUserDisplayName = useCallback(() => {
     if (!user) return 'Guest';
@@ -111,12 +136,91 @@ export function Header() {
 
   const isGuest = useMemo(() => user?.isAnonymous, [user?.isAnonymous]);
 
-  // Enhanced animation configuration
+  // Enhanced animation configuration with performance optimizations
   const animationConfig = useMemo(() => ({
     transition: prefersReducedMotion ? 'none' : 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
     transform: prefersReducedMotion ? 'none' : 'translateY(-1px)',
-    iconRotation: prefersReducedMotion ? 'none' : 'rotate(180deg) scale(1.1)'
+    iconRotation: prefersReducedMotion ? 'none' : 'rotate(180deg) scale(1.1)',
+    // GPU acceleration for smooth animations
+    willChange: prefersReducedMotion ? 'auto' : 'transform, opacity'
   }), [prefersReducedMotion]);
+
+  // Performance optimization: Memoize drawer content to prevent unnecessary re-renders
+  const drawerContent = useMemo(() => (
+    navigationItems.map((item) => {
+      const isActive = location.pathname === item.path;
+      const IconComponent = item.icon;
+
+      return (
+        <Box
+          key={item.path}
+          as="button"
+          role="button"
+          tabIndex={0}
+          onClick={() => handleNavigationClick(item.path)}
+          onKeyDown={(e: React.KeyboardEvent) => handleMenuKeyDown(e, item.path)}
+          w="100%"
+          p={4}
+          borderRadius="xl"
+          transition={animationConfig.transition}
+          bg={isActive ? "rgba(79, 156, 249, 0.1)" : "transparent"}
+          border={isActive ? "1px solid rgba(79, 156, 249, 0.2)" : "1px solid transparent"}
+          _hover={{
+            bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(248, 250, 252, 0.8)",
+            transform: prefersReducedMotion ? 'none' : 'translateX(4px)',
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
+          }}
+          _focus={{
+            outline: "2px solid #4F9CF9",
+            outlineOffset: "2px",
+            bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(248, 250, 252, 0.8)"
+          }}
+          _active={{
+            transform: prefersReducedMotion ? 'none' : 'scale(0.98)'
+          }}
+          aria-label={`Navigate to ${item.label} - ${item.description}`}
+          aria-current={isActive ? 'page' : undefined}
+        >
+          <HStack spacing={4} align="center">
+            <Icon
+              as={IconComponent}
+              w={5}
+              h={5}
+              color={isActive ? "#4F9CF9" : "#64748B"}
+              transition={animationConfig.transition}
+            />
+            <VStack align="start" spacing={0} flex={1}>
+              <Text
+                fontSize="md"
+                fontWeight={isActive ? "semibold" : "medium"}
+                color={isActive ? "#1E293B" : "#374151"}
+                textAlign="left"
+              >
+                {item.label}
+              </Text>
+              <Text
+                fontSize="xs"
+                color="#64748B"
+                textAlign="left"
+                lineHeight="1.2"
+              >
+                {item.description}
+              </Text>
+            </VStack>
+            {isActive && (
+              <Box
+                w={2}
+                h={2}
+                borderRadius="full"
+                bg="#4F9CF9"
+                flexShrink={0}
+              />
+            )}
+          </HStack>
+        </Box>
+      );
+    })
+  ), [location.pathname, navigationItems, handleNavigationClick, handleMenuKeyDown, animationConfig, prefersReducedMotion]);
 
   return (
     <Flex
@@ -129,6 +233,10 @@ export function Header() {
       position="relative"
       w="100%"
       minH={headerConfig.height}
+      // White background with subtle border
+      bg="white"
+      borderBottom="1px solid rgba(226, 232, 240, 0.8)"
+      boxShadow="0 1px 3px rgba(0, 0, 0, 0.05)"
       // Enhanced touch interactions
       sx={{
         touchAction: 'manipulation',
@@ -142,71 +250,47 @@ export function Header() {
       }}
     >
 
-      {/* Enhanced Dynamic Header Text with Click Indicator */}
-      <Flex
-        align="center"
-        gap={{ xs: 1.5, sm: 2, md: 2, lg: 2.5 }}
-        cursor="pointer"
-        onClick={handleNavigation}
-        onKeyDown={handleKeyDown}
-        transition={animationConfig.transition}
-        userSelect="none"
-        px={{ xs: 2.5, sm: 3, md: 3, lg: 3.5 }}
-        py={{ xs: 1.5, sm: 2, md: 2, lg: 2.5 }}
-        borderRadius={{ xs: "lg", sm: "xl", md: "xl", lg: "2xl" }}
-        role="button"
-        tabIndex={0}
-        aria-label={headerInfo.ariaLabel}
-        bg="rgba(255, 255, 255, 0.8)"
-        backdropFilter="blur(10px)"
-        border="1px solid rgba(255, 255, 255, 0.2)"
-        boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
-        // Enhanced touch targets for mobile
-        minH={{ xs: "44px", sm: "46px", md: "48px" }}
-        minW={{ xs: "44px", sm: "46px", md: "48px" }}
-        _hover={{
-          bg: "rgba(255, 255, 255, 0.95)",
-          transform: animationConfig.transform,
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)"
-        }}
-        _focus={{
-          outline: "2px solid #4F9CF9",
-          outlineOffset: "2px",
-          bg: "rgba(255, 255, 255, 0.95)"
-        }}
-        _active={{
-          transform: prefersReducedMotion ? 'none' : 'scale(0.98)',
-          bg: "rgba(255, 255, 255, 1)"
-        }}
+      {/* Enhanced Navigation Menu Button */}
+      <Tooltip
+        label="Navigation menu"
+        hasArrow
+        placement="bottom-start"
+        openDelay={500}
       >
-        <Text
-          fontSize={headerInfo.fontSize}
-          fontWeight="700"
-          color="#475569"
-          letterSpacing={{ xs: "0.3px", sm: "0.4px", md: "0.5px" }}
-          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-          lineHeight="1.2"
-        >
-          {headerInfo.text}
-        </Text>
-
-        {/* Enhanced Switch/Recycling Icon Indicator */}
-        <Icon
-          as={PiArrowsClockwise}
-          w={{ xs: "12px", sm: "13px", md: "14px", lg: "15px" }}
-          h={{ xs: "12px", sm: "13px", md: "14px", lg: "15px" }}
-          color="#94A3B8"
+        <IconButton
+          aria-label="Open navigation menu"
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+          icon={<PiListBold size={20} />}
+          onClick={onOpen}
+          variant="ghost"
+          color="#64748B"
+          bg="rgba(255, 255, 255, 0.8)"
+          backdropFilter="blur(10px)"
+          border="1px solid rgba(255, 255, 255, 0.2)"
+          borderRadius={{ xs: "lg", sm: "xl", md: "xl", lg: "2xl" }}
+          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
+          // Enhanced touch targets for mobile
+          minH={{ xs: "44px", sm: "46px", md: "48px" }}
+          minW={{ xs: "44px", sm: "46px", md: "48px" }}
           transition={animationConfig.transition}
-          _groupHover={{
-            color: "#4F9CF9",
-            transform: animationConfig.iconRotation
-          }}
-          _groupFocus={{
+          _hover={{
+            bg: "rgba(255, 255, 255, 0.95)",
+            transform: animationConfig.transform,
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
             color: "#4F9CF9"
           }}
-          aria-hidden="true"
+          _focus={{
+            outline: "2px solid #4F9CF9",
+            outlineOffset: "2px",
+            bg: "rgba(255, 255, 255, 0.95)"
+          }}
+          _active={{
+            transform: prefersReducedMotion ? 'none' : 'scale(0.98)',
+            bg: "rgba(255, 255, 255, 1)"
+          }}
         />
-      </Flex>
+      </Tooltip>
 
       {/* Enhanced Absolutely Centered Logo */}
       <Box
@@ -284,6 +368,10 @@ export function Header() {
             // Enhanced touch targets
             minH={{ xs: "44px", sm: "46px", md: "48px" }}
             minW={{ xs: "44px", sm: "46px", md: "48px" }}
+            // Perfect centering for icon content
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
             transition={animationConfig.transition}
             _hover={{
               bg: "rgba(255, 255, 255, 0.95)",
@@ -313,7 +401,12 @@ export function Header() {
                 flexShrink={0}
               />
             ) : (
-              <PiUserLight size={20}/>
+              <Icon
+                as={PiUserLight}
+                w="20px"
+                h="20px"
+                color="inherit"
+              />
             )}
           </MenuButton>
         </Tooltip>
@@ -395,6 +488,74 @@ export function Header() {
           </MenuItem>
         </MenuList>
       </Menu>
+
+      {/* Enhanced Navigation Drawer */}
+      <Drawer
+        isOpen={isOpen}
+        placement="left"
+        onClose={onClose}
+        size={isMobile ? "xs" : "sm"}
+        blockScrollOnMount={true}
+        preserveScrollBarGap={true}
+        returnFocusOnClose={true}
+        trapFocus={true}
+      >
+        <DrawerOverlay
+          bg="rgba(0, 0, 0, 0.4)"
+          backdropFilter="blur(4px)"
+          transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+        />
+        <DrawerContent
+          bg="rgba(255, 255, 255, 0.95)"
+          backdropFilter="blur(20px)"
+          borderRight="1px solid rgba(255, 255, 255, 0.2)"
+          boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+          // Enhanced mobile support
+          sx={{
+            '@media (max-width: 768px)': {
+              maxWidth: '280px',
+            }
+          }}
+        >
+          <DrawerCloseButton
+            color="#64748B"
+            _hover={{ color: "#4F9CF9", bg: "rgba(79, 156, 249, 0.1)" }}
+            _focus={{ outline: "2px solid #4F9CF9", outlineOffset: "2px" }}
+            size="lg"
+            top={4}
+            right={4}
+          />
+
+          <DrawerHeader
+            pb={6}
+            pt={8}
+            px={6}
+            borderBottom="1px solid rgba(226, 232, 240, 0.8)"
+          >
+            <Text
+              fontSize="xl"
+              fontWeight="bold"
+              color="#1E293B"
+              fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+            >
+              Navigation
+            </Text>
+            <Text
+              fontSize="sm"
+              color="#64748B"
+              mt={1}
+            >
+              Current: {currentPageInfo.label}
+            </Text>
+          </DrawerHeader>
+
+          <DrawerBody px={6} py={6}>
+            <VStack spacing={3} align="stretch">
+              {drawerContent}
+            </VStack>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </Flex>
   );
 }
