@@ -230,9 +230,11 @@ export function Header() {
       py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
       gap={{ xs: 2, sm: 2.5, md: 3, lg: 3.5, xl: 4 }}
       align="center"
-      position="relative"
+      position="sticky"
+      top={0}
       w="100%"
       minH={headerConfig.height}
+      zIndex={1000}
       // White background with subtle border
       bg="white"
       borderBottom="1px solid rgba(226, 232, 240, 0.8)"
