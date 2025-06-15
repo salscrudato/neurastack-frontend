@@ -3,7 +3,10 @@
  * ========================================================================== */
 
 /** Canonical provider keys we support today */
-export type ModelProvider = "openai" | "google" | "xai";
+export type ModelProvider = "openai" | "gemini" | "claude";
+
+/** Available tiers for cost optimization */
+export type NeuraStackTier = "free" | "premium";
 
 /** Chat message interface */
 export interface Message {
@@ -64,7 +67,7 @@ export interface SubAnswer {
 
 /** New Ensemble API Response Types */
 export interface EnsembleRole {
-  role: "evidence_analyst" | "innovator" | "risk_reviewer";
+  role: "gpt4o" | "gemini" | "claude";
   content: string;
   model: string;
   provider: "openai" | "gemini" | "claude";
@@ -87,6 +90,10 @@ export interface EnsembleMetadata {
   synthesisStatus: "success" | "failed";
   processingTimeMs: number;
   timestamp: string; // ISO 8601 format
+  version?: string; // API version
+  correlationId?: string; // Request tracking ID
+  memoryContextUsed?: boolean;
+  responseQuality?: number; // 0-1 quality score
 }
 
 export interface EnsembleData {
@@ -103,6 +110,228 @@ export interface EnsembleResponse {
   message?: string;
   error?: string;
   timestamp?: string;
+}
+
+/* ============================================================================
+ * Enhanced Monitoring & Tier Management Types
+ * ========================================================================== */
+
+/** System Health Status */
+export interface SystemHealth {
+  status: "healthy" | "degraded" | "unhealthy";
+  uptime: number;
+  memory: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  cpu: {
+    usage: number;
+    load: number[];
+  };
+}
+
+/** Vendor Health Status */
+export interface VendorHealth {
+  openai: {
+    status: "healthy" | "degraded" | "unhealthy";
+    responseTime: number;
+    errorRate: number;
+  };
+  gemini: {
+    status: "healthy" | "degraded" | "unhealthy";
+    responseTime: number;
+    errorRate: number;
+  };
+  claude: {
+    status: "healthy" | "degraded" | "unhealthy";
+    responseTime: number;
+    errorRate: number;
+  };
+}
+
+/** Ensemble Health Status */
+export interface EnsembleHealth {
+  status: "healthy" | "degraded" | "unhealthy";
+  averageResponseTime: number;
+  successRate: number;
+  activeConnections: number;
+}
+
+/** Detailed Health Check Response */
+export interface DetailedHealthResponse {
+  status: "healthy" | "degraded" | "unhealthy";
+  timestamp: string;
+  version: string;
+  components: {
+    system: SystemHealth;
+    vendors: VendorHealth;
+    ensemble: EnsembleHealth;
+  };
+}
+
+/** Request Metrics */
+export interface RequestMetrics {
+  total: number;
+  successful: number;
+  failed: number;
+  rate: number; // requests per minute
+}
+
+/** Performance Metrics */
+export interface PerformanceMetrics {
+  averageResponseTime: number;
+  p95ResponseTime: number;
+  p99ResponseTime: number;
+  throughput: number;
+}
+
+/** Resource Metrics */
+export interface ResourceMetrics {
+  memoryUsage: number;
+  cpuUsage: number;
+  activeConnections: number;
+  queueSize: number;
+}
+
+/** Error Metrics */
+export interface ErrorMetrics {
+  total: number;
+  byType: Record<string, number>;
+  byVendor: Record<string, number>;
+  rate: number; // errors per minute
+}
+
+/** Vendor Metrics */
+export interface VendorMetrics {
+  openai: {
+    requests: number;
+    errors: number;
+    averageResponseTime: number;
+  };
+  gemini: {
+    requests: number;
+    errors: number;
+    averageResponseTime: number;
+  };
+  claude: {
+    requests: number;
+    errors: number;
+    averageResponseTime: number;
+  };
+}
+
+/** Ensemble Metrics */
+export interface EnsembleMetrics {
+  totalRequests: number;
+  successfulEnsembles: number;
+  averageModelsPerRequest: number;
+  synthesisSuccessRate: number;
+}
+
+/** System Metrics Response */
+export interface MetricsResponse {
+  timestamp: string;
+  system: {
+    requests: RequestMetrics;
+    performance: PerformanceMetrics;
+    resources: ResourceMetrics;
+    errors: ErrorMetrics;
+  };
+  vendors: VendorMetrics;
+  ensemble: EnsembleMetrics;
+  tier: string; // Current tier (free/premium)
+  costEstimate: string; // Estimated cost per request
+}
+
+/** Model Configuration */
+export interface ModelConfig {
+  name: string;
+  provider: string;
+  costPerToken: number;
+  maxTokens: number;
+  features: string[];
+}
+
+/** Tier Limits */
+export interface TierLimits {
+  requestsPerHour: number;
+  requestsPerDay: number;
+  maxPromptLength: number;
+  maxWordsPerResponse: number;
+  features: string[];
+}
+
+/** Tier Details */
+export interface TierDetails {
+  name: string;
+  description: string;
+  models: Record<string, ModelConfig>;
+  limits: TierLimits;
+  estimatedCostPerRequest: string;
+  responseTime: string;
+  quality: string;
+}
+
+/** Tier Comparison */
+export interface TierComparison {
+  costSavings: string;
+  qualityRatio: string;
+  speedRatio: string;
+  features: string[];
+}
+
+/** Tier Information Response */
+export interface TierInfoResponse {
+  status: "success";
+  data: {
+    currentTier: NeuraStackTier;
+    configuration: {
+      models: Record<string, ModelConfig>;
+      limits: TierLimits;
+      estimatedCostPerRequest: string;
+    };
+    availableTiers: {
+      free: TierDetails;
+      premium: TierDetails;
+    };
+    costComparison: {
+      free: TierComparison;
+      premium: TierComparison;
+    };
+  };
+  timestamp: string;
+}
+
+/** Cost Estimate Request */
+export interface CostEstimateRequest {
+  prompt: string;
+  tier?: NeuraStackTier;
+}
+
+/** Cost Estimate Response */
+export interface CostEstimateResponse {
+  status: "success";
+  data: {
+    prompt: {
+      length: number;
+      estimatedTokens: number;
+    };
+    tier: string;
+    estimatedCost: {
+      total: string;
+      breakdown: {
+        promptTokens: number;
+        responseTokens: number;
+        modelsUsed: number;
+      };
+    };
+    comparison: {
+      free: string;
+      premium: string;
+    };
+  };
+  timestamp: string;
 }
 
 /* ============================================================================

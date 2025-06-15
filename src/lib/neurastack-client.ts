@@ -12,7 +12,11 @@ import type {
   SessionContext,
   EnsembleRequest,
   EnsembleResponse,
-
+  DetailedHealthResponse,
+  MetricsResponse,
+  TierInfoResponse,
+  CostEstimateRequest,
+  CostEstimateResponse,
   SubAnswer,
   StoreMemoryRequest,
   StoreMemoryResponse,
@@ -83,14 +87,25 @@ export interface NeuraStackRequestOptions {
 // ============================================================================
 
 export const NEURASTACK_ENDPOINTS = {
+  // Primary ensemble endpoint (enhanced with production features)
+  DEFAULT_ENSEMBLE: '/default-ensemble',
+  // Legacy ensemble endpoint (maintained for backward compatibility)
   ENSEMBLE: '/ensemble-test',
   QUERY: '/api/query', // Legacy endpoint for backward compatibility
+
+  // Memory management endpoints
   MEMORY_STORE: '/memory/store',
   MEMORY_RETRIEVE: '/memory/retrieve',
   MEMORY_CONTEXT: '/memory/context',
   MEMORY_ANALYTICS: '/memory/analytics',
   MEMORY_HEALTH: '/memory/health',
-  HEALTH: '/health'
+
+  // Enhanced monitoring endpoints
+  HEALTH: '/health',
+  HEALTH_DETAILED: '/health-detailed',
+  METRICS: '/metrics',
+  TIER_INFO: '/tier-info',
+  ESTIMATE_COST: '/estimate-cost'
 } as const;
 
 export const NEURASTACK_MODELS = {
@@ -143,7 +158,7 @@ export class NeuraStackClient {
   }
 
   /**
-   * Query the AI with a prompt using the new Ensemble API
+   * Query the AI with a prompt using the enhanced Default Ensemble API
    */
   async queryAI(
     prompt: string,
@@ -159,23 +174,28 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
+    // Generate correlation ID for request tracking
+    const correlationId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    headers['X-Correlation-ID'] = correlationId;
+
     // Log the outgoing request
-    console.group('🚀 NeuraStack Ensemble API Request');
-    console.log('📤 Endpoint:', `${this.config.baseUrl}/ensemble-test`);
+    console.group('🚀 NeuraStack Default Ensemble API Request');
+    console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.DEFAULT_ENSEMBLE}`);
     console.log('📋 Request Body:', JSON.stringify(requestBody, null, 2));
     console.log('🔧 Headers:', headers);
     console.log('⚙️ Config:', {
       sessionId: this.config.sessionId,
       userId: this.config.userId,
-      timeout: this.config.timeout
+      timeout: this.config.timeout,
+      correlationId
     });
     console.groupEnd();
 
-    // Headers now working! Backend CORS has been updated
+    // Enhanced headers with correlation tracking
     const userId = options.userId || this.config.userId;
     const authToken = options.authToken || this.config.authToken;
 
-    // Re-enabling headers since API is working and memory context is active
+    // Add tracking and session headers
     if (sessionId) headers['X-Session-Id'] = sessionId;
     if (userId && userId.trim() !== '') headers['X-User-Id'] = userId;
     if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
@@ -187,7 +207,7 @@ export class NeuraStackClient {
     }
 
     const ensembleResponse = await this.makeRequest<EnsembleResponse>(
-      NEURASTACK_ENDPOINTS.ENSEMBLE,
+      NEURASTACK_ENDPOINTS.DEFAULT_ENSEMBLE,
       {
         method: 'POST',
         headers,
@@ -462,6 +482,111 @@ export class NeuraStackClient {
       {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+
+  /**
+   * Get detailed system health check with component status
+   */
+  async getDetailedHealth(): Promise<DetailedHealthResponse> {
+    const cacheKey = 'detailed-health-check';
+
+    // Try cache first (short TTL for health checks)
+    const cached = cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await this.makeRequest<DetailedHealthResponse>(
+      NEURASTACK_ENDPOINTS.HEALTH_DETAILED,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
+    // Cache for 15 seconds
+    cacheManager.set(cacheKey, result, {
+      ttl: 15 * 1000,
+      tags: ['api', 'health', 'detailed']
+    });
+
+    return result;
+  }
+
+  /**
+   * Get comprehensive system metrics
+   */
+  async getSystemMetrics(): Promise<MetricsResponse> {
+    const cacheKey = 'system-metrics';
+
+    // Try cache first (short TTL for metrics)
+    const cached = cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await this.makeRequest<MetricsResponse>(
+      NEURASTACK_ENDPOINTS.METRICS,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
+    // Cache for 30 seconds
+    cacheManager.set(cacheKey, result, {
+      ttl: 30 * 1000,
+      tags: ['api', 'metrics']
+    });
+
+    return result;
+  }
+
+  /**
+   * Get current tier information and available options
+   */
+  async getTierInfo(): Promise<TierInfoResponse> {
+    const cacheKey = 'tier-info';
+
+    // Try cache first (longer TTL for tier info)
+    const cached = cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const result = await this.makeRequest<TierInfoResponse>(
+      NEURASTACK_ENDPOINTS.TIER_INFO,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+
+    // Cache for 5 minutes
+    cacheManager.set(cacheKey, result, {
+      ttl: 5 * 60 * 1000,
+      tags: ['api', 'tier']
+    });
+
+    return result;
+  }
+
+  /**
+   * Estimate cost for processing a specific prompt
+   */
+  async estimateCost(request: CostEstimateRequest): Promise<CostEstimateResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    return this.makeRequest<CostEstimateResponse>(
+      NEURASTACK_ENDPOINTS.ESTIMATE_COST,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request)
       }
     );
   }

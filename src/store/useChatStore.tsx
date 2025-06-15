@@ -103,19 +103,19 @@ export const useChatStore = create<ChatState>()(
           try {
             const { sessionId } = get();
 
-            // Configure the new API client with session info
+            // Configure the enhanced API client with session info
             neuraStackClient.configure({
               sessionId,
               userId: auth.currentUser?.uid || '',
               useEnsemble: true
             });
 
-            // Use the new memory-aware API with specific models
+            // Use the enhanced default-ensemble API with production features
             const response = await neuraStackClient.queryAI(text, {
               useEnsemble: true,
-              models: ['openai:gpt-4', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini'],
               maxTokens: 2000,
-              temperature: 0.7
+              temperature: 0.7,
+              sessionId // Ensure session context is passed
             });
 
             const responseTime = Date.now() - startTime;

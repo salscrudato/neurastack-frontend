@@ -7,7 +7,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NeuraStackClient, NeuraStackApiError } from '../lib/neurastack-client';
-import type { NeuraStackQueryResponse, MemoryMetrics } from '../lib/types';
+import type { NeuraStackQueryResponse, MemoryMetrics, EnsembleResponse } from '../lib/types';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -43,46 +43,64 @@ describe('NeuraStack API Integration', () => {
     });
 
     it('should make successful API query', async () => {
-      const mockResponse: NeuraStackQueryResponse = {
-        answer: 'Test response',
-        ensembleMode: true,
-        modelsUsed: { 'openai:gpt-4': true },
-        executionTime: '1500ms',
-        tokenCount: 150,
-        memoryContext: 'Test context',
-        individualResponses: [
-          {
+      // Mock the actual ensemble API response format
+      const mockEnsembleResponse: EnsembleResponse = {
+        status: 'success',
+        data: {
+          prompt: 'Test prompt',
+          userId: 'test-user',
+          synthesis: {
+            content: 'Test response',
             model: 'gpt-4o',
-            answer: 'Individual response from GPT-4',
-            role: 'gpt4o',
             provider: 'openai',
-            status: 'success',
-            wordCount: 25
+            status: 'success'
+          },
+          roles: [
+            {
+              role: 'gpt4o',
+              content: 'Individual response from GPT-4',
+              model: 'gpt-4o',
+              provider: 'openai',
+              status: 'fulfilled',
+              wordCount: 25
+            }
+          ],
+          metadata: {
+            totalRoles: 1,
+            successfulRoles: 1,
+            failedRoles: 0,
+            synthesisStatus: 'success',
+            processingTimeMs: 1500,
+            timestamp: '2024-01-01T00:00:00Z'
           }
-        ]
+        }
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockResponse
+        json: async () => mockEnsembleResponse
       });
 
       const result = await client.queryAI('Test prompt', { useEnsemble: true });
 
-      expect(result).toEqual(mockResponse);
+      // Verify the transformed response structure
+      expect(result.answer).toBe('Test response');
+      expect(result.ensembleMode).toBe(true);
+      expect(result.executionTime).toBe('1500ms');
+      expect(result.individualResponses).toHaveLength(1);
+      expect(result.individualResponses![0].model).toBe('gpt-4o');
+      expect(result.individualResponses![0].provider).toBe('openai');
+
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://test-api.example.com/api/query',
+        'https://test-api.example.com/default-ensemble',
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
-            'Content-Type': 'application/json',
-            'X-Session-ID': 'test-session',
-            'X-User-ID': 'test-user'
+            'Content-Type': 'application/json'
           }),
           body: JSON.stringify({
             prompt: 'Test prompt',
-            useEnsemble: true,
-            models: ['google:gemini-1.5-flash', 'google:gemini-1.5-flash', 'xai:grok-3-mini', 'xai:grok-3-mini']
+            sessionId: 'test-session'
           })
         })
       );
@@ -104,43 +122,46 @@ describe('NeuraStack API Integration', () => {
     });
 
     it('should get memory metrics', async () => {
-      const mockMetrics: MemoryMetrics = {
-        totalMemories: 100,
-        averageImportance: 0.7,
-        averageCompressionRatio: 0.3,
-        totalTokensSaved: 5000,
-        memoryByType: {
-          working: 10,
-          short_term: 20,
-          long_term: 30,
-          semantic: 25,
-          episodic: 15
-        },
-        retentionStats: {
-          active: 80,
-          archived: 15,
-          expired: 5
-        },
-        accessPatterns: {
-          hourly: new Array(24).fill(0),
-          daily: new Array(7).fill(0),
-          weekly: new Array(52).fill(0)
+      // Mock the analytics API response format
+      const mockAnalyticsResponse = {
+        success: true,
+        userId: 'test-user',
+        metrics: {
+          totalMemories: 100,
+          memoryTypes: {
+            working: 10,
+            short_term: 20,
+            long_term: 30,
+            semantic: 25,
+            episodic: 15
+          },
+          averageImportance: 0.7,
+          averageCompositeScore: 0.8,
+          archivedCount: 15,
+          recentMemories: 85
         }
       };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => mockMetrics
+        json: async () => mockAnalyticsResponse
       });
 
       const result = await client.getMemoryMetrics('test-user');
-      expect(result).toEqual(mockMetrics);
+
+      // Verify the transformed metrics structure
+      expect(result.totalMemories).toBe(100);
+      expect(result.averageImportance).toBe(0.7);
+      expect(result.memoryByType.working).toBe(10);
+      expect(result.memoryByType.short_term).toBe(20);
+      expect(result.retentionStats.active).toBe(85); // totalMemories - archivedCount
+      expect(result.retentionStats.archived).toBe(15);
     });
 
     it('should check health status', async () => {
       const mockHealth = {
         status: 'healthy',
-        timestamp: '2024-01-01T00:00:00Z'
+        message: 'All systems operational'
       };
 
       mockFetch.mockResolvedValueOnce({

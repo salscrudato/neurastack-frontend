@@ -9,7 +9,7 @@ import {
 import {
   PiUserLight, PiSignOutBold, PiUserCircleBold,
   PiListBold, PiChatCircleBold, PiClockCounterClockwiseBold,
-  PiHeartBold, PiHouseBold
+  PiHeartBold, PiHouseBold, PiGearBold
 } from 'react-icons/pi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCallback, useMemo, useRef } from 'react';
@@ -18,6 +18,7 @@ import { signOut } from 'firebase/auth';
 import { useAuthStore } from '../store/useAuthStore';
 import { useReducedMotion } from '../hooks/useAccessibility';
 import { BrandLogo } from './BrandLogo';
+import { hasAdminAccess, ADMIN_CONFIG } from '../config/admin';
 
 export function Header() {
   const navigate = useNavigate();
@@ -57,32 +58,46 @@ export function Header() {
   }), []);
 
   // Navigation menu items configuration
-  const navigationItems = useMemo(() => [
-    {
-      label: 'Home',
-      path: '/',
-      icon: PiHouseBold,
-      description: 'Go to home page'
-    },
-    {
-      label: 'Chat',
-      path: '/chat',
-      icon: PiChatCircleBold,
-      description: 'Start a new conversation'
-    },
-    {
-      label: 'History',
-      path: '/history',
-      icon: PiClockCounterClockwiseBold,
-      description: 'View chat history'
-    },
-    {
-      label: 'NeuraFit',
-      path: '/neurafit',
-      icon: PiHeartBold,
-      description: 'AI-powered fitness training'
+  const navigationItems = useMemo(() => {
+    const baseItems = [
+      {
+        label: 'Home',
+        path: '/',
+        icon: PiHouseBold,
+        description: 'Go to home page'
+      },
+      {
+        label: 'Chat',
+        path: '/chat',
+        icon: PiChatCircleBold,
+        description: 'Start a new conversation'
+      },
+      {
+        label: 'History',
+        path: '/history',
+        icon: PiClockCounterClockwiseBold,
+        description: 'View chat history'
+      },
+      {
+        label: 'NeuraFit',
+        path: '/neurafit',
+        icon: PiHeartBold,
+        description: 'AI-powered fitness training'
+      }
+    ];
+
+    // Add admin link only for authorized admin user
+    if (hasAdminAccess(user)) {
+      baseItems.push({
+        label: ADMIN_CONFIG.navigation.label,
+        path: ADMIN_CONFIG.navigation.path,
+        icon: PiGearBold,
+        description: ADMIN_CONFIG.navigation.description
+      });
     }
-  ], []);
+
+    return baseItems;
+  }, [user]);
 
   // Get current page info for accessibility
   const currentPageInfo = useMemo(() => {

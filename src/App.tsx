@@ -27,8 +27,9 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
     const isChatRoute = pathname === '/chat';
     const isHistoryRoute = pathname === '/history';
     const isNeuraFitRoute = pathname === '/neurafit';
+    const isAdminRoute = pathname === '/admin';
 
-    if (isChatRoute || isHistoryRoute || isNeuraFitRoute) {
+    if (isChatRoute || isHistoryRoute || isNeuraFitRoute || isAdminRoute) {
       // Main pages have gentle horizontal slide with blur
       return {
         initial: { opacity: 0, x: 15, filter: "blur(6px)" },
