@@ -52,7 +52,7 @@ export function Header() {
   const headerConfig = useMemo(() => ({
     height: { xs: "56px", sm: "58px", md: "60px", lg: "64px", xl: "68px" },
     padding: { xs: 3, sm: 3.5, md: 4, lg: 5, xl: 6 },
-    logoSize: { base: "sm", md: "md" },
+    logoSize: { base: "md", md: "lg" },
     fontSize: { xs: "sm", sm: "md", md: "md", lg: "lg", xl: "lg" }
   }), []);
 
