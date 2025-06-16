@@ -72,8 +72,8 @@ neuraStackClient.configure({
 // Make a query
 const response = await neuraStackClient.queryAI('Your prompt here', {
   useEnsemble: true,
-  maxTokens: 1000,
   temperature: 0.7
+  // maxTokens is optional - backend controls limits based on tier
 });
 
 console.log(response.answer);
@@ -94,7 +94,8 @@ function MyComponent() {
     try {
       await queryAI('Tell me about quantum computing', {
         useEnsemble: true,
-        maxTokens: 500
+        temperature: 0.7
+        // maxTokens removed - backend controls response length
       });
     } catch (err) {
       console.error('Query failed:', err);
@@ -164,7 +165,7 @@ interface NeuraStackQueryRequest {
   prompt: string;             // User's question/prompt
   useEnsemble?: boolean;      // Use 4-AI ensemble
   models?: string[];          // Specific models to use
-  maxTokens?: number;         // Maximum response tokens
+  maxTokens?: number;         // Maximum response tokens (optional - backend controls)
   temperature?: number;       // Creativity (0-1)
 }
 ```

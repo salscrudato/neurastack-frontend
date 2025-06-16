@@ -177,10 +177,12 @@ export const useHistoryStore = create<HistoryState>()(
 
         // Import chat store dynamically to avoid circular dependency
         const { useChatStore } = await import('./useChatStore');
-        const { loadChatFromSession } = useChatStore.getState();
 
-        // Load messages into chat store
-        loadChatFromSession(session.messages);
+        // Load messages into chat store with new session ID
+        useChatStore.setState({
+          messages: session.messages,
+          sessionId: crypto.randomUUID() // Generate new session ID for loaded chat
+        });
 
         return session.messages;
       },

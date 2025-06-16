@@ -91,7 +91,7 @@ export default function ChatInput() {
     "Help me solve..."
   ], []);
 
-  const MAX_CHARS = 4000;
+  const MAX_CHARS = 10000; // Increased limit - let backend control token restrictions
 
   // Performance-optimized text analysis
   const debouncedTextAnalysis = useMemo(

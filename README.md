@@ -308,8 +308,8 @@ neuraStackClient.configure({
 // Enhanced query with production features
 const response = await neuraStackClient.queryAI('Your prompt', {
   useEnsemble: true,
-  maxTokens: 1000,
   temperature: 0.7
+  // maxTokens is optional - backend controls limits based on tier
 });
 
 // Access memory context and metrics
@@ -435,29 +435,20 @@ const bookingUrl = generateAffiliateLink({
 ### Store Pattern Example
 ```typescript
 // src/store/useChatStore.tsx
-export const useChatStore = create<ChatState>()(
-  persist(
-    (set, get) => ({
-      messages: [],
-      isLoading: false,
-      sendMessage: async (text: string) => {
-        // AI integration with new memory-aware API
-        const response = await neuraStackClient.queryAI(text, {
-          useEnsemble: true
-        });
-        // Firebase sync for authenticated users
-        if (auth.currentUser) {
-          await saveMessageToFirebase(message);
-        }
-      },
-      // ... other actions
-    }),
-    {
-      name: 'neurastack-chat-storage',
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
-);
+export const useChatStore = create<ChatState>()((set, get) => ({
+  messages: [],
+  isLoading: false,
+  sessionId: crypto.randomUUID(),
+  sendMessage: async (text: string) => {
+    // AI integration with memory-aware API - backend handles memory via sessionId
+    const response = await neuraStackClient.queryAI(text, {
+      useEnsemble: true,
+      sessionId: get().sessionId
+    });
+    // No frontend memory management - backend handles all context
+  },
+  // ... other actions
+}));
 ```
 
 ---

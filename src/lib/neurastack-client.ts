@@ -24,7 +24,9 @@ import type {
   MemoryContextRequest,
   MemoryContextResponse,
   MemoryAnalyticsResponse,
-  MemoryHealthResponse
+  MemoryHealthResponse,
+  WorkoutAPIRequest,
+  WorkoutAPIResponse
 } from './types';
 import { cacheManager } from './cacheManager';
 
@@ -92,6 +94,9 @@ export const NEURASTACK_ENDPOINTS = {
   // Legacy ensemble endpoint (maintained for backward compatibility)
   ENSEMBLE: '/ensemble-test',
   QUERY: '/api/query', // Legacy endpoint for backward compatibility
+
+  // Workout generation endpoint
+  WORKOUT: '/workout',
 
   // Memory management endpoints
   MEMORY_STORE: '/memory/store',
@@ -589,6 +594,70 @@ export class NeuraStackClient {
         body: JSON.stringify(request)
       }
     );
+  }
+
+  /**
+   * Generate a personalized workout using the dedicated workout API endpoint
+   */
+  async generateWorkout(
+    request: WorkoutAPIRequest,
+    options: NeuraStackRequestOptions = {}
+  ): Promise<WorkoutAPIResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    // Add user identification headers
+    const userId = options.userId || this.config.userId;
+    if (userId && userId.trim() !== '') {
+      headers['X-User-Id'] = userId;
+    }
+
+    // Generate correlation ID for request tracking
+    const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    headers['X-Correlation-ID'] = correlationId;
+
+    // Log the outgoing workout request
+    console.group('🏋️ NeuraStack Workout API Request');
+    console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
+    console.log('📋 Request Body:', JSON.stringify(request, null, 2));
+    console.log('🔧 Headers:', headers);
+    console.log('⚙️ Config:', {
+      userId: this.config.userId,
+      timeout: this.config.timeout,
+      correlationId
+    });
+    console.groupEnd();
+
+    try {
+      const workoutResponse = await this.makeRequest<WorkoutAPIResponse>(
+        NEURASTACK_ENDPOINTS.WORKOUT,
+        {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(request),
+          signal: options.signal,
+          timeout: options.timeout || this.config.timeout
+        }
+      );
+
+      // Log successful workout generation
+      console.group('🎯 Workout Generation Success');
+      console.log('✅ Status:', workoutResponse.status);
+      console.log('🏋️ Workout Type:', workoutResponse.data?.workout.type);
+      console.log('⏱️ Duration:', workoutResponse.data?.workout.duration);
+      console.log('📊 Exercise Count:', workoutResponse.data?.workout.exercises.length);
+      console.log('🔗 Correlation ID:', workoutResponse.correlationId);
+      console.groupEnd();
+
+      return workoutResponse;
+    } catch (error) {
+      console.group('❌ Workout Generation Error');
+      console.log('🚫 Error:', error);
+      console.log('🔗 Correlation ID:', correlationId);
+      console.groupEnd();
+      throw error;
+    }
   }
 
   /**

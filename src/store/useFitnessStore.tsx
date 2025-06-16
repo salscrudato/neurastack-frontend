@@ -62,6 +62,12 @@ const defaultProfile: FitnessProfile = {
     minutesPerSession: 30,
   },
   completedOnboarding: false,
+  // Enhanced fields for workout API integration
+  age: undefined,
+  gender: undefined,
+  weight: undefined,
+  injuries: [],
+  weightUnit: 'kg',
 };
 
 export const useFitnessStore = create<FitnessState>()(
@@ -70,7 +76,7 @@ export const useFitnessStore = create<FitnessState>()(
       // Initial state
       profile: defaultProfile,
       currentStep: 0,
-      totalSteps: 4,
+      totalSteps: 6, // Updated to include PersonalInfo and Injuries steps
       isEditingFromDashboard: false,
       workoutPlans: [],
       currentWorkout: null,

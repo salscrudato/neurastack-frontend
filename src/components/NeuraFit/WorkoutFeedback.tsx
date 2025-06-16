@@ -1,0 +1,494 @@
+/**
+ * Workout Feedback Component
+ * 
+ * Collects user feedback after workout completion to improve
+ * AI-driven workout generation and personalization.
+ */
+
+import {
+  Box,
+  VStack,
+  HStack,
+  Text,
+  Button,
+  useColorModeValue,
+  Card,
+  CardBody,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  Textarea,
+  Icon,
+  useToast,
+  Divider,
+} from '@chakra-ui/react';
+import {
+  PiStarBold,
+  PiStarFill,
+} from 'react-icons/pi';
+import { useState, useCallback, useMemo, memo } from 'react';
+import { motion } from 'framer-motion';
+import SuccessAnimation from './SuccessAnimation';
+import type { WorkoutPlan } from '../../lib/types';
+import { storeWorkoutAnalytics, type WorkoutAnalytics, type ExercisePerformance } from '../../services/workoutAnalyticsService';
+import { useAuthStore } from '../../store/useAuthStore';
+import { neuraStackClient } from '../../lib/neurastack-client';
+
+const MotionBox = motion(Box);
+
+interface WorkoutFeedbackProps {
+  workout: WorkoutPlan;
+  completedExercises: Set<number>;
+  actualDuration: number; // in minutes
+  onFeedbackComplete: () => void;
+  onSkip: () => void;
+}
+
+interface FeedbackData {
+  difficultyRating: number; // 1-5
+  enjoymentRating: number; // 1-5
+  energyLevel: 'low' | 'moderate' | 'high';
+  perceivedExertion: number; // 1-10 RPE scale
+  comments: string;
+  exerciseFeedback: Record<number, {
+    difficulty: number;
+    formQuality: number;
+    modifications: string[];
+  }>;
+}
+
+const WorkoutFeedback = memo(function WorkoutFeedback({
+  workout,
+  completedExercises,
+  actualDuration,
+  onFeedbackComplete,
+  onSkip
+}: WorkoutFeedbackProps) {
+  const { user } = useAuthStore();
+  const toast = useToast();
+  
+  const [feedback, setFeedback] = useState<FeedbackData>({
+    difficultyRating: 3,
+    enjoymentRating: 3,
+    energyLevel: 'moderate',
+    perceivedExertion: 5,
+    comments: '',
+    exerciseFeedback: {}
+  });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0); // 0: overall, 1: exercises, 2: comments
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Memoize color values to prevent unnecessary re-renders
+  const colors = useMemo(() => ({
+    bgColor: useColorModeValue('white', 'gray.800'),
+    borderColor: useColorModeValue('gray.200', 'gray.600'),
+    textColor: useColorModeValue('gray.800', 'white'),
+    subtextColor: useColorModeValue('gray.600', 'gray.400')
+  }), []);
+
+  const { bgColor, borderColor, textColor, subtextColor } = colors;
+
+  const handleRatingChange = useCallback((field: keyof FeedbackData, value: any) => {
+    setFeedback(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+
+
+  const submitFeedback = useCallback(async () => {
+    if (!user?.uid) {
+      toast({
+        title: 'Error',
+        description: 'User authentication required',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Prepare exercise performance data
+      const exercisePerformance: ExercisePerformance[] = workout.exercises.map((exercise, index) => {
+        const exerciseFeedback = feedback.exerciseFeedback[index] || {};
+        const wasCompleted = completedExercises.has(index);
+        
+        return {
+          exerciseName: exercise.name,
+          targetMuscles: exercise.targetMuscles,
+          plannedSets: exercise.sets,
+          completedSets: wasCompleted ? exercise.sets : 0,
+          plannedReps: exercise.reps,
+          actualReps: wasCompleted ? [exercise.reps] : [0],
+          formQuality: exerciseFeedback.formQuality || 3,
+          difficulty: exerciseFeedback.difficulty || 3,
+          modifications: exerciseFeedback.modifications || []
+        };
+      });
+
+      // Calculate completion rate
+      const completionRate = (completedExercises.size / workout.exercises.length) * 100;
+
+      // Get current context
+      const now = new Date();
+      const timeOfDay = getTimeOfDay(now);
+      const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+
+      // Prepare analytics data
+      const analyticsData: Omit<WorkoutAnalytics, 'createdAt'> = {
+        userId: user.uid,
+        workoutId: workout.id,
+        completionRate,
+        actualDuration,
+        plannedDuration: workout.duration,
+        efficiencyScore: (workout.duration / actualDuration) * 100,
+        exercisePerformance,
+        difficultyRating: feedback.difficultyRating,
+        enjoymentRating: feedback.enjoymentRating,
+        energyLevel: feedback.energyLevel,
+        perceivedExertion: feedback.perceivedExertion,
+        timeOfDay,
+        dayOfWeek,
+        environmentalFactors: [], // Could be expanded later
+        aiRecommendations: generateAIRecommendations(feedback, completionRate),
+        adaptationSuggestions: generateAdaptationSuggestions(feedback, workout)
+      };
+
+      // Store analytics
+      await storeWorkoutAnalytics(analyticsData);
+
+      // Store concise feedback in AI memory for future workout generation
+      if (workout.generationContext?.sessionId) {
+        const memoryContent = `Feedback: ${workout.name} - D:${feedback.difficultyRating}/5, E:${feedback.enjoymentRating}/5, Energy:${feedback.energyLevel}, RPE:${feedback.perceivedExertion}/10, Complete:${completionRate.toFixed(0)}%${feedback.comments ? `, Notes:${feedback.comments.substring(0,50)}` : ''}`;
+
+        await neuraStackClient.storeMemory({
+          userId: user.uid,
+          sessionId: workout.generationContext.sessionId,
+          content: memoryContent,
+          isUserPrompt: false,
+          responseQuality: feedback.enjoymentRating >= 4 ? 0.9 : 0.7,
+          ensembleMode: true
+        });
+      }
+
+      // Show success animation
+      setShowSuccess(true);
+
+      // Complete feedback after animation
+      setTimeout(() => {
+        setShowSuccess(false);
+        onFeedbackComplete();
+      }, 2500);
+
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        title: 'Submission Failed',
+        description: 'Unable to save feedback. Please try again.',
+        status: 'error',
+        duration: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [user?.uid, workout, completedExercises, actualDuration, feedback, toast, onFeedbackComplete]);
+
+  const renderStarRating = useCallback((rating: number, onChange: (rating: number) => void) => {
+    return (
+      <HStack spacing={{ base: 2, md: 1 }} justify="center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Icon
+            key={star}
+            as={star <= rating ? PiStarFill : PiStarBold}
+            color={star <= rating ? 'yellow.400' : 'gray.300'}
+            boxSize={{ base: 8, md: 6 }}
+            cursor="pointer"
+            onClick={() => onChange(star)}
+            _hover={{
+              transform: 'scale(1.1)',
+              filter: 'brightness(1.1)',
+              shadow: 'lg'
+            }}
+            _active={{
+              transform: 'scale(0.95)',
+              filter: 'brightness(0.9)'
+            }}
+            transition="all 0.2s ease-in-out"
+            // Better touch targets for mobile
+            minW={{ base: "44px", md: "auto" }}
+            minH={{ base: "44px", md: "auto" }}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          />
+        ))}
+      </HStack>
+    );
+  }, []);
+
+  const renderOverallFeedback = useMemo(() => (
+    <VStack spacing={6} align="stretch">
+      <Box textAlign="center" px={{ base: 2, md: 0 }}>
+        <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={textColor} mb={2}>
+          How was your workout?
+        </Text>
+        <Text color={subtextColor} fontSize={{ base: "sm", md: "md" }}>
+          Your feedback helps us create better workouts for you
+        </Text>
+      </Box>
+
+      <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }}>
+        <CardBody p={{ base: 4, md: 6 }}>
+          <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+            {/* Difficulty Rating */}
+            <Box>
+              <Text fontWeight="semibold" color={textColor} mb={3}>
+                How challenging was this workout?
+              </Text>
+              {renderStarRating(feedback.difficultyRating, (rating) => 
+                handleRatingChange('difficultyRating', rating)
+              )}
+              <Text fontSize="sm" color={subtextColor} mt={1}>
+                1 = Too Easy, 3 = Just Right, 5 = Too Hard
+              </Text>
+            </Box>
+
+            <Divider />
+
+            {/* Enjoyment Rating */}
+            <Box>
+              <Text fontWeight="semibold" color={textColor} mb={3}>
+                How much did you enjoy this workout?
+              </Text>
+              {renderStarRating(feedback.enjoymentRating, (rating) => 
+                handleRatingChange('enjoymentRating', rating)
+              )}
+            </Box>
+
+            <Divider />
+
+            {/* Energy Level */}
+            <Box>
+              <Text fontWeight="semibold" color={textColor} mb={3}>
+                How was your energy level?
+              </Text>
+              <HStack spacing={3}>
+                {(['low', 'moderate', 'high'] as const).map((level) => (
+                  <Button
+                    key={level}
+                    size="sm"
+                    variant={feedback.energyLevel === level ? 'solid' : 'outline'}
+                    colorScheme={feedback.energyLevel === level ? 'blue' : 'gray'}
+                    onClick={() => handleRatingChange('energyLevel', level)}
+                    textTransform="capitalize"
+                  >
+                    {level}
+                  </Button>
+                ))}
+              </HStack>
+            </Box>
+
+            <Divider />
+
+            {/* Perceived Exertion */}
+            <Box>
+              <Text fontWeight="semibold" color={textColor} mb={3}>
+                Rate of Perceived Exertion (RPE): {feedback.perceivedExertion}
+              </Text>
+              <Slider
+                value={feedback.perceivedExertion}
+                onChange={(value) => handleRatingChange('perceivedExertion', value)}
+                min={1}
+                max={10}
+                step={1}
+                colorScheme="blue"
+              >
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+              <HStack justify="space-between" mt={1}>
+                <Text fontSize="xs" color={subtextColor}>Very Easy</Text>
+                <Text fontSize="xs" color={subtextColor}>Maximal</Text>
+              </HStack>
+            </Box>
+          </VStack>
+        </CardBody>
+      </Card>
+
+      <HStack spacing={{ base: 2, md: 3 }} flexDirection={{ base: "column", sm: "row" }}>
+        <Button
+          variant="ghost"
+          onClick={onSkip}
+          flex={1}
+          size={{ base: "lg", md: "md" }}
+          minH={{ base: "48px", md: "auto" }}
+          w={{ base: "100%", sm: "auto" }}
+          _hover={{
+            transform: 'translateY(-2px)',
+            shadow: 'md'
+          }}
+          transition="all 0.2s ease-in-out"
+        >
+          Skip Feedback
+        </Button>
+        <Button
+          colorScheme="blue"
+          onClick={() => setCurrentStep(1)}
+          flex={1}
+          size={{ base: "lg", md: "md" }}
+          minH={{ base: "48px", md: "auto" }}
+          w={{ base: "100%", sm: "auto" }}
+          _hover={{
+            transform: 'translateY(-2px)',
+            shadow: 'lg',
+            bg: 'blue.600'
+          }}
+          transition="all 0.2s ease-in-out"
+        >
+          Continue
+        </Button>
+      </HStack>
+    </VStack>
+  ), [feedback, textColor, subtextColor, bgColor, borderColor, handleRatingChange, renderStarRating]);
+
+  const renderCommentsStep = useMemo(() => (
+    <VStack spacing={6} align="stretch">
+      <Box textAlign="center" px={{ base: 2, md: 0 }}>
+        <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={textColor} mb={2}>
+          Any additional thoughts?
+        </Text>
+        <Text color={subtextColor} fontSize={{ base: "sm", md: "md" }}>
+          Share what worked well or what could be improved
+        </Text>
+      </Box>
+
+      <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }}>
+        <CardBody p={{ base: 4, md: 6 }}>
+          <Textarea
+            placeholder="Optional: Share your thoughts about this workout..."
+            value={feedback.comments}
+            onChange={(e) => handleRatingChange('comments', e.target.value)}
+            rows={4}
+            resize="vertical"
+            fontSize={{ base: "md", md: "sm" }}
+            minH={{ base: "120px", md: "auto" }}
+          />
+        </CardBody>
+      </Card>
+
+      <HStack spacing={{ base: 2, md: 3 }} flexDirection={{ base: "column", sm: "row" }}>
+        <Button
+          variant="ghost"
+          onClick={() => setCurrentStep(0)}
+          flex={1}
+          size={{ base: "lg", md: "md" }}
+          minH={{ base: "48px", md: "auto" }}
+          w={{ base: "100%", sm: "auto" }}
+        >
+          Back
+        </Button>
+        <Button
+          colorScheme="blue"
+          onClick={submitFeedback}
+          isLoading={isSubmitting}
+          loadingText="Submitting..."
+          flex={1}
+          size={{ base: "lg", md: "md" }}
+          minH={{ base: "48px", md: "auto" }}
+          w={{ base: "100%", sm: "auto" }}
+        >
+          Submit Feedback
+        </Button>
+      </HStack>
+    </VStack>
+  ), [feedback, textColor, subtextColor, bgColor, borderColor, handleRatingChange, submitFeedback, isSubmitting]);
+
+  return (
+    <>
+      <SuccessAnimation
+        isVisible={showSuccess}
+        title="Feedback Submitted!"
+        message="Thank you! Your feedback helps us create better workouts."
+      />
+
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+      <Box
+        p={{ base: 4, md: 6 }}
+        maxW={{ base: "100%", sm: "md" }}
+        mx="auto"
+        minH={{ base: "100vh", md: "auto" }}
+        display="flex"
+        flexDirection="column"
+        justifyContent={{ base: "center", md: "flex-start" }}
+      >
+        {currentStep === 0 && renderOverallFeedback}
+        {currentStep === 1 && renderCommentsStep}
+      </Box>
+    </MotionBox>
+    </>
+  );
+});
+
+export default WorkoutFeedback;
+
+// Helper functions
+function getTimeOfDay(date: Date): string {
+  const hour = date.getHours();
+  if (hour < 6) return 'early_morning';
+  if (hour < 12) return 'morning';
+  if (hour < 17) return 'afternoon';
+  if (hour < 21) return 'evening';
+  return 'night';
+}
+
+function generateAIRecommendations(feedback: FeedbackData, completionRate: number): string[] {
+  const recommendations: string[] = [];
+
+  if (feedback.difficultyRating <= 2) {
+    recommendations.push('Increase workout intensity or add more challenging exercises');
+  } else if (feedback.difficultyRating >= 4) {
+    recommendations.push('Consider reducing intensity or providing more modifications');
+  }
+
+  if (completionRate < 80) {
+    recommendations.push('Focus on shorter workouts or break exercises into smaller sets');
+  }
+
+  if (feedback.enjoymentRating <= 2) {
+    recommendations.push('Try different exercise types or workout formats');
+  }
+
+  if (feedback.energyLevel === 'low' && feedback.perceivedExertion >= 8) {
+    recommendations.push('Consider adding more rest days or reducing workout frequency');
+  }
+
+  return recommendations;
+}
+
+function generateAdaptationSuggestions(feedback: FeedbackData, _workout: WorkoutPlan): string[] {
+  const suggestions: string[] = [];
+
+  if (feedback.difficultyRating <= 2 && feedback.enjoymentRating >= 4) {
+    suggestions.push('User enjoys this workout type - consider progressive overload');
+  }
+
+  if (feedback.perceivedExertion <= 4 && feedback.energyLevel === 'high') {
+    suggestions.push('User has capacity for higher intensity workouts');
+  }
+
+  if (feedback.difficultyRating >= 4 && feedback.enjoymentRating <= 3) {
+    suggestions.push('Reduce complexity while maintaining engagement');
+  }
+
+  return suggestions;
+}

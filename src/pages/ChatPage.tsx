@@ -30,7 +30,6 @@ export function ChatPage() {
   const msgs = useChatStore(s => s.messages);
   const clearMessages = useChatStore(s => s.clearMessages);
   const isLoading = useChatStore(s => s.isLoading);
-  const loadChatHistory = useChatStore(s => s.loadChatHistory);
 
   // Auth store
   const user = useAuthStore(s => s.user);
@@ -86,13 +85,12 @@ export function ChatPage() {
     scale: prefersReducedMotion ? 'none' : 'scale(1.05)'
   }), [prefersReducedMotion]);
 
-  // Load chat history and sessions when user is authenticated
+  // Load sessions when user is authenticated (no chat history loading - backend handles memory)
   useEffect(() => {
-    if (user && msgs.length === 0) {
-      loadChatHistory();
+    if (user) {
       loadAllSessions();
     }
-  }, [user, loadChatHistory, loadAllSessions, msgs.length]);
+  }, [user, loadAllSessions]);
 
   // Auto-scroll when messages change
   useEffect(() => {
@@ -306,7 +304,7 @@ export function ChatPage() {
           {/* Loading indicator */}
           {isLoading && (
             <Box px={4} py={2}>
-              <Loader message="AI is thinking..." variant="dots" />
+              <Loader variant="team" />
             </Box>
           )}
 

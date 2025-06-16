@@ -38,7 +38,7 @@ export interface NeuraStackQueryRequest {
   /** Specific models to use (optional) */
   models?: string[];
 
-  /** Maximum tokens in response */
+  /** Maximum tokens in response (optional - backend controls based on tier) */
   maxTokens?: number;
 
   /** Temperature for response creativity (0-1) */
@@ -551,6 +551,13 @@ export interface FitnessProfile {
     minutesPerSession: number;
   };
   completedOnboarding: boolean;
+
+  // Enhanced fields for workout API integration
+  age?: number; // User's age
+  gender?: 'male' | 'female' | 'rather_not_say'; // User's gender
+  weight?: number; // User's weight in kg or lbs
+  injuries?: string[]; // Any injuries or limitations
+  weightUnit?: 'kg' | 'lbs'; // Weight unit preference
 }
 
 export interface WorkoutPlan {
@@ -561,6 +568,31 @@ export interface WorkoutPlan {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   createdAt: Date;
   completedAt: Date | null;
+
+  // Enhanced fields for AI optimization
+  focusAreas?: string[];
+  workoutType?: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed';
+  actualDuration?: number; // actual time taken to complete
+  completionRate?: number; // percentage of exercises completed
+  coachingNotes?: string;
+
+  // AI generation context
+  generationContext?: {
+    userContext: any;
+    aiModelsUsed: string[];
+    generationTime: number;
+    sessionId: string;
+  };
+
+  // Workout structure
+  warmUp?: {
+    duration: number;
+    exercises: string[];
+  };
+  coolDown?: {
+    duration: number;
+    exercises: string[];
+  };
 }
 
 export interface Exercise {
@@ -572,4 +604,99 @@ export interface Exercise {
   instructions: string;
   tips: string;
   targetMuscles: string[];
+
+  // Enhanced fields for AI optimization
+  equipment?: string[];
+  intensity?: 'low' | 'moderate' | 'high';
+  progressionNotes?: string[];
+  modifications?: string[];
+  safetyNotes?: string;
+}
+
+// ============================================================================
+// Workout API Types (for /workout endpoint)
+// ============================================================================
+
+export interface WorkoutUserMetadata {
+  age?: number;
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  gender?: 'male' | 'female' | 'rather_not_say';
+  weight?: number; // in kg or lbs
+  goals?: string[]; // e.g., ['strength', 'toning', 'weight_loss', 'endurance']
+  equipment?: string[]; // e.g., ['dumbbells', 'resistance_bands', 'bodyweight']
+  timeAvailable?: number; // minutes
+  injuries?: string[]; // e.g., ['lower_back', 'knee']
+}
+
+export interface WorkoutHistoryEntry {
+  date: string; // ISO date string
+  type: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed';
+  duration: number; // minutes
+  exercises: string[];
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  rating?: number; // 1-5 scale
+}
+
+export interface WorkoutAPIRequest {
+  userMetadata: WorkoutUserMetadata;
+  workoutHistory?: WorkoutHistoryEntry[];
+  workoutRequest: string; // Natural language description of desired workout
+}
+
+export interface WorkoutAPIExercise {
+  name: string;
+  sets: number;
+  reps: number;
+  duration: number; // seconds
+  restTime: number; // seconds
+  instructions: string;
+  tips: string;
+  targetMuscles: string[];
+  equipment: string[];
+  intensity: 'low' | 'moderate' | 'high';
+  progressionNotes: string;
+  modifications?: string[];
+}
+
+export interface WarmupExercise {
+  name: string;
+  duration: number; // seconds
+  instructions: string;
+}
+
+export interface CooldownExercise {
+  name: string;
+  duration: number; // seconds
+  instructions: string;
+}
+
+export interface WorkoutAPIPlan {
+  type: 'strength' | 'cardio' | 'mixed' | 'flexibility';
+  duration: string; // e.g., "45 minutes"
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  equipment: string[];
+  exercises: WorkoutAPIExercise[];
+  warmup: WarmupExercise[];
+  cooldown: CooldownExercise[];
+  notes: string;
+  calorieEstimate: string;
+  tags: string[];
+}
+
+export interface WorkoutAPIMetadata {
+  generationTime: number; // milliseconds
+  aiModel: string;
+  requestId: string;
+  timestamp: string;
+}
+
+export interface WorkoutAPIResponse {
+  status: 'success' | 'error';
+  data?: {
+    workout: WorkoutAPIPlan;
+    metadata: WorkoutAPIMetadata;
+  };
+  message?: string;
+  timestamp: string;
+  correlationId: string;
 }

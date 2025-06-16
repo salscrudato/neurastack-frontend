@@ -18,6 +18,8 @@ import {
   PiPlayBold,
   PiPersonBold,
   PiTrophyBold,
+  PiHeartBold,
+  PiWarningBold,
 } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 
@@ -68,7 +70,7 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
         </VStack>
 
         {/* Quick stats - Clickable to edit specific settings */}
-        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} w="100%">
+        <SimpleGrid columns={{ base: 2, sm: 3, md: 5 }} spacing={3} w="100%">
           <Card
             bg={cardBg}
             as="button"
@@ -122,31 +124,6 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
           <Card
             bg={cardBg}
             as="button"
-            onClick={() => onEditSpecificSetting?.(3)}
-            cursor="pointer"
-            transition="all 0.2s"
-            _hover={{
-              transform: "translateY(-2px)",
-              boxShadow: "lg",
-              bg: "purple.50"
-            }}
-            _active={{
-              transform: "translateY(0)"
-            }}
-          >
-            <CardBody textAlign="center" py={4}>
-              <Stat>
-                <StatLabel fontSize="xs" color={subtextColor}>Weekly Time</StatLabel>
-                <StatNumber fontSize="lg" color="purple.500">
-                  {totalMinutesPerWeek}
-                </StatNumber>
-              </Stat>
-            </CardBody>
-          </Card>
-
-          <Card
-            bg={cardBg}
-            as="button"
             onClick={() => onEditSpecificSetting?.(2)}
             cursor="pointer"
             transition="all 0.2s"
@@ -164,6 +141,92 @@ export default function Dashboard({ onStartWorkout, onEditProfile, onViewProgres
                 <StatLabel fontSize="xs" color={subtextColor}>Equipment</StatLabel>
                 <StatNumber fontSize="lg" color="orange.500">
                   {profile.equipment.length}
+                </StatNumber>
+              </Stat>
+            </CardBody>
+          </Card>
+
+          <Card
+            bg={cardBg}
+            as="button"
+            onClick={() => onEditSpecificSetting?.(3)}
+            cursor="pointer"
+            transition="all 0.2s"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "lg",
+              bg: "teal.50"
+            }}
+            _active={{
+              transform: "translateY(0)"
+            }}
+          >
+            <CardBody textAlign="center" py={4}>
+              <Stat>
+                <StatLabel fontSize="xs" color={subtextColor}>Personal Info</StatLabel>
+                <StatNumber fontSize="lg" color="teal.500" display="flex" alignItems="center" justifyContent="center">
+                  {profile.age ? (
+                    <Text fontSize="lg">{profile.age}</Text>
+                  ) : (
+                    <Icon as={PiHeartBold} />
+                  )}
+                </StatNumber>
+              </Stat>
+            </CardBody>
+          </Card>
+
+          <Card
+            bg={cardBg}
+            as="button"
+            onClick={() => onEditSpecificSetting?.(4)}
+            cursor="pointer"
+            transition="all 0.2s"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "lg",
+              bg: "red.50"
+            }}
+            _active={{
+              transform: "translateY(0)"
+            }}
+          >
+            <CardBody textAlign="center" py={4}>
+              <Stat>
+                <StatLabel fontSize="xs" color={subtextColor}>Injuries</StatLabel>
+                <StatNumber fontSize="lg" color="red.500" display="flex" alignItems="center" justifyContent="center">
+                  {(profile.injuries?.length || 0) > 0 ? (
+                    <HStack spacing={1}>
+                      <Icon as={PiWarningBold} />
+                      <Text>{profile.injuries?.length}</Text>
+                    </HStack>
+                  ) : (
+                    <Icon as={PiHeartBold} color="green.500" />
+                  )}
+                </StatNumber>
+              </Stat>
+            </CardBody>
+          </Card>
+
+          <Card
+            bg={cardBg}
+            as="button"
+            onClick={() => onEditSpecificSetting?.(5)}
+            cursor="pointer"
+            transition="all 0.2s"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "lg",
+              bg: "purple.50"
+            }}
+            _active={{
+              transform: "translateY(0)"
+            }}
+          >
+            <CardBody textAlign="center" py={4}>
+              <Stat>
+                <StatLabel fontSize="xs" color={subtextColor}>Weekly Time</StatLabel>
+                <StatNumber fontSize="lg" color="purple.500">
+                  {totalMinutesPerWeek}
                 </StatNumber>
               </Stat>
             </CardBody>

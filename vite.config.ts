@@ -84,7 +84,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             // Cache API responses with network-first strategy
-            urlPattern: /^https:\/\/api\./,
+            urlPattern: /^https:\/\/(api\.|.*\.run\.app)/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
@@ -92,7 +92,7 @@ export default defineConfig({
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 5 // 5 minutes
               },
-              networkTimeoutSeconds: 3
+              networkTimeoutSeconds: 30 // Increased from 3 to 30 seconds for AI API calls
             }
           },
           {

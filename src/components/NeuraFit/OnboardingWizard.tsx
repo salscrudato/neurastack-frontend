@@ -9,6 +9,8 @@ import ProgressIndicator from './ProgressIndicator';
 import FitnessLevelStep from './FitnessLevelStep';
 import GoalsStep from './GoalsStep';
 import EquipmentStep from './EquipmentStep';
+import PersonalInfoStep from './PersonalInfoStep';
+import InjuriesStep from './InjuriesStep';
 import TimeStep from './TimeStep';
 import { memo, useMemo, useCallback } from 'react';
 
@@ -56,6 +58,10 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
       case 2:
         return <EquipmentStep onNext={handleNext} onPrev={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
       case 3:
+        return <PersonalInfoStep onNext={handleNext} onBack={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
+      case 4:
+        return <InjuriesStep onNext={handleNext} onBack={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
+      case 5:
         return <TimeStep onNext={handleNext} onPrev={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
       default:
         return <FitnessLevelStep onNext={handleNext} isEditingFromDashboard={isEditingFromDashboard} />;
