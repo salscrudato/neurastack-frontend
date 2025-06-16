@@ -157,16 +157,23 @@ body {
 .neurafit-onboarding-container {
   /* Ensure proper scrolling on all mobile devices */
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   -webkit-overflow-scrolling: touch;
 
   /* Handle dynamic viewport height on mobile */
   min-height: 100vh;
   min-height: -webkit-fill-available;
 
-  /* Prevent horizontal scrolling */
+  /* Prevent horizontal scrolling completely */
   width: 100%;
   max-width: 100vw;
+  position: relative;
+}
+
+/* Ensure all child elements respect horizontal boundaries */
+.neurafit-onboarding-container * {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Mobile-specific fixes for NeuraFit */
@@ -178,6 +185,10 @@ body {
 
     /* Ensure content can scroll past viewport */
     padding-bottom: env(safe-area-inset-bottom, 20px);
+
+    /* Lock horizontal scrolling on mobile */
+    overflow-x: hidden !important;
+    touch-action: pan-y pinch-zoom;
   }
 
   /* Fix for iOS Safari address bar */
@@ -185,6 +196,21 @@ body {
     .neurafit-onboarding-container {
       min-height: -webkit-fill-available;
     }
+  }
+
+  /* Prevent any horizontal scrolling in NeuraFit components */
+  .neurafit-onboarding-container .chakra-container,
+  .neurafit-onboarding-container .chakra-box,
+  .neurafit-onboarding-container .chakra-stack,
+  .neurafit-onboarding-container .chakra-wrap {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure motion components don't cause horizontal overflow */
+  .neurafit-onboarding-container [data-framer-motion] {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
   }
 }
 

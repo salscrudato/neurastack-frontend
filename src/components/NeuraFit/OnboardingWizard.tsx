@@ -62,9 +62,12 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
     }
   }, [currentStep, handleNext, handlePrev, isEditingFromDashboard]);
 
+  // Use fade-only animations on mobile to prevent horizontal scrolling
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   const slideVariants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 300 : -300,
+      x: isMobile ? 0 : (direction > 0 ? 300 : -300),
       opacity: 0,
     }),
     center: {
@@ -74,7 +77,7 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 300 : -300,
+      x: isMobile ? 0 : (direction < 0 ? 300 : -300),
       opacity: 0,
     }),
   };
@@ -85,10 +88,13 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
     <Box
       minH="100vh"
       bg={bgColor}
-      overflow="visible"
+      overflow="hidden"
+      overflowY="auto"
       position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
       className="neurafit-onboarding-container"
+      w="100%"
+      maxW="100vw"
     >
       <Container
         maxW="md"
@@ -97,6 +103,8 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
         px={{ base: 4, md: 6 }}
         display="flex"
         flexDirection="column"
+        w="100%"
+        overflow="hidden"
       >
         {/* Progress indicator - closer to header */}
         <Box
@@ -120,7 +128,7 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
           flex={1}
           w="100%"
           position="relative"
-          overflow="visible"
+          overflow="hidden"
           minH="calc(100vh - 200px)"
           display="flex"
           flexDirection="column"
@@ -134,19 +142,21 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
               animate="center"
               exit="exit"
               transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
+                x: isMobile ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 30 },
                 opacity: { duration: 0.2 }
               }}
-              // Disable horizontal dragging to lock screen from scrolling left/right
+              // Lock horizontal scrolling completely
               style={{
                 width: "100%",
+                maxWidth: "100%",
                 minHeight: "100%",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-start",
                 alignItems: "center",
                 paddingTop: "1rem",
-                paddingBottom: "1rem"
+                paddingBottom: "1rem",
+                overflow: "hidden"
               }}
             >
               <Box w="100%" maxW="400px" flex={1}>
