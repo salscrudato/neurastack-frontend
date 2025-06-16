@@ -5,6 +5,7 @@ import { memo, forwardRef } from 'react';
 interface BrandLogoProps extends Omit<TextProps, 'children'> {
   size?: 'sm' | 'md' | 'lg' | 'xl' | { base: string; md: string };
   variant?: 'default' | 'header' | 'splash' | 'glass';
+  text?: string;
 }
 
 const sizeMap = {
@@ -17,6 +18,7 @@ const sizeMap = {
 export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>(({
   size = 'md',
   variant = 'default',
+  text = 'neurastack',
   ...props
 }, ref) => {
   // Modern gradient styles - always light mode
@@ -39,7 +41,7 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
       color: "transparent",
       // Fallback for browsers that don't support background-clip
       _before: {
-        content: '"neurastack"',
+        content: `"${text}"`,
         position: "absolute",
         top: 0,
         left: 0,
@@ -68,7 +70,7 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
 
   return (
     <Text {...baseProps}>
-      neurastack
+      {text}
     </Text>
   );
 }));

@@ -51,10 +51,11 @@ import NavigationButtons from './NavigationButtons';
 interface TimeStepProps {
   onNext: () => void;
   onPrev: () => void;
+  isEditingFromDashboard?: boolean;
 }
 
 // Refactored: Flattened time availability state in profile, added accessibility & test attributes, and centralized feedback strings.
-export default function TimeStep({ onNext, onPrev }: TimeStepProps) {
+export default function TimeStep({ onNext, onPrev, isEditingFromDashboard = false }: TimeStepProps) {
   // Use flat keys for time availability in the profile
   const { profile, updateProfile, completeOnboarding } = useFitnessStore();
 
@@ -92,7 +93,10 @@ export default function TimeStep({ onNext, onPrev }: TimeStepProps) {
     const minutesPerSession = profile.timeAvailability?.minutesPerSession || 0;
     console.log(`Time step completed: ${daysPerWeek} days, ${minutesPerSession} minutes`);
 
-    completeOnboarding();
+    // Only complete onboarding if this is the initial setup, not editing
+    if (!isEditingFromDashboard) {
+      completeOnboarding();
+    }
     onNext();
   };
 
@@ -234,7 +238,8 @@ export default function TimeStep({ onNext, onPrev }: TimeStepProps) {
       <NavigationButtons
         onBack={onPrev}
         onNext={handleComplete}
-        nextLabel="Complete Setup"
+        nextLabel={isEditingFromDashboard ? "Save" : "Complete Setup"}
+        backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
       />
     </VStack>
   );

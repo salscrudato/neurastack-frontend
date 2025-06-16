@@ -15,9 +15,10 @@ import NavigationButtons from './NavigationButtons';
 interface EquipmentStepProps {
   onNext: () => void;
   onPrev: () => void;
+  isEditingFromDashboard?: boolean;
 }
 
-export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
+export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard = false }: EquipmentStepProps) {
   const { profile, updateProfile } = useFitnessStore();
 
   // Updated color scheme to match new design system (light mode only as per user preferences)
@@ -30,19 +31,19 @@ export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
   // State to track last changed equipment for aria-live announcement
   const [lastChanged, setLastChanged] = useState<string | null>(null);
 
-  // Handle toggling equipment selection with exclusive logic for "No Equipment"
+  // Handle toggling equipment selection with exclusive logic for "Body Weight"
   const handleEquipmentToggle = (equipmentCode: string) => {
     const currentEquipment = profile.equipment || [];
     const isSelected = currentEquipment.includes(equipmentCode);
-    
+
     let newEquipment: string[];
     if (isSelected) {
       newEquipment = currentEquipment.filter(eq => eq !== equipmentCode);
     } else {
-      if (equipmentCode === 'NO') {
-        newEquipment = ['NO'];
+      if (equipmentCode === 'BW') {
+        newEquipment = ['BW'];
       } else {
-        newEquipment = currentEquipment.filter(eq => eq !== 'NO');
+        newEquipment = currentEquipment.filter(eq => eq !== 'BW');
         newEquipment = [...newEquipment, equipmentCode];
       }
     }
@@ -136,7 +137,7 @@ export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
                   <Icon
                     as={equipment.icon}
                     boxSize={8}
-                    color={isSelected ? `${equipment.color}.500` : subtextColor}
+                    color={isSelected ? `${equipment.color}.500` : 'gray.400'}
                   />
                   <Text
                     id={labelId}
@@ -160,6 +161,8 @@ export default function EquipmentStep({ onNext, onPrev }: EquipmentStepProps) {
         onBack={onPrev}
         onNext={onNext}
         canProceed={canProceed}
+        nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
+        backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
       />
     </VStack>
   );

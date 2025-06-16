@@ -16,6 +16,7 @@ interface FitnessState {
   // Onboarding state
   currentStep: number;
   totalSteps: number;
+  isEditingFromDashboard: boolean; // Track if user is editing from dashboard
 
   // Workout plans
   workoutPlans: WorkoutPlan[];
@@ -37,6 +38,8 @@ interface FitnessState {
   nextStep: () => void;
   prevStep: () => void;
   goToStep: (step: number) => void;
+  startEditingFromDashboard: (step: number) => void;
+  finishEditingFromDashboard: () => void;
 
   // Workout actions
   setCurrentWorkout: (workout: WorkoutPlan | null) => void;
@@ -68,6 +71,7 @@ export const useFitnessStore = create<FitnessState>()(
       profile: defaultProfile,
       currentStep: 0,
       totalSteps: 4,
+      isEditingFromDashboard: false,
       workoutPlans: [],
       currentWorkout: null,
       isLoading: false,
@@ -192,6 +196,21 @@ export const useFitnessStore = create<FitnessState>()(
         const { totalSteps } = get();
         set({
           currentStep: Math.max(0, Math.min(step, totalSteps - 1))
+        });
+      },
+
+      startEditingFromDashboard: (step) => {
+        const { totalSteps } = get();
+        set({
+          currentStep: Math.max(0, Math.min(step, totalSteps - 1)),
+          isEditingFromDashboard: true
+        });
+      },
+
+      finishEditingFromDashboard: () => {
+        set({
+          isEditingFromDashboard: false,
+          currentStep: 0
         });
       },
 

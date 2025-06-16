@@ -6,7 +6,6 @@ import {
   IconButton,
   Tooltip,
   useClipboard,
-  Badge,
   VStack,
 } from "@chakra-ui/react";
 import { memo, useMemo } from "react";
@@ -151,25 +150,23 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
 
   return (
-    <VStack spacing={{ base: 4, md: 5 }} w="100%" align="stretch">
-      {/* Enhanced Centered Timestamp with Line - Only for user messages */}
-      {isUser && (
-        <Flex align="center" w="100%" my={{ base: 3, md: 4 }}>
-          <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.6} />
-          <Text
-            px={{ base: 4, md: 5 }}
-            fontSize={fontSizes.micro}
-            color={timestampColor}
-            fontWeight="600"
-            bg="#FAFBFC"
-            borderRadius="full"
-            py={1}
-          >
-            {formatTimestamp(message.timestamp)}
-          </Text>
-          <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.6} />
-        </Flex>
-      )}
+    <VStack spacing={{ base: 6, md: 8 }} w="100%" align="stretch">
+      {/* Centered Timestamp with Line - for all messages */}
+      <Flex align="center" w="100%" my={{ base: 2, md: 3 }}>
+        <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.4} />
+        <Text
+          px={{ base: 3, md: 4 }}
+          fontSize={fontSizes.micro}
+          color={timestampColor}
+          fontWeight="500"
+          bg="#FAFBFC"
+          borderRadius="full"
+          py={0.5}
+        >
+          {formatTimestamp(message.timestamp)}
+        </Text>
+        <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.4} />
+      </Flex>
 
       {/* Message Container */}
       <Flex
@@ -181,43 +178,14 @@ export const ChatMessage = memo<ChatMessageProps>(({
         p={isHighlighted ? 3 : 0}
         transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
       >
-      {/* Simplified AI Model Badge and timestamp - show on all assistant messages */}
-      {!isUser && !isError && (
-        <HStack spacing={3} mb={2} justify="space-between" w="100%" align="center">
-          <Badge
-            colorScheme="blue"
-            variant="subtle"
-            fontSize={fontSizes.micro}
-            px={3}
-            py={1.5}
-            borderRadius="full"
-            fontWeight="600"
-            bg="rgba(79, 156, 249, 0.1)"
-            color="#4F9CF9"
-            border="1px solid"
-            borderColor="rgba(79, 156, 249, 0.2)"
-          >
-            Powered by OpenAI, Gemini & Grok
-          </Badge>
-          {/* Enhanced timestamp for AI responses */}
-          <Text
-            fontSize={fontSizes.micro}
-            color={timestampColor}
-            opacity={0.8}
-            fontWeight="500"
-            minW="fit-content"
-          >
-            {formatTimestamp(message.timestamp)}
-          </Text>
-        </HStack>
-      )}
+      {/* Remove the "Powered by..." badge - no longer needed */}
 
-      {/* Message Bubble - Enhanced with modern styling and better mobile optimization */}
+      {/* Message Bubble - iMessage-style with reduced padding */}
       <Box
         bg={bubbleBg}
         color={bubbleText}
-        px={{ base: 4, md: 5 }}
-        py={{ base: 3, md: 4 }}
+        px={{ base: 3, md: 4 }}
+        py={{ base: 2, md: 2.5 }}
         borderRadius="2xl"
         maxW={{ base: "95%", sm: "90%", md: "85%" }}
         minW={{ base: "40%", sm: "45%" }}

@@ -2,14 +2,13 @@ import {
   PiScalesBold,
   PiBarbell,
   PiHeartBold,
-  PiPersonArmsSpreadBold,
   PiTargetBold,
   PiTrophyBold
 } from 'react-icons/pi';
 
 export interface FitnessGoal {
-  code: 'LW' | 'BM' | 'IC' | 'IF' | 'GF' | 'AP';
-  value: 'lose_weight' | 'build_muscle' | 'improve_cardio' | 'increase_flexibility' | 'general_fitness' | 'athletic_performance';
+  code: 'LW' | 'BM' | 'IC' | 'GF' | 'AP';
+  value: 'lose_weight' | 'build_muscle' | 'improve_cardio' | 'general_fitness' | 'athletic_performance';
   label: string;
   icon: any;
   description: string;
@@ -57,18 +56,6 @@ export const FITNESS_GOALS: FitnessGoal[] = [
     borderColor: '#A8E6CF', // Soft mint green
     hoverBg: '#F5F5F5', // Light neutral hover
     iconColor: '#88D8A3', // Deeper mint
-  },
-  {
-    code: 'IF',
-    value: 'increase_flexibility',
-    label: 'Increase Flexibility',
-    icon: PiPersonArmsSpreadBold,
-    description: 'Enhance mobility & range of motion',
-    color: '#C7CEEA', // Soft lavender
-    bgColor: '#FAFAFA', // Ultra-light neutral
-    borderColor: '#C7CEEA', // Soft lavender
-    hoverBg: '#F5F5F5', // Light neutral hover
-    iconColor: '#A8B3D9', // Deeper lavender
   },
   {
     code: 'GF',

@@ -13,7 +13,7 @@ import type { WorkoutPlan } from '../lib/types';
 type ViewState = 'dashboard' | 'workout' | 'progress';
 
 export default function NeuraFitPage() {
-  const { profile, resetOnboarding, completeOnboarding } = useFitnessStore();
+  const { profile, resetOnboarding, completeOnboarding, startEditingFromDashboard, finishEditingFromDashboard } = useFitnessStore();
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const toast = useToast();
 
@@ -41,6 +41,25 @@ export default function NeuraFitPage() {
     setCurrentView('dashboard');
   };
 
+  const handleEditSpecificSetting = (step: number) => {
+    // Start editing mode and navigate to specific step
+    startEditingFromDashboard(step);
+    setCurrentView('dashboard');
+  };
+
+  const handleFinishEditing = () => {
+    // Finish editing and return to dashboard
+    finishEditingFromDashboard();
+    setCurrentView('dashboard');
+    toast({
+      title: 'Settings Updated',
+      description: 'Your fitness settings have been saved successfully.',
+      status: 'success',
+      duration: 2000,
+      isClosable: true,
+    });
+  };
+
   const handleWorkoutComplete = (workout: WorkoutPlan) => {
     setCurrentView('dashboard');
     toast({
@@ -57,8 +76,8 @@ export default function NeuraFitPage() {
   };
 
   const renderCurrentView = () => {
-    if (!profile.completedOnboarding) {
-      return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+    if (!profile.completedOnboarding || useFitnessStore.getState().isEditingFromDashboard) {
+      return <OnboardingWizard onComplete={useFitnessStore.getState().isEditingFromDashboard ? handleFinishEditing : handleOnboardingComplete} />;
     }
 
     switch (currentView) {
@@ -82,6 +101,7 @@ export default function NeuraFitPage() {
             onStartWorkout={handleStartWorkout}
             onEditProfile={handleEditProfile}
             onViewProgress={handleViewProgress}
+            onEditSpecificSetting={handleEditSpecificSetting}
           />
         );
     }

@@ -21,36 +21,46 @@ interface OnboardingWizardProps {
 }
 
 const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
-  const { currentStep, totalSteps, nextStep, prevStep } = useFitnessStore();
+  const { currentStep, totalSteps, nextStep, prevStep, isEditingFromDashboard, finishEditingFromDashboard } = useFitnessStore();
 
   const bgColor = useColorModeValue('gray.50', 'gray.900');
 
   const handleNext = useCallback(() => {
-    if (currentStep < totalSteps - 1) {
+    if (isEditingFromDashboard) {
+      // When editing from dashboard, save changes and return to dashboard
+      finishEditingFromDashboard();
+      onComplete();
+    } else if (currentStep < totalSteps - 1) {
       nextStep();
     } else {
       onComplete();
     }
-  }, [currentStep, totalSteps, nextStep, onComplete]);
+  }, [isEditingFromDashboard, finishEditingFromDashboard, onComplete, currentStep, totalSteps, nextStep]);
 
   const handlePrev = useCallback(() => {
-    prevStep();
-  }, [prevStep]);
+    if (isEditingFromDashboard) {
+      // When editing from dashboard, back should return to dashboard
+      finishEditingFromDashboard();
+      onComplete();
+    } else {
+      prevStep();
+    }
+  }, [isEditingFromDashboard, finishEditingFromDashboard, onComplete, prevStep]);
 
   const currentStepComponent = useMemo(() => {
     switch (currentStep) {
       case 0:
-        return <FitnessLevelStep onNext={handleNext} />;
+        return <FitnessLevelStep onNext={handleNext} isEditingFromDashboard={isEditingFromDashboard} />;
       case 1:
-        return <GoalsStep onNext={handleNext} onBack={handlePrev} />;
+        return <GoalsStep onNext={handleNext} onBack={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
       case 2:
-        return <EquipmentStep onNext={handleNext} onPrev={handlePrev} />;
+        return <EquipmentStep onNext={handleNext} onPrev={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
       case 3:
-        return <TimeStep onNext={handleNext} onPrev={handlePrev} />;
+        return <TimeStep onNext={handleNext} onPrev={handlePrev} isEditingFromDashboard={isEditingFromDashboard} />;
       default:
-        return <FitnessLevelStep onNext={handleNext} />;
+        return <FitnessLevelStep onNext={handleNext} isEditingFromDashboard={isEditingFromDashboard} />;
     }
-  }, [currentStep, handleNext, handlePrev]);
+  }, [currentStep, handleNext, handlePrev, isEditingFromDashboard]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -69,10 +79,7 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
     }),
   };
 
-  const swipeConfidenceThreshold = 10000;
-  const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
-  };
+
 
   return (
     <Box
@@ -91,14 +98,14 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
         display="flex"
         flexDirection="column"
       >
-        {/* Progress indicator - fixed at top */}
+        {/* Progress indicator - closer to header */}
         <Box
           position="sticky"
           top={0}
           zIndex={10}
           bg={bgColor}
-          py={4}
-          mb={6}
+          py={2}
+          mb={3}
           borderRadius="md"
           boxShadow="sm"
         >
@@ -130,18 +137,7 @@ const OnboardingWizard = memo(function OnboardingWizard({ onComplete }: Onboardi
                 x: { type: "spring", stiffness: 300, damping: 30 },
                 opacity: { duration: 0.2 }
               }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              onDragEnd={(_, { offset, velocity }) => {
-                const swipe = swipePower(offset.x, velocity.x);
-
-                if (swipe < -swipeConfidenceThreshold && currentStep < totalSteps - 1) {
-                  handleNext();
-                } else if (swipe > swipeConfidenceThreshold && currentStep > 0) {
-                  handlePrev();
-                }
-              }}
+              // Disable horizontal dragging to lock screen from scrolling left/right
               style={{
                 width: "100%",
                 minHeight: "100%",

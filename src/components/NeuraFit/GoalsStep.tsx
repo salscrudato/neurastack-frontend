@@ -53,9 +53,10 @@ const cardVariants = {
 interface GoalsStepProps {
   onNext: () => void;
   onBack: () => void;
+  isEditingFromDashboard?: boolean;
 }
 
-export default function GoalsStep({ onNext, onBack }: GoalsStepProps) {
+export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = false }: GoalsStepProps) {
   const { profile, syncToFirestore } = useFitnessStore();
   const prefersReducedMotion = useReducedMotion();
 
@@ -294,7 +295,7 @@ export default function GoalsStep({ onNext, onBack }: GoalsStepProps) {
                         <Icon
                           as={goal.icon}
                           boxSize="20px"
-                          color={isSelected ? goal.iconColor : 'gray.500'}
+                          color={isSelected ? goal.iconColor : 'gray.400'}
                           transition="color 150ms ease"
                         />
                       </Box>
@@ -337,6 +338,8 @@ export default function GoalsStep({ onNext, onBack }: GoalsStepProps) {
         onBack={handleBack}
         onNext={handleNext}
         canProceed={canProceed}
+        nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
+        backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
       />
 
       {/* Screen reader instructions */}

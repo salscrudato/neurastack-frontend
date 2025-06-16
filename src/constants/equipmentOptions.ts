@@ -3,7 +3,6 @@ import {
   PiPersonBold,
   PiTargetBold,
   PiCircleBold,
-  PiXBold,
   PiBicycleBold
 } from 'react-icons/pi';
 
@@ -17,9 +16,9 @@ export interface EquipmentOption {
 
 const equipmentOptions: EquipmentOption[] = [
   {
-    code: 'NO',
-    label: 'No Equipment',
-    icon: PiXBold,
+    code: 'BW',
+    label: 'Body Weight',
+    icon: PiPersonBold,
     color: 'gray',
     description: 'Bodyweight exercises only'
   },
@@ -66,11 +65,11 @@ const equipmentOptions: EquipmentOption[] = [
     description: 'Stationary or spin bike'
   },
   {
-    code: 'BW',
-    label: 'Bodyweight',
-    icon: PiPersonBold,
+    code: 'YM',
+    label: 'Yoga Mat',
+    icon: PiTargetBold,
     color: 'cyan',
-    description: 'Pull-up bar, push-up handles, etc.'
+    description: 'Yoga mat for floor exercises'
   }
 ];
 

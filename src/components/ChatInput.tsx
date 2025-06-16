@@ -45,16 +45,16 @@ export default function ChatInput() {
 
 
 
-  // Enhanced input configuration with elegant rounded design
+  // Enhanced input configuration with elegant rounded design - Made smaller
   const inputConfig = useMemo(() => ({
-    minHeight: { xs: "48px", sm: "50px", md: "52px", lg: "54px", xl: "56px" },
-    maxHeight: { xs: "140px", sm: "150px", md: "160px", lg: "170px", xl: "180px" },
-    fontSize: { xs: "16px", sm: "16px", md: "16px", lg: "17px", xl: "17px" }, // Prevent zoom
-    padding: { xs: 4, sm: 4.5, md: 5, lg: 5.5, xl: 6 },
+    minHeight: { xs: "40px", sm: "42px", md: "44px", lg: "46px", xl: "48px" },
+    maxHeight: { xs: "120px", sm: "130px", md: "140px", lg: "150px", xl: "160px" },
+    fontSize: { xs: "14px", sm: "14px", md: "15px", lg: "15px", xl: "16px" }, // Smaller font size
+    padding: { xs: 3, sm: 3.5, md: 4, lg: 4.5, xl: 5 },
     // More rounded edges for modern, elegant design
     borderRadius: { xs: "3xl", sm: "3xl", md: "4xl", lg: "4xl", xl: "4xl" },
     // Smaller circular send button
-    sendButton: { xs: "36px", sm: "38px", md: "40px", lg: "42px", xl: "44px" }
+    sendButton: { xs: "32px", sm: "34px", md: "36px", lg: "38px", xl: "40px" }
   }), []);
 
   // Enhanced animation configuration with performance optimization
@@ -127,8 +127,8 @@ export default function ChatInput() {
     textarea.style.height = 'auto';
     const scrollHeight = textarea.scrollHeight;
 
-    // Apply height with constraints
-    const maxHeight = isMobile ? 140 : 180;
+    // Apply height with constraints - smaller max heights
+    const maxHeight = isMobile ? 120 : 160;
     const newHeight = Math.min(scrollHeight, maxHeight);
     textarea.style.height = `${newHeight}px`;
   }, [isMobile]);
@@ -286,7 +286,7 @@ export default function ChatInput() {
       ref={containerRef}
       w="full"
       px={inputConfig.padding}
-      py={{ xs: 3, sm: 3.5, md: 4, lg: 4.5, xl: 5 }}
+      py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
       bg={colorSystem.page.bg}
       borderTopWidth="1px"
       borderColor={colorSystem.page.borderTop}
@@ -301,8 +301,8 @@ export default function ChatInput() {
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
         '@media (max-width: 768px)': {
-          paddingX: 3,
-          paddingY: 3,
+          paddingX: 2,
+          paddingY: 2,
         }
       }}
     >
@@ -314,7 +314,7 @@ export default function ChatInput() {
           borderColor="transparent"
           borderRadius={inputConfig.borderRadius}
           px={inputConfig.padding}
-          py={{ xs: 3.5, sm: 4, md: 4.5, lg: 5, xl: 5.5 }}
+          py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
           alignItems="center"
           transition={animationConfig.transition}
           boxShadow="none"
@@ -413,19 +413,19 @@ export default function ChatInput() {
               },
             }}
             color={colorSystem.text.primary}
-            pr={{ base: "4.5rem", md: "5.5rem" }}
-            pl={{ base: "1.5rem", md: "2rem" }}
-            py={{ base: "1.5rem", md: "1.75rem" }}
+            pr={{ base: "4rem", md: "5rem" }}
+            pl={{ base: "1rem", md: "1.5rem" }}
+            py={{ base: "1rem", md: "1.25rem" }}
             fontSize={inputConfig.fontSize}
-            lineHeight="1.6"
+            lineHeight="1.5"
             fontWeight="400"
           />
 
           <InputRightElement
-            width={{ base: "4rem", md: "5rem" }}
+            width={{ base: "3.5rem", md: "4.5rem" }}
             top="50%"
             transform="translateY(-50%)"
-            pr={{ base: 1.5, md: 2 }}
+            pr={{ base: 1, md: 1.5 }}
             display="flex"
             alignItems="center"
             justifyContent="flex-end"
@@ -437,7 +437,7 @@ export default function ChatInput() {
               <IconButton
                 aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
                 aria-disabled={busy || !txt.trim()}
-                icon={<PiArrowUpBold size={txt.trim() ? 18 : 16} />}
+                icon={<PiArrowUpBold size={txt.trim() ? 16 : 14} />}
                 onClick={handleSend}
                 isLoading={busy}
                 size="sm"

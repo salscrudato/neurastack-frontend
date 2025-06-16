@@ -40,6 +40,12 @@ export function Header() {
     if (isOpen) onClose();
   }
 
+  // Determine brand text and navigation based on current page
+  const isNeuraFitPage = location.pathname === '/neurafit';
+  const brandText = isNeuraFitPage ? 'neurafit' : 'neurastack';
+  const brandLabel = isNeuraFitPage ? 'NeuraFit - Go to NeuraFit' : 'Neurastack - Go to Chat';
+  const brandNavigateTo = isNeuraFitPage ? '/neurafit' : '/chat';
+
 
 
   // Modern color values - light mode only
@@ -318,7 +324,7 @@ export function Header() {
         zIndex={1}
       >
         <Tooltip
-          label="Neurastack - Go to Chat"
+          label={brandLabel}
           hasArrow
           placement="bottom"
           openDelay={500}
@@ -327,12 +333,12 @@ export function Header() {
             as="button"
             role="button"
             tabIndex={0}
-            aria-label="Neurastack logo - navigate to chat"
-            onClick={() => navigate('/chat')}
+            aria-label={`${brandText} logo - navigate to ${isNeuraFitPage ? 'NeuraFit' : 'chat'}`}
+            onClick={() => navigate(brandNavigateTo)}
             onKeyDown={(e: React.KeyboardEvent) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                navigate('/chat');
+                navigate(brandNavigateTo);
               }
             }}
             transition={animationConfig.transition}
@@ -354,6 +360,7 @@ export function Header() {
               size={headerConfig.logoSize}
               variant="header"
               cursor="pointer"
+              text={brandText}
             />
           </Box>
         </Tooltip>

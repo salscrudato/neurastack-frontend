@@ -50,6 +50,7 @@ const cardVariants = {
 
 interface FitnessLevelStepProps {
   onNext: () => void;
+  isEditingFromDashboard?: boolean;
 }
 
 export default function FitnessLevelStep({ onNext }: FitnessLevelStepProps) {
@@ -254,7 +255,7 @@ export default function FitnessLevelStep({ onNext }: FitnessLevelStepProps) {
                       <Icon
                         as={level.icon}
                         boxSize={{ base: "20px", md: "24px" }}
-                        color={isSelected ? level.iconColor : subtextColor}
+                        color={isSelected ? level.iconColor : 'gray.400'}
                         transition="color 120ms ease"
                       />
                     </Box>

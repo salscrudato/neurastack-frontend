@@ -16,17 +16,13 @@ const ProgressIndicator = memo(function ProgressIndicator({
   currentStep,
   totalSteps
 }: ProgressIndicatorProps) {
+  // Color values - must be called at top level
+  const textColor = useColorModeValue('gray.900', 'gray.100');
+  const subtextColor = useColorModeValue('gray.600', 'gray.400');
+  const progressBg = useColorModeValue('gray.200', 'gray.700');
+
   // Memoized calculations for better performance
   const progressValue = useMemo(() => ((currentStep + 1) / totalSteps) * 100, [currentStep, totalSteps]);
-
-  // Memoized color values
-  const colors = useMemo(() => ({
-    text: useColorModeValue('gray.900', 'gray.100'),
-    subtext: useColorModeValue('gray.600', 'gray.400'),
-    progressBg: useColorModeValue('gray.200', 'gray.700')
-  }), []);
-
-  const { text: textColor, subtext: subtextColor, progressBg } = colors;
 
   return (
     <Box w="100%" mb={4}>
