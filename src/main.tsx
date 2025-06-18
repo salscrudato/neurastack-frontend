@@ -88,9 +88,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 // Load API test utilities in development mode
-if (import.meta.env.DEV) {
-  import('./utils/api-test').then(() => {
-    console.log('🔧 API test utilities loaded in development mode');
-    console.log('Use window.apiTest.runAllAPITests("your-user-id") to test APIs');
-  });
-}
+// if (import.meta.env.DEV) {
+//   import('./utils/api-test').then(() => {
+//     console.log('🔧 API test utilities loaded in development mode');
+//     console.log('Use window.apiTest.runAllAPITests("your-user-id") to test APIs');
+//   });
+// }

@@ -1,39 +1,39 @@
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  useColorModeValue,
-  Icon,
-  Badge,
-  Card,
-  CardBody,
-  SimpleGrid,
-  Spinner,
-  useToast,
-  Flex,
-  Divider,
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    Divider,
+    Flex,
+    HStack,
+    Icon,
+    SimpleGrid,
+    Spinner,
+    Text,
+    useColorModeValue,
+    useToast,
+    VStack,
 } from '@chakra-ui/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  PiPlayBold,
-  PiStopBold,
-  PiCheckBold,
-  PiTimerBold,
-  PiTargetBold,
-  PiLightningBold,
+    PiCheckBold,
+    PiLightningBold,
+    PiPlayBold,
+    PiStopBold,
+    PiTargetBold,
+    PiTimerBold,
 } from 'react-icons/pi';
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useFitnessStore } from '../../store/useFitnessStore';
+import equipmentOptions from '../../constants/equipmentOptions';
+import { FITNESS_GOALS } from '../../constants/fitnessGoals';
 import { neuraStackClient } from '../../lib/neurastack-client';
+import type { Exercise, WorkoutAPIRequest, WorkoutHistoryEntry, WorkoutPlan, WorkoutUserMetadata } from '../../lib/types';
 import { useAuthStore } from '../../store/useAuthStore';
-import type { WorkoutPlan, Exercise, WorkoutAPIRequest, WorkoutUserMetadata, WorkoutHistoryEntry } from '../../lib/types';
-import WorkoutFeedback from './WorkoutFeedback';
+import { useFitnessStore } from '../../store/useFitnessStore';
 import ModernLoadingAnimation from './ModernLoadingAnimation';
 import ModernProgressIndicator from './ModernProgressIndicator';
-import { FITNESS_GOALS } from '../../constants/fitnessGoals';
-import equipmentOptions from '../../constants/equipmentOptions';
+import WorkoutFeedback from './WorkoutFeedback';
 
 const MotionBox = motion(Box);
 
@@ -194,12 +194,12 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       const userMetadata: WorkoutUserMetadata = {
         age: userAge, // Age is required by the API
         fitnessLevel: profile.fitnessLevel,
-        gender: convertGenderForAPI(profile.gender), // Convert gender for API compatibility
-        weight: profile.weight,
+        // gender: convertGenderForAPI(profile.gender), // Convert gender for API compatibility
+        // weight: profile.weight,
         goals: goalNames, // Use full names instead of codes
         equipment: equipmentNames, // Use full names instead of codes
-        timeAvailable: profile.availableTime,
-        injuries: profile.injuries || [],
+        // timeAvailable: profile.availableTime,
+        // injuries: profile.injuries || [],
       };
 
       // Build workout history from recent workouts
@@ -250,9 +250,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           ...workoutPlan,
           generationContext: {
             userContext: { userMetadata, workoutHistory, workoutRequest },
-            aiModelsUsed: [response.data.metadata.aiModel],
+            aiModelsUsed: [response.data.metadata.model],
             generationTime: performance.now() - startTime,
-            sessionId: response.correlationId
+            sessionId: response.correlationId || 'unknown'
           }
         };
 
@@ -262,7 +262,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         if (user?.uid) {
           await neuraStackClient.storeMemory({
             userId: user.uid,
-            sessionId: response.correlationId,
+            sessionId: response.correlationId || 'unknown',
             content: `Generated: ${workoutPlan.name}, ${workoutPlan.exercises.length}ex, ${workoutPlan.duration}min`,
             isUserPrompt: false,
             responseQuality: 0.9,
@@ -400,13 +400,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   }, []);
 
   // Helper function to convert gender for API compatibility
-  const convertGenderForAPI = useCallback((gender?: string): 'male' | 'female' | 'rather_not_say' | undefined => {
-    if (!gender) return undefined;
-    if (gender === 'Rather Not Say') return 'rather_not_say';
-    if (gender === 'Male') return 'male';
-    if (gender === 'Female') return 'female';
-    return undefined; // fallback for unknown values
-  }, []);
+  // const convertGenderForAPI = useCallback((gender?: string): 'male' | 'female' | 'rather_not_say' | undefined => {
+  //   if (!gender) return undefined;
+  //   if (gender === 'Rather Not Say') return 'rather_not_say';
+  //   if (gender === 'Male') return 'male';
+  //   if (gender === 'Female') return 'female';
+  //   return undefined; // fallback for unknown values
+  // }, []);
 
   // Build natural language workout request for the API
   const buildWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
