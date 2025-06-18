@@ -1,13 +1,15 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Box, Flex } from "@chakra-ui/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Suspense } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import AddToHomeButton from "./components/AddToHomeScreen";
-import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
-import { useFitnessSync } from "./hooks/useFitnessSync";
-import LoadingSpinner from "./components/LoadingSpinner";
 import { Header } from "./components/Header";
+import LoadingSpinner from "./components/LoadingSpinner";
+import PrivacyConsent from "./components/PrivacyConsent";
 import UpdateNotification from "./components/UpdateNotification";
+import { useAnalytics } from "./hooks/useAnalytics";
+import { useFitnessSync } from "./hooks/useFitnessSync";
+import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
 import "./styles/mobile-scrolling.css";
 import "./styles/modern-enhancements.css";
 
@@ -115,10 +117,14 @@ export default function App() {
   // Initialize fitness data sync with Firestore
   useFitnessSync();
 
+  // Initialize analytics tracking
+  useAnalytics();
+
   return (
     <PageContentWrapper>
       <AddToHomeButton />
       <UpdateNotification />
+      <PrivacyConsent />
       <Suspense fallback={<Fallback />}>
         <Outlet />
       </Suspense>

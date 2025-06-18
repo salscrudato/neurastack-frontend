@@ -5,30 +5,29 @@
  * with full type safety, error handling, and modern features.
  */
 
-import type {
-  NeuraStackQueryRequest,
-  NeuraStackQueryResponse,
-  MemoryMetrics,
-  SessionContext,
-  EnsembleRequest,
-  EnsembleResponse,
-  DetailedHealthResponse,
-  MetricsResponse,
-  TierInfoResponse,
-  CostEstimateRequest,
-  CostEstimateResponse,
-  SubAnswer,
-  StoreMemoryRequest,
-  StoreMemoryResponse,
-  RetrieveMemoryRequest,
-  MemoryContextRequest,
-  MemoryContextResponse,
-  MemoryAnalyticsResponse,
-  MemoryHealthResponse,
-  WorkoutAPIRequest,
-  WorkoutAPIResponse
-} from './types';
 import { cacheManager } from './cacheManager';
+import type {
+    CostEstimateRequest,
+    CostEstimateResponse,
+    DetailedHealthResponse,
+    EnsembleResponse,
+    MemoryAnalyticsResponse,
+    MemoryContextRequest,
+    MemoryContextResponse,
+    MemoryHealthResponse,
+    MemoryMetrics,
+    MetricsResponse,
+    NeuraStackQueryRequest,
+    NeuraStackQueryResponse,
+    RetrieveMemoryRequest,
+    SessionContext,
+    StoreMemoryRequest,
+    StoreMemoryResponse,
+    SubAnswer,
+    TierInfoResponse,
+    WorkoutAPIRequest,
+    WorkoutAPIResponse
+} from './types';
 
 // ============================================================================
 // Error Types
@@ -143,14 +142,42 @@ export class NeuraStackClient {
   private config: Required<NeuraStackClientConfig>;
 
   constructor(config: NeuraStackClientConfig = {}) {
+    // Determine the appropriate backend URL based on environment
+    const getBackendUrl = () => {
+      // If explicitly provided in config, use that
+      if (config.baseUrl) {
+        return config.baseUrl.replace(/\/$/, "");
+      }
+
+      // Check for environment variable
+      if (import.meta.env.VITE_BACKEND_URL) {
+        return import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+      }
+
+      // Auto-detect local development
+      const isLocalDev = import.meta.env.DEV ||
+                        window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname.includes('local');
+
+      if (isLocalDev) {
+        return "http://localhost:8080";
+      }
+
+      // Default to production
+      return "https://neurastack-backend-638289111765.us-central1.run.app";
+    };
+
+    const backendUrl = getBackendUrl();
+
+
+
     this.config = {
-      baseUrl: config.baseUrl ||
-        import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") ||
-        "https://neurastack-backend-638289111765.us-central1.run.app",
+      baseUrl: backendUrl,
       sessionId: config.sessionId || crypto.randomUUID(),
       userId: config.userId || '',
       authToken: config.authToken || '',
-      timeout: config.timeout || 60000, // 60 seconds to accommodate ensemble processing
+      timeout: config.timeout || 30000, // 30 seconds (backend timeout is 25s + buffer)
       useEnsemble: config.useEnsemble ?? true
     };
   }
@@ -169,46 +196,44 @@ export class NeuraStackClient {
     prompt: string,
     options: NeuraStackRequestOptions & Partial<NeuraStackQueryRequest> = {}
   ): Promise<NeuraStackQueryResponse> {
-    const sessionId = options.sessionId || this.config.sessionId;
-    const requestBody: EnsembleRequest = {
-      prompt,
-      sessionId
+    // Prepare request body according to backend documentation
+    const requestBody = {
+      prompt: prompt || "Quick sanity check: explain AI in 1-2 lines."
     };
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     };
 
-    // Generate correlation ID for request tracking
+    // Add required headers according to backend documentation
+    const userId = options.userId || this.config.userId;
+    if (userId && userId.trim() !== '') {
+      headers['X-User-Id'] = userId;
+    }
+
+    // Generate correlation ID for request tracking (optional but recommended)
     const correlationId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     headers['X-Correlation-ID'] = correlationId;
 
-    // Log the outgoing request
-    console.group('🚀 NeuraStack Default Ensemble API Request');
-    console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.DEFAULT_ENSEMBLE}`);
-    console.log('📋 Request Body:', JSON.stringify(requestBody, null, 2));
-    console.log('🔧 Headers:', headers);
-    console.log('⚙️ Config:', {
-      sessionId: this.config.sessionId,
-      userId: this.config.userId,
-      timeout: this.config.timeout,
-      correlationId
-    });
-    console.groupEnd();
-
-    // Enhanced headers with correlation tracking
-    const userId = options.userId || this.config.userId;
+    // Add authentication if available
     const authToken = options.authToken || this.config.authToken;
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
 
-    // Add tracking and session headers
-    if (sessionId) headers['X-Session-Id'] = sessionId;
-    if (userId && userId.trim() !== '') headers['X-User-Id'] = userId;
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-
-    // Log headers being sent for debugging
-    const headerKeys = Object.keys(headers).filter(k => k !== 'Content-Type');
-    if (headerKeys.length > 0) {
-      console.log('📋 Headers being sent:', headerKeys);
+    // Log the outgoing request (development only)
+    if (import.meta.env.DEV) {
+      console.group('🚀 NeuraStack Default Ensemble API Request');
+      console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.DEFAULT_ENSEMBLE}`);
+      console.log('📋 Request Body:', JSON.stringify(requestBody, null, 2));
+      console.log('🔧 Headers:', headers);
+      console.log('⚙️ Config:', {
+        sessionId: this.config.sessionId,
+        userId: this.config.userId,
+        timeout: this.config.timeout,
+        correlationId
+      });
+      console.groupEnd();
     }
 
     const ensembleResponse = await this.makeRequest<EnsembleResponse>(
@@ -617,17 +642,19 @@ export class NeuraStackClient {
     const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     headers['X-Correlation-ID'] = correlationId;
 
-    // Log the outgoing workout request
-    console.group('🏋️ NeuraStack Workout API Request');
-    console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
-    console.log('📋 Request Body:', JSON.stringify(request, null, 2));
-    console.log('🔧 Headers:', headers);
-    console.log('⚙️ Config:', {
-      userId: this.config.userId,
-      timeout: this.config.timeout,
-      correlationId
-    });
-    console.groupEnd();
+    // Log the outgoing workout request (development only)
+    if (import.meta.env.DEV) {
+      console.group('🏋️ NeuraStack Workout API Request');
+      console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
+      console.log('📋 Request Body:', JSON.stringify(request, null, 2));
+      console.log('🔧 Headers:', headers);
+      console.log('⚙️ Config:', {
+        userId: this.config.userId,
+        timeout: this.config.timeout,
+        correlationId
+      });
+      console.groupEnd();
+    }
 
     try {
       const workoutResponse = await this.makeRequest<WorkoutAPIResponse>(
@@ -680,15 +707,15 @@ export class NeuraStackClient {
       model: role.model,
       answer: role.content,
       role: role.role, // Keep the original role for reference
-      provider: role.provider, // Add provider information
-      status: role.status === 'fulfilled' ? 'success' : 'failed',
-      wordCount: role.wordCount
+      provider: this.extractProviderFromModel(role.model), // Extract provider from model name
+      status: 'success', // All roles in successful response are considered successful
+      wordCount: role.content ? role.content.split(' ').length : 0
     }));
 
     // Create models used mapping
     const modelsUsed: Record<string, boolean> = {};
     data.roles.forEach(role => {
-      modelsUsed[role.model] = role.status === 'fulfilled';
+      modelsUsed[role.model] = true; // All models in response are considered used
     });
 
     // Estimate token count (rough approximation: 1 token ≈ 4 characters)
@@ -701,13 +728,19 @@ export class NeuraStackClient {
       executionTime: `${data.metadata.processingTimeMs}ms`,
       tokenCount,
       individualResponses,
-      fallbackReasons: data.roles
-        .filter(role => role.status === 'rejected')
-        .reduce((acc, role) => {
-          acc[role.model] = 'Role execution failed';
-          return acc;
-        }, {} as Record<string, string>)
+      fallbackReasons: {} // No fallback reasons for successful responses
     };
+  }
+
+  /**
+   * Extract provider name from model string
+   */
+  private extractProviderFromModel(model: string): string {
+    if (model.includes('gpt') || model.includes('openai')) return 'OPENAI';
+    if (model.includes('gemini') || model.includes('google')) return 'GOOGLE';
+    if (model.includes('claude') || model.includes('anthropic')) return 'ANTHROPIC';
+    if (model.includes('grok') || model.includes('xai')) return 'XAI';
+    return 'UNKNOWN';
   }
 
 

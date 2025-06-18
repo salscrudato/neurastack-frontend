@@ -1,24 +1,41 @@
 import {
-  Flex, IconButton, Box, Text, Avatar,
-  Menu, MenuButton, MenuList, MenuItem, MenuDivider,
-  useToast, Tooltip, Drawer, DrawerBody, DrawerHeader,
-  DrawerOverlay, DrawerContent, DrawerCloseButton,
-  useDisclosure, VStack, useBreakpointValue,
-  HStack, Icon
+    Avatar,
+    Box,
+    Drawer, DrawerBody,
+    DrawerCloseButton,
+    DrawerContent,
+    DrawerHeader,
+    DrawerOverlay,
+    Flex,
+    HStack, Icon,
+    IconButton,
+    Menu, MenuButton,
+    MenuDivider,
+    MenuItem,
+    MenuList,
+    Text,
+    Tooltip,
+    useBreakpointValue,
+    useDisclosure,
+    useToast,
+    VStack
 } from '@chakra-ui/react';
-import {
-  PiUserLight, PiSignOutBold, PiUserCircleBold,
-  PiListBold, PiChatCircleBold, PiClockCounterClockwiseBold,
-  PiHeartBold, PiHouseBold, PiGearBold
-} from 'react-icons/pi';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useCallback, useMemo, useRef } from 'react';
-import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
-import { useAuthStore } from '../store/useAuthStore';
+import { useCallback, useMemo, useRef } from 'react';
+import {
+    PiChatCircleBold, PiClockCounterClockwiseBold,
+    PiGearBold,
+    PiHeartBold,
+    PiListBold,
+    PiSignOutBold, PiUserCircleBold,
+    PiUserLight
+} from 'react-icons/pi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ADMIN_CONFIG, hasAdminAccess } from '../config/admin';
+import { auth } from '../firebase';
 import { useReducedMotion } from '../hooks/useAccessibility';
+import { useAuthStore } from '../store/useAuthStore';
 import { BrandLogo } from './BrandLogo';
-import { hasAdminAccess, ADMIN_CONFIG } from '../config/admin';
 
 export function Header() {
   const navigate = useNavigate();
@@ -67,28 +84,22 @@ export function Header() {
   const navigationItems = useMemo(() => {
     const baseItems = [
       {
-        label: 'Home',
-        path: '/',
-        icon: PiHouseBold,
-        description: 'Go to home page'
-      },
-      {
         label: 'Chat',
         path: '/chat',
         icon: PiChatCircleBold,
-        description: 'Start a new conversation'
+        disabled: false
       },
       {
         label: 'History',
         path: '/history',
         icon: PiClockCounterClockwiseBold,
-        description: 'View chat history'
+        disabled: false
       },
       {
-        label: 'NeuraFit',
+        label: 'NeuraFit (coming soon)',
         path: '/neurafit',
         icon: PiHeartBold,
-        description: 'AI-powered fitness training'
+        disabled: true
       }
     ];
 
@@ -98,7 +109,7 @@ export function Header() {
         label: ADMIN_CONFIG.navigation.label,
         path: ADMIN_CONFIG.navigation.path,
         icon: PiGearBold,
-        description: ADMIN_CONFIG.navigation.description
+        disabled: false
       });
     }
 
@@ -171,64 +182,59 @@ export function Header() {
     navigationItems.map((item) => {
       const isActive = location.pathname === item.path;
       const IconComponent = item.icon;
+      const isDisabled = item.disabled;
 
       return (
         <Box
           key={item.path}
           as="button"
           role="button"
-          tabIndex={0}
-          onClick={() => handleNavigationClick(item.path)}
-          onKeyDown={(e: React.KeyboardEvent) => handleMenuKeyDown(e, item.path)}
+          tabIndex={isDisabled ? -1 : 0}
+          onClick={isDisabled ? undefined : () => handleNavigationClick(item.path)}
+          onKeyDown={isDisabled ? undefined : (e: React.KeyboardEvent) => handleMenuKeyDown(e, item.path)}
           w="100%"
           p={4}
           borderRadius="xl"
           transition={animationConfig.transition}
           bg={isActive ? "rgba(79, 156, 249, 0.1)" : "transparent"}
           border={isActive ? "1px solid rgba(79, 156, 249, 0.2)" : "1px solid transparent"}
-          _hover={{
+          opacity={isDisabled ? 0.5 : 1}
+          cursor={isDisabled ? "not-allowed" : "pointer"}
+          _hover={isDisabled ? {} : {
             bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(248, 250, 252, 0.8)",
             transform: prefersReducedMotion ? 'none' : 'translateX(4px)',
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
           }}
-          _focus={{
+          _focus={isDisabled ? {} : {
             outline: "2px solid #4F9CF9",
             outlineOffset: "2px",
             bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(248, 250, 252, 0.8)"
           }}
-          _active={{
+          _active={isDisabled ? {} : {
             transform: prefersReducedMotion ? 'none' : 'scale(0.98)'
           }}
-          aria-label={`Navigate to ${item.label} - ${item.description}`}
+          aria-label={`Navigate to ${item.label}`}
           aria-current={isActive ? 'page' : undefined}
+          aria-disabled={isDisabled}
         >
           <HStack spacing={4} align="center">
             <Icon
               as={IconComponent}
               w={5}
               h={5}
-              color={isActive ? "#4F9CF9" : "#64748B"}
+              color={isDisabled ? "#94A3B8" : (isActive ? "#4F9CF9" : "#64748B")}
               transition={animationConfig.transition}
             />
-            <VStack align="start" spacing={0} flex={1}>
-              <Text
-                fontSize="md"
-                fontWeight={isActive ? "semibold" : "medium"}
-                color={isActive ? "#1E293B" : "#374151"}
-                textAlign="left"
-              >
-                {item.label}
-              </Text>
-              <Text
-                fontSize="xs"
-                color="#64748B"
-                textAlign="left"
-                lineHeight="1.2"
-              >
-                {item.description}
-              </Text>
-            </VStack>
-            {isActive && (
+            <Text
+              fontSize="md"
+              fontWeight={isActive ? "semibold" : "medium"}
+              color={isDisabled ? "#94A3B8" : (isActive ? "#1E293B" : "#374151")}
+              textAlign="left"
+              flex={1}
+            >
+              {item.label}
+            </Text>
+            {isActive && !isDisabled && (
               <Box
                 w={2}
                 h={2}
@@ -296,6 +302,8 @@ export function Header() {
           // Enhanced touch targets for mobile
           minH={{ xs: "44px", sm: "46px", md: "48px" }}
           minW={{ xs: "44px", sm: "46px", md: "48px" }}
+          // Desktop-only left padding
+          ml={{ base: 0, md: 4 }}
           transition={animationConfig.transition}
           _hover={{
             bg: "rgba(255, 255, 255, 0.95)",
@@ -392,6 +400,8 @@ export function Header() {
             // Enhanced touch targets
             minH={{ xs: "44px", sm: "46px", md: "48px" }}
             minW={{ xs: "44px", sm: "46px", md: "48px" }}
+            // Desktop-only right padding
+            mr={{ base: 0, md: 4 }}
             // Perfect centering for icon content
             display="flex"
             alignItems="center"

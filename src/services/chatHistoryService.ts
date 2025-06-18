@@ -7,16 +7,16 @@
  */
 
 import {
-  collection,
-  doc,
-  addDoc,
-  deleteDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  serverTimestamp,
-  type Timestamp
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    serverTimestamp,
+    type Timestamp
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import type { Message } from '../store/useChatStore';
@@ -85,24 +85,34 @@ export async function saveMessageToFirebase(message: Message): Promise<void> {
     const sanitizedMessageData = sanitizeForFirebase(messageData);
 
     await addDoc(messagesRef, sanitizedMessageData);
-    console.log('✅ Message saved to Firebase successfully');
+    if (import.meta.env.DEV) {
+      console.log('✅ Message saved to Firebase successfully');
+    }
   } catch (error) {
-    console.error('Firebase save error:', error);
+    if (import.meta.env.DEV) {
+      console.error('Firebase save error:', error);
+    }
 
     // Handle specific Firebase errors gracefully
     if (error instanceof Error) {
       if (error.message.includes('permission') || error.message.includes('insufficient')) {
-        console.warn('⚠️ Firebase permissions issue - continuing with local storage only');
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ Firebase permissions issue - continuing with local storage only');
+        }
         return; // Don't throw error, just log warning
       }
       if (error.message.includes('offline') || error.message.includes('network')) {
-        console.warn('⚠️ Firebase offline - continuing with local storage only');
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ Firebase offline - continuing with local storage only');
+        }
         return; // Don't throw error for network issues
       }
     }
 
     // Only throw for unexpected errors
-    console.error('❌ Unexpected Firebase error:', error);
+    if (import.meta.env.DEV) {
+      console.error('❌ Unexpected Firebase error:', error);
+    }
     throw new Error(`Failed to save message to Firebase: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

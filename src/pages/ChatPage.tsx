@@ -1,34 +1,24 @@
 import {
-  Box,
-  Flex,
-  Text,
-  IconButton,
-  useToast,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
-  useDisclosure,
-  Button,
+    Box,
+    Flex,
+    IconButton,
+    Text,
 } from '@chakra-ui/react';
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
-import { useChatStore } from '../store/useChatStore';
-import { useReducedMotion } from '../hooks/useAccessibility';
-import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
-import OfflineIndicator from '../components/OfflineIndicator';
+import ChatMessage from '../components/ChatMessage';
 import { Loader } from '../components/LoadingSpinner';
+import OfflineIndicator from '../components/OfflineIndicator';
 import { SaveSessionButton } from '../components/SaveSessionButton';
+import { useReducedMotion } from '../hooks/useAccessibility';
+import { useChatStore } from '../store/useChatStore';
 // import { usePerformanceAlerts } from '../hooks/usePerformanceMonitor'; // Disabled to improve performance
 import { useAuthStore } from '../store/useAuthStore';
 import { useHistoryStore } from '../store/useHistoryStore';
 
 export function ChatPage() {
   const msgs = useChatStore(s => s.messages);
-  const clearMessages = useChatStore(s => s.clearMessages);
   const isLoading = useChatStore(s => s.isLoading);
 
   // Auth store
@@ -37,15 +27,14 @@ export function ChatPage() {
   // History store
   const { loadAllSessions } = useHistoryStore();
 
+  // Analytics tracking
+  // const { trackChatFeature } = useChatAnalytics(); // Removed since clear chat functionality moved to SaveSessionButton
+
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
-  const cancelRef = useRef<HTMLButtonElement>(null);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const prefersReducedMotion = useReducedMotion();
-
-  const { isOpen, onClose } = useDisclosure();
-  const toast = useToast();
   // const { alerts, clearAlerts } = usePerformanceAlerts(); // Disabled to improve performance
 
 
@@ -153,16 +142,7 @@ export function ChatPage() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const handleClearChat = useCallback(() => {
-    clearMessages();
-    onClose();
-    toast({
-      title: "Chat cleared",
-      status: "success",
-      duration: 2000,
-      isClosable: true,
-    });
-  }, [clearMessages, onClose, toast]);
+
 
 
 
@@ -248,7 +228,7 @@ export function ChatPage() {
         flex="1 1 0"
         overflowY="auto"
         px={chatConfig.container.padding}
-        py={{ xs: 1, sm: 1.5, md: 2, lg: 2.5, xl: 3 }}
+        py={{ xs: 4, sm: 4, md: 2, lg: 2.5, xl: 3 }}
         bg={containerBg}
         position="relative"
         // Enhanced scrolling performance
@@ -256,10 +236,11 @@ export function ChatPage() {
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
           scrollBehavior: prefersReducedMotion ? 'auto' : 'smooth',
-          // Enhanced mobile support
+          // Enhanced mobile support with proper header spacing
           '@media (max-width: 768px)': {
             paddingX: 2,
-            paddingY: 1,
+            paddingTop: 4, // Increased top padding for mobile
+            paddingBottom: 2,
           }
         }}
         // Enhanced accessibility
@@ -361,35 +342,6 @@ export function ChatPage() {
 
       {/* input */}
       <ChatInput />
-
-      {/* Clear chat confirmation dialog */}
-      <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-        isCentered
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Clear Chat History
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure you want to clear all messages? This action cannot be undone.
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button colorScheme="red" onClick={handleClearChat} ml={3}>
-                Clear
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </Flex>
   );
 }

@@ -5,24 +5,24 @@
  * Provides real-time sync and offline support for NeuraFit data.
  */
 
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  orderBy, 
-  limit,
-  serverTimestamp,
-  onSnapshot,
-  type Timestamp 
+import {
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    onSnapshot,
+    orderBy,
+    query,
+    serverTimestamp,
+    setDoc,
+    updateDoc,
+    type Timestamp
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { handleSilentError } from '../utils/errorHandler';
 import type { FitnessProfile, WorkoutPlan } from '../lib/types';
+import { handleSilentError } from '../utils/errorHandler';
 
 // ============================================================================
 // Types for Firestore Storage
@@ -306,13 +306,17 @@ export function trackFitnessLevelSelection(
       performance.mark('fitness_level_selected');
     }
 
-    // TODO: Add Firebase Analytics tracking when needed
-    // logEvent(analytics, 'fitness_level_selected', {
-    //   fitness_level: level,
-    //   level_code: code,
-    //   completion_time_ms: completionTime,
-    //   user_id: auth.currentUser?.uid
-    // });
+    // Import analytics service dynamically to avoid circular dependencies
+    import('../services/analyticsService').then(({ trackEvent }) => {
+      trackEvent('fitness_level_selected', {
+        fitness_level: level,
+        level_code: code,
+        completion_time_ms: completionTime,
+        user_id: auth.currentUser?.uid
+      });
+    }).catch(error => {
+      console.warn('Analytics service import failed:', error);
+    });
   } catch (error) {
     console.warn('Analytics tracking failed:', error);
   }
@@ -341,13 +345,17 @@ export function trackGoalSelection(
       performance.mark(`goal_${isSelected ? 'selected' : 'deselected'}`);
     }
 
-    // TODO: Add Firebase Analytics tracking when needed
-    // logEvent(analytics, 'goal_selection', {
-    //   goal_code: goalCode,
-    //   is_selected: isSelected,
-    //   completion_time_ms: completionTime,
-    //   user_id: auth.currentUser?.uid
-    // });
+    // Import analytics service dynamically to avoid circular dependencies
+    import('../services/analyticsService').then(({ trackEvent }) => {
+      trackEvent('goal_selection', {
+        goal_code: goalCode,
+        is_selected: isSelected,
+        completion_time_ms: completionTime,
+        user_id: auth.currentUser?.uid
+      });
+    }).catch(error => {
+      console.warn('Analytics service import failed:', error);
+    });
   } catch (error) {
     console.warn('Goal selection analytics tracking failed:', error);
   }
@@ -375,13 +383,17 @@ export function trackGoalStepCompletion(
       performance.mark('goal_step_completed');
     }
 
-    // TODO: Add Firebase Analytics tracking when needed
-    // logEvent(analytics, 'goal_step_completed', {
-    //   selected_goals: selectedGoals,
-    //   goal_count: selectedGoals.length,
-    //   completion_time_ms: completionTime,
-    //   user_id: auth.currentUser?.uid
-    // });
+    // Import analytics service dynamically to avoid circular dependencies
+    import('../services/analyticsService').then(({ trackEvent }) => {
+      trackEvent('goal_step_completed', {
+        selected_goals: selectedGoals,
+        goal_count: selectedGoals.length,
+        completion_time_ms: completionTime,
+        user_id: auth.currentUser?.uid
+      });
+    }).catch(error => {
+      console.warn('Analytics service import failed:', error);
+    });
   } catch (error) {
     console.warn('Goal step completion analytics tracking failed:', error);
   }

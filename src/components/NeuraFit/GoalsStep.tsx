@@ -1,19 +1,19 @@
 import {
-  VStack,
-  Text,
-  Button,
-  HStack,
-  Box,
-  Icon,
-  SimpleGrid,
+    Box,
+    Button,
+    HStack,
+    Icon,
+    SimpleGrid,
+    Text,
+    VStack,
 } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useFitnessStore } from '../../store/useFitnessStore';
+import { FITNESS_GOALS } from '../../constants/fitnessGoals'; // Moved constants import
 import { useReducedMotion } from '../../hooks/useAccessibility';
 import { trackGoalSelection, trackGoalStepCompletion } from '../../services/fitnessDataService';
-import { FITNESS_GOALS } from '../../constants/fitnessGoals'; // Moved constants import
+import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
 // Motion components for animations
@@ -97,11 +97,26 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
     const { updateProfile } = useFitnessStore.getState();
     updateProfile({ goals: newGoals });
 
-    // Track analytics
+    // Track analytics with both old and new systems
     const startTime = performance.now();
     const endTime = performance.now();
     const completionTime = endTime - startTime;
+
+    // Legacy analytics
     trackGoalSelection(goalCode, !isSelected, completionTime);
+
+    // New analytics system
+    try {
+      import('../../services/analyticsService').then(({ trackFitnessInteraction }) => {
+        trackFitnessInteraction({
+          action: 'goal_selected',
+          goals: !isSelected ? [...(profile.goals || []), goalCode] : (profile.goals || []).filter(g => g !== goalCode),
+          fitnessLevel: profile.fitnessLevel
+        });
+      });
+    } catch (error) {
+      console.warn('New analytics tracking failed:', error);
+    }
 
     console.log(`Goal ${goalCode} toggled locally in ${completionTime}ms`);
   }, [profile.goals]);

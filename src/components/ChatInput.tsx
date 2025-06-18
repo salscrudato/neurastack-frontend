@@ -1,20 +1,20 @@
 import {
-  Box,
-  IconButton,
-  Textarea,
-  InputGroup,
-  InputRightElement,
-  Text,
-  HStack,
-  useToast,
-  VStack,
-  Fade,
-  ScaleFade,
+    Box,
+    Fade,
+    HStack,
+    IconButton,
+    InputGroup,
+    InputRightElement,
+    ScaleFade,
+    Text,
+    Textarea,
+    useToast,
+    VStack,
 } from "@chakra-ui/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useChatStore } from "../store/useChatStore";
 import { useReducedMotion } from "../hooks/useAccessibility";
+import { useChatStore } from "../store/useChatStore";
 
 import { createErrorToast } from "../utils/errorHandler";
 import { debounce } from "../utils/performanceOptimizer";
@@ -437,7 +437,7 @@ export default function ChatInput() {
               <IconButton
                 aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
                 aria-disabled={busy || !txt.trim()}
-                icon={<PiArrowUpBold size={txt.trim() ? 16 : 14} />}
+                icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 16 : 20) : (isMobile ? 14 : 18)} />}
                 onClick={handleSend}
                 isLoading={busy}
                 size="sm"

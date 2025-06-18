@@ -21,10 +21,9 @@ export interface Message {
  * NeuraStack API Request/Response Types (Latest Backend Version)
  * ========================================================================== */
 
-/** Request interface for NeuraStack Ensemble API */
+/** Request interface for NeuraStack Ensemble API - matches backend documentation */
 export interface EnsembleRequest {
-  prompt?: string; // Optional. Defaults to "Quick sanity check: explain AI in 1-2 lines."
-  sessionId?: string; // Optional. Session ID for memory context
+  prompt: string; // Required. The user's question or request to the AI ensemble
 }
 
 /** Legacy request interface for backward compatibility */
@@ -110,6 +109,7 @@ export interface EnsembleResponse {
   message?: string;
   error?: string;
   timestamp?: string;
+  correlationId?: string;
 }
 
 /* ============================================================================
@@ -620,21 +620,14 @@ export interface Exercise {
 export interface WorkoutUserMetadata {
   age?: number;
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
-  gender?: 'male' | 'female' | 'rather_not_say';
-  weight?: number; // in kg or lbs
-  goals?: string[]; // e.g., ['strength', 'toning', 'weight_loss', 'endurance']
-  equipment?: string[]; // e.g., ['dumbbells', 'resistance_bands', 'bodyweight']
-  timeAvailable?: number; // minutes
-  injuries?: string[]; // e.g., ['lower_back', 'knee']
+  goals?: string[]; // e.g., ['strength', 'cardio', 'flexibility', 'weight_loss']
+  equipment?: string[]; // e.g., ['dumbbells', 'resistance_bands', 'none']
 }
 
 export interface WorkoutHistoryEntry {
-  date: string; // ISO date string
-  type: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed';
+  date: string; // ISO date string, e.g., "2025-06-15"
+  type: string; // e.g., "upper_body"
   duration: number; // minutes
-  exercises: string[];
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  rating?: number; // 1-5 scale
 }
 
 export interface WorkoutAPIRequest {
@@ -645,49 +638,42 @@ export interface WorkoutAPIRequest {
 
 export interface WorkoutAPIExercise {
   name: string;
+  category: string; // e.g., "strength", "cardio"
   sets: number;
-  reps: number;
-  duration: number; // seconds
-  restTime: number; // seconds
+  reps: string; // e.g., "10-12" to allow ranges
+  rest: string; // e.g., "30 seconds"
   instructions: string;
-  tips: string;
+  modifications: string; // easier variations
   targetMuscles: string[];
-  equipment: string[];
-  intensity: 'low' | 'moderate' | 'high';
-  progressionNotes: string;
-  modifications?: string[];
 }
 
 export interface WarmupExercise {
   name: string;
-  duration: number; // seconds
+  duration: string; // e.g., "2 minutes"
   instructions: string;
 }
 
 export interface CooldownExercise {
   name: string;
-  duration: number; // seconds
+  duration: string; // e.g., "2 minutes"
   instructions: string;
 }
 
 export interface WorkoutAPIPlan {
-  type: 'strength' | 'cardio' | 'mixed' | 'flexibility';
-  duration: string; // e.g., "45 minutes"
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  equipment: string[];
+  type: string; // e.g., "mixed"
+  duration: string; // e.g., "30 minutes"
+  difficulty: string; // e.g., "beginner"
+  equipment: string[]; // e.g., ["none"]
   exercises: WorkoutAPIExercise[];
   warmup: WarmupExercise[];
   cooldown: CooldownExercise[];
-  notes: string;
-  calorieEstimate: string;
-  tags: string[];
+  calorieEstimate: string; // e.g., "150-200 calories"
+  notes: string; // Additional workout notes
 }
 
 export interface WorkoutAPIMetadata {
-  generationTime: number; // milliseconds
-  aiModel: string;
-  requestId: string;
-  timestamp: string;
+  model: string; // e.g., "gpt-4o-mini"
+  timestamp: string; // ISO timestamp
 }
 
 export interface WorkoutAPIResponse {
@@ -697,6 +683,7 @@ export interface WorkoutAPIResponse {
     metadata: WorkoutAPIMetadata;
   };
   message?: string;
-  timestamp: string;
-  correlationId: string;
+  error?: string;
+  timestamp?: string;
+  correlationId?: string;
 }

@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import { nanoid } from 'nanoid';
-import { neuraStackClient } from '../lib/neurastack-client';
+import { create } from 'zustand';
 import { auth } from '../firebase';
+import { neuraStackClient } from '../lib/neurastack-client';
 
 export interface Message {
   id: string;
@@ -105,6 +105,24 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             const cleanedAnswer = String(response.answer || '').trim();
             if (!cleanedAnswer) {
               throw new Error('Empty response received');
+            }
+
+            // Track analytics for successful chat interaction
+            try {
+              import('../services/analyticsService').then(({ trackChatInteraction }) => {
+                // Extract model names from modelsUsed object
+                const modelNames = Object.keys(response.modelsUsed || {});
+
+                trackChatInteraction({
+                  messageLength: text.length,
+                  responseTime,
+                  modelsUsed: modelNames.length > 0 ? modelNames : ['unknown'],
+                  sessionId,
+                  messageType: 'text'
+                });
+              });
+            } catch (analyticsError) {
+              console.warn('Analytics tracking failed:', analyticsError);
             }
 
             // Log the processed response for debugging

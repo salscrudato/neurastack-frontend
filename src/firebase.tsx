@@ -4,21 +4,21 @@
  * Reads credentials from Vite env vars (`VITE_*`) and exposes
  * an `auth` singleton.
  */
+import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
 
 /** Firebase config for NeuraStack AI Frontend */
 const firebaseConfig = {
-  apiKey: "AIzaSyCfyS_9czRJnYUsf3LESgSEQftmxSAUaGw",
-  authDomain: "neurastackai-frontend.firebaseapp.com",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   databaseURL: "https://neurastackai-frontend-default-rtdb.firebaseio.com",
-  projectId: "neurastackai-frontend",
-  storageBucket: "neurastackai-frontend.firebasestorage.app",
-  messagingSenderId: "1049090262427",
-  appId: "1:1049090262427:web:63e1d05c8df0388a1d0d3e",
-  measurementId: "G-YP4HY7MFT2"
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 /** Initialize Firebase once */

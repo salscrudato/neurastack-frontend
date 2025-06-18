@@ -169,7 +169,7 @@ export default defineConfig({
           vendor: ['react', 'react-dom'],
 
           // UI library chunk (includes framer-motion to ensure React dependency)
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion'],
+          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion', 'styled-components'],
 
           // State management and utilities
           state: ['zustand'],
@@ -208,7 +208,8 @@ export default defineConfig({
       'react-markdown',
       'remark-gfm',
       'react-router-dom',
-      'framer-motion'
+      'framer-motion',
+      'styled-components'
     ],
     exclude: ['firebase'], // Firebase works better when not pre-bundled
   },

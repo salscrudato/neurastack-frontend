@@ -1,9 +1,10 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { vi, describe, it, beforeEach, expect } from 'vitest';
-import WorkoutGenerator from '../WorkoutGenerator';
+import '@testing-library/jest-dom';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { neuraStackClient } from '../../../lib/neurastack-client';
+import WorkoutGenerator from '../WorkoutGenerator';
 
 // Mock the neuraStackClient
 vi.mock('../../../lib/neurastack-client', () => ({

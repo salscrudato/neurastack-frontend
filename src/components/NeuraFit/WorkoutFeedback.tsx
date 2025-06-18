@@ -6,34 +6,34 @@
  */
 
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  useColorModeValue,
-  Card,
-  CardBody,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  Textarea,
-  Icon,
-  useToast,
-  Divider,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    Divider,
+    HStack,
+    Icon,
+    Slider,
+    SliderFilledTrack,
+    SliderThumb,
+    SliderTrack,
+    Text,
+    Textarea,
+    useColorModeValue,
+    useToast,
+    VStack,
 } from '@chakra-ui/react';
-import {
-  PiStarBold,
-  PiStarFill,
-} from 'react-icons/pi';
-import { useState, useCallback, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
-import SuccessAnimation from './SuccessAnimation';
-import type { WorkoutPlan } from '../../lib/types';
-import { storeWorkoutAnalytics, type WorkoutAnalytics, type ExercisePerformance } from '../../services/workoutAnalyticsService';
-import { useAuthStore } from '../../store/useAuthStore';
+import { memo, useCallback, useMemo, useState } from 'react';
+import {
+    PiStarBold,
+    PiStarFill,
+} from 'react-icons/pi';
 import { neuraStackClient } from '../../lib/neurastack-client';
+import type { WorkoutPlan } from '../../lib/types';
+import { storeWorkoutAnalytics, type ExercisePerformance, type WorkoutAnalytics } from '../../services/workoutAnalyticsService';
+import { useAuthStore } from '../../store/useAuthStore';
+import SuccessAnimation from './SuccessAnimation';
 
 const MotionBox = motion(Box);
 
@@ -184,7 +184,9 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
       }, 2500);
 
     } catch (error) {
-      console.error('Error submitting feedback:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error submitting feedback:', error);
+      }
       toast({
         title: 'Submission Failed',
         description: 'Unable to save feedback. Please try again.',

@@ -130,7 +130,9 @@ export async function safeDynamicImport<T>(
   try {
     return await importFn();
   } catch (error) {
-    console.warn('Dynamic import failed:', error);
+    if (import.meta.env.DEV) {
+      console.warn('Dynamic import failed:', error);
+    }
     if (fallback) return fallback;
     throw error;
   }
@@ -172,7 +174,9 @@ export function measurePerformance(name: string, startMark: string, endMark: str
       const measure = performance.getEntriesByName(name)[0];
       return measure.duration;
     } catch (error) {
-      console.warn('Performance measurement failed:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Performance measurement failed:', error);
+      }
       return 0;
     }
   }
