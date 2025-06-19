@@ -185,7 +185,7 @@ export class NeuraStackClient {
       sessionId: config.sessionId || crypto.randomUUID(),
       userId: config.userId || '',
       authToken: config.authToken || '',
-      timeout: config.timeout || 30000, // 30 seconds (backend timeout is 25s + buffer)
+      timeout: config.timeout || 60000, // 60 seconds as recommended by backend API documentation
       useEnsemble: config.useEnsemble ?? true
     };
   }
@@ -576,10 +576,184 @@ export class NeuraStackClient {
   }
 
   /**
+   * Helper function to create unique workout request identifiers
+   * Implements cache-busting strategy from backend API documentation
+   */
+  private createUniqueWorkoutRequest(originalRequest: string): string {
+    const uniqueId = Math.random().toString(36).substring(2, 10);
+    const timestamp = Date.now();
+    return `${originalRequest} [Request ID: session-${timestamp}-${uniqueId}] [Timestamp: ${timestamp}] [Unique: ${uniqueId}]`;
+  }
+
+  /**
+   * Validate workout API response structure and data integrity
+   * Based on backend API documentation response validation
+   */
+  private validateWorkoutResponse(response: WorkoutAPIResponse): void {
+    if (response.status !== 'success') {
+      throw new NeuraStackApiError({
+        error: 'Invalid Response Status',
+        message: response.message || 'Workout generation failed',
+        statusCode: 422,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (!response.data || !response.data.workout) {
+      throw new NeuraStackApiError({
+        error: 'Missing Workout Data',
+        message: 'Invalid workout data received from API',
+        statusCode: 422,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const workout = response.data.workout;
+
+    // Validate required workout fields
+    if (!workout.exercises || !Array.isArray(workout.exercises) || workout.exercises.length === 0) {
+      throw new NeuraStackApiError({
+        error: 'Invalid Exercise Data',
+        message: 'Workout must contain at least one exercise',
+        statusCode: 422,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Validate exercise structure
+    for (const exercise of workout.exercises) {
+      if (!exercise.name || !exercise.instructions || !exercise.reps) {
+        throw new NeuraStackApiError({
+          error: 'Invalid Exercise Structure',
+          message: 'Each exercise must have name, instructions, and reps',
+          statusCode: 422,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    // Validate warmup and cooldown arrays
+    if (!Array.isArray(workout.warmup) || !Array.isArray(workout.cooldown)) {
+      throw new NeuraStackApiError({
+        error: 'Invalid Workout Structure',
+        message: 'Workout must include warmup and cooldown arrays',
+        statusCode: 422,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
+   * Retry workout generation with exponential backoff
+   * Based on backend API documentation performance recommendations
+   */
+  private async generateWorkoutWithRetry(
+    request: WorkoutAPIRequest,
+    options: NeuraStackRequestOptions = {},
+    maxRetries: number = 3
+  ): Promise<WorkoutAPIResponse> {
+    let retries = 0;
+
+    while (retries < maxRetries) {
+      try {
+        return await this.performWorkoutRequest(request, options);
+      } catch (error) {
+        retries++;
+
+        if (retries >= maxRetries) {
+          throw error;
+        }
+
+        console.warn(`Retry attempt ${retries}/${maxRetries}`);
+
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retries)));
+      }
+    }
+
+    // This should never be reached, but TypeScript requires it
+    throw new NeuraStackApiError({
+      error: 'Max Retries Exceeded',
+      message: 'Maximum retry attempts exceeded',
+      statusCode: 500,
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  /**
+   * Handle workout-specific errors with user-friendly messages
+   * Based on backend API documentation error handling recommendations
+   */
+  private handleWorkoutError(error: any, correlationId?: string): never {
+    // Log error with correlation ID for debugging
+    if (correlationId && import.meta.env.DEV) {
+      console.error(`Workout error for correlation ID ${correlationId}:`, error);
+    }
+
+    if (error instanceof NeuraStackApiError) {
+      const status = error.statusCode;
+
+      if (status === 400) {
+        throw new NeuraStackApiError({
+          error: 'Invalid Input',
+          message: 'Invalid input. Please check your workout request and try again.',
+          statusCode: 400,
+          timestamp: new Date().toISOString()
+        });
+      } else if (status === 429) {
+        throw new NeuraStackApiError({
+          error: 'Rate Limit Exceeded',
+          message: 'Too many requests. Please try again later.',
+          statusCode: 429,
+          timestamp: new Date().toISOString()
+        });
+      } else if (status === 500) {
+        throw new NeuraStackApiError({
+          error: 'Server Error',
+          message: 'Server error. Our team has been notified.',
+          statusCode: 500,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        throw new NeuraStackApiError({
+          error: 'API Error',
+          message: 'An error occurred. Please try again.',
+          statusCode: status,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (error.request) {
+      throw new NeuraStackApiError({
+        error: 'Network Error',
+        message: 'Network error. Please check your connection and try again.',
+        statusCode: 0,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      throw new NeuraStackApiError({
+        error: 'Unexpected Error',
+        message: 'An unexpected error occurred: ' + error.message,
+        statusCode: 0,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
    * Generate a personalized workout using the dedicated workout API endpoint
-   * NO CACHING - Always makes fresh API calls for workout generation
+   * Implements backend API documentation recommendations with retry logic
    */
   async generateWorkout(
+    request: WorkoutAPIRequest,
+    options: NeuraStackRequestOptions = {}
+  ): Promise<WorkoutAPIResponse> {
+    return this.generateWorkoutWithRetry(request, options, 3);
+  }
+
+  /**
+   * Perform the actual workout request (used by retry logic)
+   */
+  private async performWorkoutRequest(
     request: WorkoutAPIRequest,
     options: NeuraStackRequestOptions = {}
   ): Promise<WorkoutAPIResponse> {
@@ -587,15 +761,18 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    // Add user identification headers (CORS-safe)
+    // Add user identification headers as specified in backend API documentation
     const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
       headers['X-User-Id'] = userId;
     }
 
     // Generate correlation ID for request tracking - always unique to prevent caching
-    const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
+    const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
     headers['X-Correlation-ID'] = correlationId;
+
+    // Note: Cache-Control header removed to avoid CORS preflight failures
+    // Cache prevention is handled via unique request identifiers and URL parameters
 
     // Log the outgoing workout request (development only)
     if (import.meta.env.DEV) {
@@ -612,49 +789,58 @@ export class NeuraStackClient {
     }
 
     try {
-      // Aggressive cache-busting strategy to force fresh responses
-      const timestamp = Date.now();
-      const random1 = Math.random().toString(36).substr(2, 12);
-      const random2 = Math.random().toString(36).substr(2, 12);
-      const random3 = Math.random().toString(36).substr(2, 12);
+      // Extract workout type from request for validation
+      const workoutTypeMatch = request.workoutRequest.match(/Create a (\w+) workout/i);
+      const requestedWorkoutType = workoutTypeMatch ? workoutTypeMatch[1].toLowerCase() : 'mixed';
 
-      // Multiple cache-busting parameters to ensure uniqueness
-      const cacheBustParams = `?_t=${timestamp}&_r1=${random1}&_r2=${random2}&_r3=${random3}&_nocache=true&_fresh=${correlationId}&_bust=${timestamp}-${random1}&_force=true&_unique=${Date.now()}-${Math.random()}`;
-      const workoutEndpoint = `${NEURASTACK_ENDPOINTS.WORKOUT}${cacheBustParams}`;
+      // Create unique workout request using helper function
+      const uniqueWorkoutRequest = this.createUniqueWorkoutRequest(request.workoutRequest);
 
-      // Add multiple unique identifiers to the request body to help backend differentiate requests
+      // Enhanced request with unique identifiers as per backend API documentation
       const enhancedRequest = {
         ...request,
-        requestId: correlationId,
-        timestamp: timestamp,
-        cacheBust: `${timestamp}-${random1}-${random2}-${random3}`,
-        forceRefresh: true,
-        uniqueId: `${Date.now()}-${Math.random()}-${Math.random()}`,
-        noCacheFlag: true,
-        // Modify the workout request itself to ensure uniqueness
-        workoutRequest: `${request.workoutRequest}\n\n[Cache Buster: ${correlationId}] [Timestamp: ${timestamp}]`
+        workoutRequest: uniqueWorkoutRequest
       };
 
       const workoutResponse = await this.makeRequest<WorkoutAPIResponse>(
-        workoutEndpoint,
+        NEURASTACK_ENDPOINTS.WORKOUT,
         {
           method: 'POST',
           headers,
           body: JSON.stringify(enhancedRequest),
           signal: options.signal,
           timeout: options.timeout || this.config.timeout,
-          bustCache: false // Cache busting handled via URL params above
+          bustCache: true // Use standard cache busting
         }
       );
 
-      // Check if response was cached and warn if so
-      if (workoutResponse.cached === true) {
-        console.group('⚠️ CACHED RESPONSE DETECTED');
-        console.warn('🚨 Backend returned cached workout despite cache-busting attempts!');
-        console.warn('📅 Cache Timestamp:', workoutResponse.cacheTimestamp);
-        console.warn('🔗 Correlation ID:', workoutResponse.correlationId);
-        console.warn('💡 This should not happen - backend caching should be disabled');
+      // Validate workout response structure and data integrity
+      this.validateWorkoutResponse(workoutResponse);
+
+      // Detect cached responses as recommended by backend API documentation
+      if (workoutResponse.cached) {
+        console.warn('⚠️ CACHED RESPONSE DETECTED');
+        console.warn(`📅 Cache Timestamp: ${workoutResponse.cacheTimestamp}`);
+        console.warn(`🔗 Correlation ID: ${workoutResponse.correlationId}`);
+      }
+
+      // Validate workout type matches request
+      const returnedWorkoutType = workoutResponse.data?.workout.type?.toLowerCase();
+      if (returnedWorkoutType && requestedWorkoutType !== 'mixed' && returnedWorkoutType !== requestedWorkoutType) {
+        console.group('❌ WORKOUT TYPE MISMATCH');
+        console.error('🚨 Requested workout type:', requestedWorkoutType);
+        console.error('🚨 Received workout type:', returnedWorkoutType);
+        console.error('🔗 Correlation ID:', workoutResponse.correlationId);
+        console.error('💾 Was Cached:', workoutResponse.cached || false);
         console.groupEnd();
+
+        // Throw error to trigger retry or fallback
+        throw new NeuraStackApiError({
+          error: 'Workout Type Mismatch',
+          message: `Requested ${requestedWorkoutType} workout but received ${returnedWorkoutType}. This may be due to backend caching issues.`,
+          statusCode: 422,
+          timestamp: new Date().toISOString()
+        });
       }
 
       // Log successful workout generation
@@ -665,6 +851,7 @@ export class NeuraStackClient {
       console.log('📊 Exercise Count:', workoutResponse.data?.workout.exercises.length);
       console.log('🔗 Correlation ID:', workoutResponse.correlationId);
       console.log('💾 Cached:', workoutResponse.cached || false);
+      console.log('✅ Type Match:', returnedWorkoutType === requestedWorkoutType || requestedWorkoutType === 'mixed');
       console.groupEnd();
 
       return workoutResponse;
@@ -673,7 +860,9 @@ export class NeuraStackClient {
       console.log('🚫 Error:', error);
       console.log('🔗 Correlation ID:', correlationId);
       console.groupEnd();
-      throw error;
+
+      // Use workout-specific error handling
+      this.handleWorkoutError(error, correlationId);
     }
   }
 

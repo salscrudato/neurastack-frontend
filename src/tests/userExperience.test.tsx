@@ -79,37 +79,38 @@ const ProgressIndicator = ({
   </div>
 );
 
-const ErrorBoundary = ({ 
-  children, 
-  fallback 
-}: { 
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}) => {
-  const [hasError, setHasError] = React.useState(false);
+// Note: This ErrorBoundary component is defined but not used in the current tests
+// const ErrorBoundary = ({
+//   children,
+//   fallback
+// }: {
+//   children: React.ReactNode;
+//   fallback?: React.ReactNode;
+// }) => {
+//   const [hasError, setHasError] = React.useState(false);
 
-  React.useEffect(() => {
-    const handleError = () => setHasError(true);
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
+//   React.useEffect(() => {
+//     const handleError = () => setHasError(true);
+//     window.addEventListener('error', handleError);
+//     return () => window.removeEventListener('error', handleError);
+//   }, []);
 
-  if (hasError) {
-    return (
-      <div role="alert" data-testid="error-boundary">
-        {fallback || (
-          <div>
-            <h2>Something went wrong</h2>
-            <p>We're sorry, but something unexpected happened.</p>
-            <button onClick={() => setHasError(false)}>Try again</button>
-          </div>
-        )}
-      </div>
-    );
-  }
+//   if (hasError) {
+//     return (
+//       <div role="alert" data-testid="error-boundary">
+//         {fallback || (
+//           <div>
+//             <h2>Something went wrong</h2>
+//             <p>We're sorry, but something unexpected happened.</p>
+//             <button onClick={() => setHasError(false)}>Try again</button>
+//           </div>
+//         )}
+//       </div>
+//     );
+//   }
 
-  return <>{children}</>;
-};
+//   return <>{children}</>;
+// };
 
 const ResponsiveComponent = () => {
   const [isMobile, setIsMobile] = React.useState(false);

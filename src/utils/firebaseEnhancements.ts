@@ -7,6 +7,7 @@
 
 import {
     disableNetwork,
+    doc,
     enableNetwork,
     getDoc,
     serverTimestamp,

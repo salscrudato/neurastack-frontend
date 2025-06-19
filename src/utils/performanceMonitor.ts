@@ -278,8 +278,8 @@ class PerformanceMonitor {
     }
 
     // Example: Send to Google Analytics
-    if (typeof gtag !== 'undefined') {
-      gtag('event', 'performance_metric', {
+    if (typeof (globalThis as any).gtag !== 'undefined') {
+      (globalThis as any).gtag('event', 'performance_metric', {
         metric_name: metric.name,
         metric_value: metric.value,
         metric_rating: metric.rating,
@@ -316,7 +316,7 @@ class PerformanceMonitor {
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
     
     resources.forEach(resource => {
-      const duration = resource.responseEnd - resource.startTime;
+      // const duration = resource.responseEnd - resource.startTime; // Commented out as it's not used
       const size = resource.transferSize || 0;
       
       // Check against budgets

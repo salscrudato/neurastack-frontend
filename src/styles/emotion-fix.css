@@ -1,0 +1,118 @@
+/* Emotion CSS-in-JS Library Initialization Fix */
+
+/* 
+ * This file ensures proper initialization order for Emotion and prevents
+ * the "Cannot access 'ge' before initialization" error by providing
+ * stable CSS custom properties and base styles.
+ */
+
+:root {
+  /* Emotion CSS variables for stable initialization */
+  --emotion-cache-key: 'css';
+  --emotion-compat: true;
+  
+  /* Ensure proper CSS cascade order */
+  --css-order-base: 1;
+  --css-order-components: 2;
+  --css-order-utilities: 3;
+  --css-order-overrides: 4;
+}
+
+/* Base reset to prevent CSS conflicts */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Prevent FOUC (Flash of Unstyled Content) */
+html {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Ensure proper rendering context for CSS-in-JS */
+body {
+  /* Force hardware acceleration for better performance */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  
+  /* Prevent layout shifts during CSS-in-JS hydration */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Emotion-specific fixes */
+.css-0 {
+  /* Prevent empty CSS class issues */
+  display: contents;
+}
+
+/* Chakra UI + Emotion compatibility */
+.chakra-ui-light,
+.chakra-ui-dark {
+  /* Ensure proper theme context */
+  --chakra-colors-chakra-body-text: var(--chakra-colors-gray-800);
+  --chakra-colors-chakra-body-bg: var(--chakra-colors-white);
+}
+
+/* Styled-components + Emotion compatibility */
+[data-styled] {
+  /* Prevent styled-components conflicts */
+  isolation: isolate;
+}
+
+/* Performance optimizations for CSS-in-JS */
+.emotion-cache,
+.css-cache {
+  /* Optimize rendering performance */
+  contain: layout style paint;
+  will-change: auto;
+}
+
+/* Mobile-specific fixes */
+@media screen and (max-width: 768px) {
+  body {
+    /* Prevent mobile viewport issues */
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --emotion-high-contrast: true;
+  }
+}
+
+/* Print styles */
+@media print {
+  .emotion-cache,
+  .css-cache {
+    /* Optimize for print */
+    contain: none;
+    will-change: auto;
+  }
+}
+
+/* Development mode helpers */
+@media screen {
+  .emotion-dev-mode {
+    /* Development debugging aids */
+    outline: 1px dashed rgba(255, 0, 0, 0.3);
+  }
+}

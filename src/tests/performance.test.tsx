@@ -5,11 +5,11 @@
  * memory usage, and Core Web Vitals compliance.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Test wrapper component
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
@@ -277,7 +277,7 @@ describe('Performance Tests', () => {
 
       const ParentComponent = () => {
         const [parentState, setParentState] = React.useState(0);
-        const stableData = React.useMemo(() => ({ value: 'stable' }), []);
+        // const stableData = React.useMemo(() => ({ value: 'stable' }), []); // Commented out as it's not used
 
         return (
           <div>

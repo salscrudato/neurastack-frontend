@@ -283,22 +283,24 @@ export function analyzeBundleSize(): Promise<{
     const loadedModules: string[] = [];
 
     // Get module information if available (webpack specific)
-    if (typeof __webpack_require__ !== 'undefined' && __webpack_require__.cache) {
-      Object.keys(__webpack_require__.cache).forEach(moduleId => {
+    // Note: __webpack_require__ is only available in webpack builds
+    if (typeof (globalThis as any).__webpack_require__ !== 'undefined' && (globalThis as any).__webpack_require__.cache) {
+      Object.keys((globalThis as any).__webpack_require__.cache).forEach((moduleId: string) => {
         loadedModules.push(moduleId);
       });
     }
 
     // Estimate size from script tags (rough approximation)
     Promise.all(
-      scripts.map(script => 
-        fetch(script.src, { method: 'HEAD' })
+      scripts.map(script => {
+        const scriptElement = script as HTMLScriptElement;
+        return fetch(scriptElement.src, { method: 'HEAD' })
           .then(response => {
             const contentLength = response.headers.get('content-length');
             return contentLength ? parseInt(contentLength, 10) : 0;
           })
-          .catch(() => 0)
-      )
+          .catch(() => 0);
+      })
     ).then(sizes => {
       estimatedSize = sizes.reduce((sum, size) => sum + size, 0);
       resolve({
@@ -348,3 +350,4 @@ export function monitorBundleLoading(): void {
 
 export { BundleAnalyzer };
 export type { BundleMetrics, ModuleInfo, OptimizationSuggestion };
+

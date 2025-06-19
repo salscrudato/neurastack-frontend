@@ -675,22 +675,29 @@ export interface Exercise {
 // ============================================================================
 
 export interface WorkoutUserMetadata {
-  age: number; // Required by API
-  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  age: number; // Required: 13-100
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced'; // Required
   gender?: string;
   weight?: number;
-  goals?: string[]; // e.g., ['strength', 'cardio', 'flexibility', 'weight_loss']
-  equipment?: string[]; // e.g., ['dumbbells', 'resistance_bands', 'none']
-  timeAvailable?: number; // minutes per session
-  injuries?: string[];
-  daysPerWeek?: number;
-  minutesPerSession?: number;
+  goals?: string[]; // e.g., ["weight_loss", "muscle_gain"]
+  equipment?: string[]; // Available equipment
+  timeAvailable?: number; // Minutes available for workout
+  injuries?: string[]; // Any injuries or limitations
+  preferences?: string[]; // Workout preferences
 }
 
 export interface WorkoutHistoryEntry {
   date: string; // ISO date string, e.g., "2025-06-15"
   type: string; // e.g., "upper_body"
   duration: number; // minutes
+  // Enhanced feedback context for AI optimization
+  feedback?: {
+    difficulty: number; // 1-5 scale
+    enjoyment: number; // 1-5 scale
+    completion: number; // 0-100 percentage
+    adaptationSignals?: string[]; // e.g., ['INCREASE_INTENSITY', 'REPEAT_STYLE']
+  };
+  exercises?: string[]; // Top exercises from the workout
 }
 
 export interface WorkoutAPIRequest {
@@ -701,12 +708,12 @@ export interface WorkoutAPIRequest {
 
 export interface WorkoutAPIExercise {
   name: string;
-  category: string; // e.g., "strength", "cardio"
-  sets: number;
-  reps: string; // e.g., "10-12" to allow ranges
-  rest: string; // e.g., "30 seconds"
+  category: string; // 'strength', 'cardio', 'flexibility'
+  sets?: number;
+  reps: string; // e.g., '10-12' or '30 seconds'
+  rest: string; // Rest time between sets
   instructions: string;
-  modifications: string; // easier variations
+  modifications: string;
   targetMuscles: string[];
 }
 
@@ -723,20 +730,24 @@ export interface CooldownExercise {
 }
 
 export interface WorkoutAPIPlan {
-  type: string; // e.g., "mixed"
-  duration: string; // e.g., "30 minutes"
-  difficulty: string; // e.g., "beginner"
-  equipment: string[]; // e.g., ["none"]
+  type: string; // 'strength', 'cardio', 'mixed', 'flexibility'
+  duration: string; // e.g., '45 minutes'
+  difficulty: string; // 'beginner', 'intermediate', 'advanced'
+  equipment: string[];
   exercises: WorkoutAPIExercise[];
   warmup: WarmupExercise[];
   cooldown: CooldownExercise[];
-  calorieEstimate: string; // e.g., "150-200 calories"
-  notes: string; // Additional workout notes
+  notes: string;
+  calorieEstimate: string;
+  tags: string[];
 }
 
 export interface WorkoutAPIMetadata {
-  model: string; // e.g., "gpt-4o-mini"
-  timestamp: string; // ISO timestamp
+  model: string;
+  provider: string;
+  timestamp: string;
+  correlationId: string;
+  userId?: string;
 }
 
 export interface WorkoutAPIResponse {
@@ -746,9 +757,10 @@ export interface WorkoutAPIResponse {
     metadata: WorkoutAPIMetadata;
   };
   message?: string;
-  error?: string;
-  timestamp?: string;
-  correlationId?: string;
+  timestamp: string;
+  correlationId: string;
+  cached?: boolean; // Check if response was cached
+  cacheTimestamp?: string; // When the response was cached
 }
 
 // ============================================================================

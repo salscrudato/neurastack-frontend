@@ -1,18 +1,18 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
-import {
-  Box,
-  Button,
-  Text,
-  VStack,
-  useColorModeValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  Code,
-  Collapse,
-} from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import {
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Box,
+    Button,
+    Code,
+    Collapse,
+    Text,
+    VStack,
+    useColorModeValue,
+} from '@chakra-ui/react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -49,6 +49,19 @@ class ErrorBoundary extends Component<Props, State> {
       error,
       errorInfo,
     });
+
+    // Handle specific CSS-in-JS errors
+    if (error.message.includes('Cannot access') && error.message.includes('before initialization')) {
+      console.error('🚨 CSS-in-JS initialization error detected');
+
+      // Attempt to reload the page to fix Emotion initialization issues
+      if (typeof window !== 'undefined') {
+        console.log('🔄 Attempting to reload page to fix CSS-in-JS error...');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    }
 
     // Log to external service in production
     if (process.env.NODE_ENV === 'production') {

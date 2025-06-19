@@ -283,8 +283,8 @@ describe('Accessibility Tests', () => {
     });
 
     it('should support arrow key navigation in lists', async () => {
-      const user = userEvent.setup();
-      
+      // const user = userEvent.setup(); // Commented out as it's not used in this test
+
       render(
         <TestWrapper>
           <AccessibleNavigation />

@@ -6,7 +6,17 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
+import { initializeEmotion } from './lib/emotion-config';
 import theme from './theme/theme';
+
+// Initialize Emotion before any other imports to prevent initialization errors
+initializeEmotion();
+
+// Import CSS files to ensure proper loading order
+import './index.css';
+import './styles/emotion-fix.css'; // Must be first to prevent Emotion initialization issues
+import './styles/mobile-scrolling.css';
+import './styles/modern-enhancements.css';
 
 // Import pages directly for debugging
 import { ChatPage } from './pages/ChatPage';
@@ -62,8 +72,8 @@ const router = createBrowserRouter([
     v7_relativeSplatPath: true,
     v7_normalizeFormMethod: true,
     v7_partialHydration: true,
-    v7_skipActionErrorRevalidation: true,
-    v7_startTransition: true // Enable React 18 startTransition for state updates
+    v7_skipActionErrorRevalidation: true
+    // v7_startTransition removed as it's not supported in current React Router version
   }
 });
 

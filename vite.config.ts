@@ -169,12 +169,17 @@ export default defineConfig({
           // Core React chunk (most stable)
           vendor: ['react', 'react-dom'],
 
-          // Split UI libraries for better caching and smaller chunks
-          'chakra-core': ['@chakra-ui/react'],
-          'chakra-theme': ['@chakra-ui/theme-tools'],
-          'emotion': ['@emotion/react', '@emotion/styled'],
+          // Keep Chakra UI and Emotion together to prevent initialization issues
+          'ui-framework': [
+            '@chakra-ui/react',
+            '@chakra-ui/theme-tools',
+            '@chakra-ui/icons',
+            '@emotion/react',
+            '@emotion/styled'
+          ],
+
+          // Animations and styling
           'animations': ['framer-motion'],
-          'styled': ['styled-components'],
 
           // State management and utilities
           state: ['zustand'],
@@ -185,7 +190,7 @@ export default defineConfig({
           'firebase-firestore': ['firebase/firestore'],
 
           // Icons (separate for better caching)
-          icons: ['react-icons/pi', '@chakra-ui/icons', '@heroicons/react'],
+          icons: ['react-icons/pi', '@heroicons/react'],
 
           // Markdown rendering (used in chat)
           markdown: ['react-markdown', 'remark-gfm'],
@@ -214,16 +219,27 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
-      '@chakra-ui/react',
+      // Ensure Emotion is loaded before Chakra UI to prevent initialization issues
       '@emotion/react',
       '@emotion/styled',
+      '@emotion/cache',
+      '@chakra-ui/react',
+      '@chakra-ui/theme-tools',
+      '@chakra-ui/icons',
       'zustand',
       'react-markdown',
       'remark-gfm',
       'react-router-dom',
       'framer-motion',
-      'styled-components'
+      'styled-components' // Include to ensure proper loading
     ],
-    exclude: [], // Allow all dependencies to be pre-bundled for better performance
+    exclude: [], // Don't exclude anything to prevent loading issues
+    force: true, // Force re-optimization to fix any cached issues
+    esbuildOptions: {
+      // Ensure proper module resolution
+      target: 'es2020',
+      format: 'esm',
+      keepNames: true,
+    },
   },
 });

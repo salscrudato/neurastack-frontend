@@ -178,16 +178,22 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
         }
       }
 
-      // Store concise feedback in AI memory for future workout generation
+      // Store structured feedback optimized for AI consumption
       if (workout.generationContext?.sessionId) {
-        const memoryContent = `Feedback: ${workout.name} - D:${feedback.difficultyRating}/5, E:${feedback.enjoymentRating}/5, Energy:${feedback.energyLevel}, RPE:${feedback.perceivedExertion}/10, Complete:${completionRate.toFixed(0)}%${feedback.comments ? `, Notes:${feedback.comments.substring(0,50)}` : ''}`;
+        const structuredFeedback = createOptimalAIFeedback(
+          workout,
+          feedback,
+          completionRate,
+          actualDuration,
+          exercisePerformance
+        );
 
         await neuraStackClient.storeMemory({
           userId: user.uid,
           sessionId: workout.generationContext.sessionId,
-          content: memoryContent,
+          content: structuredFeedback,
           isUserPrompt: false,
-          responseQuality: feedback.enjoymentRating >= 4 ? 0.9 : 0.7,
+          responseQuality: calculateResponseQuality(feedback, completionRate),
           ensembleMode: true
         });
       }
@@ -523,4 +529,108 @@ function generateAdaptationSuggestions(feedback: FeedbackData, _workout: Workout
   }
 
   return suggestions;
+}
+
+/**
+ * Creates optimally structured feedback for AI consumption in workout generation
+ * Uses a hierarchical, token-efficient format that prioritizes actionable insights
+ */
+function createOptimalAIFeedback(
+  workout: WorkoutPlan,
+  feedback: FeedbackData,
+  completionRate: number,
+  actualDuration: number,
+  exercisePerformance: ExercisePerformance[]
+): string {
+  // Core performance metrics (highest priority for AI)
+  const coreMetrics = {
+    difficulty: feedback.difficultyRating,
+    enjoyment: feedback.enjoymentRating,
+    completion: Math.round(completionRate),
+    rpe: feedback.perceivedExertion,
+    energy: feedback.energyLevel,
+    efficiency: Math.round((workout.duration / actualDuration) * 100)
+  };
+
+  // Adaptation signals for AI decision making
+  const adaptationSignals = [];
+
+  // Difficulty adaptation
+  if (feedback.difficultyRating <= 2) {
+    adaptationSignals.push('INCREASE_INTENSITY');
+  } else if (feedback.difficultyRating >= 4) {
+    adaptationSignals.push('REDUCE_INTENSITY');
+  }
+
+  // Volume adaptation
+  if (completionRate < 80) {
+    adaptationSignals.push('REDUCE_VOLUME');
+  } else if (completionRate === 100 && feedback.difficultyRating <= 2) {
+    adaptationSignals.push('INCREASE_VOLUME');
+  }
+
+  // Exercise preference signals
+  if (feedback.enjoymentRating >= 4) {
+    adaptationSignals.push('REPEAT_STYLE');
+  } else if (feedback.enjoymentRating <= 2) {
+    adaptationSignals.push('VARY_STYLE');
+  }
+
+  // Recovery signals
+  if (feedback.energyLevel === 'low' && feedback.perceivedExertion >= 8) {
+    adaptationSignals.push('INCREASE_RECOVERY');
+  } else if (feedback.energyLevel === 'high' && feedback.perceivedExertion <= 4) {
+    adaptationSignals.push('REDUCE_RECOVERY');
+  }
+
+  // Exercise-specific insights (most challenging/enjoyable)
+  const exerciseInsights = exercisePerformance
+    .map((ex) => ({
+      name: ex.exerciseName,
+      difficulty: ex.difficulty || 3,
+      form: ex.formQuality || 3,
+      completed: ex.completedSets > 0
+    }))
+    .filter(ex => ex.difficulty <= 2 || ex.difficulty >= 4 || !ex.completed)
+    .slice(0, 3) // Limit to top 3 insights
+    .map(ex => {
+      if (!ex.completed) return `${ex.name}:SKIP`;
+      if (ex.difficulty <= 2) return `${ex.name}:EASY`;
+      if (ex.difficulty >= 4) return `${ex.name}:HARD`;
+      return null;
+    })
+    .filter(Boolean);
+
+  // Contextual factors
+  const context = {
+    type: workout.workoutType || 'mixed',
+    duration: workout.duration,
+    timeOfDay: getTimeOfDay(new Date())
+  };
+
+  // Build structured feedback string optimized for AI parsing
+  const feedbackParts = [
+    `WORKOUT_FEEDBACK[${workout.name}]`,
+    `METRICS{D:${coreMetrics.difficulty},E:${coreMetrics.enjoyment},C:${coreMetrics.completion}%,RPE:${coreMetrics.rpe},Energy:${coreMetrics.energy},Eff:${coreMetrics.efficiency}%}`,
+    adaptationSignals.length > 0 ? `ADAPT[${adaptationSignals.join(',')}]` : null,
+    exerciseInsights.length > 0 ? `EXERCISES[${exerciseInsights.join(',')}]` : null,
+    `CONTEXT{${context.type},${context.duration}min,${context.timeOfDay}}`,
+    feedback.comments ? `NOTES:"${feedback.comments.substring(0, 100)}"` : null
+  ].filter(Boolean);
+
+  return feedbackParts.join(' ');
+}
+
+/**
+ * Calculates response quality score for memory weighting
+ */
+function calculateResponseQuality(feedback: FeedbackData, completionRate: number): number {
+  // Base quality on enjoyment and completion
+  const enjoymentScore = feedback.enjoymentRating / 5;
+  const completionScore = completionRate / 100;
+  const difficultyScore = feedback.difficultyRating === 3 ? 1 :
+                         Math.abs(feedback.difficultyRating - 3) / 2;
+
+  // Weight factors: enjoyment (40%), completion (30%), difficulty appropriateness (30%)
+  return (enjoymentScore * 0.4) + (completionScore * 0.3) + (difficultyScore * 0.3);
 }

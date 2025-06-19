@@ -31,6 +31,7 @@ import { FITNESS_GOALS } from '../../constants/fitnessGoals';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import { neuraStackClient } from '../../lib/neurastack-client';
 import type { Exercise, WorkoutAPIRequest, WorkoutHistoryEntry, WorkoutPlan, WorkoutUserMetadata } from '../../lib/types';
+import { buildFeedbackEnhancedRequest, getAIOptimizedWorkoutHistory } from '../../services/workoutFeedbackService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import { robustApiCall, serviceHealthMonitor, workoutApiCircuitBreaker } from '../../utils/apiRobustness';
@@ -289,27 +290,21 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         equipment: equipmentNames, // Use full names instead of codes
         timeAvailable: profile.availableTime,
         injuries: profile.injuries || [],
-        daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        minutesPerSession: profile.availableTime, // Use consistent time value
+        preferences: [] // Add preferences field as per backend API spec
       };
 
-      // Build optimized workout history - limit to most recent and essential data
+      // Build optimized workout history with feedback context
       const recentWorkouts = workoutPlans
         .filter(w => w.completedAt)
         .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())
-        .slice(0, 2); // Only last 2 workouts for efficiency
+        .slice(0, 3); // Increased to 3 for better pattern recognition
 
-      const workoutHistory: WorkoutHistoryEntry[] = recentWorkouts.map(w => ({
-        date: new Date(w.completedAt!).toISOString().split('T')[0],
-        type: (w.workoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed') || 'mixed',
-        duration: w.duration,
-        exercises: w.exercises.slice(0, 4).map(e => e.name), // Limit to 4 exercises
-        difficulty: w.difficulty,
-        rating: 4 // Default rating since we don't track this yet
-      }));
+      // Use the new AI-optimized workout history service
+      const workoutHistory: WorkoutHistoryEntry[] = await getAIOptimizedWorkoutHistory(user?.uid || '', 3);
 
-      // Create natural language workout request
-      const workoutRequest = buildWorkoutRequest(profile, recentWorkouts, selectedWorkoutType);
+      // Create natural language workout request with feedback context
+      const baseWorkoutRequest = buildWorkoutRequest(profile, recentWorkouts, selectedWorkoutType, workoutHistory);
+      const workoutRequest = buildFeedbackEnhancedRequest(baseWorkoutRequest, workoutHistory);
 
       // Prepare the workout API request
       const workoutAPIRequest: WorkoutAPIRequest = {
@@ -499,30 +494,92 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
   // Removed unused helper functions to fix TypeScript errors
 
-  // Build optimized workout request for the API - concise and efficient
-  const buildWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
+  // Build enhanced workout history with feedback context for AI optimization
+  // Note: This function is currently unused but kept for future implementation
+  // const buildEnhancedWorkoutHistory = useCallback(async (recentWorkouts: WorkoutPlan[], userId?: string): Promise<WorkoutHistoryEntry[]> => {
+  //   if (!userId) return [];
+
+  //   const historyPromises = recentWorkouts.map(async (workout) => {
+  //     // Try to get feedback data from analytics
+  //     let feedbackData = null;
+  //     try {
+  //       // This would integrate with the analytics service to get feedback
+  //       // For now, we'll extract from the workout plan if available
+  //       feedbackData = {
+  //         difficulty: 3, // Default values
+  //         enjoyment: 4,
+  //         completion: workout.completionRate || 100,
+  //         adaptationSignals: [] as string[]
+  //       };
+  //     } catch (error) {
+  //       console.warn('Could not retrieve feedback for workout:', workout.id);
+  //     }
+
+  //     return {
+  //       date: new Date(workout.completedAt!).toISOString().split('T')[0],
+  //       type: (workout.workoutType as string) || 'mixed',
+  //       duration: workout.actualDuration || workout.duration,
+  //       feedback: feedbackData,
+  //       exercises: workout.exercises.slice(0, 4).map(e => e.name)
+  //     };
+  //   });
+
+  //   return Promise.all(historyPromises);
+  // }, []);
+
+  // Build optimized workout request for the API with feedback context
+  const buildWorkoutRequest = useCallback((profile: any, _recentWorkouts: any[], workoutType: string, workoutHistory: WorkoutHistoryEntry[]) => {
     // Get workout type description
     const selectedType = workoutTypes.find(type => type.value === workoutType);
     const workoutTypeDescription = selectedType ? selectedType.label : 'Mixed Training';
 
-    // Build recent workout context - fix object serialization issue
-    const recentWorkoutContext = recentWorkouts.length > 0
-      ? ` Previous workout: ${recentWorkouts[0].exercises.slice(0, 3).map((ex: any) => typeof ex === 'string' ? ex : ex.name || 'exercise').join(', ')}.`
-      : '';
+    // Build feedback-informed context
+    let feedbackContext = '';
+    if (workoutHistory.length > 0) {
+      const lastWorkout = workoutHistory[0];
+      if (lastWorkout.feedback) {
+        const { difficulty, enjoyment, completion, adaptationSignals } = lastWorkout.feedback;
+
+        // Create adaptive context based on feedback
+        const adaptations = [];
+        if (difficulty <= 2) adaptations.push('increase intensity');
+        if (difficulty >= 4) adaptations.push('reduce intensity');
+        if (enjoyment >= 4) adaptations.push(`repeat ${lastWorkout.type} style`);
+        if (completion < 80) adaptations.push('shorter duration or simpler exercises');
+
+        if (adaptationSignals && adaptationSignals.length > 0) {
+          adaptations.push(...adaptationSignals.map(signal => signal.toLowerCase().replace('_', ' ')));
+        }
+
+        if (adaptations.length > 0) {
+          feedbackContext = ` Based on previous feedback: ${adaptations.join(', ')}.`;
+        }
+      }
+
+      // Add exercise variety context
+      const recentExercises = workoutHistory
+        .flatMap(w => w.exercises || [])
+        .slice(0, 8); // Last 8 exercises across workouts
+
+      if (recentExercises.length > 0) {
+        feedbackContext += ` Recent exercises: ${recentExercises.join(', ')}.`;
+      }
+    }
 
     // Add unique identifiers to prevent backend caching
     const timestamp = Date.now();
     const randomId = Math.random().toString(36).substr(2, 9);
     const sessionId = `session-${timestamp}-${randomId}`;
 
-    // Concise request with unique identifiers to prevent caching
-    return `Create a ${workoutTypeDescription.toLowerCase()} workout for ${profile.availableTime} minutes.${recentWorkoutContext}
+    // Enhanced request with feedback-driven adaptations
+    return `Create a ${workoutTypeDescription.toLowerCase()} workout for ${profile.availableTime} minutes.${feedbackContext}
 
 Requirements:
 - Include warm-up (3-5 min) and cool-down (3-5 min)
 - Provide exercise instructions and form tips
 - Structure with sets, reps, rest periods
 - Match user's fitness level and available equipment
+- Adapt based on previous workout feedback
 
 [Request ID: ${sessionId}] [Timestamp: ${timestamp}] [Unique: ${randomId}]`;
   }, [workoutTypes]);
@@ -847,7 +904,7 @@ Requirements:
       };
 
       // Use the same comprehensive request builder with unique identifiers
-      const workoutRequest = buildWorkoutRequest(modifiedProfile, [], modifications.workoutType || selectedWorkoutType);
+      const workoutRequest = buildWorkoutRequest(modifiedProfile, [], modifications.workoutType || selectedWorkoutType, []);
 
       // Convert goal labels back to API values for the API request
       const goalNames = convertGoalCodesToNames(profile.goals || []);
@@ -865,8 +922,7 @@ Requirements:
         equipment: convertEquipmentCodesToNames(profile.equipment || []),
         timeAvailable: modifications.duration || profile.availableTime,
         injuries: profile.injuries || [],
-        daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        minutesPerSession: modifications.duration || profile.timeAvailability?.minutesPerSession || profile.availableTime,
+        preferences: [] // Add preferences field as per backend API spec
       };
 
       const workoutAPIRequest: WorkoutAPIRequest = {

@@ -5,10 +5,10 @@
  * workout plans, Firestore synchronization, and offline handling.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useFitnessStore } from '../store/useFitnessStore';
+import { act, renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FitnessProfile, WorkoutPlan } from '../lib/types';
+import { useFitnessStore } from '../store/useFitnessStore';
 
 // Mock the fitness data service
 vi.mock('../services/fitnessDataService', () => ({
@@ -225,9 +225,8 @@ describe('Fitness Store', () => {
         difficulty: 'beginner',
         focusAreas: ['strength'],
         workoutType: 'strength',
-        equipment: ['bodyweight'],
-        estimatedCalories: 200,
         createdAt: new Date(),
+        completedAt: null,
       };
 
       act(() => {
@@ -247,9 +246,8 @@ describe('Fitness Store', () => {
         difficulty: 'beginner',
         focusAreas: ['strength'],
         workoutType: 'strength',
-        equipment: ['bodyweight'],
-        estimatedCalories: 200,
         createdAt: new Date(),
+        completedAt: null,
       };
 
       await act(async () => {

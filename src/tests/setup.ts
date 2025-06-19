@@ -229,6 +229,8 @@ global.testUtils = {
 };
 
 // Setup cleanup
+import { afterEach } from 'vitest';
+
 afterEach(() => {
   vi.clearAllMocks();
   localStorageMock.clear();
