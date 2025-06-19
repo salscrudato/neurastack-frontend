@@ -1,19 +1,19 @@
 import {
-  Box,
-  useToast,
+    Box,
+    useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import { useFitnessStore } from '../store/useFitnessStore';
-import OnboardingWizard from '../components/NeuraFit/OnboardingWizard';
 import Dashboard from '../components/NeuraFit/Dashboard';
-import WorkoutGenerator from '../components/NeuraFit/WorkoutGenerator';
+import OnboardingWizard from '../components/NeuraFit/OnboardingWizard';
 import ProgressTracker from '../components/NeuraFit/ProgressTracker';
+import WorkoutGenerator from '../components/NeuraFit/WorkoutGenerator';
 import type { WorkoutPlan } from '../lib/types';
+import { useFitnessStore } from '../store/useFitnessStore';
 
 type ViewState = 'dashboard' | 'workout' | 'progress';
 
 export default function NeuraFitPage() {
-  const { profile, resetOnboarding, completeOnboarding, startEditingFromDashboard, finishEditingFromDashboard } = useFitnessStore();
+  const { profile, completeOnboarding, startEditingFromDashboard, finishEditingFromDashboard } = useFitnessStore();
   const [currentView, setCurrentView] = useState<ViewState>('dashboard');
   const toast = useToast();
 
@@ -36,10 +36,7 @@ export default function NeuraFitPage() {
     setCurrentView('progress');
   };
 
-  const handleEditProfile = () => {
-    resetOnboarding();
-    setCurrentView('dashboard');
-  };
+
 
   const handleEditSpecificSetting = (step: number) => {
     // Start editing mode and navigate to specific step
@@ -99,7 +96,6 @@ export default function NeuraFitPage() {
         return (
           <Dashboard
             onStartWorkout={handleStartWorkout}
-            onEditProfile={handleEditProfile}
             onViewProgress={handleViewProgress}
             onEditSpecificSetting={handleEditSpecificSetting}
           />

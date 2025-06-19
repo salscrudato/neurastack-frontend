@@ -96,10 +96,10 @@ export function Header() {
         disabled: false
       },
       {
-        label: 'NeuraFit (coming soon)',
+        label: 'NeuraFit',
         path: '/neurafit',
         icon: PiHeartBold,
-        disabled: true
+        disabled: false
       }
     ];
 

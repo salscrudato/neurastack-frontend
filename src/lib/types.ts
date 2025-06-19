@@ -555,9 +555,8 @@ export interface FitnessProfile {
   // Enhanced fields for workout API integration
   age?: number; // User's age
   gender?: 'male' | 'female' | 'rather_not_say'; // User's gender
-  weight?: number; // User's weight in kg or lbs
+  weight?: number; // User's weight in lbs
   injuries?: string[]; // Any injuries or limitations
-  weightUnit?: 'kg' | 'lbs'; // Weight unit preference
 }
 
 export interface WorkoutPlan {
@@ -618,10 +617,16 @@ export interface Exercise {
 // ============================================================================
 
 export interface WorkoutUserMetadata {
-  age?: number;
+  age: number; // Required by API
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  gender?: string;
+  weight?: number;
   goals?: string[]; // e.g., ['strength', 'cardio', 'flexibility', 'weight_loss']
   equipment?: string[]; // e.g., ['dumbbells', 'resistance_bands', 'none']
+  timeAvailable?: number; // minutes per session
+  injuries?: string[];
+  daysPerWeek?: number;
+  minutesPerSession?: number;
 }
 
 export interface WorkoutHistoryEntry {

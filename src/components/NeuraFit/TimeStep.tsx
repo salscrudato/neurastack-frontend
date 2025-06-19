@@ -31,19 +31,19 @@ function getTimeCommitmentFeedback(totalMinutes: number) {
   );
 }
 import {
-  Box,
-  VStack,
-  Text,
-  useColorModeValue,
-  HStack,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderMark,
-  FormControl,
-  FormLabel,
-  Badge,
+    Badge,
+    Box,
+    FormControl,
+    FormLabel,
+    HStack,
+    Slider,
+    SliderFilledTrack,
+    SliderMark,
+    SliderThumb,
+    SliderTrack,
+    Text,
+    useColorModeValue,
+    VStack,
 } from '@chakra-ui/react';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
@@ -114,7 +114,13 @@ export default function TimeStep({ onNext, onPrev, isEditingFromDashboard = fals
         <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color={textColor}>
           How much time can you commit?
         </Text>
-        <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor}>
+        <Text
+          fontSize={{ base: "sm", md: "md" }}
+          color={subtextColor}
+          bgGradient="linear(to-r, blue.400, purple.500)"
+          bgClip="text"
+          fontWeight="medium"
+        >
           Set your weekly workout schedule
         </Text>
       </VStack>

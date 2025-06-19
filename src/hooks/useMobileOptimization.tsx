@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /**
  * Enhanced mobile optimization hook for chat input
@@ -50,11 +50,21 @@ export function useMobileOptimization() {
     }
   }, [isMobile]);
 
-  // Haptic feedback utility
-  const triggerHaptic = useCallback((pattern: number | number[] = 50) => {
-    if (isMobile && 'vibrate' in navigator) {
-      navigator.vibrate(pattern);
-    }
+  // Enhanced haptic feedback utility with workout-specific patterns
+  const triggerHaptic = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' | number | number[] = 'light') => {
+    if (!isMobile || !('vibrate' in navigator)) return;
+
+    const patterns = {
+      light: 50,
+      medium: 100,
+      heavy: 200,
+      success: [100, 50, 100],
+      warning: [150, 100, 150],
+      error: [200, 100, 200, 100, 200],
+    };
+
+    const pattern = typeof type === 'string' ? patterns[type] : type;
+    navigator.vibrate(pattern);
   }, [isMobile]);
 
   // Enhanced touch configuration
@@ -82,28 +92,67 @@ export function useMobileOptimization() {
     overscrollBehavior: 'contain' as const,
   }), []);
 
+  // Workout-specific mobile optimizations
+  const workoutConfig = useMemo(() => ({
+    // Prevent screen sleep during workouts
+    preventSleep: () => {
+      if ('wakeLock' in navigator) {
+        return (navigator as any).wakeLock.request('screen');
+      }
+      return Promise.resolve(null);
+    },
+
+    // Enhanced timer display for mobile
+    timerStyles: {
+      fontSize: isMobile ? '3rem' : '2rem',
+      fontWeight: 'bold',
+      textAlign: 'center' as const,
+      padding: isMobile ? '1.5rem' : '1rem',
+      userSelect: 'none' as const,
+    },
+
+    // Exercise card optimizations
+    exerciseCardStyles: {
+      padding: isMobile ? '1rem' : '0.75rem',
+      borderRadius: isMobile ? '1rem' : '0.5rem',
+      minHeight: isMobile ? '120px' : '100px',
+      touchAction: 'manipulation' as const,
+    },
+
+    // Button optimizations for workout controls
+    workoutButtonStyles: {
+      minHeight: isMobile ? '64px' : '48px',
+      fontSize: isMobile ? '1.125rem' : '1rem',
+      fontWeight: '600',
+      borderRadius: isMobile ? '0.75rem' : '0.5rem',
+      touchAction: 'manipulation' as const,
+      WebkitTapHighlightColor: 'transparent',
+    },
+  }), [isMobile]);
+
   return {
     // Device detection
     isMobile,
     isTouch,
     keyboardVisible,
     viewportHeight,
-    
+
     // Utilities
     triggerHaptic,
-    
+
     // Configuration objects
     touchConfig,
     inputOptimizations,
     performanceConfig,
-    
+    workoutConfig,
+
     // Responsive values
     spacing: {
       xs: isMobile ? 2 : 3,
       sm: isMobile ? 3 : 4,
       md: isMobile ? 4 : 5,
     },
-    
+
     // Touch target sizes
     touchTargets: {
       small: isMobile ? '44px' : '40px',

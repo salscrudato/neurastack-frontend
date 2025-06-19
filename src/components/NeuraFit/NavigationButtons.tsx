@@ -1,4 +1,4 @@
-import { HStack, Button } from '@chakra-ui/react';
+import { Button, HStack } from '@chakra-ui/react';
 import { memo } from 'react';
 
 interface NavigationButtonsProps {
@@ -38,6 +38,10 @@ const NavigationButtons = memo(function NavigationButtons({
           borderColor="gray.300"
           color="gray.700"
           flex={1}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          textAlign="center"
           _hover={{
             borderColor: "gray.400",
             bg: "gray.50"
@@ -52,7 +56,7 @@ const NavigationButtons = memo(function NavigationButtons({
       ) : (
         <div /> // Spacer when no back button
       )}
-      
+
       <Button
         onClick={onNext}
         size="lg"
@@ -60,6 +64,10 @@ const NavigationButtons = memo(function NavigationButtons({
         bg="blue.500"
         color="white"
         flex={1}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        textAlign="center"
         isDisabled={!canProceed}
         isLoading={isLoading}
         _hover={{

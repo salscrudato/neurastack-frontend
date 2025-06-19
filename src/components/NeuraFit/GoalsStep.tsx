@@ -76,14 +76,15 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
   const surfaceSecondary = 'gray.50';
   const brandPrimary = 'blue.500';
 
-  // Optimized goal selection - immediate UI update, no Firebase save until navigation
+  // Fixed goal selection with proper state management
   const handleGoalToggle = useCallback((goalCode: string) => {
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    // Immediate UI update for smooth responsiveness
-    const currentGoals = profile.goals || [];
+    // Get current goals from store
+    const { profile: currentProfile, updateProfile } = useFitnessStore.getState();
+    const currentGoals = currentProfile.goals || [];
     const isSelected = currentGoals.includes(goalCode);
 
     let newGoals;
@@ -93,11 +94,10 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
       newGoals = [...currentGoals, goalCode];
     }
 
-    // Update local state immediately for smooth UX
-    const { updateProfile } = useFitnessStore.getState();
+    // Update profile with new goals
     updateProfile({ goals: newGoals });
 
-    // Track analytics with both old and new systems
+    // Track analytics
     const startTime = performance.now();
     const endTime = performance.now();
     const completionTime = endTime - startTime;
@@ -110,8 +110,8 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
       import('../../services/analyticsService').then(({ trackFitnessInteraction }) => {
         trackFitnessInteraction({
           action: 'goal_selected',
-          goals: !isSelected ? [...(profile.goals || []), goalCode] : (profile.goals || []).filter(g => g !== goalCode),
-          fitnessLevel: profile.fitnessLevel
+          goals: newGoals,
+          fitnessLevel: currentProfile.fitnessLevel
         });
       });
     } catch (error) {
@@ -119,7 +119,7 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
     }
 
     console.log(`Goal ${goalCode} toggled locally in ${completionTime}ms`);
-  }, [profile.goals]);
+  }, []);
 
   // Keyboard navigation handler
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -196,21 +196,25 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
 
   return (
     <VStack
-      spacing={4}
+      spacing={{ base: 3, md: 4 }}
       align="stretch"
       w="100%"
+      h="100%"
+      justify="space-between"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
       role="group"
       aria-labelledby="goals-heading"
       aria-describedby="goals-description"
+      p={{ base: 3, md: 4 }}
+      overflow="hidden"
     >
-      {/* Modern Header with enhanced typography */}
-      <VStack spacing={3} textAlign="center" mb={1}>
+      {/* Compact Header */}
+      <VStack spacing={2} textAlign="center" flex="0 0 auto">
         <Text
           id="goals-heading"
           as="h1"
-          fontSize={{ base: "2xl", md: "3xl" }}
+          fontSize={{ base: "xl", md: "2xl" }}
           fontWeight="700"
           color={textColor}
           lineHeight="1.2"
@@ -220,9 +224,9 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
         </Text>
         <Text
           id="goals-description"
-          fontSize={{ base: "md", md: "lg" }}
+          fontSize={{ base: "sm", md: "md" }}
           color={subtextColor}
-          maxW="480px"
+          maxW="400px"
           lineHeight="1.4"
           letterSpacing="-0.01em"
           fontWeight="400"
@@ -231,16 +235,27 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
         </Text>
       </VStack>
 
-      {/* Enhanced Goal Selection Grid */}
+      {/* Mobile-Optimized Goal Selection Grid */}
       <Box
         as="fieldset"
         aria-labelledby="goals-heading"
         aria-describedby="goals-description"
         w="100%"
-        maxW="500px"
-        mx="auto"
+        flex="1 1 auto"
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        overflow="visible"
       >
-        <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="100%">
+        <SimpleGrid
+          columns={{ base: 1, sm: 2 }}
+          spacing={{ base: 3, md: 4 }}
+          w="100%"
+          maxW="500px"
+          mx="auto"
+          h="fit-content"
+          overflow="visible"
+        >
           <AnimatePresence>
             {FITNESS_GOALS.map((goal, index: number) => {
               const isSelected = isGoalSelected(goal.code);
@@ -262,12 +277,12 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
                   <Button
                     ref={(el) => { buttonRefs.current[index] = el; }}
                     w="100%"
-                    h="88px" // Slightly taller for better mobile experience
-                    p={5}
+                    h={{ base: "80px", md: "88px" }}
+                    p={{ base: 4, md: 5 }}
                     bg={isSelected ? goal.bgColor : cardBg}
                     border="1px solid"
                     borderColor={isSelected ? goal.borderColor : borderColor}
-                    borderRadius="2xl" // 16px border radius for modern look
+                    borderRadius="xl"
                     onClick={() => handleGoalToggle(goal.code)}
                     variant="ghost"
                     role="checkbox"
@@ -348,14 +363,16 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
         </SimpleGrid>
       </Box>
 
-      {/* Navigation */}
-      <NavigationButtons
-        onBack={handleBack}
-        onNext={handleNext}
-        canProceed={canProceed}
-        nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
-        backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
-      />
+      {/* Fixed Navigation */}
+      <Box flex="0 0 auto" w="100%">
+        <NavigationButtons
+          onBack={handleBack}
+          onNext={handleNext}
+          canProceed={canProceed}
+          nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
+          backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
+        />
+      </Box>
 
       {/* Screen reader instructions */}
       <Box

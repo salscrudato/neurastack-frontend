@@ -1,6 +1,6 @@
 import { Box, Text, VStack, useColorModeValue } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, memo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useEffect, useState } from 'react';
 
 const MotionBox = motion(Box);
 
@@ -58,48 +58,60 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
 
   return (
     <AnimatePresence>
-      <MotionBox
-        position="fixed"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        bg="rgba(0, 0, 0, 0.8)"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        zIndex={9999}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      {isVisible && (
         <MotionBox
-          bg={bgColor}
-          borderRadius="2xl"
-          p={{ base: 8, md: 12 }}
-          maxW={{ base: "90%", md: "md" }}
-          w="full"
-          mx={4}
-          shadow="2xl"
-          initial={{ scale: 0.8, y: 20 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.8, y: 20 }}
-          transition={{ duration: 0.4, type: "spring", stiffness: 300 }}
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="rgba(0, 0, 0, 0.85)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={9999}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          // Prevent scrolling on mobile
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            overflowY: 'hidden'
+          }}
         >
-          <VStack spacing={8} align="stretch">
+          <MotionBox
+            bg={bgColor}
+            borderRadius="2xl"
+            p={{ base: 6, md: 8, lg: 12 }}
+            maxW={{ base: "95%", sm: "90%", md: "md" }}
+            w="full"
+            mx={{ base: 2, md: 4 }}
+            shadow="2xl"
+            initial={{ scale: 0.8, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.8, y: 20 }}
+            transition={{ duration: 0.4, type: "spring", stiffness: 300 }}
+            // Enhanced mobile optimization
+            maxH={{ base: "80vh", md: "auto" }}
+            overflowY="auto"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+          <VStack spacing={{ base: 6, md: 8 }} align="stretch">
             {/* Title */}
             <Text
-              fontSize={{ base: "xl", md: "2xl" }}
+              fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
               fontWeight="bold"
               color={textColor}
               textAlign="center"
+              lineHeight="1.2"
+              px={{ base: 2, md: 0 }}
             >
               {title}
             </Text>
 
-            {/* Modern Wave Animation */}
-            <Box position="relative" h="60px" overflow="hidden">
+            {/* Modern Wave Animation - Enhanced for mobile */}
+            <Box position="relative" h={{ base: "50px", md: "60px" }} overflow="hidden">
               {[...Array(5)].map((_, i) => (
                 <MotionBox
                   key={i}
@@ -107,10 +119,10 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
                   top="50%"
                   left={0}
                   right={0}
-                  h="4px"
-                  bg={`linear-gradient(90deg, 
-                    rgba(59, 130, 246, 0.1) 0%, 
-                    rgba(59, 130, 246, 0.8) 50%, 
+                  h={{ base: "3px", md: "4px" }}
+                  bg={`linear-gradient(90deg,
+                    rgba(59, 130, 246, 0.1) 0%,
+                    rgba(59, 130, 246, 0.8) 50%,
                     rgba(147, 51, 234, 0.8) 100%
                   )`}
                   borderRadius="full"
@@ -123,18 +135,18 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
                     ease: "easeInOut"
                   }}
                   style={{
-                    transform: `translateY(${(i - 2) * 8}px)`,
+                    transform: `translateY(${(i - 2) * 6}px)`,
                     opacity: 1 - Math.abs(i - 2) * 0.2
                   }}
                 />
               ))}
             </Box>
 
-            {/* Progress Bar */}
-            <Box>
+            {/* Progress Bar - Enhanced for mobile */}
+            <Box px={{ base: 1, md: 0 }}>
               <Box
                 w="full"
-                h="6px"
+                h={{ base: "8px", md: "6px" }}
                 bg={useColorModeValue('gray.200', 'gray.700')}
                 borderRadius="full"
                 overflow="hidden"
@@ -146,20 +158,24 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
                   initial={{ width: "0%" }}
                   animate={{ width: `${progress}%` }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
+                  style={{
+                    boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)'
+                  }}
                 />
               </Box>
               <Text
-                fontSize="sm"
+                fontSize={{ base: "sm", md: "md" }}
                 color={subtextColor}
                 textAlign="center"
-                mt={2}
+                mt={{ base: 3, md: 2 }}
+                fontWeight="medium"
               >
                 {Math.round(progress)}% Complete
               </Text>
             </Box>
 
-            {/* Rotating Messages */}
-            <Box minH="50px" display="flex" alignItems="center" justifyContent="center">
+            {/* Rotating Messages - Enhanced for mobile */}
+            <Box minH={{ base: "60px", md: "50px" }} display="flex" alignItems="center" justifyContent="center" px={{ base: 2, md: 0 }}>
               <AnimatePresence mode="wait">
                 <MotionBox
                   key={currentMessageIndex}
@@ -169,10 +185,11 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
                   transition={{ duration: 0.3 }}
                 >
                   <Text
-                    fontSize={{ base: "sm", md: "md" }}
-                    color={subtextColor}
+                    fontSize={{ base: "md", md: "lg" }}
+                    color={textColor}
                     textAlign="center"
                     fontWeight="medium"
+                    lineHeight="1.4"
                   >
                     {messages[currentMessageIndex]}
                   </Text>
@@ -180,13 +197,13 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
               </AnimatePresence>
             </Box>
 
-            {/* Pulsing Dots */}
-            <Box display="flex" justifyContent="center" gap={2}>
+            {/* Pulsing Dots - Enhanced for mobile */}
+            <Box display="flex" justifyContent="center" gap={{ base: 2, md: 3 }} mt={{ base: 2, md: 0 }}>
               {[...Array(3)].map((_, i) => (
                 <MotionBox
                   key={i}
-                  w="8px"
-                  h="8px"
+                  w={{ base: "10px", md: "8px" }}
+                  h={{ base: "10px", md: "8px" }}
                   bg="blue.500"
                   borderRadius="full"
                   animate={{
@@ -202,8 +219,9 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
               ))}
             </Box>
           </VStack>
+          </MotionBox>
         </MotionBox>
-      </MotionBox>
+      )}
     </AnimatePresence>
   );
 });

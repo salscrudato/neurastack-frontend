@@ -6,14 +6,14 @@
  */
 
 import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  serverTimestamp,
-  type Timestamp
+    addDoc,
+    collection,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    serverTimestamp,
+    type Timestamp
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { handleSilentError } from '../utils/errorHandler';
@@ -118,7 +118,8 @@ export async function storeWorkoutAnalytics(analytics: Omit<WorkoutAnalytics, 'c
 
   try {
     const userId = auth.currentUser.uid;
-    const analyticsRef = collection(db, 'users', userId, 'fitness', 'analytics');
+    // Fix: Use correct Firestore path structure - collections need odd number of segments
+    const analyticsRef = collection(db, 'users', userId, 'analytics');
 
     const analyticsData = {
       ...analytics,
@@ -147,7 +148,8 @@ export async function generateWorkoutInsights(): Promise<WorkoutInsights | null>
 
   try {
     const userId = auth.currentUser.uid;
-    const analyticsRef = collection(db, 'users', userId, 'fitness', 'analytics');
+    // Fix: Use correct Firestore path structure - collections need odd number of segments
+    const analyticsRef = collection(db, 'users', userId, 'analytics');
     
     // Get last 30 workout analytics
     const q = query(

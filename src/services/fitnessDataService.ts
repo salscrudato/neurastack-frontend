@@ -42,6 +42,33 @@ interface StoredWorkoutPlan extends Omit<WorkoutPlan, 'createdAt' | 'completedAt
 }
 
 // ============================================================================
+// Utility Functions
+// ============================================================================
+
+/**
+ * Remove undefined values from an object to make it Firestore-compatible
+ */
+function removeUndefinedValues<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: Partial<T> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+        // Recursively clean nested objects
+        const cleanedNested = removeUndefinedValues(value);
+        if (Object.keys(cleanedNested).length > 0) {
+          cleaned[key as keyof T] = cleanedNested as T[keyof T];
+        }
+      } else {
+        cleaned[key as keyof T] = value;
+      }
+    }
+  }
+
+  return cleaned;
+}
+
+// ============================================================================
 // Fitness Profile Management
 // ============================================================================
 
@@ -57,15 +84,18 @@ export async function saveFitnessProfile(profile: FitnessProfile): Promise<void>
     const userId = auth.currentUser.uid;
     const profileRef = doc(db, 'users', userId, 'fitness', 'profile');
 
-    const profileData: Omit<StoredFitnessProfile, 'createdAt'> = {
-      ...profile,
+    // Clean the profile data to remove undefined values
+    const cleanedProfile = removeUndefinedValues(profile);
+
+    const profileData = {
+      ...cleanedProfile,
       updatedAt: serverTimestamp() as Timestamp,
       userId
     };
 
     // Check if profile exists
     const existingProfile = await getDoc(profileRef);
-    
+
     if (existingProfile.exists()) {
       // Update existing profile
       await updateDoc(profileRef, profileData);
@@ -103,8 +133,8 @@ export async function loadFitnessProfile(): Promise<FitnessProfile | null> {
 
     if (profileSnap.exists()) {
       const data = profileSnap.data() as StoredFitnessProfile;
-      
-      // Convert Firestore data back to FitnessProfile
+
+      // Convert Firestore data back to FitnessProfile with enhanced fields
       const profile: FitnessProfile = {
         fitnessLevel: data.fitnessLevel,
         fitnessLevelCode: data.fitnessLevelCode,
@@ -113,7 +143,12 @@ export async function loadFitnessProfile(): Promise<FitnessProfile | null> {
         availableTime: data.availableTime,
         workoutDays: data.workoutDays,
         timeAvailability: data.timeAvailability,
-        completedOnboarding: data.completedOnboarding
+        completedOnboarding: data.completedOnboarding,
+        // Enhanced fields for workout API integration (may be undefined for older profiles)
+        age: data.age,
+        gender: data.gender,
+        weight: data.weight,
+        injuries: data.injuries || [],
       };
 
       console.log('✅ Fitness profile loaded from Firestore');
@@ -173,7 +208,8 @@ export async function saveWorkoutPlan(workoutPlan: WorkoutPlan): Promise<void> {
 
   try {
     const userId = auth.currentUser.uid;
-    const workoutsRef = collection(db, 'users', userId, 'fitness', 'workouts');
+    // Fix: Use correct Firestore path structure - collections need odd number of segments
+    const workoutsRef = collection(db, 'users', userId, 'workouts');
 
     const workoutData: Omit<StoredWorkoutPlan, 'id'> = {
       name: workoutPlan.name,
@@ -207,7 +243,8 @@ export async function loadWorkoutPlans(): Promise<WorkoutPlan[]> {
 
   try {
     const userId = auth.currentUser.uid;
-    const workoutsRef = collection(db, 'users', userId, 'fitness', 'workouts');
+    // Fix: Use correct Firestore path structure - collections need odd number of segments
+    const workoutsRef = collection(db, 'users', userId, 'workouts');
     const q = query(
       workoutsRef,
       orderBy('createdAt', 'desc'),
@@ -267,7 +304,12 @@ export function subscribeFitnessProfile(
         availableTime: data.availableTime,
         workoutDays: data.workoutDays,
         timeAvailability: data.timeAvailability,
-        completedOnboarding: data.completedOnboarding
+        completedOnboarding: data.completedOnboarding,
+        // Enhanced fields for workout API integration (may be undefined for older profiles)
+        age: data.age,
+        gender: data.gender,
+        weight: data.weight,
+        injuries: data.injuries || [],
       };
       callback(profile);
     } else {

@@ -1,15 +1,15 @@
-import { useState } from 'react';
 import {
-  VStack,
-  Text,
-  Button,
-  Icon,
-  Wrap,
-  WrapItem,
-  Badge,
+    Badge,
+    Box,
+    Button,
+    Icon,
+    SimpleGrid,
+    Text,
+    VStack
 } from '@chakra-ui/react';
-import { useFitnessStore } from '../../store/useFitnessStore';
+import { useState } from 'react';
 import equipmentOptions, { type EquipmentOption } from '../../constants/equipmentOptions';
+import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
 interface EquipmentStepProps {
@@ -70,14 +70,22 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
       : 'No equipment selected.';
 
   return (
-    <VStack spacing={4} align="stretch" w="100%">
-      {/* Header */}
-      <VStack spacing={2} textAlign="center" mb={2}>
+    <VStack
+      spacing={{ base: 3, md: 4 }}
+      align="stretch"
+      w="100%"
+      h="100%"
+      justify="space-between"
+      p={{ base: 3, md: 4 }}
+      overflow="hidden"
+    >
+      {/* Compact Header */}
+      <VStack spacing={2} textAlign="center" flex="0 0 auto">
         <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color={textColor}>
           What equipment do you have?
         </Text>
         <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor}>
-          Select all available equipment to personalize your workouts
+          Select all available equipment
         </Text>
         {selectedCount > 0 && (
           <Badge colorScheme="blue" variant="subtle" mt={1}>
@@ -98,17 +106,25 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
         {announcement}
       </Text>
 
-      {/* Equipment grid */}
-      <Wrap spacing={{ base: 2, md: 3 }} justify="center" aria-describedby="equipment-selection-status">
-        {equipmentOptions.map((equipment: EquipmentOption) => {
-          const isSelected = isEquipmentSelected(equipment.code);
-          const labelId = `${labelIdPrefix}${equipment.code}`;
+      {/* Mobile-Optimized Equipment Grid - 4 rows × 2 columns */}
+      <Box flex="1 1 auto" display="flex" flexDirection="column" justifyContent="center" overflow="hidden">
+        <SimpleGrid
+          columns={2}
+          spacing={{ base: 3, md: 4 }}
+          w="100%"
+          maxW="400px"
+          mx="auto"
+          aria-describedby="equipment-selection-status"
+        >
+          {equipmentOptions.map((equipment: EquipmentOption) => {
+            const isSelected = isEquipmentSelected(equipment.code);
+            const labelId = `${labelIdPrefix}${equipment.code}`;
 
-          return (
-            <WrapItem key={equipment.code}>
+            return (
               <Button
-                w={{ base: "130px", md: "150px" }}
-                h={{ base: "100px", md: "110px" }}
+                key={equipment.code}
+                w="100%"
+                h={{ base: "85px", md: "95px" }}
                 bg={isSelected ? `${equipment.color}.100` : cardBg}
                 border="2px solid"
                 borderColor={isSelected ? `${equipment.color}.500` : borderColor}
@@ -118,8 +134,8 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
                   bg: isSelected
                     ? `${equipment.color}.200`
                     : hoverBg,
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'lg',
+                  transform: 'translateY(-1px)',
+                  boxShadow: 'md',
                 }}
                 _active={{
                   transform: 'translateY(0)',
@@ -127,43 +143,51 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
                 transition="all 0.2s ease"
                 variant="ghost"
                 flexDirection="column"
-                p={4}
+                p={{ base: 2, md: 3 }}
                 role="checkbox"
                 aria-checked={isSelected}
                 aria-labelledby={labelId}
                 data-cy={`equipment-card-${equipment.code}`}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
               >
-                <VStack spacing={2}>
+                <VStack spacing={{ base: 1.5, md: 2 }}>
                   <Icon
                     as={equipment.icon}
-                    boxSize={8}
+                    boxSize={{ base: 6, md: 7 }}
                     color={isSelected ? `${equipment.color}.500` : 'gray.400'}
                   />
                   <Text
                     id={labelId}
-                    fontSize="sm"
+                    fontSize={{ base: "xs", md: "sm" }}
                     fontWeight="semibold"
                     color={textColor}
                     textAlign="center"
-                    lineHeight="short"
+                    lineHeight="1.2"
+                    noOfLines={2}
+                    wordBreak="break-word"
+                    style={{ hyphens: 'auto' }}
                   >
                     {equipment.label}
                   </Text>
                 </VStack>
               </Button>
-            </WrapItem>
-          );
-        })}
-      </Wrap>
+            );
+          })}
+        </SimpleGrid>
+      </Box>
 
-      {/* Navigation buttons */}
-      <NavigationButtons
-        onBack={onPrev}
-        onNext={onNext}
-        canProceed={canProceed}
-        nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
-        backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
-      />
+      {/* Fixed Navigation */}
+      <Box flex="0 0 auto" w="100%">
+        <NavigationButtons
+          onBack={onPrev}
+          onNext={onNext}
+          canProceed={canProceed}
+          nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
+          backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
+        />
+      </Box>
     </VStack>
   );
 }

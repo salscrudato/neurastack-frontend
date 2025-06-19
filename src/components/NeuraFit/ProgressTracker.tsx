@@ -1,36 +1,30 @@
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  useColorModeValue,
-  Icon,
-  Card,
-  CardBody,
-  SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Progress,
-  Badge,
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    HStack,
+    Icon,
+    Progress,
+    SimpleGrid,
+    Spacer,
+    Text,
+    useColorModeValue,
+    VStack
 } from '@chakra-ui/react';
+import { useMemo, useState } from 'react';
 import {
-  PiTrophyBold,
-  PiTargetBold,
-  PiChartLineBold,
-  PiFireBold,
-  PiClockBold,
-  PiArrowUpBold,
-  PiArrowDownBold,
+    PiArrowDownBold,
+    PiArrowLeftBold,
+    PiArrowUpBold,
+    PiChartLineBold,
+    PiClockBold,
+    PiFireBold,
+    PiTargetBold
 } from 'react-icons/pi';
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { useFitnessStore } from '../../store/useFitnessStore';
 // import type { WorkoutPlan } from '../../lib/types'; // Commented out for now
-
-const MotionBox = motion(Box);
 
 interface ProgressTrackerProps {
   onBack: () => void;
@@ -53,13 +47,10 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
   const { workoutPlans } = useFitnessStore();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'all'>('week');
 
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textColor = useColorModeValue('gray.800', 'white');
   const subtextColor = useColorModeValue('gray.600', 'gray.300');
   const successColor = useColorModeValue('green.500', 'green.300');
   const warningColor = useColorModeValue('orange.500', 'orange.300');
-  const primaryColor = useColorModeValue('blue.500', 'blue.300');
 
   // Calculate progress statistics
   const progressStats = useMemo((): ProgressStats => {
@@ -177,18 +168,7 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
     };
   }, [workoutPlans, selectedPeriod]);
 
-  // Achievement system
-  const achievements = useMemo(() => {
-    const completed = [];
-    
-    if (progressStats.totalWorkouts >= 1) completed.push({ name: 'First Workout', icon: PiTrophyBold, color: 'green' });
-    if (progressStats.totalWorkouts >= 5) completed.push({ name: 'Consistent', icon: PiTargetBold, color: 'blue' });
-    if (progressStats.totalWorkouts >= 10) completed.push({ name: 'Dedicated', icon: PiFireBold, color: 'orange' });
-    if (progressStats.currentStreak >= 3) completed.push({ name: 'On Fire', icon: PiFireBold, color: 'red' });
-    if (progressStats.totalMinutes >= 300) completed.push({ name: '5 Hour Club', icon: PiClockBold, color: 'purple' });
-    
-    return completed;
-  }, [progressStats]);
+
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -215,234 +195,285 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
     }
   };
 
+  const cardBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(26, 32, 44, 0.8)');
+  const glassBorder = useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)');
+
   return (
-    <VStack spacing={6} p={4} align="stretch" h="100%">
-      {/* Header */}
-      <Box textAlign="center">
-        <Text fontSize="2xl" fontWeight="bold" color={textColor} mb={2}>
-          Your Fitness Progress
-        </Text>
-        <Text color={subtextColor}>
-          Track your journey and celebrate your achievements
-        </Text>
-      </Box>
+    <Box
+      h="100%"
+      bgGradient="linear(135deg, #f7fafc 0%, #edf2f7 100%)"
+      overflow={{ base: "auto", md: "auto" }}
+      position="relative"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
+      <VStack spacing={{ base: 4, md: 5 }} p={{ base: 3, md: 4 }} maxW="4xl" mx="auto" h="100%" justify="flex-start">
+        {/* Compact Header with Back Button */}
+        <VStack spacing={2} textAlign="center" w="100%" py={{ base: 2, md: 3 }}>
+          <HStack w="100%" justify="space-between" align="center">
+            <Button
+              variant="ghost"
+              size="sm"
+              leftIcon={<Icon as={PiArrowLeftBold} />}
+              onClick={onBack}
+              color="gray.600"
+              _hover={{ bg: "gray.100" }}
+            >
+              Dashboard
+            </Button>
+            <Spacer />
+          </HStack>
+          <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color="gray.700">
+            Progress & Analytics
+          </Text>
+        </VStack>
 
-      {/* Period Selector */}
-      <HStack spacing={2} justify="center">
-        {(['week', 'month', 'all'] as const).map((period) => (
-          <Button
-            key={period}
-            size="sm"
-            variant={selectedPeriod === period ? 'solid' : 'outline'}
-            colorScheme="blue"
-            onClick={() => setSelectedPeriod(period)}
-            textTransform="capitalize"
+        {/* Period Selector */}
+        <HStack spacing={2} justify="center">
+          {(['week', 'month', 'all'] as const).map((period) => (
+            <Button
+              key={period}
+              size="sm"
+              variant={selectedPeriod === period ? 'solid' : 'ghost'}
+              colorScheme="blue"
+              onClick={() => setSelectedPeriod(period)}
+              textTransform="capitalize"
+              borderRadius="xl"
+              _hover={{
+                bg: selectedPeriod === period ? undefined : "blue.50",
+              }}
+            >
+              {period === 'all' ? 'All Time' : `This ${period}`}
+            </Button>
+          ))}
+        </HStack>
+
+        {/* Compact Analytics Grid */}
+        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3} w="100%">
+          <Card
+            bg={cardBg}
+            backdropFilter="blur(10px)"
+            border="1px solid"
+            borderColor={glassBorder}
+            borderRadius="xl"
+            transition="all 0.3s ease"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+            }}
           >
-            {period === 'all' ? 'All Time' : `This ${period}`}
-          </Button>
-        ))}
-      </HStack>
+            <CardBody p={3} textAlign="center">
+              <VStack spacing={1}>
+                <Icon as={PiFireBold} boxSize={5} color="orange.400" />
+                <Text fontSize="lg" fontWeight="bold" color="orange.500">
+                  {progressStats.currentStreak}
+                </Text>
+                <Text fontSize="xs" color={subtextColor}>
+                  day streak
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
 
-      {/* Main Stats */}
-      <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-        <Card bg={bgColor} borderColor={borderColor}>
-          <CardBody textAlign="center" py={4}>
-            <Stat>
-              <StatLabel fontSize="xs" color={subtextColor}>Workouts</StatLabel>
-              <StatNumber fontSize="2xl" color={primaryColor}>
-                {progressStats.totalWorkouts}
-              </StatNumber>
-              <StatHelpText fontSize="xs">
-                {selectedPeriod === 'week' ? 'This week' : 
-                 selectedPeriod === 'month' ? 'This month' : 'Total'}
-              </StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
+          <Card
+            bg={cardBg}
+            backdropFilter="blur(10px)"
+            border="1px solid"
+            borderColor={glassBorder}
+            borderRadius="xl"
+            transition="all 0.3s ease"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <CardBody p={3} textAlign="center">
+              <VStack spacing={1}>
+                <Icon as={PiClockBold} boxSize={5} color="blue.400" />
+                <Text fontSize="lg" fontWeight="bold" color="blue.500">
+                  {formatDuration(progressStats.totalMinutes)}
+                </Text>
+                <Text fontSize="xs" color={subtextColor}>
+                  total time
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
 
-        <Card bg={bgColor} borderColor={borderColor}>
-          <CardBody textAlign="center" py={4}>
-            <Stat>
-              <StatLabel fontSize="xs" color={subtextColor}>Time Trained</StatLabel>
-              <StatNumber fontSize="2xl" color={primaryColor}>
-                {formatDuration(progressStats.totalMinutes)}
-              </StatNumber>
-              <StatHelpText fontSize="xs">
-                Total duration
-              </StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
+          <Card
+            bg={cardBg}
+            backdropFilter="blur(10px)"
+            border="1px solid"
+            borderColor={glassBorder}
+            borderRadius="xl"
+            transition="all 0.3s ease"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <CardBody p={3} textAlign="center">
+              <VStack spacing={1}>
+                <Icon as={PiChartLineBold} boxSize={5} color="purple.400" />
+                <Text fontSize="lg" fontWeight="bold" color="purple.500">
+                  {progressStats.averageWorkoutTime}m
+                </Text>
+                <Text fontSize="xs" color={subtextColor}>
+                  avg duration
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
 
-        <Card bg={bgColor} borderColor={borderColor}>
-          <CardBody textAlign="center" py={4}>
-            <Stat>
-              <StatLabel fontSize="xs" color={subtextColor}>Current Streak</StatLabel>
-              <StatNumber fontSize="2xl" color={successColor}>
-                {progressStats.currentStreak}
-              </StatNumber>
-              <StatHelpText fontSize="xs">
-                Days in a row
-              </StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
+          <Card
+            bg={cardBg}
+            backdropFilter="blur(10px)"
+            border="1px solid"
+            borderColor={glassBorder}
+            borderRadius="xl"
+            transition="all 0.3s ease"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+            }}
+          >
+            <CardBody p={3} textAlign="center">
+              <VStack spacing={1}>
+                <Icon as={getTrendIcon()} boxSize={5} color={getTrendColor()} />
+                <Text fontSize="lg" fontWeight="bold" color={getTrendColor()}>
+                  {progressStats.improvementTrend === 'up' ? '↗️' :
+                   progressStats.improvementTrend === 'down' ? '↘️' : '→'}
+                </Text>
+                <Text fontSize="xs" color={subtextColor}>
+                  trend
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
 
-        <Card bg={bgColor} borderColor={borderColor}>
-          <CardBody textAlign="center" py={4}>
-            <Stat>
-              <StatLabel fontSize="xs" color={subtextColor}>Avg Duration</StatLabel>
-              <StatNumber fontSize="2xl" color={primaryColor}>
-                {progressStats.averageWorkoutTime}m
-              </StatNumber>
-              <StatHelpText fontSize="xs">
-                Per workout
-              </StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
-      </SimpleGrid>
-
-      {/* Goals Progress */}
-      <Card bg={bgColor} borderColor={borderColor}>
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <Text fontWeight="semibold" color={textColor}>
-              Goal Progress
-            </Text>
-            
-            <VStack spacing={3} align="stretch">
-              <Box>
-                <HStack justify="space-between" mb={2}>
-                  <Text fontSize="sm" color={subtextColor}>Weekly Goal</Text>
-                  <Text fontSize="sm" color={subtextColor}>
-                    {Math.round(progressStats.weeklyGoalProgress)}%
+        {/* Combined Progress & Insights */}
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3} w="100%">
+          {/* Monthly Goal Progress */}
+          <Card
+            bg={cardBg}
+            backdropFilter="blur(10px)"
+            border="1px solid"
+            borderColor={glassBorder}
+            borderRadius="xl"
+          >
+            <CardBody p={4}>
+              <VStack spacing={3} align="stretch">
+                <HStack justify="space-between">
+                  <Text fontSize="sm" fontWeight="semibold" color={textColor}>
+                    Monthly Goal
                   </Text>
-                </HStack>
-                <Progress
-                  value={progressStats.weeklyGoalProgress}
-                  colorScheme="green"
-                  size="sm"
-                  borderRadius="full"
-                />
-              </Box>
-              
-              <Box>
-                <HStack justify="space-between" mb={2}>
-                  <Text fontSize="sm" color={subtextColor}>Monthly Goal</Text>
-                  <Text fontSize="sm" color={subtextColor}>
+                  <Badge
+                    colorScheme={progressStats.monthlyGoalProgress >= 100 ? "green" : progressStats.monthlyGoalProgress >= 50 ? "blue" : "orange"}
+                    variant="subtle"
+                    borderRadius="full"
+                    px={2}
+                    fontSize="xs"
+                  >
                     {Math.round(progressStats.monthlyGoalProgress)}%
-                  </Text>
+                  </Badge>
                 </HStack>
+
                 <Progress
                   value={progressStats.monthlyGoalProgress}
-                  colorScheme="blue"
-                  size="sm"
+                  size="md"
+                  colorScheme={progressStats.monthlyGoalProgress >= 100 ? "green" : progressStats.monthlyGoalProgress >= 50 ? "blue" : "orange"}
                   borderRadius="full"
+                  bg="gray.100"
                 />
-              </Box>
-            </VStack>
-          </VStack>
-        </CardBody>
-      </Card>
 
-      {/* Achievements */}
-      {achievements.length > 0 && (
-        <Card bg={bgColor} borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontWeight="semibold" color={textColor}>
-                Achievements
-              </Text>
-              
-              <HStack spacing={3} flexWrap="wrap">
-                {achievements.map((achievement, index) => (
-                  <MotionBox
-                    key={achievement.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Badge
-                      colorScheme={achievement.color}
-                      variant="subtle"
-                      px={3}
-                      py={1}
-                      borderRadius="full"
-                      fontSize="xs"
-                    >
-                      <HStack spacing={1}>
-                        <Icon as={achievement.icon} />
-                        <Text>{achievement.name}</Text>
-                      </HStack>
+                <Text fontSize="xs" color={subtextColor} textAlign="center">
+                  {progressStats.monthlyGoalProgress >= 100 ?
+                    "🎉 Goal achieved!" :
+                    `${Math.round(progressStats.monthlyGoalProgress)}% complete`
+                  }
+                </Text>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Personal Insights */}
+          <Card
+            bg={cardBg}
+            backdropFilter="blur(10px)"
+            border="1px solid"
+            borderColor={glassBorder}
+            borderRadius="xl"
+          >
+            <CardBody p={4}>
+              <VStack spacing={3} align="stretch">
+                <Text fontSize="sm" fontWeight="semibold" color={textColor}>
+                  Insights
+                </Text>
+
+                <VStack spacing={2} align="stretch">
+                  <HStack justify="space-between">
+                    <Text fontSize="xs" color={subtextColor}>Favorite</Text>
+                    <Badge colorScheme="blue" variant="subtle" borderRadius="full" px={2} fontSize="xs">
+                      {progressStats.favoriteWorkoutType}
                     </Badge>
-                  </MotionBox>
-                ))}
-              </HStack>
-            </VStack>
-          </CardBody>
-        </Card>
-      )}
+                  </HStack>
 
-      {/* Insights */}
-      <Card bg={bgColor} borderColor={borderColor}>
-        <CardBody>
-          <VStack spacing={4} align="stretch">
-            <Text fontWeight="semibold" color={textColor}>
-              Insights
-            </Text>
-            
-            <VStack spacing={3} align="stretch">
-              <HStack justify="space-between">
-                <Text fontSize="sm" color={subtextColor}>Favorite Workout</Text>
-                <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  {progressStats.favoriteWorkoutType}
-                </Text>
-              </HStack>
-              
-              <HStack justify="space-between">
-                <Text fontSize="sm" color={subtextColor}>Longest Streak</Text>
-                <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  {progressStats.longestStreak} days
-                </Text>
-              </HStack>
-              
-              <HStack justify="space-between">
-                <Text fontSize="sm" color={subtextColor}>Performance Trend</Text>
-                <HStack spacing={1}>
-                  <Icon as={getTrendIcon()} color={getTrendColor()} />
-                  <Text fontSize="sm" fontWeight="medium" color={getTrendColor()}>
-                    {progressStats.improvementTrend === 'up' ? 'Improving' :
-                     progressStats.improvementTrend === 'down' ? 'Declining' : 'Stable'}
-                  </Text>
-                </HStack>
-              </HStack>
-            </VStack>
-          </VStack>
-        </CardBody>
-      </Card>
+                  <HStack justify="space-between">
+                    <Text fontSize="xs" color={subtextColor}>Best Streak</Text>
+                    <Badge colorScheme="orange" variant="subtle" borderRadius="full" px={2} fontSize="xs">
+                      {progressStats.longestStreak} days
+                    </Badge>
+                  </HStack>
 
-      {/* Action Buttons */}
-      <VStack spacing={3}>
+                  <HStack justify="space-between">
+                    <Text fontSize="xs" color={subtextColor}>Trend</Text>
+                    <HStack spacing={1}>
+                      <Icon as={getTrendIcon()} color={getTrendColor()} boxSize={3} />
+                      <Badge
+                        colorScheme={progressStats.improvementTrend === 'up' ? 'green' : progressStats.improvementTrend === 'down' ? 'red' : 'gray'}
+                        variant="subtle"
+                        borderRadius="full"
+                        px={2}
+                        fontSize="xs"
+                      >
+                        {progressStats.improvementTrend === 'up' ? 'Up' :
+                         progressStats.improvementTrend === 'down' ? 'Down' : 'Stable'}
+                      </Badge>
+                    </HStack>
+                  </HStack>
+                </VStack>
+              </VStack>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
+
+        {/* Compact Action Button */}
         <Button
-          colorScheme="blue"
-          size="lg"
+          size="md"
           w="100%"
-          leftIcon={<Icon as={PiTargetBold} />}
+          maxW="300px"
+          h="50px"
+          leftIcon={<Icon as={PiTargetBold} boxSize={5} />}
           onClick={onStartNewWorkout}
-          py={6}
+          fontSize="md"
+          fontWeight="bold"
+          borderRadius="xl"
+          bgGradient="linear(135deg, blue.400 0%, purple.500 100%)"
+          color="white"
+          boxShadow="0 6px 20px rgba(66, 153, 225, 0.3)"
+          _hover={{
+            bgGradient: "linear(135deg, blue.500 0%, purple.600 100%)",
+            transform: "translateY(-2px)",
+            boxShadow: "0 8px 25px rgba(66, 153, 225, 0.4)"
+          }}
+          _active={{
+            transform: "translateY(-1px)"
+          }}
+          transition="all 0.3s ease"
         >
           Start New Workout
         </Button>
-        
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          size="md"
-        >
-          Back to Dashboard
-        </Button>
       </VStack>
-    </VStack>
+    </Box>
   );
 }

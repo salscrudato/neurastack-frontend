@@ -1,12 +1,13 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { FitnessProfile, WorkoutPlan } from '../lib/types';
 import {
-  saveFitnessProfile,
-  loadFitnessProfile,
-  updateFitnessLevel as updateFitnessLevelFirestore,
-  saveWorkoutPlan,
-  subscribeFitnessProfile
+    loadFitnessProfile,
+    loadWorkoutPlans,
+    saveFitnessProfile,
+    saveWorkoutPlan,
+    subscribeFitnessProfile,
+    updateFitnessLevel as updateFitnessLevelFirestore
 } from '../services/fitnessDataService';
 
 interface FitnessState {
@@ -47,6 +48,7 @@ interface FitnessState {
 
   // Firestore sync actions
   loadProfileFromFirestore: () => Promise<void>;
+  loadWorkoutPlansFromFirestore: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
   subscribeToFirestore: () => () => void;
 }
@@ -67,7 +69,6 @@ const defaultProfile: FitnessProfile = {
   gender: undefined,
   weight: undefined,
   injuries: [],
-  weightUnit: 'kg',
 };
 
 export const useFitnessStore = create<FitnessState>()(
@@ -263,6 +264,16 @@ export const useFitnessStore = create<FitnessState>()(
             isLoading: false,
             isProfileLoaded: true
           });
+        }
+      },
+
+      loadWorkoutPlansFromFirestore: async () => {
+        try {
+          const workoutPlans = await loadWorkoutPlans();
+          set({ workoutPlans });
+          console.log(`✅ Loaded ${workoutPlans.length} workout plans from Firestore`);
+        } catch (error) {
+          console.warn('Failed to load workout plans from Firestore:', error);
         }
       },
 

@@ -19,8 +19,18 @@ service cloud.firestore {
         allow create: if request.auth != null && request.auth.uid == userId;
       }
 
-      // Fitness data - users can only access their own fitness data
-      match /fitness/{workoutId} {
+      // Fitness profile - users can only access their own fitness profile
+      match /fitness/profile {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Workout plans - users can only access their own workout plans
+      match /workouts/{workoutId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Workout analytics - users can only access their own analytics
+      match /analytics/{analyticsId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 

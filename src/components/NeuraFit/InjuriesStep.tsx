@@ -1,17 +1,17 @@
 import {
-  VStack,
-  Text,
-  useColorModeValue,
-  SimpleGrid,
-  Box,
-  HStack,
-  Icon,
-  Badge,
-  Checkbox,
-  Divider,
+    Badge,
+    Box,
+    Checkbox,
+    Divider,
+    HStack,
+    Icon,
+    SimpleGrid,
+    Text,
+    useColorModeValue,
+    VStack,
 } from '@chakra-ui/react';
-import { useState, useCallback, useEffect } from 'react';
-import { PiWarningBold, PiHeartBold, PiShieldCheckBold } from 'react-icons/pi';
+import { useCallback, useEffect, useState } from 'react';
+import { PiHeartBold, PiShieldCheckBold, PiWarningBold } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
@@ -95,6 +95,9 @@ export default function InjuriesStep({ onNext, onBack, isEditingFromDashboard }:
           color={subtextColor}
           maxW="400px"
           lineHeight="1.5"
+          bgGradient="linear(to-r, blue.400, purple.500)"
+          bgClip="text"
+          fontWeight="medium"
         >
           Let us know about any injuries or limitations so we can create safer workouts for you.
         </Text>

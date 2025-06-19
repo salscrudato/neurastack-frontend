@@ -81,15 +81,11 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
   const [currentStep, setCurrentStep] = useState(0); // 0: overall, 1: exercises, 2: comments
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Memoize color values to prevent unnecessary re-renders
-  const colors = useMemo(() => ({
-    bgColor: useColorModeValue('white', 'gray.800'),
-    borderColor: useColorModeValue('gray.200', 'gray.600'),
-    textColor: useColorModeValue('gray.800', 'white'),
-    subtextColor: useColorModeValue('gray.600', 'gray.400')
-  }), []);
-
-  const { bgColor, borderColor, textColor, subtextColor } = colors;
+  // Color values - hooks must be called at top level
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const subtextColor = useColorModeValue('gray.600', 'gray.400');
 
   const handleRatingChange = useCallback((field: keyof FeedbackData, value: any) => {
     setFeedback(prev => ({ ...prev, [field]: value }));

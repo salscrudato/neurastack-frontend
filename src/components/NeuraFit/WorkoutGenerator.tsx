@@ -5,35 +5,40 @@ import {
     Card,
     CardBody,
     Divider,
-    Flex,
     HStack,
     Icon,
     SimpleGrid,
-    Spinner,
     Text,
     useColorModeValue,
     useToast,
-    VStack,
+    VStack
 } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     PiCheckBold,
+    PiGearBold,
     PiLightningBold,
     PiPlayBold,
+    PiSkipForwardBold,
     PiStopBold,
+    PiSwapBold,
     PiTargetBold,
-    PiTimerBold,
+    PiTimerBold
 } from 'react-icons/pi';
 import equipmentOptions from '../../constants/equipmentOptions';
 import { FITNESS_GOALS } from '../../constants/fitnessGoals';
+import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import { neuraStackClient } from '../../lib/neurastack-client';
 import type { Exercise, WorkoutAPIRequest, WorkoutHistoryEntry, WorkoutPlan, WorkoutUserMetadata } from '../../lib/types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useFitnessStore } from '../../store/useFitnessStore';
+import ExerciseSwapper from './ExerciseSwapper';
 import ModernLoadingAnimation from './ModernLoadingAnimation';
 import ModernProgressIndicator from './ModernProgressIndicator';
 import WorkoutFeedback from './WorkoutFeedback';
+import type { WorkoutModifications } from './WorkoutModifier';
+import WorkoutModifier from './WorkoutModifier';
 
 const MotionBox = motion(Box);
 
@@ -45,6 +50,8 @@ interface WorkoutGeneratorProps {
 const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutGeneratorProps) {
   const { profile, addWorkoutPlan, workoutPlans } = useFitnessStore();
   const { user } = useAuthStore();
+  const { isMobile, triggerHaptic, workoutConfig } = useMobileOptimization();
+  const toast = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<string>('');
   const [serviceStatus, setServiceStatus] = useState<'healthy' | 'degraded' | 'unavailable' | 'unknown'>('unknown');
@@ -58,22 +65,97 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
   const [showFeedback, setShowFeedback] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
+  const [showExerciseSwapper, setShowExerciseSwapper] = useState(false);
+  const [exerciseToSwap, setExerciseToSwap] = useState<{ exercise: Exercise; index: number } | null>(null);
+  const [showWorkoutModifier, setShowWorkoutModifier] = useState(false);
 
-  const toast = useToast();
+  // Workout state management functions
+  const clearWorkoutState = useCallback(() => {
+    try {
+      localStorage.removeItem('neurafit-workout-state');
+    } catch (error) {
+      console.warn('Failed to clear workout state:', error);
+    }
+  }, []);
 
-  // Memoize theme colors to prevent unnecessary re-renders
-  const colors = useMemo(() => ({
-    bgColor: useColorModeValue('white', 'gray.800'),
-    borderColor: useColorModeValue('gray.200', 'gray.600'),
-    textColor: useColorModeValue('gray.800', 'white'),
-    subtextColor: useColorModeValue('gray.600', 'gray.400'),
-    activeColor: useColorModeValue('blue.500', 'blue.300'),
-    completedColor: useColorModeValue('green.500', 'green.300'),
-    tipsBgColor: useColorModeValue('blue.50', 'blue.900'),
-    tipsTextColor: useColorModeValue('blue.700', 'blue.200')
-  }), []);
+  const saveWorkoutState = useCallback(() => {
+    if (!currentWorkout || !isWorkoutActive) return;
 
-  const { bgColor, borderColor, textColor, subtextColor, activeColor, completedColor, tipsBgColor, tipsTextColor } = colors;
+    const workoutState = {
+      workout: currentWorkout,
+      currentExerciseIndex,
+      completedExercises: Array.from(completedExercises),
+      exerciseTimer,
+      restTimer,
+      isResting,
+      workoutStartTime: workoutStartTime?.toISOString(),
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      localStorage.setItem('neurafit-workout-state', JSON.stringify(workoutState));
+    } catch (error) {
+      console.warn('Failed to save workout state:', error);
+    }
+  }, [currentWorkout, isWorkoutActive, currentExerciseIndex, completedExercises, exerciseTimer, restTimer, isResting, workoutStartTime]);
+
+  const loadWorkoutState = useCallback(() => {
+    try {
+      const savedState = localStorage.getItem('neurafit-workout-state');
+      if (!savedState) return null;
+
+      const workoutState = JSON.parse(savedState);
+
+      // Check if the saved state is recent (within 24 hours)
+      const stateAge = Date.now() - new Date(workoutState.timestamp).getTime();
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+      if (stateAge > maxAge) {
+        localStorage.removeItem('neurafit-workout-state');
+        return null;
+      }
+
+      return workoutState;
+    } catch (error) {
+      console.warn('Failed to load workout state:', error);
+      localStorage.removeItem('neurafit-workout-state');
+      return null;
+    }
+  }, []);
+
+  // Confirmation for stopping workout
+  const handleStopWorkout = useCallback(() => {
+    if (window.confirm('Are you sure you want to stop this workout? Your progress will be lost.')) {
+      setIsWorkoutActive(false);
+      setIsResting(false);
+      setRestTimer(0);
+      setExerciseTimer(0);
+      setCurrentExerciseIndex(0);
+      setCompletedExercises(new Set());
+      setWorkoutStartTime(null);
+
+      // Clear saved workout state
+      clearWorkoutState();
+
+      toast({
+        title: 'Workout Stopped',
+        description: 'You can start a new workout anytime.',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [toast, clearWorkoutState]);
+
+  // Theme colors - hooks must be called at top level
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const textColor = useColorModeValue('gray.800', 'white');
+  const subtextColor = useColorModeValue('gray.600', 'gray.400');
+  const activeColor = useColorModeValue('blue.500', 'blue.300');
+  const completedColor = useColorModeValue('green.500', 'green.300');
+  const tipsBgColor = useColorModeValue('blue.50', 'blue.900');
+  const tipsTextColor = useColorModeValue('blue.700', 'blue.200');
 
   // Define workout types with descriptions
   const workoutTypes = useMemo(() => [
@@ -162,7 +244,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     if (isGenerating) return; // Prevent multiple simultaneous generations
 
     setIsGenerating(true);
-    setGenerationStatus(retryCount > 0 ? `Retrying workout generation (attempt ${retryCount + 1})...` : 'Generating your personalized workout...');
+    setGenerationStatus(retryCount > 0 ? `Retrying workout generation (attempt ${retryCount + 1}/3)...` : 'Generating your personalized workout...');
     const startTime = performance.now();
     const maxRetries = 2; // Allow up to 2 retries for 503 errors
 
@@ -172,21 +254,24 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         userId: user?.uid || '',
       });
 
-      // Check service health before attempting workout generation (only on first attempt)
+      // Only show service status warning on first attempt, not retries
       if (retryCount === 0) {
-        try {
-          const healthCheck = await neuraStackClient.healthCheck();
-          console.log('Service health check:', healthCheck);
-          setServiceStatus(healthCheck.status === 'healthy' ? 'healthy' : 'degraded');
-        } catch (healthError) {
-          console.warn('Health check failed, proceeding with generation attempt:', healthError);
-          setServiceStatus('degraded');
-        }
+        // Reset service status to unknown at start
+        setServiceStatus('unknown');
+
+        // Skip health check to avoid false degraded warnings
+        // Let the actual workout generation call determine service status
       }
 
       // Build user metadata for the workout API with converted names
-      const goalNames = convertGoalCodesToNames(profile.goals);
-      const equipmentNames = convertEquipmentCodesToNames(profile.equipment);
+      const goalNames = convertGoalCodesToNames(profile.goals || []);
+      const equipmentNames = convertEquipmentCodesToNames(profile.equipment || []);
+
+      // Convert goal labels back to API values for the API request
+      const goalValues = goalNames.map(label => {
+        const goal = FITNESS_GOALS.find(g => g.label === label);
+        return goal ? goal.value : label.toLowerCase().replace(' ', '_');
+      });
 
       // Ensure age is provided (required by API)
       const userAge = profile.age || 25; // Default to 25 if not provided
@@ -194,12 +279,14 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       const userMetadata: WorkoutUserMetadata = {
         age: userAge, // Age is required by the API
         fitnessLevel: profile.fitnessLevel,
-        // gender: convertGenderForAPI(profile.gender), // Convert gender for API compatibility
-        // weight: profile.weight,
-        goals: goalNames, // Use full names instead of codes
+        gender: profile.gender || 'Rather Not Say',
+        weight: profile.weight,
+        goals: goalValues, // Use API values for backend
         equipment: equipmentNames, // Use full names instead of codes
-        // timeAvailable: profile.availableTime,
-        // injuries: profile.injuries || [],
+        timeAvailable: profile.availableTime,
+        injuries: profile.injuries || [],
+        daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
+        minutesPerSession: profile.timeAvailability?.minutesPerSession || profile.availableTime,
       };
 
       // Build workout history from recent workouts
@@ -209,7 +296,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         .slice(0, 5); // Last 5 workouts
 
       const workoutHistory: WorkoutHistoryEntry[] = recentWorkouts.map(w => ({
-        date: w.completedAt!.toISOString().split('T')[0],
+        date: new Date(w.completedAt!).toISOString().split('T')[0],
         type: (w.workoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed') || 'mixed',
         duration: w.duration,
         exercises: w.exercises.map(e => e.name),
@@ -232,8 +319,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       // Call the dedicated workout API endpoint with extended timeout
       const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
         userId: user?.uid || '',
-        timeout: 60000 // 60 seconds for workout generation
+        timeout: retryCount > 0 ? 90000 : 60000 // Increase timeout on retries: 60s first attempt, 90s on retries
       });
+
+      // If we get here, the service is working - update status to healthy
+      setServiceStatus('healthy');
 
       if (response.status === 'success' && response.data) {
         // Validate the API response structure
@@ -273,6 +363,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         const endTime = performance.now();
         console.log(`Workout generated in ${endTime - startTime}ms`);
 
+        // Trigger haptic feedback for successful generation
+        triggerHaptic('success');
+
         toast({
           title: 'Workout Generated!',
           description: `Your personalized ${workoutPlan.name} is ready.`,
@@ -284,9 +377,31 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         throw new Error(response.message || 'Failed to generate workout');
       }
     } catch (error) {
-      console.error('Error generating workout:', error);
-
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      // Determine if this is a retryable error
+      const isRetryableError = errorMessage.includes('503') ||
+                              errorMessage.includes('500') ||
+                              errorMessage.includes('timeout') ||
+                              errorMessage.includes('temporarily unavailable') ||
+                              errorMessage.includes('Service Unavailable') ||
+                              errorMessage.includes('Internal Server Error');
+
+      // If this is a retryable error and we have retries left, don't show error to user yet
+      if (isRetryableError && retryCount < maxRetries) {
+        console.log(`Retrying workout generation (attempt ${retryCount + 1}/${maxRetries + 1}) after error:`, errorMessage);
+
+        // Wait before retrying (exponential backoff)
+        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
+        await new Promise(resolve => setTimeout(resolve, delay));
+
+        setIsGenerating(false); // Reset state for retry
+        return generateWorkout(retryCount + 1);
+      }
+
+      // Only log and show error if we've exhausted retries or it's not retryable
+      console.error('Error generating workout (final attempt):', error);
+
       let toastDescription = 'Unable to generate workout. Please try again.';
       let toastTitle = 'Generation Failed';
 
@@ -313,23 +428,6 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
         toastDescription = 'Authentication required. Please sign in and try again.';
         toastTitle = 'Authentication Error';
-      }
-
-      // Retry logic for retryable errors (503, 500, timeout)
-      const isRetryableError = errorMessage.includes('503') ||
-                              errorMessage.includes('500') ||
-                              errorMessage.includes('timeout') ||
-                              errorMessage.includes('temporarily unavailable');
-
-      if (isRetryableError && retryCount < maxRetries) {
-        console.log(`Retrying workout generation (attempt ${retryCount + 1}/${maxRetries})`);
-
-        // Wait before retrying (exponential backoff)
-        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
-        await new Promise(resolve => setTimeout(resolve, delay));
-
-        setIsGenerating(false); // Reset state for retry
-        return generateWorkout(retryCount + 1);
       }
 
       // Try with fallback workout as last resort
@@ -360,7 +458,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       setIsGenerating(false);
       setGenerationStatus('');
     }
-  }, [isGenerating, profile, user?.uid, workoutPlans, toast]);
+  }, [isGenerating, profile, user?.uid, workoutPlans, selectedWorkoutType, toast]);
 
   // Periodic service health check
   useEffect(() => {
@@ -383,12 +481,20 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     return () => clearInterval(interval);
   }, []);
 
-  // Helper function to convert goal codes to full names
+  // Helper function to convert goal codes to readable names with deduplication
   const convertGoalCodesToNames = useCallback((goalCodes: string[]): string[] => {
-    return goalCodes.map(code => {
-      const goal = FITNESS_GOALS.find(g => g.code === code);
-      return goal ? goal.label.toLowerCase() : code.toLowerCase();
-    });
+    if (!goalCodes || !Array.isArray(goalCodes)) return [];
+
+    const validGoalNames = goalCodes
+      .map(code => {
+        // Handle both codes and already converted names
+        const goal = FITNESS_GOALS.find(g => g.code === code || g.value === code || g.label.toLowerCase() === code.toLowerCase());
+        return goal ? goal.label : null; // Use readable label for display
+      })
+      .filter((name): name is NonNullable<typeof name> => name !== null && name.length > 0);
+
+    // Remove duplicates and invalid entries
+    return [...new Set(validGoalNames)];
   }, []);
 
   // Helper function to convert equipment codes to full names
@@ -408,11 +514,12 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   //   return undefined; // fallback for unknown values
   // }, []);
 
-  // Build natural language workout request for the API
+  // Build comprehensive natural language workout request for the API
   const buildWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
-    // Convert goal codes to full names
-    const goalNames = convertGoalCodesToNames(profile.goals);
-    const goals = goalNames.slice(0, 2).join(' and ');
+    // Convert goal codes to readable names (already formatted)
+    const goalNames = convertGoalCodesToNames(profile.goals || []);
+    const primaryGoals = goalNames.slice(0, 2).join(' and ');
+    const allGoals = goalNames.join(', ');
 
     // Convert equipment codes to full names
     const equipmentNames = convertEquipmentCodesToNames(profile.equipment);
@@ -422,11 +529,54 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     const selectedType = workoutTypes.find(type => type.value === workoutType);
     const workoutTypeDescription = selectedType ? selectedType.label : 'Mixed Training';
 
-    const recentWorkoutContext = recentWorkouts.length > 0
-      ? ` I recently completed a ${recentWorkouts[0].difficulty} ${recentWorkouts[0].name}.`
+    // Build user profile context
+    const userContext = [];
+    if (profile.age) userContext.push(`${profile.age} years old`);
+    if (profile.gender && profile.gender !== 'Rather Not Say') userContext.push(profile.gender.toLowerCase());
+    if (profile.weight) userContext.push(`${profile.weight} lbs`);
+
+    const userInfo = userContext.length > 0 ? `I am ${userContext.join(', ')}. ` : '';
+
+    // Build fitness context
+    const fitnessContext = `I am at a ${profile.fitnessLevel} fitness level`;
+
+    // Build time availability context
+    const timeContext = profile.timeAvailability
+      ? ` and typically work out ${profile.timeAvailability.daysPerWeek} days per week for ${profile.timeAvailability.minutesPerSession} minutes per session`
       : '';
 
-    return `I want a ${profile.fitnessLevel} level ${workoutTypeDescription.toLowerCase()} workout for ${profile.availableTime} minutes focusing on ${goals}. I have access to ${equipment}.${recentWorkoutContext} Please create a personalized ${workoutTypeDescription.toLowerCase()} workout plan with proper warm-up and cool-down.`;
+    // Build injury/limitation context
+    const injuryContext = profile.injuries && profile.injuries.length > 0
+      ? ` I have the following injuries or limitations to consider: ${profile.injuries.join(', ')}.`
+      : ' I have no current injuries or limitations.';
+
+    // Build recent workout context
+    const recentWorkoutContext = recentWorkouts.length > 0
+      ? ` Recently, I completed a ${recentWorkouts[0].difficulty} ${recentWorkouts[0].type || 'workout'} that included ${recentWorkouts[0].exercises.slice(0, 3).join(', ')}.`
+      : '';
+
+    // Build equipment context
+    const equipmentContext = ` I have access to: ${equipment}.`;
+
+    // Build goal context
+    const goalContext = ` My primary fitness goals are: ${allGoals}.`;
+
+    return `${userInfo}${fitnessContext}${timeContext}.${injuryContext}${recentWorkoutContext}
+
+Please create a personalized ${workoutTypeDescription.toLowerCase()} workout for exactly ${profile.availableTime} minutes.${goalContext}${equipmentContext}
+
+Requirements:
+- Workout type: ${workoutTypeDescription}
+- Duration: ${profile.availableTime} minutes
+- Difficulty: ${profile.fitnessLevel}
+- Focus: ${primaryGoals}
+- Include proper warm-up (3-5 minutes)
+- Include cool-down/stretching (3-5 minutes)
+- Provide clear exercise instructions and form tips
+- Consider my injury limitations
+- Use only available equipment
+
+Please structure the workout with specific exercises, sets, reps, rest periods, and detailed instructions.`;
   }, [convertGoalCodesToNames, convertEquipmentCodesToNames, workoutTypes]);
 
   // Transform API workout response to internal WorkoutPlan format
@@ -579,6 +729,17 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     setExerciseTimer(0);
     setCompletedExercises(new Set());
     setWorkoutStartTime(new Date());
+
+    // Trigger haptic feedback for workout start
+    triggerHaptic('success');
+
+    // Prevent screen sleep during workout
+    if (isMobile && workoutConfig.preventSleep) {
+      workoutConfig.preventSleep().catch(() => {
+        // Silently fail if wake lock is not supported
+      });
+    }
+
     toast({
       title: 'Workout Started!',
       description: 'Good luck with your training session.',
@@ -586,7 +747,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       duration: 2000,
       isClosable: true,
     });
-  }, [toast]);
+  }, [toast, triggerHaptic, isMobile, workoutConfig]);
 
   const completeExercise = () => {
     if (!currentWorkout) return;
@@ -594,6 +755,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     const newCompleted = new Set(completedExercises);
     newCompleted.add(currentExerciseIndex);
     setCompletedExercises(newCompleted);
+
+    // Trigger haptic feedback for exercise completion
+    triggerHaptic('medium');
 
     if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
       // Start rest period
@@ -603,7 +767,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       setCurrentExerciseIndex(prev => prev + 1);
       setExerciseTimer(0);
     } else {
-      // Workout complete
+      // Workout complete - stronger haptic feedback
+      triggerHaptic('success');
       finishWorkout();
     }
   };
@@ -639,6 +804,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     addWorkoutPlan(completedWorkout);
     setIsWorkoutActive(false);
 
+    // Clear saved workout state since workout is complete
+    clearWorkoutState();
+
     // Show feedback form instead of immediately completing
     setShowFeedback(true);
 
@@ -667,6 +835,187 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     onWorkoutComplete(currentWorkout!);
   }, [currentWorkout, onWorkoutComplete]);
 
+  // Exercise swapping functionality
+  const handleSwapExercise = useCallback((exerciseIndex: number) => {
+    if (!currentWorkout) return;
+
+    const exercise = currentWorkout.exercises[exerciseIndex];
+    setExerciseToSwap({ exercise, index: exerciseIndex });
+    setShowExerciseSwapper(true);
+  }, [currentWorkout]);
+
+  const handleExerciseSwapped = useCallback((newExercise: Exercise) => {
+    if (!currentWorkout || !exerciseToSwap) return;
+
+    const updatedExercises = [...currentWorkout.exercises];
+    updatedExercises[exerciseToSwap.index] = newExercise;
+
+    const updatedWorkout: WorkoutPlan = {
+      ...currentWorkout,
+      exercises: updatedExercises,
+    };
+
+    setCurrentWorkout(updatedWorkout);
+    setExerciseToSwap(null);
+
+    toast({
+      title: 'Exercise Swapped!',
+      description: `Replaced with ${newExercise.name}`,
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  }, [currentWorkout, exerciseToSwap, toast]);
+
+  const handleCloseSwapper = useCallback(() => {
+    setShowExerciseSwapper(false);
+    setExerciseToSwap(null);
+  }, []);
+
+  // Workout modification functionality
+  const handleModifyWorkout = useCallback(() => {
+    setShowWorkoutModifier(true);
+  }, []);
+
+  const handleWorkoutModified = useCallback(async (modifications: WorkoutModifications) => {
+    if (!currentWorkout) return;
+
+    setIsGenerating(true);
+    setGenerationStatus('Regenerating workout with your modifications...');
+
+    try {
+      // Update the selected workout type if changed
+      if (modifications.workoutType) {
+        setSelectedWorkoutType(modifications.workoutType);
+      }
+
+      // Create a modified workout request based on modifications
+
+      // Build comprehensive workout request with modifications
+      const modifiedProfile = {
+        ...profile,
+        fitnessLevel: modifications.difficulty || profile.fitnessLevel,
+        availableTime: modifications.duration || profile.availableTime,
+      };
+
+      // Use the same comprehensive request builder
+      const workoutRequest = buildWorkoutRequest(modifiedProfile, [], modifications.workoutType || selectedWorkoutType);
+
+      // Convert goal labels back to API values for the API request
+      const goalNames = convertGoalCodesToNames(profile.goals || []);
+      const goalValues = goalNames.map(label => {
+        const goal = FITNESS_GOALS.find(g => g.label === label);
+        return goal ? goal.value : label.toLowerCase().replace(' ', '_');
+      });
+
+      const userMetadata: WorkoutUserMetadata = {
+        age: profile.age || 25, // Ensure age is provided (required by API)
+        fitnessLevel: modifications.difficulty || profile.fitnessLevel,
+        gender: profile.gender || 'Rather Not Say',
+        weight: profile.weight,
+        goals: goalValues, // Use API values for backend
+        equipment: convertEquipmentCodesToNames(profile.equipment || []),
+        timeAvailable: modifications.duration || profile.availableTime,
+        injuries: profile.injuries || [],
+        daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
+        minutesPerSession: modifications.duration || profile.timeAvailability?.minutesPerSession || profile.availableTime,
+      };
+
+      const workoutAPIRequest: WorkoutAPIRequest = {
+        userMetadata,
+        workoutHistory: [],
+        workoutRequest
+      };
+
+      const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
+        userId: user?.uid || '',
+        timeout: 60000
+      });
+
+      if (response.status === 'success' && response.data) {
+        const workout = response.data.workout;
+        const workoutPlan = transformAPIWorkoutToPlan(workout);
+
+        const enhancedWorkout: WorkoutPlan = {
+          ...workoutPlan,
+          focusAreas: modifications.focusAreas,
+          workoutType: modifications.workoutType as any,
+          generationContext: {
+            userContext: { userMetadata, workoutHistory: [], workoutRequest },
+            aiModelsUsed: [response.data.metadata.model],
+            generationTime: performance.now(),
+            sessionId: response.correlationId || 'unknown'
+          }
+        };
+
+        setCurrentWorkout(enhancedWorkout);
+
+        toast({
+          title: 'Workout Modified!',
+          description: 'Your workout has been regenerated with the new parameters.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error modifying workout:', error);
+      toast({
+        title: 'Modification Failed',
+        description: 'Unable to modify workout. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsGenerating(false);
+      setGenerationStatus('');
+    }
+  }, [currentWorkout, profile, selectedWorkoutType, user?.uid, toast]);
+
+  const handleCloseModifier = useCallback(() => {
+    setShowWorkoutModifier(false);
+  }, []);
+
+  // Load saved workout state on component mount
+  useEffect(() => {
+    const savedState = loadWorkoutState();
+    if (savedState && !currentWorkout) {
+      // Ask user if they want to resume the saved workout
+      const shouldResume = window.confirm(
+        'You have an unfinished workout from earlier. Would you like to resume where you left off?'
+      );
+
+      if (shouldResume) {
+        setCurrentWorkout(savedState.workout);
+        setCurrentExerciseIndex(savedState.currentExerciseIndex);
+        setCompletedExercises(new Set(savedState.completedExercises));
+        setExerciseTimer(savedState.exerciseTimer);
+        setRestTimer(savedState.restTimer);
+        setIsResting(savedState.isResting);
+        setIsWorkoutActive(true);
+        setWorkoutStartTime(savedState.workoutStartTime ? new Date(savedState.workoutStartTime) : new Date());
+
+        toast({
+          title: 'Workout Resumed',
+          description: 'Continuing from where you left off.',
+          status: 'info',
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        clearWorkoutState();
+      }
+    }
+  }, [loadWorkoutState, clearWorkoutState, currentWorkout, toast]);
+
+  // Save workout state whenever it changes
+  useEffect(() => {
+    if (isWorkoutActive && currentWorkout) {
+      saveWorkoutState();
+    }
+  }, [isWorkoutActive, currentWorkout, currentExerciseIndex, completedExercises, exerciseTimer, restTimer, isResting, saveWorkoutState]);
+
   // Show feedback form after workout completion
   if (showFeedback && currentWorkout && workoutStartTime) {
     const actualDurationMinutes = Math.floor((Date.now() - workoutStartTime.getTime()) / (1000 * 60));
@@ -682,65 +1031,33 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     );
   }
 
-  if (isGenerating) {
-    return (
-      <Flex
-        direction="column"
-        align="center"
-        justify="center"
-        h="100%"
-        p={8}
-        textAlign="center"
-      >
-        <Spinner size="xl" color={activeColor} thickness="4px" mb={6} />
-        <Text fontSize="xl" fontWeight="semibold" color={textColor} mb={2}>
-          Generating Your Workout
-        </Text>
-        <Text color={subtextColor}>
-          {generationStatus || 'The team is creating a personalized workout based on your profile...'}
-        </Text>
-      </Flex>
-    );
-  }
+  // Remove duplicate loading state - using ModernLoadingAnimation instead
 
   if (!currentWorkout) {
     return (
-      <VStack spacing={{ base: 6, md: 8 }} p={{ base: 4, md: 6 }} align="stretch">
-        {/* Service Status Indicator */}
-        {serviceStatus === 'degraded' && (
-          <Box
-            bg="orange.50"
-            border="1px solid"
-            borderColor="orange.200"
-            borderRadius="md"
-            p={3}
-            textAlign="center"
-          >
-            <Text fontSize="sm" color="orange.700" fontWeight="medium">
-              Workout service experiencing issues - fallback workouts available
-            </Text>
-          </Box>
-        )}
+      <VStack spacing={{ base: 4, md: 6, lg: 8 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch">
+        {/* Service Status Indicator - Only show when service is actually unavailable */}
         {serviceStatus === 'unavailable' && (
           <Box
             bg="red.50"
             border="1px solid"
             borderColor="red.200"
-            borderRadius="md"
-            p={3}
+            borderRadius="xl"
+            p={{ base: 3, md: 4 }}
+            mx={{ base: 2, md: 0 }}
             textAlign="center"
           >
-            <Text fontSize="sm" color="red.700" fontWeight="medium">
+            <Text fontSize={{ base: "xs", md: "sm" }} color="red.700" fontWeight="medium">
               Workout service temporarily unavailable - using backup workouts
             </Text>
           </Box>
         )}
 
-        <Box textAlign="center" px={{ base: 2, md: 0 }}>
-          <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color={textColor} mb={2}>
+        <Box textAlign="center" px={{ base: 1, md: 0 }}>
+          <Text fontSize={{ base: "xl", md: "2xl", lg: "3xl" }} fontWeight="bold" color={textColor} mb={{ base: 2, md: 3 }}>
             Ready for Your Workout?
           </Text>
-          <Text color={subtextColor} fontSize={{ base: "sm", md: "md" }}>
+          <Text color={subtextColor} fontSize={{ base: "sm", md: "md", lg: "lg" }} px={{ base: 2, md: 0 }}>
             Let AI generate a personalized workout based on your fitness profile.
           </Text>
         </Box>
@@ -777,7 +1094,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 <HStack>
                   <Icon as={PiLightningBold} color={activeColor} />
                   <Text fontSize="sm" color={subtextColor}>
-                    Focus on: {profile.goals.join(', ')}
+                    Focus on: {convertGoalCodesToNames(profile.goals || []).join(', ')}
                   </Text>
                 </HStack>
               </VStack>
@@ -809,16 +1126,17 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                       key={type.value}
                       variant={selectedWorkoutType === type.value ? "solid" : "outline"}
                       colorScheme={selectedWorkoutType === type.value ? "blue" : "gray"}
-                      size="md"
+                      size={{ base: "lg", md: "md" }}
                       onClick={() => setSelectedWorkoutType(type.value)}
                       w="full"
-                      h={{ base: "60px", md: "70px" }}
+                      h={{ base: "72px", md: "70px", lg: "76px" }}
+                      minH={{ base: "72px", md: "70px" }}
                       flexDirection="column"
                       gap={1}
                       position="relative"
                       _hover={{
                         transform: 'translateY(-2px)',
-                        shadow: 'md',
+                        shadow: 'lg',
                         borderColor: 'blue.300',
                         bg: selectedWorkoutType === type.value ? 'blue.600' : 'gray.50'
                       }}
@@ -827,8 +1145,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                       }}
                       transition="all 0.2s ease-in-out"
                       bg={selectedWorkoutType === type.value ? 'blue.500' : 'transparent'}
-                      borderWidth="1px"
+                      borderWidth="2px"
                       borderColor={selectedWorkoutType === type.value ? "blue.500" : "gray.300"}
+                      // Enhanced touch targets for mobile
+                      style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
                     >
                       <Text
                         fontSize={{ base: "sm", md: "md" }}
@@ -856,18 +1179,20 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           </CardBody>
         </Card>
 
-        <VStack spacing={4}>
+        <VStack spacing={{ base: 3, md: 4 }} px={{ base: 2, md: 0 }}>
           <Button
             colorScheme="blue"
             size="lg"
             w="100%"
             leftIcon={<Icon as={PiLightningBold} />}
             onClick={() => generateWorkout()}
-            py={{ base: 4, md: 6 }}
+            py={{ base: 5, md: 6 }}
             isLoading={isGenerating}
-            loadingText="Generating..."
-            minH={{ base: "56px", md: "auto" }}
-            fontSize={{ base: "md", md: "lg" }}
+            loadingText={generationStatus || "Generating..."}
+            minH={{ base: "64px", md: "auto" }}
+            fontSize={{ base: "lg", md: "xl" }}
+            fontWeight="bold"
+            borderRadius="xl"
             _hover={{
               transform: 'translateY(-2px)',
               shadow: 'xl',
@@ -878,16 +1203,26 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
               shadow: 'lg'
             }}
             transition="all 0.2s ease-in-out"
+            // Enhanced touch targets for mobile
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
           >
             Generate AI Workout
           </Button>
 
-
-
           <Button
             variant="ghost"
             onClick={onBack}
-            size="md"
+            size={{ base: "lg", md: "md" }}
+            minH={{ base: "48px", md: "auto" }}
+            fontSize={{ base: "md", md: "md" }}
+            // Enhanced touch targets for mobile
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
           >
             Back to Dashboard
           </Button>
@@ -910,41 +1245,79 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         title={`Creating Your AI ${workoutTypes.find(t => t.value === selectedWorkoutType)?.label} Workout`}
       />
 
+      {/* Exercise Swapper Modal */}
+      {exerciseToSwap && (
+        <ExerciseSwapper
+          isOpen={showExerciseSwapper}
+          onClose={handleCloseSwapper}
+          currentExercise={exerciseToSwap.exercise}
+          onSwapExercise={handleExerciseSwapped}
+          workoutType={selectedWorkoutType}
+        />
+      )}
+
+      {/* Workout Modifier Modal */}
+      {currentWorkout && (
+        <WorkoutModifier
+          isOpen={showWorkoutModifier}
+          onClose={handleCloseModifier}
+          currentWorkout={currentWorkout}
+          onModifyWorkout={handleWorkoutModified}
+        />
+      )}
+
       <Box
-        h="100%"
+        minH="100%"
+        maxH="100vh"
         overflow={{ base: "auto", md: "auto" }}
+        overflowX="hidden"
         style={{ WebkitOverflowScrolling: 'touch' }}
+        className={`neurafit-scroll-container ${isWorkoutActive ? 'neurafit-workout-active' : ''} neurafit-no-zoom`}
       >
-      <VStack spacing={{ base: 4, md: 6 }} p={{ base: 3, md: 4 }} align="stretch" minH="100%">
+      <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 2, md: 3, lg: 4 }} align="stretch" w="100%" className="neurafit-workout-container">
       {/* Workout Header */}
-      <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }}>
-        <CardBody p={{ base: 4, md: 6 }}>
+      <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }} mx={{ base: 1, md: 0 }}>
+        <CardBody p={{ base: 3, md: 4, lg: 6 }}>
           <VStack spacing={{ base: 3, md: 4 }} align="stretch">
             <HStack justify="space-between" align="start" flexWrap={{ base: "wrap", md: "nowrap" }}>
               <VStack align="start" spacing={1} flex={1}>
-                <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={textColor}>
+                <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color={textColor} lineHeight="1.2">
                   {currentWorkout.name}
                 </Text>
                 <HStack spacing={{ base: 2, md: 4 }} flexWrap="wrap">
-                  <Badge colorScheme="blue" fontSize={{ base: "xs", md: "sm" }}>
+                  <Badge colorScheme="blue" fontSize={{ base: "xs", md: "sm" }} px={2} py={1}>
                     {currentWorkout.difficulty}
                   </Badge>
-                  <Text fontSize="sm" color={subtextColor}>
+                  <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor} fontWeight="medium">
                     {currentWorkout.duration} min
                   </Text>
                 </HStack>
               </VStack>
-              
-              {isWorkoutActive && (
-                <VStack align="end" spacing={1}>
-                  <Text fontSize="lg" fontWeight="semibold" color={activeColor}>
-                    {formatTime(exerciseTimer)}
-                  </Text>
-                  <Text fontSize="xs" color={subtextColor}>
-                    Exercise Time
-                  </Text>
-                </VStack>
-              )}
+
+              <VStack align="end" spacing={2}>
+                {isWorkoutActive && (
+                  <VStack align="end" spacing={1}>
+                    <Text fontSize="lg" fontWeight="semibold" color={activeColor}>
+                      {formatTime(exerciseTimer)}
+                    </Text>
+                    <Text fontSize="xs" color={subtextColor}>
+                      Exercise Time
+                    </Text>
+                  </VStack>
+                )}
+
+                {!isWorkoutActive && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    colorScheme="blue"
+                    leftIcon={<Icon as={PiGearBold} />}
+                    onClick={handleModifyWorkout}
+                  >
+                    Modify
+                  </Button>
+                )}
+              </VStack>
             </HStack>
 
             {/* Modern Progress Indicator */}
@@ -960,86 +1333,134 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         </CardBody>
       </Card>
 
-      {/* Rest Timer */}
+      {/* Rest Timer - Enhanced for mobile */}
       <AnimatePresence>
         {isResting && (
           <MotionBox
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            mx={{ base: 1, md: 0 }}
           >
-            <Card bg="orange.50" borderColor="orange.200">
-              <CardBody textAlign="center">
-                <Text fontSize="lg" fontWeight="semibold" color="orange.600" mb={2}>
+            <Card bg="orange.50" borderColor="orange.200" borderWidth="2px" shadow="lg">
+              <CardBody textAlign="center" py={{ base: 6, md: 4 }}>
+                <Text fontSize={{ base: "xl", md: "lg" }} fontWeight="bold" color="orange.600" mb={{ base: 3, md: 2 }}>
                   Rest Time
                 </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="orange.700">
+                <Text fontSize={{ base: "4xl", md: "2xl" }} fontWeight="bold" color="orange.700" className="neurafit-timer-display">
                   {formatTime(restTimer)}
                 </Text>
-                <Text fontSize="sm" color="orange.500" mt={1}>
+                <Text fontSize={{ base: "md", md: "sm" }} color="orange.500" mt={{ base: 2, md: 1 }} fontWeight="medium">
                   Get ready for the next exercise
                 </Text>
+                {/* Next exercise preview */}
+                {currentExerciseIndex < currentWorkout.exercises.length && (
+                  <Text fontSize={{ base: "sm", md: "xs" }} color="orange.400" mt={2}>
+                    Next: {currentWorkout.exercises[currentExerciseIndex]?.name}
+                  </Text>
+                )}
+
+                {/* Skip Rest Button */}
+                <Button
+                  colorScheme="orange"
+                  variant="outline"
+                  size={{ base: "md", md: "sm" }}
+                  mt={{ base: 4, md: 3 }}
+                  leftIcon={<Icon as={PiSkipForwardBold} />}
+                  onClick={() => {
+                    setIsResting(false);
+                    setRestTimer(0);
+                    triggerHaptic('light');
+                  }}
+                  minH={{ base: "48px", md: "auto" }}
+                  fontSize={{ base: "md", md: "sm" }}
+                  borderRadius="xl"
+                  _hover={{
+                    bg: 'orange.100',
+                    transform: 'translateY(-1px)',
+                    shadow: 'md'
+                  }}
+                  _active={{
+                    transform: 'translateY(0px)',
+                    shadow: 'sm'
+                  }}
+                  transition="all 0.2s ease-in-out"
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  Skip Rest
+                </Button>
               </CardBody>
             </Card>
           </MotionBox>
         )}
       </AnimatePresence>
 
-      {/* Current Exercise */}
+      {/* Current Exercise - Enhanced for mobile */}
       {!isResting && isWorkoutActive && (
-        <Card bg={bgColor} borderColor={borderColor} borderWidth={2}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <HStack justify="space-between">
-                <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+        <Card bg={bgColor} borderColor={borderColor} borderWidth="3px" shadow="xl" mx={{ base: 1, md: 0 }}>
+          <CardBody p={{ base: 4, md: 6 }} className="neurafit-exercise-display">
+            <VStack spacing={{ base: 4, md: 5 }} align="stretch">
+              <HStack justify="space-between" align="start" flexWrap={{ base: "wrap", md: "nowrap" }}>
+                <Text fontSize={{ base: "xl", md: "lg" }} fontWeight="bold" color={textColor} lineHeight="1.2" flex={1}>
                   {currentWorkout.exercises[currentExerciseIndex]?.name}
                 </Text>
-                <Badge colorScheme="blue">
+                <Badge colorScheme="blue" fontSize={{ base: "sm", md: "xs" }} px={3} py={1} borderRadius="full">
                   {currentExerciseIndex + 1} / {currentWorkout.exercises.length}
                 </Badge>
               </HStack>
 
               <Divider />
 
-              <VStack spacing={3} align="stretch">
-                <HStack spacing={6}>
+              {/* Exercise Stats - Enhanced for mobile */}
+              <VStack spacing={{ base: 4, md: 3 }} align="stretch">
+                <HStack spacing={{ base: 4, md: 6 }} justify="center" flexWrap="wrap">
                   {currentWorkout.exercises[currentExerciseIndex]?.sets > 0 && (
-                    <VStack spacing={1}>
-                      <Text fontSize="2xl" fontWeight="bold" color={activeColor}>
+                    <VStack spacing={1} minW={{ base: "80px", md: "auto" }}>
+                      <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color={activeColor}>
                         {currentWorkout.exercises[currentExerciseIndex]?.sets}
                       </Text>
-                      <Text fontSize="xs" color={subtextColor}>SETS</Text>
+                      <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="bold">SETS</Text>
                     </VStack>
                   )}
-                  
+
                   {currentWorkout.exercises[currentExerciseIndex]?.reps > 0 && (
-                    <VStack spacing={1}>
-                      <Text fontSize="2xl" fontWeight="bold" color={activeColor}>
+                    <VStack spacing={1} minW={{ base: "80px", md: "auto" }}>
+                      <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color={activeColor}>
                         {currentWorkout.exercises[currentExerciseIndex]?.reps}
                       </Text>
-                      <Text fontSize="xs" color={subtextColor}>REPS</Text>
+                      <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="bold">REPS</Text>
                     </VStack>
                   )}
-                  
+
                   {currentWorkout.exercises[currentExerciseIndex]?.duration > 0 && (
-                    <VStack spacing={1}>
-                      <Text fontSize="2xl" fontWeight="bold" color={activeColor}>
+                    <VStack spacing={1} minW={{ base: "80px", md: "auto" }}>
+                      <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color={activeColor}>
                         {currentWorkout.exercises[currentExerciseIndex]?.duration}s
                       </Text>
-                      <Text fontSize="xs" color={subtextColor}>DURATION</Text>
+                      <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="bold">DURATION</Text>
                     </VStack>
                   )}
                 </HStack>
 
-                <Text fontSize="sm" color={subtextColor}>
-                  {currentWorkout.exercises[currentExerciseIndex]?.instructions}
-                </Text>
+                {/* Instructions - Enhanced for mobile */}
+                <Box bg={useColorModeValue('gray.50', 'gray.700')} p={{ base: 4, md: 3 }} borderRadius="xl">
+                  <Text fontSize={{ base: "md", md: "sm" }} color={textColor} lineHeight="1.5" fontWeight="medium">
+                    {currentWorkout.exercises[currentExerciseIndex]?.instructions}
+                  </Text>
+                </Box>
 
+                {/* Tips - Enhanced for mobile */}
                 {currentWorkout.exercises[currentExerciseIndex]?.tips && (
-                  <Box bg={tipsBgColor} p={3} borderRadius="md">
-                    <Text fontSize="sm" color={tipsTextColor} fontWeight="medium">
-                      Tip: {currentWorkout.exercises[currentExerciseIndex]?.tips}
-                    </Text>
+                  <Box bg={tipsBgColor} p={{ base: 4, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor={useColorModeValue('blue.200', 'blue.600')}>
+                    <HStack align="start" spacing={2}>
+                      <Icon as={PiLightningBold} color={useColorModeValue('blue.500', 'blue.400')} mt={1} />
+                      <Text fontSize={{ base: "sm", md: "sm" }} color={tipsTextColor} fontWeight="medium" lineHeight="1.4">
+                        {currentWorkout.exercises[currentExerciseIndex]?.tips}
+                      </Text>
+                    </HStack>
                   </Box>
                 )}
               </VStack>
@@ -1048,37 +1469,70 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         </Card>
       )}
 
-      {/* Exercise List */}
+      {/* Exercise List - Enhanced for mobile */}
       {!isWorkoutActive && (
-        <VStack spacing={3} align="stretch" flex={1} overflowY="auto">
+        <VStack spacing={{ base: 3, md: 4 }} align="stretch" flex={1} overflowY="auto" className="neurafit-exercise-list" px={{ base: 1, md: 0 }}>
           {currentWorkout.exercises.map((exercise, index) => (
             <Card
               key={index}
               bg={bgColor}
               borderColor={borderColor}
               opacity={completedExercises.has(index) ? 0.7 : 1}
+              shadow={{ base: "md", md: "sm" }}
+              borderWidth="1px"
+              _hover={{
+                shadow: "lg",
+                transform: "translateY(-1px)"
+              }}
+              transition="all 0.2s ease-in-out"
             >
-              <CardBody>
-                <HStack justify="space-between" align="start">
-                  <VStack align="start" spacing={1} flex={1}>
-                    <HStack>
-                      <Text fontWeight="semibold" color={textColor}>
-                        {exercise.name}
-                      </Text>
-                      {completedExercises.has(index) && (
-                        <Icon as={PiCheckBold} color={completedColor} />
-                      )}
-                    </HStack>
-                    <HStack spacing={4} fontSize="sm" color={subtextColor}>
-                      {exercise.sets > 0 && <Text>{exercise.sets} sets</Text>}
-                      {exercise.reps > 0 && <Text>{exercise.reps} reps</Text>}
-                      {exercise.duration > 0 && <Text>{exercise.duration}s</Text>}
-                    </HStack>
-                    <Text fontSize="xs" color={subtextColor} noOfLines={2}>
-                      {exercise.instructions}
-                    </Text>
-                  </VStack>
-                </HStack>
+              <CardBody p={{ base: 4, md: 3 }}>
+                <VStack spacing={{ base: 3, md: 2 }} align="stretch">
+                  {/* Exercise Header */}
+                  <HStack justify="space-between" align="start">
+                    <VStack align="start" spacing={1} flex={1}>
+                      <HStack spacing={2} align="center">
+                        <Text fontWeight="bold" color={textColor} fontSize={{ base: "md", md: "sm" }} lineHeight="1.2">
+                          {exercise.name}
+                        </Text>
+                        {completedExercises.has(index) && (
+                          <Icon as={PiCheckBold} color={completedColor} boxSize={{ base: 5, md: 4 }} />
+                        )}
+                      </HStack>
+
+                      {/* Exercise Stats */}
+                      <HStack spacing={{ base: 3, md: 4 }} fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="medium">
+                        {exercise.sets > 0 && <Text>{exercise.sets} sets</Text>}
+                        {exercise.reps > 0 && <Text>{exercise.reps} reps</Text>}
+                        {exercise.duration > 0 && <Text>{exercise.duration}s</Text>}
+                      </HStack>
+                    </VStack>
+
+                    {/* Swap Exercise Button - Enhanced for mobile */}
+                    <Button
+                      size={{ base: "sm", md: "xs" }}
+                      variant="ghost"
+                      colorScheme="blue"
+                      leftIcon={<Icon as={PiSwapBold} />}
+                      onClick={() => handleSwapExercise(index)}
+                      isDisabled={isWorkoutActive}
+                      minH={{ base: "40px", md: "auto" }}
+                      fontSize={{ base: "sm", md: "xs" }}
+                      // Enhanced touch targets for mobile
+                      style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
+                    >
+                      Swap
+                    </Button>
+                  </HStack>
+
+                  {/* Exercise Instructions */}
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} noOfLines={{ base: 3, md: 2 }} lineHeight="1.4">
+                    {exercise.instructions}
+                  </Text>
+                </VStack>
               </CardBody>
             </Card>
           ))}
@@ -1086,7 +1540,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       )}
 
       {/* Action Buttons */}
-      <VStack spacing={3}>
+      <VStack spacing={{ base: 3, md: 4 }} px={{ base: 2, md: 0 }}>
         {!isWorkoutActive ? (
           <Button
             colorScheme="blue"
@@ -1094,7 +1548,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             w="100%"
             leftIcon={<Icon as={PiPlayBold} />}
             onClick={startWorkout}
-            py={6}
+            py={{ base: 5, md: 6 }}
+            minH={{ base: "64px", md: "auto" }}
+            fontSize={{ base: "lg", md: "xl" }}
+            fontWeight="bold"
+            borderRadius="xl"
             _hover={{
               transform: 'translateY(-2px)',
               shadow: 'xl',
@@ -1105,18 +1563,28 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
               shadow: 'lg'
             }}
             transition="all 0.2s ease-in-out"
+            // Enhanced touch targets for mobile
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
           >
             Start Workout
           </Button>
         ) : (
-          <HStack spacing={3} w="100%">
+          <VStack spacing={{ base: 3, md: 4 }} w="100%">
             <Button
               colorScheme="green"
               size="lg"
-              flex={1}
+              w="100%"
               leftIcon={<Icon as={PiCheckBold} />}
               onClick={completeExercise}
               isDisabled={isResting}
+              py={{ base: 5, md: 6 }}
+              minH={{ base: "64px", md: "auto" }}
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              borderRadius="xl"
               _hover={{
                 transform: 'translateY(-2px)',
                 shadow: 'lg',
@@ -1127,27 +1595,48 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 shadow: 'md'
               }}
               transition="all 0.2s ease-in-out"
+              // Enhanced touch targets for mobile
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
             >
-              {currentExerciseIndex === currentWorkout.exercises.length - 1 ? 'Finish' : 'Complete Exercise'}
+              {currentExerciseIndex === currentWorkout.exercises.length - 1 ? 'Finish Workout' : 'Complete Exercise'}
             </Button>
-            
+
             <Button
               colorScheme="red"
               variant="outline"
-              size="lg"
+              size={{ base: "lg", md: "md" }}
+              w="100%"
               leftIcon={<Icon as={PiStopBold} />}
-              onClick={() => setIsWorkoutActive(false)}
+              onClick={handleStopWorkout}
+              minH={{ base: "56px", md: "auto" }}
+              fontSize={{ base: "md", md: "lg" }}
+              borderRadius="xl"
+              // Enhanced touch targets for mobile
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
             >
-              Stop
+              Stop Workout
             </Button>
-          </HStack>
+          </VStack>
         )}
-        
+
         {!isWorkoutActive && (
           <Button
             variant="ghost"
             onClick={onBack}
-            size="md"
+            size={{ base: "lg", md: "md" }}
+            minH={{ base: "48px", md: "auto" }}
+            fontSize={{ base: "md", md: "md" }}
+            // Enhanced touch targets for mobile
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
           >
             Back to Dashboard
           </Button>
