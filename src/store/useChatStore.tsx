@@ -117,145 +117,152 @@ export const useChatStore = create<IChatStoreState>()((set, get) => ({
           throw new Error('Empty response received from AI service');
         }
 
-            // Track analytics for successful chat interaction
-            try {
-              import('../services/analyticsService').then(({ trackChatInteraction }) => {
-                // Extract model names from modelsUsed object
-                const modelNames = Object.keys(response.modelsUsed || {});
+        // Track analytics for successful chat interaction
+        try {
+          const analyticsModule = await import('../services/analyticsService');
+          const modelNames = Object.keys(aiResponse.modelsUsed || {});
 
-                trackChatInteraction({
-                  messageLength: text.length,
-                  responseTime,
-                  modelsUsed: modelNames.length > 0 ? modelNames : ['unknown'],
-                  sessionId,
-                  messageType: 'text'
-                });
-              });
-            } catch (analyticsError) {
-              console.warn('Analytics tracking failed:', analyticsError);
-            }
-
-            // Log the processed response for debugging
-            console.group('🎯 Chat Store Processing');
-            console.log('📝 Original Answer Length:', response.answer?.length || 0);
-            console.log('✂️ Cleaned Answer Length:', cleanedAnswer.length);
-            console.log('🔍 Answer Preview:', cleanedAnswer.substring(0, 200) + (cleanedAnswer.length > 200 ? '...' : ''));
-            console.log('📊 Metadata:', {
-              ensembleMode: response.ensembleMode,
-              modelsUsed: response.modelsUsed,
-              executionTime: response.executionTime,
-              tokenCount: response.tokenCount
-            });
-            console.groupEnd();
-
-            const assistantMsg = {
-              id: assistantId,
-              role: 'assistant' as const,
-              text: cleanedAnswer,
-              timestamp: Date.now(),
-              metadata: {
-                models: response.modelsUsed ? Object.keys(response.modelsUsed) : [],
-                responseTime,
-                retryCount,
-                executionTime: response.executionTime,
-                ensembleMode: response.ensembleMode,
-                // Memory-related metadata
-                memoryContext: response.memoryContext,
-                tokenCount: response.tokenCount,
-                memoryTokensSaved: response.memoryTokensSaved,
-                sessionId,
-                // Raw API response data only
-                modelsUsed: response.modelsUsed,
-                fallbackReasons: response.fallbackReasons,
-                // Individual model responses for modal display
-                individualResponses: response.individualResponses
-              }
-            };
-
-            set(state => ({
-              messages: [...state.messages, assistantMsg],
-              isLoading: false,
-              retryCount: 0
-            }));
-
-            // Assistant message saved - backend handles memory via sessionId
-
-            return; // Success, exit retry loop
-
-          } catch (error) {
-            retryCount++;
-            set(() => ({ retryCount }));
-
-            // Simple error logging
-            if (process.env.NODE_ENV === 'development') {
-              console.warn(`❌ Chat request failed (attempt ${retryCount}/${MAX_RETRIES}):`, error instanceof Error ? error.message : 'Unknown error');
-            }
-
-            if (retryCount > MAX_RETRIES) {
-              // Final failure - show elegant error message
-              const errorMessage = error instanceof Error
-                ? error.message
-                : 'An unexpected error occurred';
-
-              set(state => ({
-                messages: [...state.messages, {
-                  id: nanoid(),
-                  role: 'error',
-                  text: `Unable to get response: ${errorMessage}. Please try again.`,
-                  timestamp: Date.now(),
-                  metadata: {
-                    retryCount: retryCount - 1,
-                    totalTime: Date.now() - startTime,
-                    errorType: error instanceof Error ? error.name : 'Unknown'
-                  }
-                }],
-                isLoading: false,
-                retryCount: 0
-              }));
-            } else {
-              // Simple retry delay
-              await sleep(RETRY_DELAY);
-            }
-          }
-        }
-      },
-
-      clearMessages: () => {
-        set({ messages: [], sessionId: crypto.randomUUID() }); // New session when clearing
-      },
-
-      deleteMessage: (id: string) => {
-        set(state => ({
-          messages: state.messages.filter(m => m.id !== id)
-        }));
-      },
-
-      retryMessage: async (messageId: string) => {
-        const state = get();
-        const messageIndex = state.messages.findIndex(m => m.id === messageId);
-
-        if (messageIndex === -1) return;
-
-        // Find the user message that preceded this error/assistant message
-        let userMessage = null;
-        for (let i = messageIndex - 1; i >= 0; i--) {
-          if (state.messages[i].role === 'user') {
-            userMessage = state.messages[i];
-            break;
-          }
+          analyticsModule.trackChatInteraction({
+            messageLength: messageText.length,
+            responseTime: totalResponseTimeMilliseconds,
+            modelsUsed: modelNames.length > 0 ? modelNames : ['unknown'],
+            sessionId: currentChatSessionId,
+            messageType: 'text'
+          });
+        } catch (analyticsError) {
+          console.warn('Analytics tracking failed:', analyticsError);
         }
 
-        if (!userMessage) return;
+        // Development logging with enhanced readability
+        if (import.meta.env.DEV) {
+          console.group('🎯 Chat Store Processing');
+          console.log('📝 Original Answer Length:', aiResponse.answer?.length || 0);
+          console.log('✂️ Processed Answer Length:', processedResponseText.length);
+          console.log('🔍 Answer Preview:', processedResponseText.substring(0, 200) + (processedResponseText.length > 200 ? '...' : ''));
+          console.log('📊 Metadata:', {
+            ensembleMode: aiResponse.ensembleMode,
+            modelsUsed: aiResponse.modelsUsed,
+            executionTime: aiResponse.executionTime,
+            tokenCount: aiResponse.tokenCount
+          });
+          console.groupEnd();
+        }
 
-        // Remove the failed message and retry
-        set(state => ({
-          messages: state.messages.filter(m => m.id !== messageId)
+        // Create assistant message with enhanced metadata structure
+        const assistantChatMessage: IChatMessage = {
+          messageId: assistantMessageId,
+          messageRole: 'assistant',
+          messageText: processedResponseText,
+          messageTimestamp: Date.now(),
+          messageMetadata: {
+            aiModelsUsed: aiResponse.modelsUsed ? Object.keys(aiResponse.modelsUsed) : [],
+            responseTimeMilliseconds: totalResponseTimeMilliseconds,
+            retryAttemptCount: currentRetryAttempt,
+            executionTimeFormatted: aiResponse.executionTime,
+            isEnsembleModeEnabled: aiResponse.ensembleMode,
+            // Memory and context information
+            memoryContextInformation: aiResponse.memoryContext,
+            tokenCount: aiResponse.tokenCount,
+            memoryTokensSaved: aiResponse.memoryTokensSaved,
+            chatSessionId: currentChatSessionId,
+            // Raw API response data for detailed view
+            modelsUsedInResponse: aiResponse.modelsUsed,
+            modelFallbackReasons: aiResponse.fallbackReasons,
+            // Individual model responses for modal display
+            individualModelResponses: aiResponse.individualResponses
+          }
+        };
+
+        // Update store with successful response
+        set(currentState => ({
+          chatMessages: [...currentState.chatMessages, assistantChatMessage],
+          isProcessingMessage: false,
+          currentRetryAttemptCount: 0
         }));
 
-        await get().sendMessage(userMessage.text);
-      },
+        return; // Success - exit retry loop
 
-      initializeSession: () => {
-        set({ sessionId: crypto.randomUUID() });
+      } catch (caughtError) {
+        currentRetryAttempt++;
+        set(() => ({ currentRetryAttemptCount: currentRetryAttempt }));
+
+        // Development-only error logging with enhanced readability
+        if (import.meta.env.DEV) {
+          console.warn(`❌ Chat request failed (attempt ${currentRetryAttempt}/${MAXIMUM_RETRY_ATTEMPTS}):`,
+            caughtError instanceof Error ? caughtError.message : 'Unknown error');
+        }
+
+        if (currentRetryAttempt > MAXIMUM_RETRY_ATTEMPTS) {
+          // Final failure - create user-friendly error message
+          const userFriendlyErrorMessage = caughtError instanceof Error
+            ? caughtError.message
+            : 'An unexpected error occurred';
+
+          const errorChatMessage: IChatMessage = {
+            messageId: nanoid(),
+            messageRole: 'error',
+            messageText: `Unable to get response: ${userFriendlyErrorMessage}. Please try again.`,
+            messageTimestamp: Date.now(),
+            messageMetadata: {
+              retryAttemptCount: currentRetryAttempt - 1,
+              totalProcessingTimeMilliseconds: Date.now() - messageProcessingStartTime,
+              errorType: caughtError instanceof Error ? caughtError.name : 'Unknown'
+            }
+          };
+
+          set(currentState => ({
+            chatMessages: [...currentState.chatMessages, errorChatMessage],
+            isProcessingMessage: false,
+            currentRetryAttemptCount: 0
+          }));
+        } else {
+          // Wait before retry attempt
+          await waitForMilliseconds(RETRY_DELAY_MILLISECONDS);
+        }
       }
+    }
+  },
+      },
+
+  clearAllChatMessages: () => {
+    set({
+      chatMessages: [],
+      currentChatSessionId: crypto.randomUUID() // Create new session when clearing
+    });
+  },
+
+  deleteSpecificMessage: (messageId: string) => {
+    set(currentState => ({
+      chatMessages: currentState.chatMessages.filter(message => message.messageId !== messageId)
     }));
+  },
+
+  retryFailedMessage: async (messageId: string) => {
+    const currentState = get();
+    const messageIndex = currentState.chatMessages.findIndex(message => message.messageId === messageId);
+
+    if (messageIndex === -1) return;
+
+    // Find the user message that preceded this error/assistant message
+    let precedingUserMessage: IChatMessage | null = null;
+    for (let i = messageIndex - 1; i >= 0; i--) {
+      if (currentState.chatMessages[i].messageRole === 'user') {
+        precedingUserMessage = currentState.chatMessages[i];
+        break;
+      }
+    }
+
+    if (!precedingUserMessage) return;
+
+    // Remove the failed message and retry with original user input
+    set(currentState => ({
+      chatMessages: currentState.chatMessages.filter(message => message.messageId !== messageId)
+    }));
+
+    await get().sendUserMessage(precedingUserMessage.messageText);
+  },
+
+  initializeNewChatSession: () => {
+    set({ currentChatSessionId: crypto.randomUUID() });
+  }
+}));
