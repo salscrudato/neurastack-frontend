@@ -10,12 +10,12 @@
 // ============================================================================
 
 /**
- * Create a lazy-loaded component with better error handling
+ * Create a lazy-loaded component with better error handling and type safety
  */
-export function createLazyComponent<T extends React.ComponentType<any>>(
-  importFn: () => Promise<{ default: T }>
-) {
-  return React.lazy(importFn);
+export function createLazyComponent<TComponentProps = Record<string, unknown>>(
+  importFunction: () => Promise<{ default: React.ComponentType<TComponentProps> }>
+): React.LazyExoticComponent<React.ComponentType<TComponentProps>> {
+  return React.lazy(importFunction);
 }
 
 // ============================================================================
@@ -23,47 +23,55 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
 // ============================================================================
 
 /**
- * Debounce function for performance optimization
+ * Debounce function for performance optimization with enhanced type safety
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number,
-  immediate = false
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
-  
-  return function executedFunction(...args: Parameters<T>) {
-    const later = () => {
-      timeout = null;
-      if (!immediate) func(...args);
+export function createDebouncedFunction<TArgs extends unknown[], TReturn>(
+  originalFunction: (...args: TArgs) => TReturn,
+  waitTimeMilliseconds: number,
+  shouldExecuteImmediately = false
+): (...args: TArgs) => void {
+  let timeoutHandle: NodeJS.Timeout | null = null;
+
+  return function debouncedExecutionFunction(...functionArguments: TArgs) {
+    const delayedExecution = () => {
+      timeoutHandle = null;
+      if (!shouldExecuteImmediately) originalFunction(...functionArguments);
     };
-    
-    const callNow = immediate && !timeout;
-    
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    
-    if (callNow) func(...args);
+
+    const shouldCallImmediately = shouldExecuteImmediately && !timeoutHandle;
+
+    if (timeoutHandle) clearTimeout(timeoutHandle);
+    timeoutHandle = setTimeout(delayedExecution, waitTimeMilliseconds);
+
+    if (shouldCallImmediately) originalFunction(...functionArguments);
   };
 }
 
-/**
- * Throttle function for performance optimization
- */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle: boolean;
+// Backward compatibility alias
+export const debounce = createDebouncedFunction;
 
-  return function executedFunction(this: any, ...args: Parameters<T>) {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+/**
+ * Throttle function for performance optimization with enhanced type safety
+ */
+export function createThrottledFunction<TArgs extends unknown[], TReturn>(
+  originalFunction: (...args: TArgs) => TReturn,
+  limitTimeMilliseconds: number
+): (...args: TArgs) => void {
+  let isCurrentlyThrottled = false;
+
+  return function throttledExecutionFunction(...functionArguments: TArgs) {
+    if (!isCurrentlyThrottled) {
+      originalFunction(...functionArguments);
+      isCurrentlyThrottled = true;
+      setTimeout(() => {
+        isCurrentlyThrottled = false;
+      }, limitTimeMilliseconds);
     }
   };
 }
+
+// Backward compatibility alias
+export const throttle = createThrottledFunction;
 
 // ============================================================================
 // Component Optimization

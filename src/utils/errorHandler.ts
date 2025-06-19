@@ -1,36 +1,25 @@
 /**
  * Comprehensive Error Handling Utilities
- * 
+ *
  * Provides centralized error handling, logging, and user-friendly error messages
- * for the NeuraStack application.
+ * for the NeuraStack application. Implements human-readable naming conventions
+ * and type-safe error management.
  */
 
-export interface ErrorContext {
-  component?: string;
-  action?: string;
-  userId?: string;
-  sessionId?: string;
-  timestamp?: number;
-  metadata?: Record<string, any>;
-}
+import type { IErrorContext, IErrorInfo } from '../types/common';
 
-export interface ErrorInfo {
-  type: 'network' | 'firebase' | 'api' | 'validation' | 'unknown';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  userMessage: string;
-  technicalMessage: string;
-  shouldRetry: boolean;
-  retryDelay?: number;
-}
+// Re-export types for backward compatibility
+export type { IErrorContext as ErrorContext, IErrorInfo as ErrorInfo };
 
 /**
  * Analyze an error and return structured error information
+ * Uses human-readable function naming and comprehensive error categorization
  */
-export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo {
-  const timestamp = Date.now();
-  
-  // Default error info
-  let errorInfo: ErrorInfo = {
+export function analyzeApplicationError(error: unknown, context?: IErrorContext): IErrorInfo {
+  const currentTimestamp = Date.now();
+
+  // Default error information with human-readable structure
+  let errorInformation: IErrorInfo = {
     type: 'unknown',
     severity: 'medium',
     userMessage: 'Something went wrong. Please try again.',
@@ -40,11 +29,11 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
   };
 
   if (error instanceof Error) {
-    const message = error.message.toLowerCase();
-    
-    // Network errors
-    if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
-      errorInfo = {
+    const errorMessage = error.message.toLowerCase();
+
+    // Network connectivity errors
+    if (errorMessage.includes('network') || errorMessage.includes('fetch') || errorMessage.includes('connection')) {
+      errorInformation = {
         type: 'network',
         severity: 'medium',
         userMessage: 'Network error. Please check your connection and try again.',
@@ -53,10 +42,10 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
         retryDelay: 2000
       };
     }
-    
-    // Firebase errors
-    else if (message.includes('firebase') || message.includes('permission') || message.includes('insufficient')) {
-      errorInfo = {
+
+    // Firebase authentication and database errors
+    else if (errorMessage.includes('firebase') || errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
+      errorInformation = {
         type: 'firebase',
         severity: 'low',
         userMessage: 'Data sync temporarily unavailable. Your data is saved locally.',
@@ -65,9 +54,9 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
       };
     }
     
-    // API errors
-    else if (message.includes('api') || message.includes('timeout') || message.includes('400') || message.includes('500')) {
-      errorInfo = {
+    // API service errors
+    else if (errorMessage.includes('api') || errorMessage.includes('timeout') || errorMessage.includes('400') || errorMessage.includes('500')) {
+      errorInformation = {
         type: 'api',
         severity: 'medium',
         userMessage: 'Service temporarily unavailable. Please try again in a moment.',
@@ -76,10 +65,10 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
         retryDelay: 3000
       };
     }
-    
-    // Validation errors
-    else if (message.includes('validation') || message.includes('invalid') || message.includes('required')) {
-      errorInfo = {
+
+    // Input validation errors
+    else if (errorMessage.includes('validation') || errorMessage.includes('invalid') || errorMessage.includes('required')) {
+      errorInformation = {
         type: 'validation',
         severity: 'low',
         userMessage: 'Please check your input and try again.',
@@ -87,81 +76,83 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
         shouldRetry: false
       };
     }
-    
-    // Update technical message
-    errorInfo.technicalMessage = error.message;
+
+    // Ensure technical message is always set
+    errorInformation.technicalMessage = error.message;
   }
 
-  // Log error for debugging (only in development)
+  // Development-only error logging with enhanced readability
   if (import.meta.env.DEV) {
-    console.group(`🚨 Error Analysis [${errorInfo.type}]`);
+    console.group(`🚨 Error Analysis [${errorInformation.type}]`);
     console.log('📍 Context:', context);
-    console.log('⚠️ Severity:', errorInfo.severity);
-    console.log('👤 User Message:', errorInfo.userMessage);
-    console.log('🔧 Technical:', errorInfo.technicalMessage);
-    console.log('🔄 Should Retry:', errorInfo.shouldRetry);
-    console.log('⏱️ Timestamp:', new Date(timestamp).toISOString());
+    console.log('⚠️ Severity:', errorInformation.severity);
+    console.log('👤 User Message:', errorInformation.userMessage);
+    console.log('🔧 Technical:', errorInformation.technicalMessage);
+    console.log('🔄 Should Retry:', errorInformation.shouldRetry);
+    console.log('⏱️ Timestamp:', new Date(currentTimestamp).toISOString());
     if (error instanceof Error && error.stack) {
       console.log('📚 Stack:', error.stack);
     }
     console.groupEnd();
   }
 
-  return errorInfo;
+  return errorInformation;
 }
 
 /**
  * Handle errors gracefully with optional retry logic
+ * Implements human-readable function naming and comprehensive error handling
  */
-export async function handleErrorGracefully<T>(
-  operation: () => Promise<T>,
-  context?: ErrorContext,
-  maxRetries: number = 2
-): Promise<{ success: boolean; data?: T; error?: ErrorInfo }> {
-  let lastError: unknown;
-  
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+export async function handleAsynchronousOperationWithRetry<T>(
+  asyncOperation: () => Promise<T>,
+  errorContext?: IErrorContext,
+  maximumRetryAttempts: number = 2
+): Promise<{ success: boolean; data?: T; error?: IErrorInfo }> {
+  let lastEncounteredError: unknown;
+
+  for (let currentAttempt = 0; currentAttempt <= maximumRetryAttempts; currentAttempt++) {
     try {
-      const data = await operation();
-      return { success: true, data };
-    } catch (error) {
-      lastError = error;
-      const errorInfo = analyzeError(error, context);
-      
-      // Don't retry if error type shouldn't be retried
-      if (!errorInfo.shouldRetry || attempt === maxRetries) {
-        return { success: false, error: errorInfo };
+      const operationResult = await asyncOperation();
+      return { success: true, data: operationResult };
+    } catch (caughtError) {
+      lastEncounteredError = caughtError;
+      const analyzedErrorInfo = analyzeApplicationError(caughtError, errorContext);
+
+      // Skip retry if error type shouldn't be retried or max attempts reached
+      if (!analyzedErrorInfo.shouldRetry || currentAttempt === maximumRetryAttempts) {
+        return { success: false, error: analyzedErrorInfo };
       }
-      
-      // Wait before retry
-      if (errorInfo.retryDelay) {
-        await new Promise(resolve => setTimeout(resolve, errorInfo.retryDelay));
+
+      // Wait before retry attempt
+      if (analyzedErrorInfo.retryDelay) {
+        await new Promise(resolve => setTimeout(resolve, analyzedErrorInfo.retryDelay));
       }
     }
   }
-  
-  // This should never be reached, but just in case
-  const errorInfo = analyzeError(lastError, context);
-  return { success: false, error: errorInfo };
+
+  // Fallback error handling (should never be reached)
+  const fallbackErrorInfo = analyzeApplicationError(lastEncounteredError, errorContext);
+  return { success: false, error: fallbackErrorInfo };
 }
 
 /**
- * Create a user-friendly error message for toasts
+ * Create a user-friendly error message for toast notifications
+ * Uses human-readable naming and comprehensive error categorization
  */
-export function createErrorToast(error: unknown, context?: ErrorContext) {
-  const errorInfo = analyzeError(error, context);
-  
+export function createUserFriendlyErrorToast(error: unknown, errorContext?: IErrorContext) {
+  const analyzedErrorInfo = analyzeApplicationError(error, errorContext);
+
   return {
-    title: getErrorTitle(errorInfo.type),
-    description: errorInfo.userMessage,
-    status: getErrorStatus(errorInfo.severity),
-    duration: getErrorDuration(errorInfo.severity),
+    title: generateErrorTitle(analyzedErrorInfo.type),
+    description: analyzedErrorInfo.userMessage,
+    status: determineErrorStatus(analyzedErrorInfo.severity),
+    duration: calculateErrorDuration(analyzedErrorInfo.severity),
     isClosable: true
   };
 }
 
-function getErrorTitle(type: ErrorInfo['type']): string {
-  switch (type) {
+function generateErrorTitle(errorType: IErrorInfo['type']): string {
+  switch (errorType) {
     case 'network':
       return 'Connection Issue';
     case 'firebase':
@@ -175,8 +166,8 @@ function getErrorTitle(type: ErrorInfo['type']): string {
   }
 }
 
-function getErrorStatus(severity: ErrorInfo['severity']): 'error' | 'warning' | 'info' {
-  switch (severity) {
+function determineErrorStatus(errorSeverity: IErrorInfo['severity']): 'error' | 'warning' | 'info' {
+  switch (errorSeverity) {
     case 'critical':
     case 'high':
       return 'error';
@@ -189,8 +180,8 @@ function getErrorStatus(severity: ErrorInfo['severity']): 'error' | 'warning' | 
   }
 }
 
-function getErrorDuration(severity: ErrorInfo['severity']): number {
-  switch (severity) {
+function calculateErrorDuration(errorSeverity: IErrorInfo['severity']): number {
+  switch (errorSeverity) {
     case 'critical':
       return 8000;
     case 'high':
@@ -206,15 +197,16 @@ function getErrorDuration(severity: ErrorInfo['severity']): number {
 
 /**
  * Silently handle errors that shouldn't be shown to users
+ * Implements comprehensive logging for development debugging
  */
-export function handleSilentError(error: unknown, context?: ErrorContext): void {
-  const errorInfo = analyzeError(error, context);
-  
-  // Only log in development
+export function handleSilentApplicationError(error: unknown, errorContext?: IErrorContext): void {
+  const analyzedErrorInfo = analyzeApplicationError(error, errorContext);
+
+  // Development-only logging for debugging purposes
   if (import.meta.env.DEV) {
-    console.warn(`🔇 Silent error [${errorInfo.type}]:`, errorInfo.technicalMessage);
+    console.warn(`🔇 Silent error [${analyzedErrorInfo.type}]:`, analyzedErrorInfo.technicalMessage);
   }
-  
-  // Could send to error tracking service here
-  // trackError(errorInfo, context);
+
+  // Future enhancement: Send to error tracking service
+  // trackErrorToAnalyticsService(analyzedErrorInfo, errorContext);
 }
