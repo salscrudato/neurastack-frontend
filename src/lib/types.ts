@@ -570,10 +570,22 @@ export interface WorkoutPlan {
 
   // Enhanced fields for AI optimization
   focusAreas?: string[];
-  workoutType?: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed';
+  workoutType?: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core';
   actualDuration?: number; // actual time taken to complete
   completionRate?: number; // percentage of exercises completed
   coachingNotes?: string;
+
+  // Performance tracking
+  caloriesBurned?: number;
+  averageHeartRate?: number;
+  peakHeartRate?: number;
+  perceivedExertion?: number; // 1-10 RPE scale
+
+  // Workout quality metrics
+  formQuality?: number; // 1-5 scale
+  enjoymentRating?: number; // 1-5 scale
+  difficultyRating?: number; // 1-5 scale
+  energyLevel?: 'low' | 'moderate' | 'high';
 
   // AI generation context
   generationContext?: {
@@ -581,17 +593,32 @@ export interface WorkoutPlan {
     aiModelsUsed: string[];
     generationTime: number;
     sessionId: string;
+    version: string; // Track workout generation version
+    adaptations?: string[]; // Track what adaptations were made
   };
 
   // Workout structure
   warmUp?: {
     duration: number;
-    exercises: string[];
+    exercises: Exercise[];
+    completed?: boolean;
   };
   coolDown?: {
     duration: number;
-    exercises: string[];
+    exercises: Exercise[];
+    completed?: boolean;
   };
+
+  // Workout state management
+  isPaused?: boolean;
+  pausedAt?: Date;
+  resumedAt?: Date;
+  totalPauseTime?: number; // in seconds
+
+  // Social and sharing
+  isPublic?: boolean;
+  tags?: string[];
+  notes?: string; // User notes about the workout
 }
 
 export interface Exercise {
@@ -610,6 +637,37 @@ export interface Exercise {
   progressionNotes?: string[];
   modifications?: string[];
   safetyNotes?: string;
+
+  // Exercise execution tracking
+  actualSets?: number;
+  actualReps?: number[];
+  actualDuration?: number;
+  actualRestTime?: number[];
+  completed?: boolean;
+  skipped?: boolean;
+  modified?: boolean;
+
+  // Performance metrics
+  weight?: number[]; // Weight used for each set
+  rpe?: number[]; // Rate of perceived exertion for each set
+  formRating?: number; // 1-5 scale for form quality
+
+  // Exercise metadata
+  category?: 'compound' | 'isolation' | 'cardio' | 'flexibility' | 'core';
+  primaryMuscle?: string;
+  secondaryMuscles?: string[];
+  movementPattern?: 'push' | 'pull' | 'squat' | 'hinge' | 'lunge' | 'carry' | 'rotation';
+
+  // Accessibility and adaptations
+  difficultyLevel?: number; // 1-10 scale
+  alternatives?: Exercise[]; // Alternative exercises
+  prerequisites?: string[]; // Skills/equipment needed
+  contraindications?: string[]; // When to avoid this exercise
+
+  // Media and guidance
+  videoUrl?: string;
+  imageUrl?: string;
+  audioInstructions?: string;
 }
 
 // ============================================================================
@@ -691,4 +749,137 @@ export interface WorkoutAPIResponse {
   error?: string;
   timestamp?: string;
   correlationId?: string;
+}
+
+// ============================================================================
+// Enhanced Workout Session Management
+// ============================================================================
+
+export interface WorkoutSession {
+  id: string;
+  workoutPlanId: string;
+  userId: string;
+  startTime: Date;
+  endTime?: Date;
+  status: 'not_started' | 'in_progress' | 'paused' | 'completed' | 'abandoned';
+
+  // Session progress
+  currentExerciseIndex: number;
+  completedExercises: number[];
+  skippedExercises: number[];
+
+  // Timing data
+  totalDuration: number; // in seconds
+  activeTime: number; // time actually exercising
+  restTime: number; // time resting
+  pauseTime: number; // time paused
+
+  // Performance data
+  heartRateData?: HeartRateReading[];
+  caloriesBurned?: number;
+  averageRPE?: number;
+
+  // Environment and context
+  location?: 'home' | 'gym' | 'outdoor' | 'other';
+  weather?: string; // for outdoor workouts
+  equipment?: string[];
+
+  // Session notes and feedback
+  notes?: string;
+  mood?: 'energetic' | 'tired' | 'motivated' | 'stressed' | 'neutral';
+
+  // Recovery and adaptation data
+  sleepQuality?: number; // 1-5 scale from previous night
+  stressLevel?: number; // 1-5 scale
+  hydrationLevel?: number; // 1-5 scale
+  nutritionTiming?: 'fasted' | 'pre_workout_meal' | 'post_meal';
+}
+
+export interface HeartRateReading {
+  timestamp: Date;
+  bpm: number;
+  exerciseIndex?: number;
+}
+
+export interface WorkoutAdaptation {
+  id: string;
+  workoutPlanId: string;
+  userId: string;
+  adaptationType: 'difficulty_increase' | 'difficulty_decrease' | 'exercise_swap' | 'duration_change' | 'rest_adjustment';
+  reason: string;
+  originalValue: any;
+  adaptedValue: any;
+  confidence: number; // 0-1 scale
+  appliedAt: Date;
+  effectiveFrom: Date;
+}
+
+export interface WorkoutRecommendation {
+  id: string;
+  userId: string;
+  type: 'workout_type' | 'exercise_modification' | 'rest_day' | 'intensity_adjustment' | 'nutrition' | 'recovery';
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  confidence: number; // 0-1 scale
+  basedOn: string[]; // What data this recommendation is based on
+  actionable: boolean;
+  expiresAt?: Date;
+  createdAt: Date;
+}
+
+// ============================================================================
+// Progressive Overload and Adaptation
+// ============================================================================
+
+export interface ProgressionRule {
+  exerciseName: string;
+  metric: 'weight' | 'reps' | 'sets' | 'duration' | 'rest_time';
+  condition: 'consecutive_completions' | 'rpe_threshold' | 'time_based';
+  threshold: number;
+  adjustment: {
+    type: 'percentage' | 'absolute' | 'step';
+    value: number;
+  };
+  maxAdjustment?: number;
+  minAdjustment?: number;
+}
+
+export interface UserProgressMetrics {
+  userId: string;
+  exerciseName: string;
+
+  // Performance tracking
+  personalRecords: {
+    maxWeight?: number;
+    maxReps?: number;
+    maxDuration?: number;
+    bestForm?: number;
+  };
+
+  // Progression tracking
+  currentLevel: {
+    weight?: number;
+    reps?: number;
+    sets?: number;
+    duration?: number;
+  };
+
+  // Adaptation history
+  progressionHistory: {
+    date: Date;
+    metric: string;
+    oldValue: number;
+    newValue: number;
+    reason: string;
+  }[];
+
+  // Performance trends
+  trends: {
+    strength: 'improving' | 'maintaining' | 'declining';
+    endurance: 'improving' | 'maintaining' | 'declining';
+    consistency: number; // 0-1 scale
+  };
+
+  lastUpdated: Date;
 }
