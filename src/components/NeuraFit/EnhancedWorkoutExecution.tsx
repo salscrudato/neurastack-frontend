@@ -53,14 +53,13 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   onExit
 }: EnhancedWorkoutExecutionProps) {
   const { isMobile, triggerHaptic, workoutConfig } = useMobileOptimization();
-  const {
-    speakExerciseInstructions,
-    speakMotivation,
-    speakSetComplete,
-    speakRestPeriod,
-    speakWorkoutComplete,
-    isEnabled: isVoiceEnabled
-  } = useVoiceCoaching({ enabled: true });
+  // Voice coaching integration - temporarily disabled
+  const speakExerciseInstructions = () => {};
+  const speakMotivation = () => {};
+  const speakSetComplete = () => {};
+  const speakRestPeriod = () => {};
+  const speakWorkoutComplete = () => {};
+  const isVoiceEnabled = false;
   const toast = useToast();
 
   // Session state
@@ -169,7 +168,8 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
           setExerciseTimer(prev => prev + 1);
 
           // Periodic motivation during exercise (every 30 seconds)
-          if (isVoiceEnabled && prev > 0 && prev % 30 === 0) {
+          // Voice coaching disabled for now
+          if (false) {
             speakMotivation();
           }
         }
@@ -234,7 +234,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
     // Voice coaching for workout start
     if (isVoiceEnabled && currentExercise) {
-      speakExerciseInstructions(currentExercise);
+      speakExerciseInstructions();
     }
 
     toast({
@@ -264,7 +264,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
     // Voice coaching for set completion
     if (isVoiceEnabled) {
-      speakSetComplete(newCompletedSets.length, currentExercise.sets);
+      speakSetComplete();
     }
 
     if (newCompletedSets.length >= currentExercise.sets) {
@@ -282,7 +282,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       setIsResting(true);
       // Voice coaching for rest period
       if (isVoiceEnabled) {
-        speakRestPeriod(currentExercise.restTime);
+        speakRestPeriod();
       }
     }
 
@@ -322,7 +322,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         // Voice coaching for next exercise
         if (isVoiceEnabled && nextExercise) {
           setTimeout(() => {
-            speakExerciseInstructions(nextExercise);
+            speakExerciseInstructions();
           }, 1000); // Small delay to let user process the transition
         }
       }

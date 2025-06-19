@@ -535,7 +535,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
     // Build recent workout context - fix object serialization issue
     const recentWorkoutContext = recentWorkouts.length > 0
-      ? ` Previous workout: ${recentWorkouts[0].exercises.slice(0, 3).map(ex => typeof ex === 'string' ? ex : ex.name || 'exercise').join(', ')}.`
+      ? ` Previous workout: ${recentWorkouts[0].exercises.slice(0, 3).map((ex: any) => typeof ex === 'string' ? ex : ex.name || 'exercise').join(', ')}.`
       : '';
 
     // Concise request - avoid redundancy with userMetadata

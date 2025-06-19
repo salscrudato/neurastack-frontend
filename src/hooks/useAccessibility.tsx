@@ -144,7 +144,9 @@ export const useAccessibility = (options: AccessibilityOptions = {}) => {
     state,
     announce,
     focusElement,
-    trapFocus
+    trapFocus,
+    announcePageChanges,
+    reducedMotion
   };
 };
 
