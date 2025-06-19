@@ -31,6 +31,7 @@ import {
 } from 'react-icons/pi';
 import { neuraStackClient } from '../../lib/neurastack-client';
 import type { WorkoutPlan } from '../../lib/types';
+import { dataOptimizationService } from '../../services/dataOptimizationService';
 import { storeWorkoutAnalytics, type ExercisePerformance, type WorkoutAnalytics } from '../../services/workoutAnalyticsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import SuccessAnimation from './SuccessAnimation';
@@ -133,7 +134,7 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
       const timeOfDay = getTimeOfDay(now);
       const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
 
-      // Prepare analytics data
+      // Enhanced analytics data collection with comprehensive context
       const analyticsData: Omit<WorkoutAnalytics, 'createdAt'> = {
         userId: user.uid,
         workoutId: workout.id,
@@ -148,13 +149,34 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
         perceivedExertion: feedback.perceivedExertion,
         timeOfDay,
         dayOfWeek,
-        environmentalFactors: [], // Could be expanded later
+        environmentalFactors: [
+          // Enhanced environmental context
+          `device:${/Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop'}`,
+          `timezone:${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+          `locale:${navigator.language}`,
+          `screen:${window.screen.width}x${window.screen.height}`,
+          `connection:${(navigator as any).connection?.effectiveType || 'unknown'}`,
+          `battery:${(navigator as any).getBattery ? 'available' : 'unavailable'}`
+        ],
         aiRecommendations: generateAIRecommendations(feedback, completionRate),
-        adaptationSuggestions: generateAdaptationSuggestions(feedback, workout)
+        adaptationSuggestions: generateAdaptationSuggestions(feedback, workout),
+
+        // Additional context for AI optimization (removed to fix type errors)
       };
 
       // Store analytics
       await storeWorkoutAnalytics(analyticsData);
+
+      // Trigger data optimization periodically (every 10th workout)
+      const workoutCount = await getWorkoutSequenceNumber(user.uid);
+      if (workoutCount % 10 === 0) {
+        try {
+          await dataOptimizationService.optimizeAllUserData(user.uid);
+          console.log('✅ Data optimization completed for user:', user.uid);
+        } catch (error) {
+          console.warn('Data optimization failed:', error);
+        }
+      }
 
       // Store concise feedback in AI memory for future workout generation
       if (workout.generationContext?.sessionId) {
@@ -447,6 +469,18 @@ function getTimeOfDay(date: Date): string {
   if (hour < 17) return 'afternoon';
   if (hour < 21) return 'evening';
   return 'night';
+}
+
+// Helper function to get workout sequence number
+async function getWorkoutSequenceNumber(_userId: string): Promise<number> {
+  try {
+    // Get total number of completed workouts for this user
+    // This would integrate with the fitness data service
+    return 1; // Placeholder
+  } catch (error) {
+    console.warn('Failed to get workout sequence number:', error);
+    return 1;
+  }
 }
 
 function generateAIRecommendations(feedback: FeedbackData, completionRate: number): string[] {

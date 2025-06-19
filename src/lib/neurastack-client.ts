@@ -5,7 +5,7 @@
  * with full type safety, error handling, and modern features.
  */
 
-import { cacheManager } from './cacheManager';
+// Removed cacheManager import - NO CACHING for fresh API calls
 import type {
     CostEstimateRequest,
     CostEstimateResponse,
@@ -252,7 +252,7 @@ export class NeuraStackClient {
   }
 
   /**
-   * Get memory metrics for a user (with caching)
+   * Get memory metrics for a user (NO CACHING for fresh data)
    */
   async getMemoryMetrics(userId?: string): Promise<MemoryMetrics> {
     const targetUserId = userId || this.config.userId;
@@ -284,13 +284,7 @@ export class NeuraStackClient {
       };
     }
 
-    const cacheKey = `memory-metrics-${targetUserId}`;
-
-    // Try cache first
-    const cached = cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    // NO CACHING - Always fetch fresh memory metrics
 
     try {
       const analyticsResponse = await this.getMemoryAnalytics(targetUserId);
@@ -314,12 +308,7 @@ export class NeuraStackClient {
         }
       };
 
-      // Cache the result for 2 minutes
-      cacheManager.set(cacheKey, result, {
-        ttl: 2 * 60 * 1000,
-        tags: ['api', 'memory', 'metrics']
-      });
-
+      // NO CACHING - Return fresh result
       return result;
     } catch (error) {
       console.warn('Failed to get memory analytics:', error);
@@ -398,27 +387,19 @@ export class NeuraStackClient {
    * Check service health (with caching)
    */
   async healthCheck(): Promise<{ status: string; message: string }> {
-    const cacheKey = 'health-check';
-
-    // Try cache first (short TTL for health checks)
-    const cached = cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
+    // NO CACHING - Always fetch fresh health status
     const result = await this.makeRequest<{ status: string; message: string }>(
       NEURASTACK_ENDPOINTS.HEALTH,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       }
     );
-
-    // Cache for 30 seconds
-    cacheManager.set(cacheKey, result, {
-      ttl: 30 * 1000,
-      tags: ['api', 'health']
-    });
 
     return result;
   }
@@ -520,56 +501,40 @@ export class NeuraStackClient {
    * Get detailed system health check with component status
    */
   async getDetailedHealth(): Promise<DetailedHealthResponse> {
-    const cacheKey = 'detailed-health-check';
-
-    // Try cache first (short TTL for health checks)
-    const cached = cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
+    // NO CACHING - Always fetch fresh detailed health status
     const result = await this.makeRequest<DetailedHealthResponse>(
       NEURASTACK_ENDPOINTS.HEALTH_DETAILED,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       }
     );
-
-    // Cache for 15 seconds
-    cacheManager.set(cacheKey, result, {
-      ttl: 15 * 1000,
-      tags: ['api', 'health', 'detailed']
-    });
 
     return result;
   }
 
   /**
-   * Get comprehensive system metrics
+   * Get comprehensive system metrics (NO CACHING for real-time data)
    */
   async getSystemMetrics(): Promise<MetricsResponse> {
-    const cacheKey = 'system-metrics';
-
-    // Try cache first (short TTL for metrics)
-    const cached = cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
+    // NO CACHING - Always fetch fresh system metrics
     const result = await this.makeRequest<MetricsResponse>(
       NEURASTACK_ENDPOINTS.METRICS,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       }
     );
-
-    // Cache for 30 seconds
-    cacheManager.set(cacheKey, result, {
-      ttl: 30 * 1000,
-      tags: ['api', 'metrics']
-    });
 
     return result;
   }
@@ -578,27 +543,19 @@ export class NeuraStackClient {
    * Get current tier information and available options
    */
   async getTierInfo(): Promise<TierInfoResponse> {
-    const cacheKey = 'tier-info';
-
-    // Try cache first (longer TTL for tier info)
-    const cached = cacheManager.get(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
+    // NO CACHING - Always fetch fresh tier info
     const result = await this.makeRequest<TierInfoResponse>(
       NEURASTACK_ENDPOINTS.TIER_INFO,
       {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
       }
     );
-
-    // Cache for 5 minutes
-    cacheManager.set(cacheKey, result, {
-      ttl: 5 * 60 * 1000,
-      tags: ['api', 'tier']
-    });
 
     return result;
   }
@@ -623,6 +580,7 @@ export class NeuraStackClient {
 
   /**
    * Generate a personalized workout using the dedicated workout API endpoint
+   * NO CACHING - Always makes fresh API calls for workout generation
    */
   async generateWorkout(
     request: WorkoutAPIRequest,
@@ -638,9 +596,15 @@ export class NeuraStackClient {
       headers['X-User-Id'] = userId;
     }
 
-    // Generate correlation ID for request tracking
-    const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Generate correlation ID for request tracking - always unique to prevent caching
+    const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
     headers['X-Correlation-ID'] = correlationId;
+
+    // Add cache-busting headers to ensure fresh API calls
+    headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    headers['Pragma'] = 'no-cache';
+    headers['Expires'] = '0';
+    headers['X-Requested-At'] = new Date().toISOString();
 
     // Log the outgoing workout request (development only)
     if (import.meta.env.DEV) {

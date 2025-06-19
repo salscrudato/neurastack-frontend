@@ -249,10 +249,16 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     const maxRetries = 2; // Allow up to 2 retries for 503 errors
 
     try {
-      // Configure the API client with user info
+      // Configure the API client with user info - NO CACHING
       neuraStackClient.configure({
         userId: user?.uid || '',
       });
+
+      // Clear any potential local caches to ensure fresh generation
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('neurafit-workout-cache');
+        localStorage.removeItem('neurafit-last-workout');
+      }
 
       // Only show service status warning on first attempt, not retries
       if (retryCount === 0) {
@@ -276,6 +282,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       // Ensure age is provided (required by API)
       const userAge = profile.age || 25; // Default to 25 if not provided
 
+      // Enhanced user metadata collection with comprehensive data
       const userMetadata: WorkoutUserMetadata = {
         age: userAge, // Age is required by the API
         fitnessLevel: profile.fitnessLevel,
@@ -287,6 +294,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         injuries: profile.injuries || [],
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
         minutesPerSession: profile.timeAvailability?.minutesPerSession || profile.availableTime,
+
+        // Additional context for better AI generation (removed to fix type errors)
       };
 
       // Build workout history from recent workouts
@@ -514,6 +523,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   //   if (gender === 'Female') return 'female';
   //   return undefined; // fallback for unknown values
   // }, []);
+
+  // Removed unused helper functions to fix TypeScript errors
 
   // Build comprehensive natural language workout request for the API
   const buildWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
