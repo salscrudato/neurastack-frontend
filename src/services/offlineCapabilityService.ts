@@ -1,28 +1,29 @@
-import { openDB, IDBPDatabase } from 'idb';
-import type { WorkoutPlan, WorkoutSession, FitnessProfile, Exercise } from '../lib/types';
+import { openDB, type IDBPDatabase } from 'idb';
+import type { FitnessProfile, WorkoutPlan, WorkoutSession } from '../lib/types';
 
 /**
  * Enhanced Offline Capability Service
  * Provides comprehensive offline functionality for the NeuraFit application
  */
 
-interface OfflineData {
-  workoutPlans: WorkoutPlan[];
-  workoutSessions: WorkoutSession[];
-  fitnessProfile: FitnessProfile;
-  exerciseLibrary: Exercise[];
-  pendingSync: {
-    workoutPlans: WorkoutPlan[];
-    workoutSessions: WorkoutSession[];
-    profileUpdates: Partial<FitnessProfile>[];
-  };
-  lastSync: Date;
-}
+// Interface for offline data structure (for future use)
+// interface OfflineData {
+//   workoutPlans: WorkoutPlan[];
+//   workoutSessions: WorkoutSession[];
+//   fitnessProfile: FitnessProfile;
+//   exerciseLibrary: Exercise[];
+//   pendingSync: {
+//     workoutPlans: WorkoutPlan[];
+//     workoutSessions: WorkoutSession[];
+//     profileUpdates: Partial<FitnessProfile>[];
+//   };
+//   lastSync: Date;
+// }
 
 export class OfflineCapabilityService {
   private db: IDBPDatabase | null = null;
   private isOnline = navigator.onLine;
-  private syncQueue: Array<{ type: string; data: any; timestamp: Date }> = [];
+  // private syncQueue: Array<{ type: string; data: any; timestamp: Date }> = [];
   private fallbackWorkouts: WorkoutPlan[] = [];
 
   constructor() {

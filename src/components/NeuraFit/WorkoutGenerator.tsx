@@ -342,7 +342,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             userContext: { userMetadata, workoutHistory, workoutRequest },
             aiModelsUsed: [response.data.metadata.model],
             generationTime: performance.now() - startTime,
-            sessionId: response.correlationId || 'unknown'
+            sessionId: response.correlationId || 'unknown',
+            version: '1.0.0'
           }
         };
 
@@ -944,7 +945,8 @@ Please structure the workout with specific exercises, sets, reps, rest periods, 
             userContext: { userMetadata, workoutHistory: [], workoutRequest },
             aiModelsUsed: [response.data.metadata.model],
             generationTime: performance.now(),
-            sessionId: response.correlationId || 'unknown'
+            sessionId: response.correlationId || 'unknown',
+            version: '1.0.0'
           }
         };
 

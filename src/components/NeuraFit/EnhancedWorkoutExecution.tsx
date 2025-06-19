@@ -1,53 +1,45 @@
 import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  CircularProgress,
-  CircularProgressLabel,
-  Flex,
-  HStack,
-  Icon,
-  Progress,
-  Text,
-  useColorModeValue,
-  useToast,
-  VStack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  Textarea,
-  Badge,
-  Divider
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    CircularProgress,
+    CircularProgressLabel,
+    Divider,
+    HStack,
+    Icon,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Progress,
+    Slider,
+    SliderFilledTrack,
+    SliderThumb,
+    SliderTrack,
+    Text,
+    Textarea,
+    useColorModeValue,
+    useToast,
+    VStack
 } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { memo, useCallback, useEffect, useState, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  PiPlayBold,
-  PiPauseBold,
-  PiStopBold,
-  PiSkipForwardBold,
-  PiHeartBold,
-  PiTimerBold,
-  PiTargetBold,
-  PiCheckBold,
-  PiWarningBold,
-  PiSwapBold,
-  PiNoteBold
+    PiCheckBold,
+    PiHeartBold,
+    PiPauseBold,
+    PiPlayBold,
+    PiSkipForwardBold,
+    PiStopBold,
+    PiTargetBold,
+    PiTimerBold,
+    PiWarningBold
 } from 'react-icons/pi';
-import type { WorkoutPlan, Exercise, WorkoutSession } from '../../lib/types';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
-import { workoutSessionManager } from '../../services/workoutSessionManager';
-import { workoutAdaptationEngine } from '../../services/workoutAdaptationEngine';
-
-const MotionBox = motion(Box);
+import type { WorkoutPlan, WorkoutSession } from '../../lib/types';
 
 interface EnhancedWorkoutExecutionProps {
   workoutPlan: WorkoutPlan;
@@ -107,23 +99,23 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
   // Initialize session
   useEffect(() => {
-    const initializeSession = async () => {
-      try {
-        const session = await workoutSessionManager.startSession(workoutPlan, {
-          location: 'home', // Could be determined by user input
-          mood: 'motivated' // Could be determined by user input
-        });
-        setCurrentSession(session);
-      } catch (error) {
-        console.error('Failed to initialize workout session:', error);
-        toast({
-          title: 'Session Error',
-          description: 'Failed to start workout session. Some features may not work.',
-          status: 'warning',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
+    const initializeSession = () => {
+      // Create a basic session object for tracking
+      const session: WorkoutSession = {
+        id: `session_${Date.now()}`,
+        workoutPlanId: workoutPlan.id,
+        userId: 'current_user',
+        startTime: new Date(),
+        status: 'in_progress',
+        currentExerciseIndex: 0,
+        completedExercises: [],
+        skippedExercises: [],
+        totalDuration: 0,
+        activeTime: 0,
+        restTime: 0,
+        pauseTime: 0
+      };
+      setCurrentSession(session);
     };
 
     initializeSession();
@@ -133,7 +125,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       if (timerRef.current) clearInterval(timerRef.current);
       if (heartRateRef.current) clearInterval(heartRateRef.current);
     };
-  }, [workoutPlan, toast]);
+  }, [workoutPlan]);
 
   // Timer management
   useEffect(() => {
@@ -221,21 +213,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   }, [triggerHaptic, isMobile, workoutConfig, toast]);
 
   // Pause/Resume workout
-  const togglePause = useCallback(async () => {
+  const togglePause = useCallback(() => {
     if (isPaused) {
       setIsPaused(false);
-      if (currentSession) {
-        await workoutSessionManager.resumeSession();
-      }
       triggerHaptic('light');
     } else {
       setIsPaused(true);
-      if (currentSession) {
-        await workoutSessionManager.pauseSession();
-      }
       triggerHaptic('medium');
     }
-  }, [isPaused, currentSession, triggerHaptic]);
+  }, [isPaused, triggerHaptic]);
 
   // Complete current set
   const completeSet = useCallback(() => {
@@ -257,22 +243,17 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   }, [completedSets, currentSetIndex, currentExercise, triggerHaptic]);
 
   // Complete exercise
-  const completeExercise = useCallback(async () => {
+  const completeExercise = useCallback(() => {
     if (!currentSession) return;
 
     try {
-      // Record exercise performance
-      await workoutSessionManager.completeExercise(currentExerciseIndex, {
-        actualSets: completedSets.length,
-        actualReps: completedSets.map(() => currentExercise.reps), // Simplified
-        rpe: [rpeRating],
-        formRating,
-        notes: exerciseNotes
-      });
-
       if (isLastExercise) {
         // Complete entire workout
-        const completedSession = await workoutSessionManager.completeSession();
+        const completedSession = {
+          ...currentSession,
+          status: 'completed' as const,
+          endTime: new Date()
+        };
         onComplete(completedSession);
       } else {
         // Move to next exercise
@@ -284,7 +265,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         setRpeRating(5);
         setFormRating(5);
       }
-      
+
       setShowPerformanceModal(false);
       triggerHaptic('success');
     } catch (error) {
@@ -299,12 +280,6 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     }
   }, [
     currentSession,
-    currentExerciseIndex,
-    completedSets,
-    currentExercise,
-    rpeRating,
-    formRating,
-    exerciseNotes,
     isLastExercise,
     onComplete,
     triggerHaptic,
@@ -312,14 +287,16 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   ]);
 
   // Skip exercise
-  const skipExercise = useCallback(async () => {
+  const skipExercise = useCallback(() => {
     if (!currentSession) return;
 
     try {
-      await workoutSessionManager.skipExercise(currentExerciseIndex, 'User skipped');
-      
       if (isLastExercise) {
-        const completedSession = await workoutSessionManager.completeSession();
+        const completedSession = {
+          ...currentSession,
+          status: 'completed' as const,
+          endTime: new Date()
+        };
         onComplete(completedSession);
       } else {
         setCurrentExerciseIndex(prev => prev + 1);
@@ -327,20 +304,17 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         setCompletedSets([]);
         setExerciseTimer(0);
       }
-      
+
       triggerHaptic('light');
     } catch (error) {
       console.error('Failed to skip exercise:', error);
     }
-  }, [currentSession, currentExerciseIndex, isLastExercise, onComplete, triggerHaptic]);
+  }, [currentSession, isLastExercise, onComplete, triggerHaptic]);
 
   // Exit workout
-  const exitWorkout = useCallback(async () => {
-    if (currentSession) {
-      await workoutSessionManager.abandonSession('User exited');
-    }
+  const exitWorkout = useCallback(() => {
     onExit();
-  }, [currentSession, onExit]);
+  }, [onExit]);
 
   // Format time display
   const formatTime = (seconds: number): string => {

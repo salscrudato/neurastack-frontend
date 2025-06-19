@@ -38,7 +38,7 @@ export class PerformanceMonitoringService {
   ];
   
   private observer: PerformanceObserver | null = null;
-  private navigationStartTime = performance.now();
+  // private navigationStartTime = performance.now();
 
   constructor() {
     this.initializePerformanceObserver();
@@ -89,10 +89,10 @@ export class PerformanceMonitoringService {
         const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
         
         if (navigation) {
-          this.recordMetric('page_load_time', navigation.loadEventEnd - navigation.navigationStart);
-          this.recordMetric('dom_content_loaded', navigation.domContentLoadedEventEnd - navigation.navigationStart);
-          this.recordMetric('time_to_first_byte', navigation.responseStart - navigation.navigationStart);
-          this.recordMetric('dom_interactive', navigation.domInteractive - navigation.navigationStart);
+          this.recordMetric('page_load_time', navigation.loadEventEnd - navigation.fetchStart);
+          this.recordMetric('dom_content_loaded', navigation.domContentLoadedEventEnd - navigation.fetchStart);
+          this.recordMetric('time_to_first_byte', navigation.responseStart - navigation.fetchStart);
+          this.recordMetric('dom_interactive', navigation.domInteractive - navigation.fetchStart);
         }
       }, 0);
     });
@@ -125,7 +125,8 @@ export class PerformanceMonitoringService {
     if ('PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          const fid = entry.processingStart - entry.startTime;
+          const fidEntry = entry as any; // Type assertion for FID entry
+          const fid = fidEntry.processingStart - entry.startTime;
           this.recordMetric('FID', fid);
           this.checkPerformanceBudget('FID', fid);
         }
@@ -220,8 +221,8 @@ export class PerformanceMonitoringService {
       tcp_connection: entry.connectEnd - entry.connectStart,
       ssl_negotiation: entry.connectEnd - entry.secureConnectionStart,
       request_response: entry.responseEnd - entry.requestStart,
-      dom_processing: entry.domComplete - entry.domLoading,
-      page_load: entry.loadEventEnd - entry.navigationStart
+      dom_processing: entry.domComplete - entry.domContentLoadedEventStart,
+      page_load: entry.loadEventEnd - entry.fetchStart
     };
 
     Object.entries(metrics).forEach(([name, value]) => {
