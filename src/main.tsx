@@ -62,8 +62,8 @@ const router = createBrowserRouter([
     v7_relativeSplatPath: true,
     v7_normalizeFormMethod: true,
     v7_partialHydration: true,
-    v7_skipActionErrorRevalidation: true
-    // v7_startTransition: true // Will be available in React Router v7
+    v7_skipActionErrorRevalidation: true,
+    v7_startTransition: true // Enable React 18 startTransition for state updates
   }
 });
 

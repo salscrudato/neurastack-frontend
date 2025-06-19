@@ -1,10 +1,9 @@
-import { Box, Text, VStack, useColorModeValue, Icon } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Box, Icon, Text, VStack, useColorModeValue } from '@chakra-ui/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { PiCheckCircleBold } from 'react-icons/pi';
 
 const MotionBox = motion(Box);
-const MotionIcon = motion(Icon);
 
 interface SuccessAnimationProps {
   isVisible: boolean;
@@ -64,22 +63,19 @@ const SuccessAnimation = memo(function SuccessAnimation({
           <VStack spacing={6} align="center">
             {/* Success Icon with Animation */}
             <MotionBox
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ 
+              initial={{ scale: 0, rotate: -180, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={{
                 delay: 0.2,
                 duration: 0.6,
                 type: "spring",
                 stiffness: 200
               }}
             >
-              <MotionIcon
+              <Icon
                 as={PiCheckCircleBold}
                 boxSize={{ base: 16, md: 20 }}
                 color="green.500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
               />
             </MotionBox>
 

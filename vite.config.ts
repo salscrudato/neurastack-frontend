@@ -75,6 +75,7 @@ export default defineConfig({
         enabled: false, // Disable PWA plugin during development to prevent service worker issues
         type: "module"
       },
+      disable: process.env.NODE_ENV === 'development', // Completely disable PWA in development
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         cleanupOutdatedCaches: true,
@@ -168,23 +169,35 @@ export default defineConfig({
           // Core React chunk (most stable)
           vendor: ['react', 'react-dom'],
 
-          // UI library chunk (includes framer-motion to ensure React dependency)
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion', 'styled-components'],
+          // Split UI libraries for better caching and smaller chunks
+          'chakra-core': ['@chakra-ui/react'],
+          'chakra-theme': ['@chakra-ui/theme-tools'],
+          'emotion': ['@emotion/react', '@emotion/styled'],
+          'animations': ['framer-motion'],
+          'styled': ['styled-components'],
 
           // State management and utilities
           state: ['zustand'],
 
-          // Firebase services
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          // Split Firebase into smaller chunks for better loading
+          'firebase-core': ['firebase/app'],
+          'firebase-auth': ['firebase/auth'],
+          'firebase-firestore': ['firebase/firestore'],
 
           // Icons (separate for better caching)
-          icons: ['react-icons/pi'],
+          icons: ['react-icons/pi', '@chakra-ui/icons', '@heroicons/react'],
 
           // Markdown rendering (used in chat)
           markdown: ['react-markdown', 'remark-gfm'],
 
           // Router (separate for better caching)
           router: ['react-router-dom'],
+
+          // Date utilities
+          'date-utils': ['date-fns'],
+
+          // HTTP client
+          'http': ['axios'],
         },
       },
     },
@@ -211,6 +224,6 @@ export default defineConfig({
       'framer-motion',
       'styled-components'
     ],
-    exclude: ['firebase'], // Firebase works better when not pre-bundled
+    exclude: [], // Allow all dependencies to be pre-bundled for better performance
   },
 });

@@ -1,0 +1,170 @@
+version: '3.8'
+
+services:
+  # Frontend application
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-dev}
+        VITE_BUILD_TIME: ${VITE_BUILD_TIME:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_FIREBASE_CONFIG: ${VITE_FIREBASE_CONFIG}
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - neurastack-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development server (alternative to production build)
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
+      - VITE_FIREBASE_CONFIG=${VITE_FIREBASE_CONFIG}
+    networks:
+      - neurastack-network
+    profiles:
+      - dev
+
+  # Nginx reverse proxy (for production-like setup)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+    networks:
+      - neurastack-network
+    profiles:
+      - production
+
+  # Redis for caching (if needed)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - neurastack-network
+    profiles:
+      - cache
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - neurastack-network
+    profiles:
+      - monitoring
+
+  # Grafana for metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - neurastack-network
+    profiles:
+      - monitoring
+
+  # Lighthouse CI for performance monitoring
+  lighthouse:
+    image: patrickhulce/lhci-server:latest
+    ports:
+      - "9001:9001"
+    environment:
+      - LHCI_STORAGE__SQL__DIALECT=sqlite
+      - LHCI_STORAGE__SQL__DATABASE_PATH=/data/lhci.db
+    volumes:
+      - lighthouse-data:/data
+    networks:
+      - neurastack-network
+    profiles:
+      - performance
+
+  # Testing environment
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - CI=true
+    networks:
+      - neurastack-network
+    profiles:
+      - test
+    command: npm run test:ci
+
+  # E2E testing with Playwright
+  e2e-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
+      - BASE_URL=http://frontend:80
+    depends_on:
+      - frontend
+    networks:
+      - neurastack-network
+    profiles:
+      - e2e
+    command: npm run test:e2e
+
+networks:
+  neurastack-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+  lighthouse-data:

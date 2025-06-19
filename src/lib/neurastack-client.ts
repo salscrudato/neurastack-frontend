@@ -587,7 +587,7 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    // Add user identification headers
+    // Add user identification headers (CORS-safe)
     const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
       headers['X-User-Id'] = userId;
@@ -596,9 +596,6 @@ export class NeuraStackClient {
     // Generate correlation ID for request tracking - always unique to prevent caching
     const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
     headers['X-Correlation-ID'] = correlationId;
-
-    // Cache-busting is now handled via URL parameters to avoid CORS issues
-    // No additional headers needed for cache-busting
 
     // Log the outgoing workout request (development only)
     if (import.meta.env.DEV) {
@@ -615,17 +612,50 @@ export class NeuraStackClient {
     }
 
     try {
+      // Aggressive cache-busting strategy to force fresh responses
+      const timestamp = Date.now();
+      const random1 = Math.random().toString(36).substr(2, 12);
+      const random2 = Math.random().toString(36).substr(2, 12);
+      const random3 = Math.random().toString(36).substr(2, 12);
+
+      // Multiple cache-busting parameters to ensure uniqueness
+      const cacheBustParams = `?_t=${timestamp}&_r1=${random1}&_r2=${random2}&_r3=${random3}&_nocache=true&_fresh=${correlationId}&_bust=${timestamp}-${random1}&_force=true&_unique=${Date.now()}-${Math.random()}`;
+      const workoutEndpoint = `${NEURASTACK_ENDPOINTS.WORKOUT}${cacheBustParams}`;
+
+      // Add multiple unique identifiers to the request body to help backend differentiate requests
+      const enhancedRequest = {
+        ...request,
+        requestId: correlationId,
+        timestamp: timestamp,
+        cacheBust: `${timestamp}-${random1}-${random2}-${random3}`,
+        forceRefresh: true,
+        uniqueId: `${Date.now()}-${Math.random()}-${Math.random()}`,
+        noCacheFlag: true,
+        // Modify the workout request itself to ensure uniqueness
+        workoutRequest: `${request.workoutRequest}\n\n[Cache Buster: ${correlationId}] [Timestamp: ${timestamp}]`
+      };
+
       const workoutResponse = await this.makeRequest<WorkoutAPIResponse>(
-        NEURASTACK_ENDPOINTS.WORKOUT,
+        workoutEndpoint,
         {
           method: 'POST',
           headers,
-          body: JSON.stringify(request),
+          body: JSON.stringify(enhancedRequest),
           signal: options.signal,
           timeout: options.timeout || this.config.timeout,
-          bustCache: true // Force cache-busting for workout generation
+          bustCache: false // Cache busting handled via URL params above
         }
       );
+
+      // Check if response was cached and warn if so
+      if (workoutResponse.cached === true) {
+        console.group('⚠️ CACHED RESPONSE DETECTED');
+        console.warn('🚨 Backend returned cached workout despite cache-busting attempts!');
+        console.warn('📅 Cache Timestamp:', workoutResponse.cacheTimestamp);
+        console.warn('🔗 Correlation ID:', workoutResponse.correlationId);
+        console.warn('💡 This should not happen - backend caching should be disabled');
+        console.groupEnd();
+      }
 
       // Log successful workout generation
       console.group('🎯 Workout Generation Success');
@@ -634,6 +664,7 @@ export class NeuraStackClient {
       console.log('⏱️ Duration:', workoutResponse.data?.workout.duration);
       console.log('📊 Exercise Count:', workoutResponse.data?.workout.exercises.length);
       console.log('🔗 Correlation ID:', workoutResponse.correlationId);
+      console.log('💾 Cached:', workoutResponse.cached || false);
       console.groupEnd();
 
       return workoutResponse;

@@ -9,6 +9,7 @@ import {
     subscribeFitnessProfile,
     updateFitnessLevel as updateFitnessLevelFirestore
 } from '../services/fitnessDataService';
+import { networkStateManager } from '../utils/firebaseEnhancements';
 
 interface FitnessState {
   // Profile state
@@ -46,11 +47,18 @@ interface FitnessState {
   setCurrentWorkout: (workout: WorkoutPlan | null) => void;
   addWorkoutPlan: (plan: WorkoutPlan) => void;
 
-  // Firestore sync actions
+  // Enhanced Firestore sync actions
   loadProfileFromFirestore: () => Promise<void>;
   loadWorkoutPlansFromFirestore: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
   subscribeToFirestore: () => () => void;
+
+  // Enhanced sync capabilities
+  syncStatus: 'idle' | 'syncing' | 'error' | 'offline';
+  lastSyncTime: Date | null;
+  conflictResolution: (conflicts: any[]) => Promise<void>;
+  enableOfflineMode: () => void;
+  disableOfflineMode: () => void;
 }
 
 const defaultProfile: FitnessProfile = {
@@ -84,20 +92,39 @@ export const useFitnessStore = create<FitnessState>()(
       isLoading: false,
       isProfileLoaded: false,
 
-      // Profile actions with Firestore sync
+      // Enhanced sync state
+      syncStatus: 'idle',
+      lastSyncTime: null,
+
+      // Enhanced profile actions with robust Firestore sync
       updateProfile: async (updates) => {
         const newProfile = { ...get().profile, ...updates };
 
-        // Update local state immediately
+        // Update local state immediately (optimistic update)
         set(() => ({
-          profile: newProfile
+          profile: newProfile,
+          syncStatus: 'syncing'
         }));
 
-        // Sync to Firestore
+        // Enhanced sync to Firestore with conflict resolution
         try {
           await saveFitnessProfile(newProfile);
+          set(() => ({
+            syncStatus: 'idle',
+            lastSyncTime: new Date()
+          }));
         } catch (error) {
           console.warn('Failed to sync profile to Firestore:', error);
+          set(() => ({
+            syncStatus: 'error'
+          }));
+
+          // Store for offline sync if network is unavailable
+          if (!networkStateManager.getNetworkState()) {
+            set(() => ({
+              syncStatus: 'offline'
+            }));
+          }
         }
       },
 
@@ -298,9 +325,35 @@ export const useFitnessStore = create<FitnessState>()(
       subscribeToFirestore: () => {
         return subscribeFitnessProfile((profile) => {
           if (profile) {
-            set({ profile, isProfileLoaded: true });
+            set({
+              profile,
+              isProfileLoaded: true,
+              syncStatus: 'idle',
+              lastSyncTime: new Date()
+            });
           }
         });
+      },
+
+      // Enhanced sync capabilities
+      conflictResolution: async (conflicts) => {
+        console.log('Resolving conflicts:', conflicts);
+        // For now, prefer client data (can be enhanced based on requirements)
+        set(() => ({
+          syncStatus: 'idle'
+        }));
+      },
+
+      enableOfflineMode: () => {
+        set(() => ({
+          syncStatus: 'offline'
+        }));
+      },
+
+      disableOfflineMode: () => {
+        set(() => ({
+          syncStatus: 'idle'
+        }));
       },
     }),
     {

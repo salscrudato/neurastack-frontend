@@ -1,0 +1,207 @@
+{
+  "timestamp": "2025-06-19T15:59:00.145Z",
+  "bundleAnalysis": {
+    "bundleInfo": [
+      {
+        "filename": "chakra-core-BffNQhC9.js",
+        "size": 281579.52,
+        "gzipSize": 91985.92,
+        "sizeKB": 274.98,
+        "gzipSizeKB": 89.83
+      },
+      {
+        "filename": "firebase-firestore-KPvnrmcu.js",
+        "size": 307691.52,
+        "gzipSize": 77742.08,
+        "sizeKB": 300.48,
+        "gzipSizeKB": 75.92
+      },
+      {
+        "filename": "index-BTwlJS9d.js",
+        "size": 197591.04,
+        "gzipSize": 53125.12,
+        "sizeKB": 192.96,
+        "gzipSizeKB": 51.88
+      },
+      {
+        "filename": "markdown-MLsw9y3L.js",
+        "size": 160266.24,
+        "gzipSize": 48527.36,
+        "sizeKB": 156.51,
+        "gzipSizeKB": 47.39
+      },
+      {
+        "filename": "vendor-C6Ba5J37.js",
+        "size": 145244.16,
+        "gzipSize": 46612.48,
+        "sizeKB": 141.84,
+        "gzipSizeKB": 45.52
+      },
+      {
+        "filename": "logo-BRPCr-Sq.svg",
+        "size": 98600.96,
+        "gzipSize": 38553.6,
+        "sizeKB": 96.29,
+        "gzipSizeKB": 37.65
+      },
+      {
+        "filename": "animations-ClXC98Gn.js",
+        "size": 104529.92,
+        "gzipSize": 35287.04,
+        "sizeKB": 102.08,
+        "gzipSizeKB": 34.46
+      },
+      {
+        "filename": "firebase-auth-LsyvLR6Q.js",
+        "size": 116910.08,
+        "gzipSize": 23828.48,
+        "sizeKB": 114.17,
+        "gzipSizeKB": 23.27
+      },
+      {
+        "filename": "router-BpxGikou.js",
+        "size": 61593.6,
+        "gzipSize": 21053.44,
+        "sizeKB": 60.15,
+        "gzipSizeKB": 20.56
+      },
+      {
+        "filename": "WorkoutGenerator-DS7yI7hq.js",
+        "size": 64798.72,
+        "gzipSize": 19097.6,
+        "sizeKB": 63.28,
+        "gzipSizeKB": 18.65
+      },
+      {
+        "filename": "firebase-core-BCmxRWiB.js",
+        "size": 49715.2,
+        "gzipSize": 12216.32,
+        "sizeKB": 48.55,
+        "gzipSizeKB": 11.93
+      },
+      {
+        "filename": "emotion-CiXk0ni7.js",
+        "size": 27617.28,
+        "gzipSize": 11489.28,
+        "sizeKB": 26.97,
+        "gzipSizeKB": 11.22
+      },
+      {
+        "filename": "styled-B_IsE48y.js",
+        "size": 26613.76,
+        "gzipSize": 10403.84,
+        "sizeKB": 25.99,
+        "gzipSizeKB": 10.16
+      },
+      {
+        "filename": "OnboardingWizard-DvFvnonb.js",
+        "size": 35768.32,
+        "gzipSize": 10342.4,
+        "sizeKB": 34.93,
+        "gzipSizeKB": 10.1
+      },
+      {
+        "filename": "icons-CDgbdl3m.js",
+        "size": 26429.44,
+        "gzipSize": 8069.12,
+        "sizeKB": 25.81,
+        "gzipSizeKB": 7.88
+      },
+      {
+        "filename": "AdminPage-BdoauMFq.js",
+        "size": 29521.92,
+        "gzipSize": 7403.52,
+        "sizeKB": 28.83,
+        "gzipSizeKB": 7.23
+      },
+      {
+        "filename": "index-l6qyD4Bc.css",
+        "size": 19732.48,
+        "gzipSize": 4382.72,
+        "sizeKB": 19.27,
+        "gzipSizeKB": 4.28
+      },
+      {
+        "filename": "date-utils-Ctx6mZEP.js",
+        "size": 9994.24,
+        "gzipSize": 3481.6,
+        "sizeKB": 9.76,
+        "gzipSizeKB": 3.4
+      },
+      {
+        "filename": "chakra-theme-DcgnjsPN.js",
+        "size": 6533.12,
+        "gzipSize": 3317.76,
+        "sizeKB": 6.38,
+        "gzipSizeKB": 3.24
+      },
+      {
+        "filename": "ProgressTracker-CLHXAb1j.js",
+        "size": 8622.08,
+        "gzipSize": 2723.84,
+        "sizeKB": 8.42,
+        "gzipSizeKB": 2.66
+      },
+      {
+        "filename": "workbox-window.prod.es5-B9K5rw8f.js",
+        "size": 5857.28,
+        "gzipSize": 2406.4,
+        "sizeKB": 5.72,
+        "gzipSizeKB": 2.35
+      },
+      {
+        "filename": "Dashboard-Bmn_Nuc7.js",
+        "size": 6860.8,
+        "gzipSize": 2058.24,
+        "sizeKB": 6.7,
+        "gzipSizeKB": 2.01
+      },
+      {
+        "filename": "HistoryPage-fkNJGYpB.js",
+        "size": 4331.52,
+        "gzipSize": 1812.48,
+        "sizeKB": 4.23,
+        "gzipSizeKB": 1.77
+      },
+      {
+        "filename": "NeuraFitPage-B1dfXfkb.js",
+        "size": 3706.88,
+        "gzipSize": 1495.04,
+        "sizeKB": 3.62,
+        "gzipSizeKB": 1.46
+      },
+      {
+        "filename": "equipmentOptions-CbetYdWQ.js",
+        "size": 1976.32,
+        "gzipSize": 819.2,
+        "sizeKB": 1.93,
+        "gzipSizeKB": 0.8
+      },
+      {
+        "filename": "state-CvAonaC1.js",
+        "size": 624.64,
+        "gzipSize": 399.36,
+        "sizeKB": 0.61,
+        "gzipSizeKB": 0.39
+      },
+      {
+        "filename": "http-l0sNRNKZ.js",
+        "size": 0,
+        "gzipSize": 20.48,
+        "sizeKB": 0,
+        "gzipSizeKB": 0.02
+      }
+    ],
+    "totalSize": 1802711.04,
+    "totalGzipSize": 538654.72,
+    "criticalIssues": 1,
+    "warnings": 3
+  },
+  "recommendations": [
+    "Implement code splitting for large chunks",
+    "Consider lazy loading for non-critical components",
+    "Review and optimize third-party dependencies",
+    "Monitor bundle sizes and implement size budgets",
+    "Consider tree-shaking optimizations"
+  ]
+}

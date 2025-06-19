@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-06-19T15:58:43.981Z",
+  "overallScore": 53,
+  "passedTests": 2,
+  "totalTests": 5,
+  "results": {
+    "performance": {
+      "passed": false,
+      "score": 70,
+      "issues": [
+        "Total bundle size exceeds budget: 526.0KB > 500.0KB"
+      ]
+    },
+    "accessibility": {
+      "passed": true,
+      "score": 90,
+      "issues": [
+        "No heading elements found in components"
+      ]
+    },
+    "security": {
+      "passed": false,
+      "score": 10,
+      "issues": [
+        "HTTP URL found in dev-dist/sw.js",
+        "HTTP URL found in dist/assets/firebase-core-BCmxRWiB.js",
+        "HTTP URL found in dist/assets/firebase-firestore-KPvnrmcu.js",
+        "HTTP URL found in dist/assets/icons-CDgbdl3m.js",
+        "HTTP URL found in dist/assets/index-BTwlJS9d.js",
+        "HTTP URL found in dist/assets/vendor-C6Ba5J37.js"
+      ]
+    },
+    "functionality": {
+      "passed": false,
+      "score": 0,
+      "issues": []
+    },
+    "codeQuality": {
+      "passed": true,
+      "score": 95,
+      "issues": [
+        "Console.log statements found: 109"
+      ]
+    }
+  }
+}

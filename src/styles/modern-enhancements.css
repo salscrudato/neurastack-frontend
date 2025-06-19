@@ -860,3 +860,36 @@
     margin-top: 0.75rem !important;
   }
 }
+
+/* ============================================================================ */
+/* Performance Optimized Loading Animations */
+/* ============================================================================ */
+
+/* Optimized spinner animation for lazy loading */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #3182ce;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  will-change: transform;
+}
+
+/* Enhanced focus states for accessibility */
+.neurafit-workout-button:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}

@@ -16,9 +16,10 @@ import {
     useColorModeValue,
     VStack
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaUser, FaUserFriends, FaUserSlash } from 'react-icons/fa';
 import { useFitnessStore } from '../../store/useFitnessStore';
+import { checkRateLimit, validateAge, validateGender, validateWeight } from '../../utils/inputValidation';
 import NavigationButtons from './NavigationButtons';
 
 
@@ -36,33 +37,91 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
   const [gender, setGender] = useState<'male' | 'female' | 'rather_not_say' | ''>(profile.gender || '');
   const [weight, setWeight] = useState<number>(profile.weight || 150); // Default to 150 lbs
 
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<{
+    age?: string[];
+    weight?: string[];
+    gender?: string[];
+  }>({});
+  const [isValidating, setIsValidating] = useState(false);
+
   // Theme colors
   const textColor = useColorModeValue('gray.800', 'white');
   const subtextColor = useColorModeValue('gray.600', 'gray.400');
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
-  // Update profile when local state changes
+  // Real-time validation
+  const validateInputs = useCallback(() => {
+    const errors: typeof validationErrors = {};
+
+    const ageResult = validateAge(age);
+    if (!ageResult.isValid) {
+      errors.age = ageResult.errors;
+    }
+
+    const weightResult = validateWeight(weight);
+    if (!weightResult.isValid) {
+      errors.weight = weightResult.errors;
+    }
+
+    const genderResult = validateGender(gender);
+    if (!genderResult.isValid && gender !== '') {
+      errors.gender = genderResult.errors;
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [age, weight, gender]);
+
+  // Update profile when local state changes (with validation)
   useEffect(() => {
-    const updates: Partial<typeof profile> = {
-      age,
-      gender: gender === '' ? undefined : gender,
-      weight,
-    };
+    const isValid = validateInputs();
 
-    updateProfile(updates);
-  }, [age, gender, weight, updateProfile]);
+    if (isValid) {
+      const updates: Partial<typeof profile> = {
+        age,
+        gender: gender === '' ? undefined : gender,
+        weight,
+      };
 
-  // Handle navigation with Firebase sync
+      updateProfile(updates);
+    }
+  }, [age, gender, weight, updateProfile, validateInputs]);
+
+  // Enhanced navigation with validation and rate limiting
   const handleNext = useCallback(async () => {
+    setIsValidating(true);
+
+    // Check rate limiting
+    if (!checkRateLimit('personal-info-submit', 10, 60000)) {
+      setValidationErrors({
+        age: ['Too many attempts. Please wait a moment before trying again.']
+      });
+      setIsValidating(false);
+      return;
+    }
+
+    // Validate all inputs
+    const isValid = validateInputs();
+    if (!isValid) {
+      setIsValidating(false);
+      return;
+    }
+
     try {
       await syncToFirestore();
       console.log('✅ Personal info synced to Firebase before navigation');
+      onNext();
     } catch (error) {
       console.warn('Failed to sync personal info to Firebase:', error);
+      setValidationErrors({
+        age: ['Failed to save data. Please try again.']
+      });
+    } finally {
+      setIsValidating(false);
     }
-    onNext();
-  }, [syncToFirestore, onNext]);
+  }, [syncToFirestore, onNext, validateInputs]);
 
   const handleBack = useCallback(() => {
     onBack();
@@ -70,7 +129,13 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
 
 
 
-  const canProceed = age >= 13 && age <= 100; // Basic age validation
+  // Enhanced validation for proceed button
+  const canProceed = useMemo(() => {
+    return Object.keys(validationErrors).length === 0 &&
+           age >= 13 && age <= 100 &&
+           weight >= 50 && weight <= 1000 &&
+           gender !== '';
+  }, [validationErrors, age, weight, gender]);
 
   return (
     <VStack
@@ -108,7 +173,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
       {/* Compact Form */}
       <VStack spacing={{ base: 4, md: 5 }} align="stretch" flex="1 1 auto" justify="center">
         {/* Age - Required */}
-        <FormControl isRequired>
+        <FormControl isRequired isInvalid={!!validationErrors.age}>
           <HStack justify="space-between" align="center" mb={2}>
             <FormLabel color={textColor} fontSize="sm" fontWeight="medium" mb={0}>
               Age
@@ -182,12 +247,23 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
           <Text fontSize="xs" color={subtextColor} textAlign="center" mt={2}>
             Drag the slider or tap to select your age
           </Text>
+
+          {/* Age validation errors */}
+          {validationErrors.age && (
+            <VStack spacing={1} mt={2}>
+              {validationErrors.age.map((error, index) => (
+                <Text key={index} fontSize="xs" color="red.500" textAlign="center">
+                  {error}
+                </Text>
+              ))}
+            </VStack>
+          )}
         </FormControl>
 
         <Divider />
 
         {/* Weight - Optional */}
-        <FormControl>
+        <FormControl isInvalid={!!validationErrors.weight}>
           <HStack justify="space-between" align="center" mb={3}>
             <FormLabel color={textColor} fontSize="sm" fontWeight="medium" mb={0}>
               Weight (Optional)
@@ -258,12 +334,23 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
           <Text fontSize="xs" color={subtextColor} textAlign="center">
             Drag the slider to set your weight in lbs
           </Text>
+
+          {/* Weight validation errors */}
+          {validationErrors.weight && (
+            <VStack spacing={1} mt={2}>
+              {validationErrors.weight.map((error, index) => (
+                <Text key={index} fontSize="xs" color="red.500" textAlign="center">
+                  {error}
+                </Text>
+              ))}
+            </VStack>
+          )}
         </FormControl>
 
         <Divider />
 
         {/* Gender - Optional with Icon Toggle Boxes */}
-        <FormControl>
+        <FormControl isInvalid={!!validationErrors.gender}>
           <FormLabel color={textColor} fontSize="sm" fontWeight="medium" mb={3}>
             Gender (Optional)
           </FormLabel>
@@ -327,6 +414,17 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
               </Text>
             </Button>
           </SimpleGrid>
+
+          {/* Gender validation errors */}
+          {validationErrors.gender && (
+            <VStack spacing={1} mt={2}>
+              {validationErrors.gender.map((error, index) => (
+                <Text key={index} fontSize="xs" color="red.500" textAlign="center">
+                  {error}
+                </Text>
+              ))}
+            </VStack>
+          )}
         </FormControl>
       </VStack>
 
@@ -336,6 +434,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
           onBack={handleBack}
           onNext={handleNext}
           canProceed={canProceed}
+          isLoading={isValidating}
           nextLabel={isEditingFromDashboard ? "Save" : "Continue"}
           backLabel={isEditingFromDashboard ? "Back to Dashboard" : "Back"}
         />

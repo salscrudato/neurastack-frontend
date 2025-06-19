@@ -1,11 +1,10 @@
 import {
-    Badge,
-    Box,
-    Button,
-    Icon,
-    SimpleGrid,
-    Text,
-    VStack
+  Box,
+  Button,
+  Icon,
+  SimpleGrid,
+  Text,
+  VStack
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import equipmentOptions, { type EquipmentOption } from '../../constants/equipmentOptions';
@@ -87,11 +86,6 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
         <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor}>
           Select all available equipment
         </Text>
-        {selectedCount > 0 && (
-          <Badge colorScheme="blue" variant="subtle" mt={1}>
-            {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
-          </Badge>
-        )}
       </VStack>
 
       {/* Aria-live region for announcing selection changes */}

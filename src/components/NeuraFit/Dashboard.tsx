@@ -25,7 +25,7 @@ interface DashboardProps {
   onEditSpecificSetting?: (step: number) => void;
 }
 
-export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecificSetting }: DashboardProps) {
+function Dashboard({ onStartWorkout, onViewProgress, onEditSpecificSetting }: DashboardProps) {
   const { profile, workoutPlans } = useFitnessStore();
 
   const subtextColor = useColorModeValue('gray.500', 'gray.400');
@@ -342,3 +342,5 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecif
     </Box>
   );
 }
+
+export default Dashboard;

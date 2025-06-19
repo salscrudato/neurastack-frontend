@@ -67,12 +67,21 @@ export function useMobileOptimization() {
     navigator.vibrate(pattern);
   }, [isMobile]);
 
-  // Enhanced touch configuration
+  // Enhanced touch configuration with performance optimizations
   const touchConfig = useMemo(() => ({
     minTouchTarget: isMobile ? 48 : 44,
     tapHighlight: 'transparent',
     touchAction: 'manipulation',
     userSelect: 'none' as const,
+    // Performance optimizations for touch
+    willChange: 'transform',
+    backfaceVisibility: 'hidden' as const,
+    WebkitTapHighlightColor: 'transparent',
+    // Prevent 300ms click delay on mobile
+    touchCallout: 'none' as const,
+    // Optimize scrolling performance
+    WebkitOverflowScrolling: 'touch' as const,
+    overscrollBehavior: 'contain' as const,
   }), [isMobile]);
 
   // Input-specific optimizations

@@ -33,6 +33,7 @@ import { neuraStackClient } from '../../lib/neurastack-client';
 import type { Exercise, WorkoutAPIRequest, WorkoutHistoryEntry, WorkoutPlan, WorkoutUserMetadata } from '../../lib/types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useFitnessStore } from '../../store/useFitnessStore';
+import { robustApiCall, serviceHealthMonitor, workoutApiCircuitBreaker } from '../../utils/apiRobustness';
 import ExerciseSwapper from './ExerciseSwapper';
 import ModernLoadingAnimation from './ModernLoadingAnimation';
 import ModernProgressIndicator from './ModernProgressIndicator';
@@ -243,13 +244,12 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     };
   }, [isWorkoutActive, isResting, currentWorkout]);
 
-  const generateWorkout = useCallback(async (retryCount = 0) => {
+  const generateWorkout = useCallback(async () => {
     if (isGenerating) return; // Prevent multiple simultaneous generations
 
     setIsGenerating(true);
-    setGenerationStatus(retryCount > 0 ? `Retrying workout generation (attempt ${retryCount + 1}/3)...` : 'Generating your personalized workout...');
+    setGenerationStatus('Generating your personalized workout...');
     const startTime = performance.now();
-    const maxRetries = 2; // Allow up to 2 retries for 503 errors
 
     try {
       // Configure the API client with user info - NO CACHING
@@ -263,14 +263,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         localStorage.removeItem('neurafit-last-workout');
       }
 
-      // Only show service status warning on first attempt, not retries
-      if (retryCount === 0) {
-        // Reset service status to unknown at start
-        setServiceStatus('unknown');
-
-        // Skip health check to avoid false degraded warnings
-        // Let the actual workout generation call determine service status
-      }
+      // Reset service status to unknown at start
+      setServiceStatus('unknown');
 
       // Build user metadata for the workout API with converted names
       const goalNames = convertGoalCodesToNames(profile.goals || []);
@@ -326,11 +320,20 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
       console.log('Workout API Request:', workoutAPIRequest);
 
-      // Call the dedicated workout API endpoint with extended timeout
-      const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
-        userId: user?.uid || '',
-        timeout: retryCount > 0 ? 90000 : 60000 // Increase timeout on retries: 60s first attempt, 90s on retries
-      });
+      // Use robust API call with circuit breaker and retry logic
+      const response = await robustApiCall(
+        () => neuraStackClient.generateWorkout(workoutAPIRequest, {
+          userId: user?.uid || '',
+          timeout: 60000 // 60 second timeout
+        }),
+        {
+          retryConfig: {
+            maxRetries: 3,
+            baseDelay: 1000,
+            maxDelay: 10000,
+          }
+        }
+      );
 
       // If we get here, the service is working - update status to healthy
       setServiceStatus('healthy');
@@ -388,58 +391,27 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         throw new Error(response.message || 'Failed to generate workout');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error generating workout:', error);
 
-      // Determine if this is a retryable error
-      const isRetryableError = errorMessage.includes('503') ||
-                              errorMessage.includes('500') ||
-                              errorMessage.includes('timeout') ||
-                              errorMessage.includes('temporarily unavailable') ||
-                              errorMessage.includes('Service Unavailable') ||
-                              errorMessage.includes('Internal Server Error');
-
-      // If this is a retryable error and we have retries left, don't show error to user yet
-      if (isRetryableError && retryCount < maxRetries) {
-        console.log(`Retrying workout generation (attempt ${retryCount + 1}/${maxRetries + 1}) after error:`, errorMessage);
-
-        // Wait before retrying (exponential backoff)
-        const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s...
-        await new Promise(resolve => setTimeout(resolve, delay));
-
-        setIsGenerating(false); // Reset state for retry
-        return generateWorkout(retryCount + 1);
-      }
-
-      // Only log and show error if we've exhausted retries or it's not retryable
-      console.error('Error generating workout (final attempt):', error);
-
-      let toastDescription = 'Unable to generate workout. Please try again.';
-      let toastTitle = 'Generation Failed';
-
-      // Handle specific API errors with more detailed messaging
-      if (errorMessage.includes('timeout') || errorMessage.includes('Request timed out')) {
-        toastDescription = 'Workout generation timed out. Please try again with a simpler request.';
-        toastTitle = 'Request Timeout';
-      } else if (errorMessage.includes('Network Error') || errorMessage.includes('Failed to connect')) {
-        toastDescription = 'Unable to connect to workout service. Please check your internet connection.';
-        toastTitle = 'Connection Error';
-      } else if (errorMessage.includes('503') || errorMessage.includes('Service Unavailable') || errorMessage.includes('temporarily unavailable')) {
-        toastDescription = 'Workout generation service is temporarily down for maintenance. Using backup workout instead.';
-        toastTitle = 'Service Temporarily Unavailable';
+      // Check circuit breaker state for better error messaging
+      const circuitState = workoutApiCircuitBreaker.getState();
+      if (circuitState.state === 'OPEN') {
         setServiceStatus('unavailable');
-      } else if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
-        toastDescription = 'Workout service encountered an error. Please try again in a few minutes.';
-        toastTitle = 'Service Error';
-      } else if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
-        toastDescription = 'Too many workout requests. Please wait a moment before trying again.';
-        toastTitle = 'Rate Limited';
-      } else if (errorMessage.includes('400') || errorMessage.includes('Bad Request')) {
-        toastDescription = 'Invalid workout request. Please check your fitness profile settings.';
-        toastTitle = 'Invalid Request';
-      } else if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-        toastDescription = 'Authentication required. Please sign in and try again.';
-        toastTitle = 'Authentication Error';
+      } else if (circuitState.failures > 0) {
+        setServiceStatus('degraded');
       }
+
+      // Create user-friendly error toast
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorToast = {
+        title: 'Workout Generation Failed',
+        description: errorMessage.includes('timeout') ?
+          'Request timed out. Please try again.' :
+          'Unable to generate workout. Please try again.',
+        status: 'error' as const,
+        duration: 5000,
+        isClosable: true,
+      };
 
       // Try with fallback workout as last resort
       try {
@@ -458,38 +430,38 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         console.error('Fallback workout creation failed:', fallbackError);
       }
 
-      toast({
-        title: toastTitle,
-        description: toastDescription,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      // Show the error toast
+      toast(errorToast);
     } finally {
       setIsGenerating(false);
       setGenerationStatus('');
     }
   }, [isGenerating, profile, user?.uid, workoutPlans, selectedWorkoutType, toast]);
 
-  // Periodic service health check
+  // Enhanced service health monitoring with circuit breaker integration
   useEffect(() => {
-    const checkServiceHealth = async () => {
+    const checkServiceHealth = async (): Promise<boolean> => {
       try {
         const healthCheck = await neuraStackClient.healthCheck();
-        setServiceStatus(healthCheck.status === 'healthy' ? 'healthy' : 'degraded');
+        const isHealthy = healthCheck.status === 'healthy';
+        setServiceStatus(isHealthy ? 'healthy' : 'degraded');
+        return isHealthy;
       } catch (error) {
         console.warn('Periodic health check failed:', error);
         setServiceStatus('degraded');
+        return false;
       }
     };
 
-    // Check immediately on mount
+    // Start monitoring the workout API service
+    serviceHealthMonitor.startMonitoring('workout-api', checkServiceHealth);
+
+    // Initial health check
     checkServiceHealth();
 
-    // Then check every 2 minutes
-    const interval = setInterval(checkServiceHealth, 2 * 60 * 1000);
-
-    return () => clearInterval(interval);
+    return () => {
+      serviceHealthMonitor.stopMonitoring('workout-api');
+    };
   }, []);
 
   // Helper function to convert goal codes to readable names with deduplication
@@ -538,14 +510,21 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       ? ` Previous workout: ${recentWorkouts[0].exercises.slice(0, 3).map((ex: any) => typeof ex === 'string' ? ex : ex.name || 'exercise').join(', ')}.`
       : '';
 
-    // Concise request - avoid redundancy with userMetadata
+    // Add unique identifiers to prevent backend caching
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substr(2, 9);
+    const sessionId = `session-${timestamp}-${randomId}`;
+
+    // Concise request with unique identifiers to prevent caching
     return `Create a ${workoutTypeDescription.toLowerCase()} workout for ${profile.availableTime} minutes.${recentWorkoutContext}
 
 Requirements:
 - Include warm-up (3-5 min) and cool-down (3-5 min)
 - Provide exercise instructions and form tips
 - Structure with sets, reps, rest periods
-- Match user's fitness level and available equipment`;
+- Match user's fitness level and available equipment
+
+[Request ID: ${sessionId}] [Timestamp: ${timestamp}] [Unique: ${randomId}]`;
   }, [workoutTypes]);
 
   // Transform API workout response to internal WorkoutPlan format
@@ -867,7 +846,7 @@ Requirements:
         availableTime: modifications.duration || profile.availableTime,
       };
 
-      // Use the same comprehensive request builder
+      // Use the same comprehensive request builder with unique identifiers
       const workoutRequest = buildWorkoutRequest(modifiedProfile, [], modifications.workoutType || selectedWorkoutType);
 
       // Convert goal labels back to API values for the API request
