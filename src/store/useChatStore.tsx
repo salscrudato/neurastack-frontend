@@ -2,110 +2,120 @@ import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { auth } from '../firebase';
 import { neuraStackClient } from '../lib/neurastack-client';
+import type { SubAnswer } from '../lib/types';
 
-export interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'error';
-  text: string;
-  timestamp: number;
-  metadata?: {
-    models?: string[];
-    responseTime?: number;
-    retryCount?: number;
-    totalTime?: number;
+// Enhanced message interface with comprehensive typing and human-readable structure
+export interface IChatMessage {
+  messageId: string;
+  messageRole: 'user' | 'assistant' | 'error';
+  messageText: string;
+  messageTimestamp: number;
+  messageMetadata?: {
+    aiModelsUsed?: string[];
+    responseTimeMilliseconds?: number;
+    retryAttemptCount?: number;
+    totalProcessingTimeMilliseconds?: number;
     errorType?: string;
-    // New memory-related metadata
-    memoryContext?: string;
+    // Memory and context-related metadata
+    memoryContextInformation?: string;
     tokenCount?: number;
     memoryTokensSaved?: number;
-    ensembleMode?: boolean;
-    sessionId?: string;
-    // Individual model responses for modal display
-    individualResponses?: import('../lib/types').SubAnswer[];
-    modelsUsed?: Record<string, boolean>;
-    fallbackReasons?: Record<string, string>;
-    executionTime?: string;
-    [key: string]: any;
+    isEnsembleModeEnabled?: boolean;
+    chatSessionId?: string;
+    // Individual model responses for detailed view modal
+    individualModelResponses?: SubAnswer[];
+    modelsUsedInResponse?: Record<string, boolean>;
+    modelFallbackReasons?: Record<string, string>;
+    executionTimeFormatted?: string;
+    [additionalMetadataProperty: string]: unknown;
   };
 }
 
-interface ChatState {
-  messages: Message[];
-  isLoading: boolean;
-  retryCount: number;
-  sessionId: string;
-  sendMessage: (text: string) => Promise<void>;
-  clearMessages: () => void;
-  deleteMessage: (id: string) => void;
-  retryMessage: (messageId: string) => Promise<void>;
-  initializeSession: () => void;
+// Backward compatibility - export as Message for existing code
+export type Message = IChatMessage;
+
+// Chat store state interface with human-readable naming
+interface IChatStoreState {
+  chatMessages: IChatMessage[];
+  isProcessingMessage: boolean;
+  currentRetryAttemptCount: number;
+  currentChatSessionId: string;
+  sendUserMessage: (messageText: string) => Promise<void>;
+  clearAllChatMessages: () => void;
+  deleteSpecificMessage: (messageId: string) => void;
+  retryFailedMessage: (messageId: string) => Promise<void>;
+  initializeNewChatSession: () => void;
 }
 
-const MAX_RETRIES = 2; // Reduced from 3
-const RETRY_DELAY = 1500; // Increased to 1.5 seconds
+// Configuration constants with descriptive names
+const MAXIMUM_RETRY_ATTEMPTS = 2; // Reduced from 3 for better UX
+const RETRY_DELAY_MILLISECONDS = 1500; // Increased to 1.5 seconds for stability
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+// Utility function for async delays with clear naming
+const waitForMilliseconds = (milliseconds: number): Promise<void> =>
+  new Promise(resolve => setTimeout(resolve, milliseconds));
 
-export const useChatStore = create<ChatState>()((set, get) => ({
-  messages: [],
-  isLoading: false,
-  retryCount: 0,
-  sessionId: crypto.randomUUID(),
+export const useChatStore = create<IChatStoreState>()((set, get) => ({
+  chatMessages: [],
+  isProcessingMessage: false,
+  currentRetryAttemptCount: 0,
+  currentChatSessionId: crypto.randomUUID(),
 
-      sendMessage: async (text: string) => {
-        const startTime = Date.now();
+  sendUserMessage: async (messageText: string) => {
+    const messageProcessingStartTime = Date.now();
 
-        // Add user message
-        const userMsg: Message = {
-          id: nanoid(),
-          role: 'user',
-          text,
-          timestamp: Date.now()
-        };
+    // Create user message with enhanced typing and descriptive properties
+    const userChatMessage: IChatMessage = {
+      messageId: nanoid(),
+      messageRole: 'user',
+      messageText,
+      messageTimestamp: Date.now()
+    };
 
-        set(state => ({
-          messages: [...state.messages, userMsg],
-          isLoading: true,
-          retryCount: 0
-        }));
+    // Update store state with new user message and loading state
+    set(currentState => ({
+      chatMessages: [...currentState.chatMessages, userChatMessage],
+      isProcessingMessage: true,
+      currentRetryAttemptCount: 0
+    }));
 
-        // User message saved - backend handles memory via sessionId
+    // Backend handles memory management via session ID - no frontend memory needed
 
-        // Set loading state - no placeholder message needed
-        const assistantId = nanoid();
+    // Generate unique ID for assistant response
+    const assistantMessageId = nanoid();
+    let currentRetryAttempt = 0;
 
-        let retryCount = 0;
+    // Retry loop with enhanced error handling and human-readable logic
+    while (currentRetryAttempt <= MAXIMUM_RETRY_ATTEMPTS) {
+      try {
+        const { currentChatSessionId } = get();
 
-        while (retryCount <= MAX_RETRIES) {
-          try {
-            const { sessionId } = get();
+        // Configure AI client with comprehensive session information
+        neuraStackClient.configure({
+          sessionId: currentChatSessionId,
+          userId: auth.currentUser?.uid || '',
+          useEnsemble: true
+        });
 
-            // Configure the enhanced API client with session info
-            neuraStackClient.configure({
-              sessionId,
-              userId: auth.currentUser?.uid || '',
-              useEnsemble: true
-            });
+        // Execute AI query with enhanced configuration
+        const aiResponse = await neuraStackClient.queryAI(messageText, {
+          useEnsemble: true,
+          temperature: 0.7,
+          sessionId: currentChatSessionId // Ensure session context is maintained
+        });
 
-            // Use the enhanced default-ensemble API with production features
-            const response = await neuraStackClient.queryAI(text, {
-              useEnsemble: true,
-              temperature: 0.7,
-              sessionId // Ensure session context is passed
-            });
+        const totalResponseTimeMilliseconds = Date.now() - messageProcessingStartTime;
 
-            const responseTime = Date.now() - startTime;
+        // Validate AI response with comprehensive error checking
+        if (!aiResponse?.answer) {
+          throw new Error('Invalid response received from AI service');
+        }
 
-            // Validate response
-            if (!response?.answer) {
-              throw new Error('Invalid response received');
-            }
-
-            // Clean response text - basic formatting only
-            const cleanedAnswer = String(response.answer || '').trim();
-            if (!cleanedAnswer) {
-              throw new Error('Empty response received');
-            }
+        // Process and clean response text with minimal formatting
+        const processedResponseText = String(aiResponse.answer || '').trim();
+        if (!processedResponseText) {
+          throw new Error('Empty response received from AI service');
+        }
 
             // Track analytics for successful chat interaction
             try {
