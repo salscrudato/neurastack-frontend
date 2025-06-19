@@ -170,7 +170,15 @@ export class NeuraStackClient {
 
     const backendUrl = getBackendUrl();
 
-
+    // Debug logging for backend URL detection
+    if (import.meta.env.DEV) {
+      console.group('🔧 NeuraStack Client Configuration');
+      console.log('🌐 Detected Backend URL:', backendUrl);
+      console.log('🏠 Hostname:', window.location.hostname);
+      console.log('🔧 DEV Mode:', import.meta.env.DEV);
+      console.log('📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+      console.groupEnd();
+    }
 
     this.config = {
       baseUrl: backendUrl,
@@ -215,11 +223,8 @@ export class NeuraStackClient {
     const correlationId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     headers['X-Correlation-ID'] = correlationId;
 
-    // Add authentication if available
-    const authToken = options.authToken || this.config.authToken;
-    if (authToken) {
-      headers['Authorization'] = `Bearer ${authToken}`;
-    }
+    // Note: Authorization header removed to avoid CORS issues
+    // Only using X-User-Id and X-Correlation-ID as allowed headers
 
     // Log the outgoing request (development only)
     if (import.meta.env.DEV) {
@@ -393,11 +398,9 @@ export class NeuraStackClient {
       {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
+          'Content-Type': 'application/json'
+        },
+        bustCache: true
       }
     );
 
@@ -453,7 +456,7 @@ export class NeuraStackClient {
     };
 
     if (request.userId) headers['X-User-Id'] = request.userId;
-    if (request.sessionId) headers['X-Session-Id'] = request.sessionId;
+    // Note: X-Session-Id header removed to avoid CORS issues
 
     return this.makeRequest<MemoryContextResponse>(
       NEURASTACK_ENDPOINTS.MEMORY_CONTEXT,
@@ -507,11 +510,9 @@ export class NeuraStackClient {
       {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
+          'Content-Type': 'application/json'
+        },
+        bustCache: true
       }
     );
 
@@ -528,11 +529,9 @@ export class NeuraStackClient {
       {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
+          'Content-Type': 'application/json'
+        },
+        bustCache: true
       }
     );
 
@@ -549,11 +548,9 @@ export class NeuraStackClient {
       {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
+          'Content-Type': 'application/json'
+        },
+        bustCache: true
       }
     );
 
@@ -600,11 +597,8 @@ export class NeuraStackClient {
     const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
     headers['X-Correlation-ID'] = correlationId;
 
-    // Add cache-busting headers to ensure fresh API calls
-    headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-    headers['Pragma'] = 'no-cache';
-    headers['Expires'] = '0';
-    headers['X-Requested-At'] = new Date().toISOString();
+    // Cache-busting is now handled via URL parameters to avoid CORS issues
+    // No additional headers needed for cache-busting
 
     // Log the outgoing workout request (development only)
     if (import.meta.env.DEV) {
@@ -628,7 +622,8 @@ export class NeuraStackClient {
           headers,
           body: JSON.stringify(request),
           signal: options.signal,
-          timeout: options.timeout || this.config.timeout
+          timeout: options.timeout || this.config.timeout,
+          bustCache: true // Force cache-busting for workout generation
         }
       );
 
@@ -714,13 +709,22 @@ export class NeuraStackClient {
    */
   private async makeRequest<T>(
     endpoint: string,
-    options: RequestInit & { timeout?: number }
+    options: RequestInit & { timeout?: number; bustCache?: boolean }
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), options.timeout || this.config.timeout);
 
+    // Add cache-busting parameter to URL if requested (CORS-compliant approach)
+    let finalEndpoint = endpoint;
+    if (options.bustCache !== false) { // Default to true unless explicitly set to false
+      const separator = endpoint.includes('?') ? '&' : '?';
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substr(2, 9);
+      finalEndpoint = `${endpoint}${separator}_t=${timestamp}&_r=${random}`;
+    }
+
     try {
-      const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
+      const response = await fetch(`${this.config.baseUrl}${finalEndpoint}`, {
         ...options,
         signal: options.signal || controller.signal
       });

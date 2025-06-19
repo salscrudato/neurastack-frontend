@@ -53,8 +53,16 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   onExit
 }: EnhancedWorkoutExecutionProps) {
   const { isMobile, triggerHaptic, workoutConfig } = useMobileOptimization();
+  const {
+    speakExerciseInstructions,
+    speakMotivation,
+    speakSetComplete,
+    speakRestPeriod,
+    speakWorkoutComplete,
+    isEnabled: isVoiceEnabled
+  } = useVoiceCoaching({ enabled: true });
   const toast = useToast();
-  
+
   // Session state
   const [currentSession, setCurrentSession] = useState<WorkoutSession | null>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -63,7 +71,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const [exerciseTimer, setExerciseTimer] = useState(0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  
+
   // Exercise performance tracking
   const [currentSetIndex, setCurrentSetIndex] = useState(0);
   const [completedSets, setCompletedSets] = useState<number[]>([]);
@@ -71,18 +79,18 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const [rpeRating, setRpeRating] = useState(5);
   const [formRating, setFormRating] = useState(5);
   const [showPerformanceModal, setShowPerformanceModal] = useState(false);
-  
+
   // Heart rate monitoring (simulated)
   const [heartRate, setHeartRate] = useState(0);
   const [caloriesBurned, setCaloriesBurned] = useState(0);
-  
+
   // UI state
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
-  
+
   // Refs for cleanup
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const heartRateRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Theme colors
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -137,12 +145,33 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               setIsResting(false);
               setRestTimer(0);
               triggerHaptic('success');
+
+              // Voice coaching for rest period end
+              if (isVoiceEnabled) {
+                speakMotivation();
+              }
+
               return 0;
             }
+
+            // Voice coaching for rest countdown (at 10, 5, 3, 2, 1 seconds)
+            if (isVoiceEnabled && [10, 5, 3, 2, 1].includes(prev - 1)) {
+              setTimeout(() => {
+                if (prev - 1 === 1) {
+                  speakMotivation();
+                }
+              }, 500);
+            }
+
             return prev - 1;
           });
         } else {
           setExerciseTimer(prev => prev + 1);
+
+          // Periodic motivation during exercise (every 30 seconds)
+          if (isVoiceEnabled && prev > 0 && prev % 30 === 0) {
+            speakMotivation();
+          }
         }
       }, 1000);
     } else {
@@ -158,7 +187,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         timerRef.current = null;
       }
     };
-  }, [isActive, isPaused, isResting, triggerHaptic]);
+  }, [isActive, isPaused, isResting, triggerHaptic, isVoiceEnabled, speakMotivation]);
 
   // Heart rate simulation
   useEffect(() => {
@@ -166,11 +195,11 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       heartRateRef.current = setInterval(() => {
         // Simulate heart rate based on exercise intensity
         const baseHR = 70;
-        const exerciseIntensity = currentExercise?.intensity === 'high' ? 50 : 
+        const exerciseIntensity = currentExercise?.intensity === 'high' ? 50 :
                                  currentExercise?.intensity === 'moderate' ? 30 : 20;
         const variability = Math.random() * 10 - 5;
         setHeartRate(Math.round(baseHR + exerciseIntensity + variability));
-        
+
         // Simulate calorie burn (very rough estimate)
         setCaloriesBurned(prev => prev + 0.1);
       }, 2000);
@@ -195,12 +224,17 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     setIsPaused(false);
     setExerciseTimer(0);
     triggerHaptic('success');
-    
+
     // Prevent screen sleep
     if (isMobile && workoutConfig.preventSleep) {
       workoutConfig.preventSleep().catch(() => {
         console.warn('Wake lock not supported');
       });
+    }
+
+    // Voice coaching for workout start
+    if (isVoiceEnabled && currentExercise) {
+      speakExerciseInstructions(currentExercise);
     }
 
     toast({
@@ -210,7 +244,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       duration: 2000,
       isClosable: true,
     });
-  }, [triggerHaptic, isMobile, workoutConfig, toast]);
+  }, [triggerHaptic, isMobile, workoutConfig, toast, isVoiceEnabled, currentExercise, speakExerciseInstructions]);
 
   // Pause/Resume workout
   const togglePause = useCallback(() => {
@@ -227,20 +261,33 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const completeSet = useCallback(() => {
     const newCompletedSets = [...completedSets, currentSetIndex];
     setCompletedSets(newCompletedSets);
-    
+
+    // Voice coaching for set completion
+    if (isVoiceEnabled) {
+      speakSetComplete(newCompletedSets.length, currentExercise.sets);
+    }
+
     if (newCompletedSets.length >= currentExercise.sets) {
       // All sets completed - show performance modal
       setShowPerformanceModal(true);
+      // Motivational message for exercise completion
+      if (isVoiceEnabled) {
+        speakMotivation();
+      }
     } else {
       // Move to next set
       setCurrentSetIndex(prev => prev + 1);
       // Start rest period
       setRestTimer(currentExercise.restTime);
       setIsResting(true);
+      // Voice coaching for rest period
+      if (isVoiceEnabled) {
+        speakRestPeriod(currentExercise.restTime);
+      }
     }
-    
+
     triggerHaptic('medium');
-  }, [completedSets, currentSetIndex, currentExercise, triggerHaptic]);
+  }, [completedSets, currentSetIndex, currentExercise, triggerHaptic, isVoiceEnabled, speakSetComplete, speakMotivation, speakRestPeriod]);
 
   // Complete exercise
   const completeExercise = useCallback(() => {
@@ -254,9 +301,16 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
           status: 'completed' as const,
           endTime: new Date()
         };
+
+        // Voice coaching for workout completion
+        if (isVoiceEnabled) {
+          speakWorkoutComplete();
+        }
+
         onComplete(completedSession);
       } else {
         // Move to next exercise
+        const nextExercise = workoutPlan.exercises[currentExerciseIndex + 1];
         setCurrentExerciseIndex(prev => prev + 1);
         setCurrentSetIndex(0);
         setCompletedSets([]);
@@ -264,6 +318,13 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         setExerciseNotes('');
         setRpeRating(5);
         setFormRating(5);
+
+        // Voice coaching for next exercise
+        if (isVoiceEnabled && nextExercise) {
+          setTimeout(() => {
+            speakExerciseInstructions(nextExercise);
+          }, 1000); // Small delay to let user process the transition
+        }
       }
 
       setShowPerformanceModal(false);
@@ -283,7 +344,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     isLastExercise,
     onComplete,
     triggerHaptic,
-    toast
+    toast,
+    workoutPlan.exercises,
+    currentExerciseIndex,
+    isVoiceEnabled,
+    speakWorkoutComplete,
+    speakExerciseInstructions
   ]);
 
   // Skip exercise
@@ -350,7 +416,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                   {isActive ? (isPaused ? 'Paused' : 'Active') : 'Ready'}
                 </Badge>
               </HStack>
-              
+
               <Progress
                 value={progressPercentage}
                 w="100%"
@@ -358,20 +424,29 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 borderRadius="full"
                 size="lg"
               />
-              
+
               <HStack w="100%" justify="space-between" fontSize="sm">
-                <HStack>
-                  <Icon as={PiHeartBold} color="red.500" />
-                  <Text>{heartRate} BPM</Text>
-                </HStack>
-                <HStack>
-                  <Icon as={PiTargetBold} color="orange.500" />
-                  <Text>{Math.round(caloriesBurned)} cal</Text>
-                </HStack>
-                <HStack>
-                  <Icon as={PiTimerBold} color={activeColor} />
-                  <Text>{formatTime(exerciseTimer)}</Text>
-                </HStack>
+                <VStack spacing={0}>
+                  <HStack>
+                    <Icon as={PiHeartBold} color="red.500" />
+                    <Text fontWeight="bold">{heartRate}</Text>
+                  </HStack>
+                  <Text fontSize="xs" color={subtextColor}>BPM</Text>
+                </VStack>
+                <VStack spacing={0}>
+                  <HStack>
+                    <Icon as={PiTargetBold} color="orange.500" />
+                    <Text fontWeight="bold">{Math.round(caloriesBurned)}</Text>
+                  </HStack>
+                  <Text fontSize="xs" color={subtextColor}>CAL</Text>
+                </VStack>
+                <VStack spacing={0}>
+                  <HStack>
+                    <Icon as={PiTimerBold} color={activeColor} />
+                    <Text fontWeight="bold">{formatTime(exerciseTimer)}</Text>
+                  </HStack>
+                  <Text fontSize="xs" color={subtextColor}>TIME</Text>
+                </VStack>
               </HStack>
             </VStack>
           </CardBody>
@@ -384,7 +459,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               <Text fontSize="xl" fontWeight="bold" textAlign="center" color={textColor}>
                 {currentExercise.name}
               </Text>
-              
+
               {/* Exercise details */}
               <HStack justify="center" spacing={6}>
                 <VStack spacing={1}>
@@ -408,25 +483,47 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               </HStack>
 
               {/* Set progress */}
-              <VStack spacing={2}>
-                <Text fontSize="sm" color={subtextColor}>
-                  Set {currentSetIndex + 1} of {currentExercise.sets}
-                </Text>
-                <HStack spacing={2}>
+              <VStack spacing={3}>
+                <HStack justify="space-between" w="100%">
+                  <Text fontSize="sm" color={subtextColor}>
+                    Set {currentSetIndex + 1} of {currentExercise.sets}
+                  </Text>
+                  <Text fontSize="sm" color={activeColor} fontWeight="bold">
+                    {Math.round((completedSets.length / currentExercise.sets) * 100)}% Complete
+                  </Text>
+                </HStack>
+
+                <Progress
+                  value={(completedSets.length / currentExercise.sets) * 100}
+                  w="100%"
+                  colorScheme="green"
+                  borderRadius="full"
+                  size="sm"
+                />
+
+                <HStack spacing={2} justify="center">
                   {Array.from({ length: currentExercise.sets }, (_, i) => (
                     <Box
                       key={i}
-                      w={8}
-                      h={8}
+                      w={10}
+                      h={10}
                       borderRadius="full"
-                      bg={completedSets.includes(i) ? successColor : 
+                      bg={completedSets.includes(i) ? successColor :
                           i === currentSetIndex ? activeColor : 'gray.200'}
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
+                      border={i === currentSetIndex ? "2px solid" : "none"}
+                      borderColor={activeColor}
+                      transition="all 0.3s ease"
+                      transform={i === currentSetIndex ? "scale(1.1)" : "scale(1)"}
                     >
-                      {completedSets.includes(i) && (
-                        <Icon as={PiCheckBold} color="white" boxSize={4} />
+                      {completedSets.includes(i) ? (
+                        <Icon as={PiCheckBold} color="white" boxSize={5} />
+                      ) : (
+                        <Text fontSize="sm" fontWeight="bold" color={i === currentSetIndex ? "white" : "gray.500"}>
+                          {i + 1}
+                        </Text>
                       )}
                     </Box>
                   ))}
@@ -435,33 +532,87 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
               {/* Rest timer */}
               {isResting && (
-                <VStack spacing={2}>
-                  <Text fontSize="sm" color={warningColor}>Rest Time</Text>
+                <VStack spacing={3} py={4}>
+                  <Text fontSize="lg" fontWeight="bold" color={warningColor}>
+                    Rest Time
+                  </Text>
                   <CircularProgress
                     value={(1 - restTimer / currentExercise.restTime) * 100}
-                    color="orange.400"
-                    size="80px"
+                    color={restTimer <= 5 ? "red.400" : "orange.400"}
+                    size="120px"
+                    thickness="8px"
                   >
-                    <CircularProgressLabel fontSize="lg" fontWeight="bold">
+                    <CircularProgressLabel fontSize="2xl" fontWeight="bold">
                       {restTimer}s
                     </CircularProgressLabel>
                   </CircularProgress>
+                  <Text fontSize="sm" color={subtextColor} textAlign="center">
+                    {restTimer <= 5 ? "Get ready!" : "Take deep breaths and recover"}
+                  </Text>
                 </VStack>
               )}
 
+              {/* Performance indicators */}
+              {isActive && !isResting && (
+                <HStack justify="space-around" py={2}>
+                  <VStack spacing={1}>
+                    <Text fontSize="xs" color={subtextColor}>INTENSITY</Text>
+                    <HStack spacing={1}>
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <Box
+                          key={i}
+                          w={2}
+                          h={4}
+                          bg={i < (heartRate > 120 ? 5 : heartRate > 100 ? 3 : 1) ? activeColor : 'gray.200'}
+                          borderRadius="sm"
+                        />
+                      ))}
+                    </HStack>
+                  </VStack>
+                  <VStack spacing={1}>
+                    <Text fontSize="xs" color={subtextColor}>PACE</Text>
+                    <Text fontSize="sm" fontWeight="bold" color={exerciseTimer > 60 ? warningColor : successColor}>
+                      {exerciseTimer > 60 ? 'STEADY' : 'GOOD'}
+                    </Text>
+                  </VStack>
+                  <VStack spacing={1}>
+                    <Text fontSize="xs" color={subtextColor}>FORM</Text>
+                    <Text fontSize="sm" fontWeight="bold" color={successColor}>
+                      GOOD
+                    </Text>
+                  </VStack>
+                </HStack>
+              )}
+
               {/* Exercise instructions */}
-              <Box bg={useColorModeValue('blue.50', 'blue.900')} p={3} borderRadius="md">
-                <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')}>
-                  {currentExercise.instructions}
-                </Text>
+              <Box bg={useColorModeValue('blue.50', 'blue.900')} p={4} borderRadius="lg">
+                <VStack spacing={2} align="start">
+                  <HStack>
+                    <Icon as={PiTargetBold} color={useColorModeValue('blue.600', 'blue.300')} />
+                    <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')}>
+                      Instructions
+                    </Text>
+                  </HStack>
+                  <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')}>
+                    {currentExercise.instructions}
+                  </Text>
+                </VStack>
               </Box>
 
               {/* Tips */}
               {currentExercise.tips && (
-                <Box bg={useColorModeValue('green.50', 'green.900')} p={3} borderRadius="md">
-                  <Text fontSize="xs" color={useColorModeValue('green.700', 'green.200')}>
-                    💡 {currentExercise.tips}
-                  </Text>
+                <Box bg={useColorModeValue('green.50', 'green.900')} p={4} borderRadius="lg">
+                  <VStack spacing={2} align="start">
+                    <HStack>
+                      <Text fontSize="sm">💡</Text>
+                      <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('green.700', 'green.200')}>
+                        Pro Tip
+                      </Text>
+                    </HStack>
+                    <Text fontSize="sm" color={useColorModeValue('green.700', 'green.200')}>
+                      {currentExercise.tips}
+                    </Text>
+                  </VStack>
                 </Box>
               )}
             </VStack>
@@ -469,42 +620,79 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         </Card>
 
         {/* Control buttons */}
-        <VStack spacing={3} w="100%">
+        <VStack spacing={4} w="100%">
           {!isActive ? (
             <Button
               colorScheme="blue"
               size="lg"
               w="100%"
-              leftIcon={<Icon as={PiPlayBold} />}
+              leftIcon={<Icon as={PiPlayBold} boxSize={6} />}
               onClick={startWorkout}
-              py={6}
+              py={8}
+              fontSize="lg"
+              fontWeight="bold"
+              borderRadius="xl"
+              _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
+              transition="all 0.2s ease"
             >
               Start Workout
             </Button>
           ) : (
-            <HStack spacing={3} w="100%">
-              <Button
-                colorScheme={isPaused ? "green" : "orange"}
-                size="lg"
-                flex={1}
-                leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} />}
-                onClick={togglePause}
-              >
-                {isPaused ? 'Resume' : 'Pause'}
-              </Button>
-              
-              {!isResting && (
+            <VStack spacing={3} w="100%">
+              <HStack spacing={3} w="100%">
                 <Button
-                  colorScheme="green"
+                  colorScheme={isPaused ? "green" : "orange"}
                   size="lg"
                   flex={1}
-                  leftIcon={<Icon as={PiCheckBold} />}
-                  onClick={completeSet}
+                  leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={5} />}
+                  onClick={togglePause}
+                  py={6}
+                  borderRadius="xl"
+                  _hover={{ transform: 'translateY(-1px)' }}
+                  transition="all 0.2s ease"
                 >
-                  Complete Set
+                  {isPaused ? 'Resume' : 'Pause'}
                 </Button>
-              )}
-            </HStack>
+
+                {!isResting && (
+                  <Button
+                    colorScheme="green"
+                    size="lg"
+                    flex={1}
+                    leftIcon={<Icon as={PiCheckBold} boxSize={5} />}
+                    onClick={completeSet}
+                    py={6}
+                    borderRadius="xl"
+                    _hover={{ transform: 'translateY(-1px)' }}
+                    transition="all 0.2s ease"
+                  >
+                    Complete Set
+                  </Button>
+                )}
+              </HStack>
+
+              {/* Quick action buttons */}
+              <HStack spacing={2} w="100%" justify="center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Icon as={PiTargetBold} />}
+                  onClick={speakMotivation}
+                  isDisabled={!isVoiceEnabled}
+                >
+                  Motivate
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Icon as={PiTimerBold} />}
+                  onClick={() => setRestTimer(30)}
+                  isDisabled={!isResting}
+                >
+                  +30s Rest
+                </Button>
+              </HStack>
+            </VStack>
           )}
 
           <HStack spacing={3} w="100%">
@@ -517,7 +705,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
             >
               Skip Exercise
             </Button>
-            
+
             <Button
               variant="outline"
               colorScheme="red"
@@ -543,12 +731,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               <Text fontSize="lg" fontWeight="semibold" textAlign="center">
                 {currentExercise.name}
               </Text>
-              
+
               <Divider />
-              
+
               <VStack spacing={3} align="stretch">
                 <Text fontSize="sm" fontWeight="semibold">Rate Your Performance</Text>
-                
+
                 <Box>
                   <Text fontSize="sm" mb={2}>Perceived Exertion (1-10)</Text>
                   <Slider
@@ -566,7 +754,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                     </SliderThumb>
                   </Slider>
                 </Box>
-                
+
                 <Box>
                   <Text fontSize="sm" mb={2}>Form Quality (1-5)</Text>
                   <Slider
@@ -584,7 +772,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                     </SliderThumb>
                   </Slider>
                 </Box>
-                
+
                 <Box>
                   <Text fontSize="sm" mb={2}>Notes (optional)</Text>
                   <Textarea
@@ -595,7 +783,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                   />
                 </Box>
               </VStack>
-              
+
               <Button
                 colorScheme="blue"
                 size="lg"

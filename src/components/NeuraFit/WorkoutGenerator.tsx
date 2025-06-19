@@ -156,6 +156,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const completedColor = useColorModeValue('green.500', 'green.300');
   const tipsBgColor = useColorModeValue('blue.50', 'blue.900');
   const tipsTextColor = useColorModeValue('blue.700', 'blue.200');
+  const instructionsBgColor = useColorModeValue('gray.50', 'gray.700');
+  const tipsBorderColor = useColorModeValue('blue.200', 'blue.600');
+  const tipsIconColor = useColorModeValue('blue.500', 'blue.400');
 
   // Define workout types with descriptions
   const workoutTypes = useMemo(() => [
@@ -282,7 +285,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       // Ensure age is provided (required by API)
       const userAge = profile.age || 25; // Default to 25 if not provided
 
-      // Enhanced user metadata collection with comprehensive data
+      // Optimized user metadata - consistent and concise
       const userMetadata: WorkoutUserMetadata = {
         age: userAge, // Age is required by the API
         fitnessLevel: profile.fitnessLevel,
@@ -293,22 +296,20 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         timeAvailable: profile.availableTime,
         injuries: profile.injuries || [],
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        minutesPerSession: profile.timeAvailability?.minutesPerSession || profile.availableTime,
-
-        // Additional context for better AI generation (removed to fix type errors)
+        minutesPerSession: profile.availableTime, // Use consistent time value
       };
 
-      // Build workout history from recent workouts
+      // Build optimized workout history - limit to most recent and essential data
       const recentWorkouts = workoutPlans
         .filter(w => w.completedAt)
         .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())
-        .slice(0, 5); // Last 5 workouts
+        .slice(0, 2); // Only last 2 workouts for efficiency
 
       const workoutHistory: WorkoutHistoryEntry[] = recentWorkouts.map(w => ({
         date: new Date(w.completedAt!).toISOString().split('T')[0],
         type: (w.workoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed') || 'mixed',
         duration: w.duration,
-        exercises: w.exercises.map(e => e.name),
+        exercises: w.exercises.slice(0, 4).map(e => e.name), // Limit to 4 exercises
         difficulty: w.difficulty,
         rating: 4 // Default rating since we don't track this yet
       }));
@@ -526,70 +527,26 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
   // Removed unused helper functions to fix TypeScript errors
 
-  // Build comprehensive natural language workout request for the API
+  // Build optimized workout request for the API - concise and efficient
   const buildWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
-    // Convert goal codes to readable names (already formatted)
-    const goalNames = convertGoalCodesToNames(profile.goals || []);
-    const primaryGoals = goalNames.slice(0, 2).join(' and ');
-    const allGoals = goalNames.join(', ');
-
-    // Convert equipment codes to full names
-    const equipmentNames = convertEquipmentCodesToNames(profile.equipment);
-    const equipment = equipmentNames.length > 0 ? equipmentNames.join(', ') : 'bodyweight only';
-
     // Get workout type description
     const selectedType = workoutTypes.find(type => type.value === workoutType);
     const workoutTypeDescription = selectedType ? selectedType.label : 'Mixed Training';
 
-    // Build user profile context
-    const userContext = [];
-    if (profile.age) userContext.push(`${profile.age} years old`);
-    if (profile.gender && profile.gender !== 'Rather Not Say') userContext.push(profile.gender.toLowerCase());
-    if (profile.weight) userContext.push(`${profile.weight} lbs`);
-
-    const userInfo = userContext.length > 0 ? `I am ${userContext.join(', ')}. ` : '';
-
-    // Build fitness context
-    const fitnessContext = `I am at a ${profile.fitnessLevel} fitness level`;
-
-    // Build time availability context
-    const timeContext = profile.timeAvailability
-      ? ` and typically work out ${profile.timeAvailability.daysPerWeek} days per week for ${profile.timeAvailability.minutesPerSession} minutes per session`
-      : '';
-
-    // Build injury/limitation context
-    const injuryContext = profile.injuries && profile.injuries.length > 0
-      ? ` I have the following injuries or limitations to consider: ${profile.injuries.join(', ')}.`
-      : ' I have no current injuries or limitations.';
-
-    // Build recent workout context
+    // Build recent workout context - fix object serialization issue
     const recentWorkoutContext = recentWorkouts.length > 0
-      ? ` Recently, I completed a ${recentWorkouts[0].difficulty} ${recentWorkouts[0].type || 'workout'} that included ${recentWorkouts[0].exercises.slice(0, 3).join(', ')}.`
+      ? ` Previous workout: ${recentWorkouts[0].exercises.slice(0, 3).map(ex => typeof ex === 'string' ? ex : ex.name || 'exercise').join(', ')}.`
       : '';
 
-    // Build equipment context
-    const equipmentContext = ` I have access to: ${equipment}.`;
-
-    // Build goal context
-    const goalContext = ` My primary fitness goals are: ${allGoals}.`;
-
-    return `${userInfo}${fitnessContext}${timeContext}.${injuryContext}${recentWorkoutContext}
-
-Please create a personalized ${workoutTypeDescription.toLowerCase()} workout for exactly ${profile.availableTime} minutes.${goalContext}${equipmentContext}
+    // Concise request - avoid redundancy with userMetadata
+    return `Create a ${workoutTypeDescription.toLowerCase()} workout for ${profile.availableTime} minutes.${recentWorkoutContext}
 
 Requirements:
-- Workout type: ${workoutTypeDescription}
-- Duration: ${profile.availableTime} minutes
-- Difficulty: ${profile.fitnessLevel}
-- Focus: ${primaryGoals}
-- Include proper warm-up (3-5 minutes)
-- Include cool-down/stretching (3-5 minutes)
-- Provide clear exercise instructions and form tips
-- Consider my injury limitations
-- Use only available equipment
-
-Please structure the workout with specific exercises, sets, reps, rest periods, and detailed instructions.`;
-  }, [convertGoalCodesToNames, convertEquipmentCodesToNames, workoutTypes]);
+- Include warm-up (3-5 min) and cool-down (3-5 min)
+- Provide exercise instructions and form tips
+- Structure with sets, reps, rest periods
+- Match user's fitness level and available equipment`;
+  }, [workoutTypes]);
 
   // Transform API workout response to internal WorkoutPlan format
   const transformAPIWorkoutToPlan = useCallback((apiWorkout: any): WorkoutPlan => {
@@ -1459,7 +1416,7 @@ Please structure the workout with specific exercises, sets, reps, rest periods, 
                 </HStack>
 
                 {/* Instructions - Enhanced for mobile */}
-                <Box bg={useColorModeValue('gray.50', 'gray.700')} p={{ base: 4, md: 3 }} borderRadius="xl">
+                <Box bg={instructionsBgColor} p={{ base: 4, md: 3 }} borderRadius="xl">
                   <Text fontSize={{ base: "md", md: "sm" }} color={textColor} lineHeight="1.5" fontWeight="medium">
                     {currentWorkout.exercises[currentExerciseIndex]?.instructions}
                   </Text>
@@ -1467,9 +1424,9 @@ Please structure the workout with specific exercises, sets, reps, rest periods, 
 
                 {/* Tips - Enhanced for mobile */}
                 {currentWorkout.exercises[currentExerciseIndex]?.tips && (
-                  <Box bg={tipsBgColor} p={{ base: 4, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor={useColorModeValue('blue.200', 'blue.600')}>
+                  <Box bg={tipsBgColor} p={{ base: 4, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor={tipsBorderColor}>
                     <HStack align="start" spacing={2}>
-                      <Icon as={PiLightningBold} color={useColorModeValue('blue.500', 'blue.400')} mt={1} />
+                      <Icon as={PiLightningBold} color={tipsIconColor} mt={1} />
                       <Text fontSize={{ base: "sm", md: "sm" }} color={tipsTextColor} fontWeight="medium" lineHeight="1.4">
                         {currentWorkout.exercises[currentExerciseIndex]?.tips}
                       </Text>
