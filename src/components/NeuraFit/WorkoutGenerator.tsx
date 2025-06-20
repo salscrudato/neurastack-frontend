@@ -412,7 +412,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log('⚙️ REQUEST OPTIONS:');
       console.log('  👤 User ID:', user?.uid || 'Not provided');
       console.log('  ⏱️ Timeout:', retryCount > 0 ? '90s (retry)' : '60s (initial)');
-      console.log('  🌐 Backend URL:', neuraStackClient.config?.baseUrl || 'Unknown');
+      console.log('  🌐 Backend URL:', 'https://neurastack-backend-638289111765.us-central1.run.app');
       console.groupEnd();
 
       // Call the dedicated workout API endpoint with extended timeout
@@ -832,7 +832,7 @@ Requirements:
       createdAt: new Date(),
       completedAt: null,
       focusAreas: Array.isArray(apiWorkout.tags) ? apiWorkout.tags : ['general'],
-      workoutType: mappedWorkoutType,
+      workoutType: mappedWorkoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core',
       coachingNotes: apiWorkout.notes || 'Focus on proper form and listen to your body',
       warmUp: {
         duration: warmupDuration,
@@ -1197,7 +1197,7 @@ Requirements:
           focusAreas: modifications.focusAreas,
           workoutType: modifications.workoutType as any,
           generationContext: {
-            userContext: { userMetadata, workoutHistory: [], workoutRequest },
+            userContext: { userMetadata, workoutHistory: [], workoutRequest: workoutAPIRequest },
             aiModelsUsed: [response.data.metadata.model],
             generationTime: performance.now(),
             sessionId: response.correlationId || 'unknown',
