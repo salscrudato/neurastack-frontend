@@ -6,34 +6,34 @@
  */
 
 import {
-  Box,
-  Flex,
-  Text,
-  VStack,
-  HStack,
-  Button,
-  IconButton,
-  useToast,
-  useDisclosure,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  ModalCloseButton,
-  Divider,
-  Badge,
-  Tooltip,
-  Card,
-  CardBody,
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    Divider,
+    Flex,
+    HStack,
+    IconButton,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+    Tooltip,
+    useDisclosure,
+    useToast,
+    VStack,
 } from '@chakra-ui/react';
+import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
+import { PiChatBold, PiChatCircleBold, PiClockBold, PiTrashBold } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
-import { PiTrashBold, PiChatBold, PiClockBold, PiChatCircleBold } from 'react-icons/pi';
 import { useChatStore } from '../store/useChatStore';
 import { useHistoryStore } from '../store/useHistoryStore';
-import { formatDistanceToNow } from 'date-fns';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
@@ -120,9 +120,25 @@ export default function HistoryPage() {
   return (
     <Flex
       direction="column"
-      h="100%"
+      w="100%"
+      minH="100%"
       bg={bgColor}
       p={{ base: 4, md: 6 }}
+      // Enhanced mobile scrolling support
+      sx={{
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        // Mobile viewport support
+        '@media (max-width: 768px)': {
+          minHeight: ['100vh', '100dvh'],
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        },
+        '@supports (-webkit-touch-callout: none)': {
+          minHeight: '-webkit-fill-available',
+        }
+      }}
     >
       {/* Header */}
       <VStack spacing={4} align="stretch" mb={6}>
@@ -161,7 +177,7 @@ export default function HistoryPage() {
       </VStack>
 
       {/* Sessions List */}
-      <Box flex="1" overflow="auto">
+      <Box flex="1" w="100%">
         {sessions.length === 0 ? (
           <Flex
             direction="column"

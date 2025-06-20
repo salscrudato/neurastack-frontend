@@ -407,7 +407,7 @@ export interface MemoryHealthResponse {
 
 /** Response interface for NeuraStack API */
 export interface NeuraStackQueryResponse {
-  /** Primary AI response text */
+  /** Primary AI response text (synthesis.content - unlimited length per API spec) */
   answer: string;
 
   /** Whether ensemble mode was used */
@@ -431,8 +431,14 @@ export interface NeuraStackQueryResponse {
   /** Any fallback reasons if models failed */
   fallbackReasons?: Record<string, string>;
 
-  /** Individual model responses (enhanced feature) */
+  /** Individual model responses (roles array - character limited per API spec) */
   individualResponses?: SubAnswer[];
+
+  /** Correlation ID for debugging issues per API spec */
+  correlationId?: string;
+
+  /** Performance metrics and quality indicators per API spec */
+  metadata?: EnsembleMetadata;
 }
 
 /* ============================================================================
@@ -693,10 +699,31 @@ export interface WorkoutHistoryEntry {
   duration: number; // minutes
 }
 
+// Enhanced workout specification for guaranteed type consistency
+export interface WorkoutSpecification {
+  workoutType: 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'upper_body' | 'lower_body' | 'push_day' | 'pull_day' | 'leg_day' | 'core' | 'yoga' | 'pilates' | 'crossfit' | 'bodyweight' | 'functional';
+  duration?: number; // minutes
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  focusAreas?: string[]; // e.g., ['chest', 'shoulders', 'triceps']
+  equipment?: string[]; // Available equipment
+}
+
 export interface WorkoutAPIRequest {
   userMetadata: WorkoutUserMetadata;
   workoutHistory?: WorkoutHistoryEntry[];
-  workoutRequest: string; // Natural language description of desired workout
+
+  // Enhanced request format (recommended)
+  workoutSpecification?: WorkoutSpecification;
+  additionalNotes?: string; // Specific user requirements or modifications
+
+  // Legacy format (backward compatibility)
+  workoutRequest?: string; // Natural language description of desired workout
+
+  // Cache-busting identifiers
+  requestId?: string; // Unique identifier to prevent caching
+  timestamp?: string; // ISO timestamp for request tracking
+  sessionContext?: string; // Additional context to ensure uniqueness
+  correlationId?: string; // For request tracking and debugging
 }
 
 export interface WorkoutAPIExercise {

@@ -6,37 +6,36 @@
  */
 
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  useColorModeValue,
-  Container,
-  Heading,
-  Icon,
-  Badge,
-  Card,
-  CardBody,
-  SimpleGrid,
-
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    Container,
+    Heading,
+    HStack,
+    Icon,
+    SimpleGrid,
+    Text,
+    useColorModeValue,
+    VStack,
 } from '@chakra-ui/react';
+import { useEffect, useState } from 'react';
 import {
-  PiGearBold,
-  PiShieldCheckBold,
-  PiArrowLeftBold,
-  PiLightningBold
+    PiArrowLeftBold,
+    PiGearBold,
+    PiLightningBold,
+    PiShieldCheckBold
 } from 'react-icons/pi';
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminDashboard } from '../components/AdminDashboard';
+import { ADMIN_EMAIL, hasAdminAccess } from '../config/admin';
 import { useSystemHealth } from '../hooks/useEnhancedMonitoring';
 import { useAuthStore } from '../store/useAuthStore';
-import { hasAdminAccess, ADMIN_EMAIL } from '../config/admin';
 
 // ============================================================================
 // Component Props
@@ -170,7 +169,26 @@ export function AdminPage({ requireAuth = true }: AdminPageProps) {
   }, []);
 
   const content = (
-    <Box bg={bgColor} minH="100vh">
+    <Box
+      bg={bgColor}
+      w="100%"
+      minH="100%"
+      // Enhanced mobile scrolling support
+      sx={{
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        // Mobile viewport support
+        '@media (max-width: 768px)': {
+          minHeight: ['100vh', '100dvh'],
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        },
+        '@supports (-webkit-touch-callout: none)': {
+          minHeight: '-webkit-fill-available',
+        }
+      }}
+    >
       {!showDashboard ? (
         // Introduction Screen
         <Container maxW="2xl" py={20}>

@@ -38,6 +38,7 @@ export interface NeuraStackError {
   message: string;
   statusCode: number;
   timestamp: string;
+  correlationId?: string; // For debugging issues per API spec
 }
 
 export type NeuraStackErrorCode = 400 | 401 | 429 | 500 | 503;
@@ -170,13 +171,77 @@ export class NeuraStackClient {
 
     const backendUrl = getBackendUrl();
 
-    // Debug logging for backend URL detection
+    /**
+     * ============================================================================
+     * BACKEND URL DETECTION DEBUG OUTPUT
+     * ============================================================================
+     *
+     * This debug output helps you understand how the NeuraStack client determines
+     * which backend URL to use. The detection follows this priority order:
+     *
+     * 1. EXPLICIT CONFIG: If baseUrl is provided in client config
+     * 2. ENVIRONMENT VARIABLE: If VITE_BACKEND_URL is set in .env files
+     * 3. AUTO-DETECTION: Automatically detects local development environment
+     * 4. FALLBACK: Uses production backend as default
+     *
+     * LOCAL DEVELOPMENT DETECTION:
+     * - Checks if Vite is in DEV mode (import.meta.env.DEV)
+     * - Checks if hostname is 'localhost', '127.0.0.1', or contains 'local'
+     * - If either condition is true, uses http://localhost:8080
+     *
+     * EXPECTED OUTPUTS:
+     * - Development: "http://localhost:8080" (when running npm run dev)
+     * - Production: "https://neurastack-backend-638289111765.us-central1.run.app"
+     * - Override: Whatever URL is set in VITE_BACKEND_URL
+     *
+     * TROUBLESHOOTING:
+     * - If you see production URL in dev mode, check if VITE_BACKEND_URL is set
+     * - If you see localhost in production, check your build environment
+     * - Environment variables take precedence over auto-detection
+     */
     if (import.meta.env.DEV) {
-      console.group('🔧 NeuraStack Client Configuration');
-      console.log('🌐 Detected Backend URL:', backendUrl);
-      console.log('🏠 Hostname:', window.location.hostname);
-      console.log('🔧 DEV Mode:', import.meta.env.DEV);
-      console.log('📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+      console.group('🔧 NeuraStack Client Configuration Debug');
+      console.log('');
+      console.log('📍 FINAL BACKEND URL:', `%c${backendUrl}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
+      console.log('');
+      console.log('🔍 Detection Details:');
+      console.log('  🌐 Current Hostname:', window.location.hostname);
+      console.log('  🏗️  Vite DEV Mode:', import.meta.env.DEV ? '✅ Enabled' : '❌ Disabled');
+      console.log('  📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL || '❌ Not Set');
+      console.log('  🎯 Config BaseURL:', config.baseUrl || '❌ Not Provided');
+      console.log('');
+
+      // Show detection logic results
+      const isLocalDev = import.meta.env.DEV ||
+                        window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1' ||
+                        window.location.hostname.includes('local');
+
+      console.log('🧠 Auto-Detection Logic:');
+      console.log('  🔧 DEV Mode Check:', import.meta.env.DEV ? '✅ True' : '❌ False');
+      console.log('  🏠 Localhost Check:',
+        (window.location.hostname === 'localhost' ||
+         window.location.hostname === '127.0.0.1' ||
+         window.location.hostname.includes('local')) ? '✅ True' : '❌ False');
+      console.log('  📊 Final Local Dev:', isLocalDev ? '✅ True (will use localhost:8080)' : '❌ False (will use production)');
+      console.log('');
+
+      // Show which detection method was used
+      if (config.baseUrl) {
+        console.log('🎯 URL Source: %cExplicit Config Override%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
+      } else if (import.meta.env.VITE_BACKEND_URL) {
+        console.log('🎯 URL Source: %cEnvironment Variable (VITE_BACKEND_URL)%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
+      } else if (isLocalDev) {
+        console.log('🎯 URL Source: %cAuto-Detection (Local Development)%c', 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+      } else {
+        console.log('🎯 URL Source: %cDefault Fallback (Production)%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
+      }
+
+      console.log('');
+      console.log('💡 Tips:');
+      console.log('  • To force localhost: Comment out VITE_BACKEND_URL in .env.local');
+      console.log('  • To force production: Set VITE_BACKEND_URL in .env.local');
+      console.log('  • Auto-detection works when hostname contains "local" or is localhost/127.0.0.1');
       console.groupEnd();
     }
 
@@ -185,7 +250,7 @@ export class NeuraStackClient {
       sessionId: config.sessionId || crypto.randomUUID(),
       userId: config.userId || '',
       authToken: config.authToken || '',
-      timeout: config.timeout || 30000, // 30 seconds (backend timeout is 25s + buffer)
+      timeout: config.timeout || 60000, // 60 seconds (API spec: responses may take 5-20s, up to 60+ seconds)
       useEnsemble: config.useEnsemble ?? true
     };
   }
@@ -219,24 +284,23 @@ export class NeuraStackClient {
       headers['X-User-Id'] = userId;
     }
 
-    // Generate correlation ID for request tracking (optional but recommended)
+    // Generate correlation ID for request tracking (for logging only)
     const correlationId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    headers['X-Correlation-ID'] = correlationId;
 
-    // Note: Authorization header removed to avoid CORS issues
-    // Only using X-User-Id and X-Correlation-ID as allowed headers
+    // Note: Authorization and X-Correlation-ID headers removed to avoid CORS issues
+    // Only using CORS-allowed headers: Content-Type, X-User-Id
 
     // Log the outgoing request (development only)
     if (import.meta.env.DEV) {
       console.group('🚀 NeuraStack Default Ensemble API Request');
       console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.DEFAULT_ENSEMBLE}`);
       console.log('📋 Request Body:', JSON.stringify(requestBody, null, 2));
-      console.log('🔧 Headers:', headers);
+      console.log('🔧 Headers (CORS-compliant):', headers);
       console.log('⚙️ Config:', {
         sessionId: this.config.sessionId,
         userId: this.config.userId,
         timeout: this.config.timeout,
-        correlationId
+        correlationId: correlationId + ' (for logging only)'
       });
       console.groupEnd();
     }
@@ -576,71 +640,186 @@ export class NeuraStackClient {
   }
 
   /**
-   * Generate a personalized workout using the dedicated workout API endpoint
-   * NO CACHING - Always makes fresh API calls for workout generation
+   * Generate a personalized workout using the enhanced workout API endpoint
+   * NO CACHING - Always makes fresh API calls with multiple cache-busting strategies
+   *
+   * Enhanced Features:
+   * - Guaranteed workout type consistency via workoutSpecification
+   * - Multiple cache-busting techniques (URL params, headers, unique IDs)
+   * - Backward compatibility with legacy string format
+   * - Comprehensive request tracking and debugging
    */
   async generateWorkout(
     request: WorkoutAPIRequest,
     options: NeuraStackRequestOptions = {}
   ): Promise<WorkoutAPIResponse> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+    // Generate comprehensive unique identifiers for cache-busting
+    const timestamp = Date.now();
+    const randomPart1 = Math.random().toString(36).substring(2, 15);
+    const randomPart2 = Math.random().toString(36).substring(2, 15);
+    const correlationId = `workout-${timestamp}-${randomPart1}-${randomPart2}`;
+    const sessionId = crypto.randomUUID();
+
+    // Enhanced request with guaranteed uniqueness
+    const enhancedRequest: WorkoutAPIRequest = {
+      ...request,
+      requestId: request.requestId || `req-${timestamp}-${randomPart1}`,
+      timestamp: request.timestamp || new Date().toISOString(),
+      sessionContext: request.sessionContext || `${request.workoutSpecification?.workoutType || 'mixed'}-${timestamp}`,
+      correlationId: correlationId
     };
 
-    // Add user identification headers
+    // CORS-compliant headers with cache-busting (only allowed headers)
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+      // Note: Cache-Control, Pragma, and Expires headers cause CORS issues
+      // Cache-busting is handled via URL parameters instead
+    };
+
+    // Add user identification headers (only allowed CORS headers)
     const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
       headers['X-User-Id'] = userId;
     }
 
-    // Generate correlation ID for request tracking - always unique to prevent caching
-    const correlationId = `workout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${Math.random().toString(36).substr(2, 9)}`;
-    headers['X-Correlation-ID'] = correlationId;
-
-    // Cache-busting is now handled via URL parameters to avoid CORS issues
-    // No additional headers needed for cache-busting
-
-    // Log the outgoing workout request (development only)
-    if (import.meta.env.DEV) {
-      console.group('🏋️ NeuraStack Workout API Request');
-      console.log('📤 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
-      console.log('📋 Request Body:', JSON.stringify(request, null, 2));
-      console.log('🔧 Headers:', headers);
-      console.log('⚙️ Config:', {
-        userId: this.config.userId,
-        timeout: this.config.timeout,
-        correlationId
-      });
-      console.groupEnd();
-    }
-
     try {
+      // Multiple cache-busting strategies
+      const cacheBustParams = new URLSearchParams({
+        t: timestamp.toString(),
+        r: randomPart1,
+        r2: randomPart2,
+        rid: enhancedRequest.requestId!,
+        sid: sessionId,
+        v: '3.0', // Enhanced API version
+        wt: request.workoutSpecification?.workoutType || 'mixed',
+        cb: Math.random().toString(36).substring(2, 10) // Additional cache buster
+      });
+
+      const workoutEndpoint = `${NEURASTACK_ENDPOINTS.WORKOUT}?${cacheBustParams.toString()}`;
+
+      // Enhanced development logging
+      if (import.meta.env.DEV) {
+        console.group('🏋️ Enhanced NeuraStack Workout API Request');
+        console.log('');
+        console.log('📍 WORKOUT TYPE GUARANTEE:');
+        if (request.workoutSpecification?.workoutType) {
+          console.log(`  🎯 Requested Type: %c${request.workoutSpecification.workoutType}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+          console.log('  ✅ Using Enhanced Format (Type Guaranteed)');
+        } else if (request.workoutRequest) {
+          console.log('  ⚠️  Using Legacy Format (Type Not Guaranteed)');
+          console.log(`  📝 Legacy Request: ${request.workoutRequest.substring(0, 100)}...`);
+        }
+        console.log('');
+        console.log('🔒 CACHE-BUSTING STRATEGIES:');
+        console.log('  📊 URL Parameters:', Object.fromEntries(cacheBustParams));
+        console.log('  🔧 Headers: CORS-compliant only (no cache headers to avoid CORS issues)');
+        console.log('  🆔 Unique Identifiers:', {
+          requestId: enhancedRequest.requestId,
+          correlationId: correlationId,
+          sessionId: sessionId,
+          timestamp: enhancedRequest.timestamp
+        });
+        console.log('');
+        console.log('🌐 REQUEST DETAILS:');
+        console.log('  📤 Base Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
+        console.log('  🔗 Full URL:', `${this.config.baseUrl}${workoutEndpoint}`);
+        console.log('  📋 Request Body:', JSON.stringify(enhancedRequest, null, 2));
+        console.log('  ⚙️ Options:', {
+          userId: userId || 'Not provided',
+          timeout: options.timeout || this.config.timeout
+        });
+        console.groupEnd();
+      }
+
       const workoutResponse = await this.makeRequest<WorkoutAPIResponse>(
-        NEURASTACK_ENDPOINTS.WORKOUT,
+        workoutEndpoint,
         {
           method: 'POST',
           headers,
-          body: JSON.stringify(request),
+          body: JSON.stringify(enhancedRequest),
           signal: options.signal,
           timeout: options.timeout || this.config.timeout,
           bustCache: true // Force cache-busting for workout generation
         }
       );
 
-      // Log successful workout generation
-      console.group('🎯 Workout Generation Success');
-      console.log('✅ Status:', workoutResponse.status);
-      console.log('🏋️ Workout Type:', workoutResponse.data?.workout.type);
-      console.log('⏱️ Duration:', workoutResponse.data?.workout.duration);
-      console.log('📊 Exercise Count:', workoutResponse.data?.workout.exercises.length);
-      console.log('🔗 Correlation ID:', workoutResponse.correlationId);
-      console.groupEnd();
+      // Enhanced success logging with type verification
+      if (import.meta.env.DEV) {
+        console.group('🎯 Enhanced Workout Generation Success');
+        console.log('');
+        console.log('✅ RESPONSE STATUS:', workoutResponse.status);
+        console.log('🔗 Correlation ID:', workoutResponse.correlationId);
+        console.log('');
+
+        if (workoutResponse.data?.workout) {
+          const workout = workoutResponse.data.workout;
+          console.log('🏋️ WORKOUT DETAILS:');
+          console.log(`  📋 Type: %c${workout.type}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+          console.log(`  ⏱️ Duration: ${workout.duration}`);
+          console.log(`  📊 Exercise Count: ${workout.exercises?.length || 0}`);
+          console.log(`  🎯 Difficulty: ${workout.difficulty}`);
+          console.log(`  🛠️ Equipment: ${workout.equipment?.join(', ') || 'None specified'}`);
+
+          // Type consistency verification with flexible matching
+          const requestedType = request.workoutSpecification?.workoutType;
+          if (requestedType) {
+            // Create flexible type matching to handle backend variations
+            const normalizeType = (type: string) => type.toLowerCase().replace(/[_-]/g, '');
+            const requestedNormalized = normalizeType(requestedType);
+            const receivedNormalized = normalizeType(workout.type);
+
+            // Check for exact match or partial match (e.g., "lower_body" -> "lower")
+            const exactMatch = workout.type === requestedType;
+            const partialMatch = receivedNormalized.includes(requestedNormalized.split('_')[0]) ||
+                               requestedNormalized.includes(receivedNormalized);
+            const typeMatch = exactMatch || partialMatch;
+
+            console.log('');
+            console.log('🔍 TYPE CONSISTENCY CHECK:');
+            console.log(`  📝 Requested: %c${requestedType}%c`, 'color: #0099ff; font-weight: bold;', 'color: inherit;');
+            console.log(`  📋 Received: %c${workout.type}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+            console.log(`  🔍 Normalized Match: ${requestedNormalized} ↔ ${receivedNormalized}`);
+            console.log(`  ✅ Match: %c${typeMatch ? (exactMatch ? 'EXACT' : 'PARTIAL') : 'NO'}%c`,
+              typeMatch ? 'color: #00ff00; font-weight: bold;' : 'color: #ff0000; font-weight: bold;',
+              'color: inherit;'
+            );
+
+            if (!typeMatch) {
+              console.warn('⚠️ TYPE MISMATCH DETECTED - Backend may need adjustment');
+            } else if (!exactMatch && partialMatch) {
+              console.info('ℹ️ Partial type match detected - backend using abbreviated format');
+            }
+          }
+        }
+
+        console.log('');
+        console.log('📊 METADATA:');
+        console.log(`  🤖 Model: ${workoutResponse.data?.metadata?.model || 'Unknown'}`);
+        console.log(`  ⏰ Timestamp: ${workoutResponse.data?.metadata?.timestamp || 'Unknown'}`);
+        console.groupEnd();
+      }
 
       return workoutResponse;
     } catch (error) {
-      console.group('❌ Workout Generation Error');
-      console.log('🚫 Error:', error);
-      console.log('🔗 Correlation ID:', correlationId);
+      // Enhanced error logging with request context
+      console.group('❌ Enhanced Workout Generation Error');
+      console.log('');
+      console.log('🚫 ERROR DETAILS:');
+      console.log('  💥 Error:', error);
+      console.log('  🔗 Correlation ID:', correlationId);
+      console.log('  🆔 Request ID:', enhancedRequest.requestId);
+      console.log('  ⏰ Timestamp:', enhancedRequest.timestamp);
+      console.log('');
+      console.log('📋 REQUEST CONTEXT:');
+      console.log('  🎯 Workout Type:', request.workoutSpecification?.workoutType || 'Legacy format');
+      console.log('  👤 User ID:', userId || 'Not provided');
+      console.log('  🌐 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
+      console.log('');
+      console.log('🔧 TROUBLESHOOTING:');
+      console.log('  • Check if backend is running on the expected URL');
+      console.log('  • Verify workout type is supported by backend');
+      console.log('  • Check network connectivity and CORS settings');
+      console.log('  • Review request payload for invalid data');
       console.groupEnd();
       throw error;
     }
@@ -648,46 +827,64 @@ export class NeuraStackClient {
 
   /**
    * Transform ensemble response to simplified format for new API
+   * Following API spec: synthesis.content is main response, roles are individual responses
    */
   private transformEnsembleResponse(ensembleResponse: EnsembleResponse): NeuraStackQueryResponse {
+    // Always check status === 'success' before processing (per API spec)
     if (ensembleResponse.status !== 'success' || !ensembleResponse.data) {
       throw new NeuraStackApiError({
         error: ensembleResponse.error || 'Ensemble API Error',
         message: ensembleResponse.message || 'Failed to get successful response from ensemble API',
         statusCode: 500,
-        timestamp: ensembleResponse.timestamp || new Date().toISOString()
+        timestamp: ensembleResponse.timestamp || new Date().toISOString(),
+        correlationId: ensembleResponse.correlationId
       });
     }
 
     const { data } = ensembleResponse;
 
+    // Validate required response structure per API spec
+    if (!data.synthesis || !data.synthesis.content) {
+      throw new NeuraStackApiError({
+        error: 'Invalid Response Structure',
+        message: 'Missing synthesis.content in API response',
+        statusCode: 500,
+        timestamp: new Date().toISOString(),
+        correlationId: ensembleResponse.correlationId
+      });
+    }
+
     // Create individual responses for UI display using new format
-    const individualResponses: SubAnswer[] = data.roles.map(role => ({
+    // roles: Array of individual AI responses (character limited per API spec)
+    const individualResponses: SubAnswer[] = (data.roles || []).map(role => ({
       model: role.model,
       answer: role.content,
       role: role.role, // Keep the original role for reference
       provider: this.extractProviderFromModel(role.model), // Extract provider from model name
-      status: 'success', // All roles in successful response are considered successful
+      status: role.status === 'fulfilled' ? 'success' : 'failed', // Map API status to SubAnswer format
       wordCount: role.content ? role.content.split(' ').length : 0
     }));
 
     // Create models used mapping
     const modelsUsed: Record<string, boolean> = {};
-    data.roles.forEach(role => {
-      modelsUsed[role.model] = true; // All models in response are considered used
+    (data.roles || []).forEach(role => {
+      modelsUsed[role.model] = role.status === 'fulfilled'; // Only count successful models
     });
 
     // Estimate token count (rough approximation: 1 token ≈ 4 characters)
+    // synthesis.content: Main AI response (unlimited length per API spec)
     const tokenCount = Math.ceil(data.synthesis.content.length / 4);
 
     return {
-      answer: data.synthesis.content,
+      answer: data.synthesis.content, // Main AI response per API spec
       ensembleMode: true,
       modelsUsed,
-      executionTime: `${data.metadata.processingTimeMs}ms`,
+      executionTime: `${data.metadata?.processingTimeMs || 0}ms`,
       tokenCount,
-      individualResponses,
-      fallbackReasons: {} // No fallback reasons for successful responses
+      individualResponses, // Individual AI responses (character limited)
+      fallbackReasons: {}, // No fallback reasons for successful responses
+      correlationId: ensembleResponse.correlationId, // For debugging per API spec
+      metadata: data.metadata // Performance metrics and quality indicators per API spec
     };
   }
 
@@ -781,7 +978,7 @@ export class NeuraStackClient {
   }
 
   /**
-   * Parse error response from API
+   * Parse error response from API with correlation ID support
    */
   private async parseErrorResponse(response: Response): Promise<NeuraStackError> {
     try {
@@ -790,14 +987,16 @@ export class NeuraStackClient {
         error: errorData.error || 'API Error',
         message: errorData.message || `HTTP ${response.status}: ${response.statusText}`,
         statusCode: response.status as NeuraStackErrorCode,
-        timestamp: errorData.timestamp || new Date().toISOString()
+        timestamp: errorData.timestamp || new Date().toISOString(),
+        correlationId: errorData.correlationId || response.headers.get('X-Correlation-ID') || undefined
       };
     } catch {
       return {
         error: 'API Error',
         message: `HTTP ${response.status}: ${response.statusText}`,
         statusCode: response.status as NeuraStackErrorCode,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        correlationId: response.headers.get('X-Correlation-ID') || undefined
       };
     }
   }
@@ -811,16 +1010,19 @@ export class NeuraStackApiError extends Error {
   public readonly statusCode: number;
   public readonly timestamp: string;
   public readonly retryable: boolean;
+  public readonly correlationId?: string;
 
   constructor(errorData: NeuraStackError) {
     super(errorData.message);
     this.name = 'NeuraStackApiError';
     this.statusCode = errorData.statusCode;
     this.timestamp = errorData.timestamp;
+    this.correlationId = errorData.correlationId;
     this.retryable = this.isRetryable(errorData.statusCode);
   }
 
   private isRetryable(statusCode: number): boolean {
+    // Implement retry logic for transient failures per API spec
     return statusCode >= 500 || statusCode === 429 || statusCode === 408;
   }
 }

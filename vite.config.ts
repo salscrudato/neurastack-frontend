@@ -165,11 +165,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Core React chunk (most stable)
-          vendor: ['react', 'react-dom'],
+          // Core React chunk (most stable) - include framer-motion here to ensure React context availability
+          vendor: ['react', 'react-dom', 'framer-motion'],
 
-          // UI library chunk (includes framer-motion to ensure React dependency)
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion', 'styled-components'],
+          // UI library chunk
+          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'styled-components'],
 
           // State management and utilities
           state: ['zustand'],

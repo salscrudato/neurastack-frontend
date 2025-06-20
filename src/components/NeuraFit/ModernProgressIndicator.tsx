@@ -1,4 +1,4 @@
-import { Box, Text, HStack, useColorModeValue } from '@chakra-ui/react';
+import { Box, HStack, Text, useColorModeValue } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 

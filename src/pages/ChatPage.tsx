@@ -164,15 +164,23 @@ export function ChatPage() {
     <Flex
       direction="column"
       h="100%"
+      minH="100%"
       p="0px"
       bg={bgColor}
       position="relative"
-      // Enhanced mobile support
+      // Enhanced mobile support with proper scrolling
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
-        // Dynamic viewport height for mobile
-        minHeight: ['100vh', '100dvh'],
+        // Ensure content can scroll properly
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        // Mobile viewport support
+        '@media (max-width: 768px)': {
+          minHeight: ['100vh', '100dvh'],
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        },
         '@supports (-webkit-touch-callout: none)': {
           minHeight: '-webkit-fill-available',
         }
@@ -225,21 +233,17 @@ export function ChatPage() {
       {/* Enhanced messages container */}
       <Box
         ref={messagesContainerRef}
-        flex="1 1 0"
-        overflowY="auto"
+        flex="1"
+        w="100%"
         px={chatConfig.container.padding}
         py={{ xs: 4, sm: 4, md: 2, lg: 2.5, xl: 3 }}
         bg={containerBg}
-        position="relative"
-        // Enhanced scrolling performance
+        // Enhanced scrolling performance - remove overflow restrictions
         sx={{
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          scrollBehavior: prefersReducedMotion ? 'auto' : 'smooth',
-          // Enhanced mobile support with proper header spacing
+          // Enhanced mobile support with proper spacing
           '@media (max-width: 768px)': {
             paddingX: 2,
-            paddingTop: 4, // Increased top padding for mobile
+            paddingTop: 4,
             paddingBottom: 2,
           }
         }}

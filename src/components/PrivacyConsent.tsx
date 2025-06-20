@@ -1,6 +1,6 @@
 /**
  * Privacy Consent Component
- * 
+ *
  * GDPR/CCPA compliant consent banner for analytics and cookies.
  * Only enables advanced tracking after user consent.
  */

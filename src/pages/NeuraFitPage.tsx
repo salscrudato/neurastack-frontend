@@ -105,13 +105,26 @@ export default function NeuraFitPage() {
 
   return (
     <Box
-      h="100%"
+      w="100%"
+      minH="100%"
       bg="#FAFBFC"
-      overflow="auto"
       position="relative"
-      style={{ WebkitOverflowScrolling: 'touch' }}
       data-testid="page-content"
       className="mobile-scroll-container neurafit-page-container"
+      // Enhanced mobile scrolling support
+      sx={{
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        // Mobile viewport support
+        '@media (max-width: 768px)': {
+          minHeight: ['100vh', '100dvh'],
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        },
+        '@supports (-webkit-touch-callout: none)': {
+          minHeight: '-webkit-fill-available',
+        }
+      }}
     >
       {renderCurrentView()}
     </Box>

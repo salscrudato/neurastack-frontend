@@ -166,7 +166,7 @@ export async function loadFitnessProfile(): Promise<FitnessProfile | null> {
  * Update specific fitness level with token-efficient code
  */
 export async function updateFitnessLevel(
-  level: 'beginner' | 'intermediate' | 'advanced', 
+  level: 'beginner' | 'intermediate' | 'advanced',
   code: 'B' | 'I' | 'A'
 ): Promise<void> {
   if (!auth.currentUser) {
@@ -177,11 +177,33 @@ export async function updateFitnessLevel(
     const userId = auth.currentUser.uid;
     const profileRef = doc(db, 'users', userId, 'fitness', 'profile');
 
-    await updateDoc(profileRef, {
+    // Check if profile exists first
+    const existingProfile = await getDoc(profileRef);
+
+    const updateData = {
       fitnessLevel: level,
       fitnessLevelCode: code,
       updatedAt: serverTimestamp()
-    });
+    };
+
+    if (existingProfile.exists()) {
+      // Update existing profile
+      await updateDoc(profileRef, updateData);
+    } else {
+      // Create new profile with minimal required fields
+      await setDoc(profileRef, {
+        ...updateData,
+        createdAt: serverTimestamp(),
+        userId,
+        // Set default values for required fields
+        goals: [],
+        equipment: [],
+        availableTime: 30,
+        workoutDays: 3,
+        timeAvailability: 'morning',
+        completedOnboarding: false
+      });
+    }
 
     console.log(`✅ Fitness level updated to ${level} (${code}) in Firestore`);
   } catch (error) {

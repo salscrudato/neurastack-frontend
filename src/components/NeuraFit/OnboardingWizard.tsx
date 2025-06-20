@@ -1,18 +1,18 @@
 import {
-  Box,
-  useColorModeValue,
-  Container,
+    Box,
+    Container,
+    useColorModeValue,
 } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useCallback, useMemo } from 'react';
 import { useFitnessStore } from '../../store/useFitnessStore';
-import ProgressIndicator from './ProgressIndicator';
+import EquipmentStep from './EquipmentStep';
 import FitnessLevelStep from './FitnessLevelStep';
 import GoalsStep from './GoalsStep';
-import EquipmentStep from './EquipmentStep';
-import PersonalInfoStep from './PersonalInfoStep';
 import InjuriesStep from './InjuriesStep';
+import PersonalInfoStep from './PersonalInfoStep';
+import ProgressIndicator from './ProgressIndicator';
 import TimeStep from './TimeStep';
-import { memo, useMemo, useCallback } from 'react';
 
 const MotionBox = motion.div;
 

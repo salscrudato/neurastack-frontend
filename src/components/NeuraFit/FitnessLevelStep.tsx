@@ -1,19 +1,19 @@
 import {
-  VStack,
-  Text,
-  Button,
-  HStack,
-  Box,
-  useToast,
-  Icon,
+    Box,
+    Button,
+    HStack,
+    Icon,
+    Text,
+    useToast,
+    VStack,
 } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useFitnessStore } from '../../store/useFitnessStore';
+import { fitnessLevels } from '../../constants/fitnessLevels'; // Imported fitnessLevels array
 import { useReducedMotion } from '../../hooks/useAccessibility';
 import { trackFitnessLevelSelection } from '../../services/fitnessDataService';
-import { fitnessLevels } from '../../constants/fitnessLevels'; // Imported fitnessLevels array
+import { useFitnessStore } from '../../store/useFitnessStore';
 
 // Motion components for animations - using motion.div to avoid React prop warnings
 const MotionBox = motion.div;

@@ -1,6 +1,6 @@
 /**
  * Workout Feedback Component
- * 
+ *
  * Collects user feedback after workout completion to improve
  * AI-driven workout generation and personalization.
  */

@@ -1,53 +1,97 @@
-/* Mobile Scrolling Fixes */
+/* Mobile Scrolling Optimization - Streamlined Version */
 
-/* Ensure proper touch scrolling on iOS */
-* {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Fix for mobile viewport height issues */
+/* Base mobile scrolling setup */
 html,
 body {
   height: 100%;
   overflow-x: hidden;
-}
-
-/* Ensure scrollable containers work properly on mobile */
-.mobile-scroll-container {
   overflow-y: auto;
-  overflow-x: hidden;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  position: relative;
+  /* Prevent horizontal scrolling completely */
+  max-width: 100vw;
+  width: 100%;
 }
 
-/* Fix for iOS Safari scrolling issues */
+/* Root container - main app wrapper */
+#root {
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* iOS Safari viewport fix */
 @supports (-webkit-touch-callout: none) {
-  .mobile-scroll-container {
+  #root {
     height: -webkit-fill-available;
   }
 }
 
-/* Prevent horizontal scrolling on mobile */
-body {
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Fix for Android Chrome scrolling */
+/* Mobile-specific optimizations */
 @media screen and (max-width: 768px) {
+  /* Prevent horizontal scrolling on all containers */
   .chakra-container,
   .chakra-stack,
   .chakra-box {
-    overflow-x: hidden;
+    overflow-x: hidden !important;
+    max-width: 100% !important;
   }
 
-  /* Ensure proper scrolling for main content areas */
-  [data-testid="app-shell-body"],
-  [data-testid="page-content"] {
-    overflow-y: auto;
-    overflow-x: hidden;
+  /* Main content areas - ensure proper scrolling */
+  [data-testid="page-content"],
+  .mobile-scroll-container,
+  .neurafit-page-container {
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
-    position: relative;
+    overscroll-behavior: contain;
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+
+  /* Fixed header positioning with solid white background */
+  [role="banner"] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    background: white !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* Touch optimization for buttons */
+  .chakra-button[aria-label*="menu"] {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Ensure all content respects viewport width */
+  * {
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Exception for buttons and interactive elements */
+  .chakra-button,
+  .chakra-button *,
+  .chakra-icon-button,
+  .chakra-icon-button * {
+    max-width: none !important;
+  }
+
+  /* Smooth scrolling performance */
+  .neurafit-onboarding-container,
+  .neurafit-workout-container {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
@@ -133,73 +177,35 @@ body {
   }
 }
 
-/* Fix for 100vh issues on mobile browsers */
-.mobile-full-height {
-  height: 100vh;
-  height: -webkit-fill-available;
-}
-
-/* Smooth scrolling for better UX */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Fix for overscroll behavior */
-body {
-  overscroll-behavior: none;
-}
-
-/* Prevent pull-to-refresh on mobile */
-body {
-  overscroll-behavior-y: contain;
-}
-
-/* Enhanced NeuraFit onboarding scrolling */
+/* NeuraFit specific mobile optimizations */
 .neurafit-onboarding-container {
-  /* Ensure proper scrolling on all mobile devices */
   overflow-y: auto;
-  overflow-x: hidden !important;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-
-  /* Handle dynamic viewport height on mobile */
   min-height: 100vh;
-  min-height: -webkit-fill-available;
-
-  /* Prevent horizontal scrolling completely */
+  min-height: 100dvh;
   width: 100%;
   max-width: 100vw;
   position: relative;
 }
 
-/* Ensure all child elements respect horizontal boundaries */
-.neurafit-onboarding-container * {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-/* Mobile-specific fixes for NeuraFit */
 @media screen and (max-width: 768px) {
   .neurafit-onboarding-container {
-    /* Use dynamic viewport units for better mobile support */
     min-height: 100dvh;
     min-height: -webkit-fill-available;
-
-    /* Ensure content can scroll past viewport */
     padding-bottom: env(safe-area-inset-bottom, 20px);
-
-    /* Lock horizontal scrolling on mobile */
     overflow-x: hidden !important;
     touch-action: pan-y pinch-zoom;
   }
 
-  /* Fix for iOS Safari address bar */
+  /* iOS Safari viewport fix */
   @supports (-webkit-touch-callout: none) {
     .neurafit-onboarding-container {
       min-height: -webkit-fill-available;
     }
   }
 
-  /* Prevent any horizontal scrolling in NeuraFit components - but not buttons */
+  /* Prevent horizontal overflow in NeuraFit components */
   .neurafit-onboarding-container .chakra-container,
   .neurafit-onboarding-container .chakra-box:not(.chakra-button),
   .neurafit-onboarding-container .chakra-stack:not(.chakra-button *),
@@ -208,14 +214,7 @@ body {
     max-width: 100% !important;
   }
 
-  /* Ensure motion components don't cause horizontal overflow - but not button content */
-  .neurafit-onboarding-container
-    [data-framer-motion]:not(.chakra-button):not(.chakra-button *) {
-    overflow-x: hidden !important;
-    max-width: 100% !important;
-  }
-
-  /* Ensure button content is not affected by overflow rules */
+  /* Ensure buttons work properly */
   .neurafit-onboarding-container .chakra-button,
   .neurafit-onboarding-container .chakra-button * {
     overflow: visible !important;
@@ -287,24 +286,25 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 
-  /* Ensure proper height calculation */
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  /* Full height minus header */
+  height: 100%;
+  min-height: 100%;
 }
 
 @media screen and (max-width: 768px) {
   .neurafit-page-container {
-    /* Use dynamic viewport units */
-    min-height: 100dvh;
-    min-height: -webkit-fill-available;
+    /* Full height container - parent handles header spacing */
+    height: 100%;
+    min-height: 100%;
 
     /* Add safe area padding */
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
-/* Enhanced NeuraFit workout generator mobile optimizations */
+/* Essential mobile optimizations only */
 @media screen and (max-width: 768px) {
   /* Workout generation container */
   .neurafit-workout-container {
@@ -313,89 +313,19 @@ body {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Enhanced workout cards for mobile */
-  .neurafit-workout-card {
-    margin: 0.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Mobile-optimized exercise display */
-  .neurafit-exercise-display {
-    padding: 1rem;
-    font-size: 1.125rem;
-    line-height: 1.5;
-  }
-
   /* Enhanced touch targets for workout controls */
   .neurafit-workout-button {
     min-height: 64px;
     min-width: 64px;
-    font-size: 1.125rem;
-    font-weight: 600;
-    border-radius: 0.75rem;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Mobile workout timer display */
-  .neurafit-timer-display {
-    font-size: 2rem;
-    font-weight: 700;
-    text-align: center;
-    padding: 1.5rem;
-  }
-
-  /* Enhanced exercise list for mobile */
-  .neurafit-exercise-list {
-    gap: 0.75rem;
-    padding: 0.5rem;
-  }
-
-  /* Mobile-optimized progress indicators */
-  .neurafit-progress-mobile {
-    height: 8px;
-    border-radius: 4px;
-    margin: 1rem 0;
-  }
-
-  /* Advanced mobile performance optimizations */
-  .neurafit-workout-container * {
-    /* Hardware acceleration for smooth animations */
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-  }
-
-  /* Optimize scrolling performance */
-  .neurafit-scroll-container {
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    scroll-behavior: smooth;
   }
 
   /* Prevent text selection during workouts */
   .neurafit-workout-active {
     -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
-  }
-
-  /* Enhanced focus states for accessibility */
-  .neurafit-workout-button:focus-visible {
-    outline: 3px solid #3b82f6;
-    outline-offset: 2px;
-  }
-
-  /* Optimize image rendering if any */
-  .neurafit-image {
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
   }
 
   /* Prevent zoom on double tap */

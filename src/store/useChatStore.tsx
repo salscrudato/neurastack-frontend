@@ -42,7 +42,6 @@ interface ChatState {
 }
 
 const MAX_RETRIES = 2; // Reduced from 3
-const RETRY_DELAY = 1500; // Increased to 1.5 seconds
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -172,16 +171,25 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
             return; // Success, exit retry loop
 
-          } catch (error) {
+          } catch (error: any) {
             retryCount++;
             set(() => ({ retryCount }));
 
-            // Simple error logging
+            // Enhanced error logging with correlation ID per API spec
             if (process.env.NODE_ENV === 'development') {
               console.warn(`❌ Chat request failed (attempt ${retryCount}/${MAX_RETRIES}):`, error instanceof Error ? error.message : 'Unknown error');
+              if (error?.correlationId) {
+                console.warn(`🔗 Correlation ID: ${error.correlationId}`);
+              }
             }
 
-            if (retryCount > MAX_RETRIES) {
+            // Check if this is a retryable error (per API spec: 500+, 429, 408)
+            const isRetryable = error?.retryable ||
+                               error?.statusCode >= 500 ||
+                               error?.statusCode === 429 ||
+                               error?.statusCode === 408;
+
+            if (retryCount > MAX_RETRIES || !isRetryable) {
               // Final failure - show elegant error message
               const errorMessage = error instanceof Error
                 ? error.message
@@ -196,15 +204,18 @@ export const useChatStore = create<ChatState>()((set, get) => ({
                   metadata: {
                     retryCount: retryCount - 1,
                     totalTime: Date.now() - startTime,
-                    errorType: error instanceof Error ? error.name : 'Unknown'
+                    errorType: error instanceof Error ? error.name : 'Unknown',
+                    correlationId: error?.correlationId,
+                    statusCode: error?.statusCode
                   }
                 }],
                 isLoading: false,
                 retryCount: 0
               }));
             } else {
-              // Simple retry delay
-              await sleep(RETRY_DELAY);
+              // Exponential backoff for retryable errors
+              const delay = Math.pow(2, retryCount - 1) * 1000;
+              await sleep(delay);
             }
           }
         }

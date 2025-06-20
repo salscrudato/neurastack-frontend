@@ -1,27 +1,27 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styled, { keyframes, css } from 'styled-components';
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  InformationCircleIcon,
-  XMarkIcon
+    CheckCircleIcon,
+    ExclamationCircleIcon,
+    InformationCircleIcon,
+    XMarkIcon
 } from '@heroicons/react/24/solid';
-import { signInWithPopup, GoogleAuthProvider, signInAnonymously } from "firebase/auth";
-import { auth } from "../firebase";
-import { useAuthStore } from "../store/useAuthStore";
-import { useReducedMotion } from "../hooks/useAccessibility";
-import howItWorksImage from "../assets/img/how-it-works.png";
+import { GoogleAuthProvider, signInAnonymously, signInWithPopup } from "firebase/auth";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled, { css, keyframes } from 'styled-components';
 import logo from "../assets/icons/logo.svg";
+import howItWorksImage from "../assets/img/how-it-works.png";
+import { auth } from "../firebase";
+import { useReducedMotion } from "../hooks/useAccessibility";
+import { useAuthStore } from "../store/useAuthStore";
 
 const provider = new GoogleAuthProvider();
 
 /* ---------- type definitions ---------- */
 interface AnimatedElementProps {
-  color?: string;
-  duration?: string;
-  delay?: string;
-  blur?: string;
+  $color?: string;
+  $duration?: string;
+  $delay?: string;
+  $blur?: string;
 }
 
 interface MessageProps {
@@ -174,11 +174,11 @@ const FlyingStar = styled.div<AnimatedElementProps>`
   position: absolute;
   width: 2px;
   height: 2px;
-  background: ${props => props.color || 'rgba(255, 255, 255, 0.8)'};
+  background: ${props => props.$color || 'rgba(255, 255, 255, 0.8)'};
   border-radius: 50%;
-  animation: ${flyingStars} ${props => props.duration || '3s'} linear infinite;
-  animation-delay: ${props => props.delay || '0s'};
-  box-shadow: 0 0 6px ${props => props.color || 'rgba(255, 255, 255, 0.8)'};
+  animation: ${flyingStars} ${props => props.$duration || '3s'} linear infinite;
+  animation-delay: ${props => props.$delay || '0s'};
+  box-shadow: 0 0 6px ${props => props.$color || 'rgba(255, 255, 255, 0.8)'};
 `;
 
 /* ---------- warp speed lines ---------- */
@@ -188,11 +188,11 @@ const WarpLine = styled.div<AnimatedElementProps>`
   width: 100px;
   background: linear-gradient(90deg,
     transparent 0%,
-    ${props => props.color || 'rgba(30, 58, 138, 0.8)'} 50%,
+    ${props => props.$color || 'rgba(30, 58, 138, 0.8)'} 50%,
     transparent 100%
   );
-  animation: ${warpSpeed} ${props => props.duration || '2s'} linear infinite;
-  animation-delay: ${props => props.delay || '0s'};
+  animation: ${warpSpeed} ${props => props.$duration || '2s'} linear infinite;
+  animation-delay: ${props => props.$delay || '0s'};
   filter: blur(0.5px);
 `;
 
@@ -201,11 +201,11 @@ const CosmicOrb = styled.div<AnimatedElementProps>`
   position: absolute;
   border-radius: 50%;
   background: radial-gradient(circle,
-    ${props => props.color || 'rgba(30, 58, 138, 0.6)'} 0%,
+    ${props => props.$color || 'rgba(30, 58, 138, 0.6)'} 0%,
     transparent 70%
   );
-  animation: ${cosmicPulse} ${props => props.duration || '4s'} ease-in-out infinite;
-  animation-delay: ${props => props.delay || '0s'};
+  animation: ${cosmicPulse} ${props => props.$duration || '4s'} ease-in-out infinite;
+  animation-delay: ${props => props.$delay || '0s'};
   filter: blur(2px);
 `;
 
@@ -922,11 +922,11 @@ export function SplashPage() {
             top: `${Math.random() * 100}%`,
             left: '-10px'
           }}
-          color={i % 3 === 0 ? 'rgba(255, 255, 255, 0.9)' :
+          $color={i % 3 === 0 ? 'rgba(255, 255, 255, 0.9)' :
                 i % 3 === 1 ? 'rgba(30, 58, 138, 0.8)' :
                 'rgba(59, 130, 246, 0.6)'}
-          duration={`${2 + Math.random() * 3}s`}
-          delay={`${Math.random() * 5}s`}
+          $duration={`${2 + Math.random() * 3}s`}
+          $delay={`${Math.random() * 5}s`}
         />
       ))}
 
@@ -938,9 +938,9 @@ export function SplashPage() {
             top: `${10 + i * 12}%`,
             left: '-100px'
           }}
-          color={i % 2 === 0 ? 'rgba(30, 58, 138, 0.6)' : 'rgba(59, 130, 246, 0.4)'}
-          duration={`${1.5 + Math.random() * 2}s`}
-          delay={`${Math.random() * 3}s`}
+          $color={i % 2 === 0 ? 'rgba(30, 58, 138, 0.6)' : 'rgba(59, 130, 246, 0.4)'}
+          $duration={`${1.5 + Math.random() * 2}s`}
+          $delay={`${Math.random() * 3}s`}
         />
       ))}
 
@@ -952,9 +952,9 @@ export function SplashPage() {
           top: '5%',
           left: '5%'
         }}
-        color="rgba(30, 58, 138, 0.3)"
-        duration="8s"
-        delay="0s"
+        $color="rgba(30, 58, 138, 0.3)"
+        $duration="8s"
+        $delay="0s"
       />
       <CosmicOrb
         style={{
@@ -963,9 +963,9 @@ export function SplashPage() {
           top: '60%',
           right: '10%'
         }}
-        color="rgba(59, 130, 246, 0.2)"
-        duration="6s"
-        delay="2s"
+        $color="rgba(59, 130, 246, 0.2)"
+        $duration="6s"
+        $delay="2s"
       />
       <CosmicOrb
         style={{
@@ -974,9 +974,9 @@ export function SplashPage() {
           top: '30%',
           right: '5%'
         }}
-        color="rgba(15, 23, 42, 0.4)"
-        duration="10s"
-        delay="4s"
+        $color="rgba(15, 23, 42, 0.4)"
+        $duration="10s"
+        $delay="4s"
       />
 
       <Card>

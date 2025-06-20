@@ -1,30 +1,30 @@
 // src/components/AddToHomeButton.tsx
-import { useState, useEffect } from 'react';
-import {
-  Button,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Text,
-  VStack,
-  HStack,
-  useDisclosure,
-  Icon,
-  Box,
-  Badge,
-  Slide,
-  IconButton,
-  Tooltip,
-  useToast,
-  SlideFade,
-} from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
-import { PiDeviceMobileBold, PiDownloadBold, PiSparkle } from 'react-icons/pi';
+import {
+    Badge,
+    Box,
+    Button,
+    HStack,
+    Icon,
+    IconButton,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Slide,
+    SlideFade,
+    Text,
+    Tooltip,
+    useDisclosure,
+    useToast,
+    VStack,
+} from '@chakra-ui/react';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { PiDeviceMobileBold, PiDownloadBold, PiSparkle } from 'react-icons/pi';
 import useInstallPrompt from "../hooks/useInstallPrompt";
 
 const MotionBox = motion(Box);

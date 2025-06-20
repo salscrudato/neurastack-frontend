@@ -1,6 +1,6 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import AddToHomeButton from "./components/AddToHomeScreen";
 import { Header } from "./components/Header";
@@ -19,11 +19,6 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
 
   // Check if current route should show header
   const isSplashPage = location.pathname === '/';
-
-  // Modern header styling - transparent
-  const headerBg = 'transparent';
-  const headerBorderColor = 'transparent';
-  const headerBoxShadow = 'none';
 
   // Simplified transitions for streamlined app structure
   const getTransitionVariants = (pathname: string) => {
@@ -52,25 +47,72 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   const variants = getTransitionVariants(location.pathname);
 
   return (
-    <Flex direction="column" h="100vh" w="100%" overflow="hidden" overflowX="hidden">
-      {/* Static Header - only show on non-splash pages */}
+    <Flex
+      direction="column"
+      h="100vh"
+      w="100%"
+      overflowX="hidden"
+      position="relative"
+      // Enhanced mobile viewport support
+      sx={{
+        minHeight: ['100vh', '100dvh'],
+        '@supports (-webkit-touch-callout: none)': {
+          minHeight: '-webkit-fill-available',
+        },
+        // Prevent body scrolling - let content areas handle their own scrolling
+        overflow: 'hidden',
+      }}
+    >
+      {/* Fixed Header - only show on non-splash pages */}
       {!isSplashPage && (
         <Box
-          position="relative"
-          zIndex={10}
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          zIndex={1000}
           w="100%"
-          bg={headerBg}
-          borderBottom="1px solid"
-          borderColor={headerBorderColor}
-          boxShadow={headerBoxShadow}
+          bg="white"
+          borderBottom="1px solid rgba(226, 232, 240, 0.8)"
+          boxShadow="0 1px 3px rgba(0, 0, 0, 0.05)"
           flexShrink={0}
+          // Enhanced mobile header support
+          sx={{
+            '@media (max-width: 768px)': {
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+            }
+          }}
         >
           <Header />
         </Box>
       )}
 
-      {/* Animated Page Content */}
-      <Box flex="1" position="relative" overflow="hidden">
+      {/* Animated Page Content with proper top padding for fixed header */}
+      <Box
+        flex="1"
+        position="relative"
+        w="100%"
+        pt={!isSplashPage ? "64px" : 0} // Add padding for fixed header
+        // Allow natural scrolling with minimal constraints
+        sx={{
+          overflowX: 'hidden',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          // Mobile-specific optimizations
+          '@media (max-width: 768px)': {
+            paddingTop: !isSplashPage ? '56px' : 0, // Mobile header height
+            minHeight: !isSplashPage ? 'calc(100vh - 56px)' : '100vh',
+          },
+          // Desktop optimizations
+          '@media (min-width: 769px)': {
+            paddingTop: !isSplashPage ? '64px' : 0,
+            minHeight: !isSplashPage ? 'calc(100vh - 64px)' : '100vh',
+          }
+        }}
+      >
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -83,15 +125,12 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
               filter: { duration: 0.25 }
             }}
             style={{
-              height: "100%",
               width: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
+              minHeight: "100%",
               backfaceVisibility: "hidden"
             }}
           >
-            <Box h="100%" w="100%" overflow="hidden">
+            <Box w="100%" minH="100%">
               {children}
             </Box>
           </motion.div>

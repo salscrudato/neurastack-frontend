@@ -8,7 +8,7 @@ import {
     VStack,
 } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { FITNESS_GOALS } from '../../constants/fitnessGoals'; // Moved constants import
 import { useReducedMotion } from '../../hooks/useAccessibility';

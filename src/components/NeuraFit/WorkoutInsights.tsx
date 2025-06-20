@@ -1,48 +1,48 @@
 /**
  * Workout Insights Component
- * 
+ *
  * Displays AI-powered insights and analytics about user's workout
  * performance, preferences, and recommendations for improvement.
  */
 
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Card,
-  CardBody,
-  CardHeader,
-  useColorModeValue,
-  Icon,
-  Badge,
-  Progress,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  StatArrow,
-  SimpleGrid,
-  Divider,
-  Button,
-  Spinner,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    Divider,
+    HStack,
+    Icon,
+    Progress,
+    SimpleGrid,
+    Spinner,
+    Stat,
+    StatArrow,
+    StatHelpText,
+    StatLabel,
+    StatNumber,
+    Text,
+    useColorModeValue,
+    VStack,
 } from '@chakra-ui/react';
-import {
-  PiTrendUpBold,
-  PiTrendDownBold,
-  PiTargetBold,
-  PiHeartBold,
-  PiClockBold,
-  PiMedalBold,
-  PiChartLineBold,
-  PiBrainBold,
-} from 'react-icons/pi';
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    PiBrainBold,
+    PiChartLineBold,
+    PiClockBold,
+    PiHeartBold,
+    PiMedalBold,
+    PiTargetBold,
+    PiTrendDownBold,
+    PiTrendUpBold,
+} from 'react-icons/pi';
 import { generateWorkoutInsights, type WorkoutInsights } from '../../services/workoutAnalyticsService';
 import { useAuthStore } from '../../store/useAuthStore';
 

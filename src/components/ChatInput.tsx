@@ -290,19 +290,25 @@ export default function ChatInput() {
       bg={colorSystem.page.bg}
       borderTopWidth="1px"
       borderColor={colorSystem.page.borderTop}
-      position="relative"
+      position="sticky"
+      bottom={0}
+      zIndex={100}
       // Enhanced mobile support with performance optimization
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         // Safe area support for mobile devices
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
         // Performance optimizations
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
+        // Ensure input stays at bottom on mobile
         '@media (max-width: 768px)': {
           paddingX: 2,
           paddingY: 2,
+          position: 'sticky',
+          bottom: 0,
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
         }
       }}
     >

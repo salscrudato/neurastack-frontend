@@ -1,5 +1,5 @@
-import { Box, Text, VStack, useColorModeValue, Icon } from '@chakra-ui/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Box, Icon, Text, VStack, useColorModeValue } from '@chakra-ui/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { PiCheckCircleBold } from 'react-icons/pi';
 
