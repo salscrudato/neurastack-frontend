@@ -8,10 +8,11 @@ import OnboardingWizard from '../components/NeuraFit/OnboardingWizard';
 import ProgressTracker from '../components/NeuraFit/ProgressTracker';
 import WorkoutErrorBoundary from '../components/NeuraFit/WorkoutErrorBoundary';
 import WorkoutGenerator from '../components/NeuraFit/WorkoutGenerator';
+import WorkoutHistory from '../components/NeuraFit/WorkoutHistory';
 import type { WorkoutPlan } from '../lib/types';
 import { useFitnessStore } from '../store/useFitnessStore';
 
-type ViewState = 'dashboard' | 'workout' | 'progress';
+type ViewState = 'dashboard' | 'workout' | 'progress' | 'history';
 
 export default function NeuraFitPage() {
   const { profile, completeOnboarding, startEditingFromDashboard, finishEditingFromDashboard } = useFitnessStore();
@@ -37,7 +38,9 @@ export default function NeuraFitPage() {
     setCurrentView('progress');
   };
 
-
+  const handleViewHistory = () => {
+    setCurrentView('history');
+  };
 
   const handleEditSpecificSetting = (step: number) => {
     // Start editing mode and navigate to specific step
@@ -102,11 +105,19 @@ export default function NeuraFitPage() {
             onStartNewWorkout={handleStartWorkout}
           />
         );
+      case 'history':
+        return (
+          <WorkoutHistory
+            onBack={handleBackToDashboard}
+            onStartNewWorkout={handleStartWorkout}
+          />
+        );
       default:
         return (
           <Dashboard
             onStartWorkout={handleStartWorkout}
             onViewProgress={handleViewProgress}
+            onViewHistory={handleViewHistory}
             onEditSpecificSetting={handleEditSpecificSetting}
           />
         );

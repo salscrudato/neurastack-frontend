@@ -86,6 +86,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const [currentSetWeight, setCurrentSetWeight] = useState<number | undefined>();
   const [setWeights, setSetWeights] = useState<(number | undefined)[]>([]);
 
+  // Debug weight changes
+  useEffect(() => {
+    console.log('🏋️ Current set weight changed:', currentSetWeight);
+  }, [currentSetWeight]);
+
+  useEffect(() => {
+    console.log('🏋️ Set weights array changed:', setWeights);
+  }, [setWeights]);
+
   // Rest timer enhancements
   const [isRestPaused, setIsRestPaused] = useState(false);
 
@@ -102,6 +111,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
   // Theme colors
   const bgColor = useColorModeValue('white', 'gray.800');
+  const cardBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(26, 32, 44, 0.8)');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textColor = useColorModeValue('gray.800', 'white');
   const subtextColor = useColorModeValue('gray.600', 'gray.400');
@@ -275,6 +285,14 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     newSetWeights[currentSetIndex] = currentSetWeight;
     setSetWeights(newSetWeights);
 
+    // Debug logging
+    console.log('🏋️ Completing set:', {
+      setIndex: currentSetIndex,
+      weight: currentSetWeight,
+      allWeights: newSetWeights,
+      exerciseName: currentExercise.name
+    });
+
     const newCompletedSets = [...completedSets, currentSetIndex];
     setCompletedSets(newCompletedSets);
 
@@ -430,6 +448,39 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     onExit();
   }, [onExit]);
 
+  // Complete workout early
+  const completeWorkoutEarly = useCallback(async () => {
+    if (!currentSession) return;
+
+    try {
+      const completedSession = {
+        ...currentSession,
+        status: 'completed' as const,
+        endTime: new Date(),
+        completionReason: 'early_completion'
+      };
+
+      toast({
+        title: 'Workout Completed Early!',
+        description: 'Great job on your workout session.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+
+      onComplete(completedSession);
+    } catch (error) {
+      console.error('Failed to complete workout early:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save workout completion.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [currentSession, onComplete, toast]);
+
   // Rest timer controls
   const pauseRestTimer = useCallback(() => {
     setIsRestPaused(true);
@@ -481,14 +532,35 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     >
       <VStack spacing={4} maxW="md" mx="auto">
         {/* Header with progress */}
-        <Card w="100%" bg={bgColor} borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={3}>
+        <Card
+          w="100%"
+          bg={cardBg}
+          backdropFilter="blur(16px)"
+          border="1px solid"
+          borderColor={useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)')}
+          borderRadius="xl"
+          boxShadow="0 8px 32px rgba(0,0,0,0.1)"
+        >
+          <CardBody p={6}>
+            <VStack spacing={4}>
               <HStack w="100%" justify="space-between">
-                <Text fontSize="sm" color={subtextColor}>
-                  Exercise {currentExerciseIndex + 1} of {workoutPlan.exercises.length}
-                </Text>
-                <Badge colorScheme={isActive ? 'green' : 'gray'}>
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="sm" color={subtextColor} fontWeight="medium">
+                    Exercise {currentExerciseIndex + 1} of {workoutPlan.exercises.length}
+                  </Text>
+                  <Text fontSize="xs" color={subtextColor}>
+                    {Math.round(progressPercentage)}% Complete
+                  </Text>
+                </VStack>
+                <Badge
+                  colorScheme={isActive ? 'green' : 'gray'}
+                  variant="solid"
+                  borderRadius="full"
+                  px={3}
+                  py={1}
+                  fontSize="xs"
+                  fontWeight="bold"
+                >
                   {isActive ? (isPaused ? 'Paused' : 'Active') : 'Ready'}
                 </Badge>
               </HStack>
@@ -499,6 +571,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 colorScheme="blue"
                 borderRadius="full"
                 size="lg"
+                bg={useColorModeValue('gray.100', 'gray.700')}
+                sx={{
+                  '& > div': {
+                    background: 'linear-gradient(90deg, #4299E1 0%, #667EEA 100%)',
+                  }
+                }}
               />
 
               <HStack w="100%" justify="space-between" fontSize="sm">
@@ -699,20 +777,78 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
         {/* Weight Input Section */}
         {isActive && !isResting && (
-          <Card w="100%" bg={bgColor} borderColor={borderColor}>
-            <CardBody>
-              <WeightInput
-                value={currentSetWeight}
-                onChange={setCurrentSetWeight}
-                placeholder={`Weight for Set ${currentSetIndex + 1}`}
-                size="md"
-                showQuickButtons={true}
-                previousWeight={
-                  setWeights[currentSetIndex - 1] ||
-                  (currentExercise.weight && currentExercise.weight[currentSetIndex - 1])
-                }
-                exerciseName={currentExercise.name}
-              />
+          <Card
+            w="100%"
+            bg={bgColor}
+            borderColor={borderColor}
+            backdropFilter="blur(12px)"
+            border="1px solid"
+            borderRadius="xl"
+            boxShadow="0 8px 32px rgba(0,0,0,0.1)"
+            _hover={{
+              transform: "translateY(-2px)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+            }}
+            transition="all 0.3s ease"
+          >
+            <CardBody p={6}>
+              <VStack spacing={4}>
+                <HStack spacing={2} align="center" w="100%" justify="center">
+                  <Icon as={PiTargetBold} color="blue.500" boxSize={5} />
+                  <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                    Set {currentSetIndex + 1} of {currentExercise.sets}
+                  </Text>
+                </HStack>
+
+                <WeightInput
+                  value={currentSetWeight}
+                  onChange={setCurrentSetWeight}
+                  placeholder={`Weight for Set ${currentSetIndex + 1}`}
+                  size="lg"
+                  showQuickButtons={true}
+                  showNAOption={true}
+                  previousWeight={
+                    setWeights[currentSetIndex - 1] ||
+                    (currentExercise.weight && currentExercise.weight[currentSetIndex - 1])
+                  }
+                  exerciseName={currentExercise.name}
+                  weightHistory={currentExercise.weightHistory?.map(h => h.weights).flat() || []}
+                  onWeightSuggestionSelect={(weight) => {
+                    setCurrentSetWeight(weight);
+                    triggerHaptic('light');
+                  }}
+                />
+
+                {/* Reps reminder and current weight display */}
+                <VStack spacing={2} w="100%">
+                  <Box
+                    bg={useColorModeValue('blue.50', 'blue.900')}
+                    p={3}
+                    borderRadius="lg"
+                    w="100%"
+                    textAlign="center"
+                  >
+                    <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')} fontWeight="medium">
+                      Target: {currentExercise.reps} reps
+                    </Text>
+                  </Box>
+
+                  {/* Debug: Show current weight */}
+                  {currentSetWeight !== undefined && (
+                    <Box
+                      bg={useColorModeValue('green.50', 'green.900')}
+                      p={2}
+                      borderRadius="md"
+                      w="100%"
+                      textAlign="center"
+                    >
+                      <Text fontSize="xs" color={useColorModeValue('green.700', 'green.200')} fontWeight="medium">
+                        Current Weight: {currentSetWeight} lbs
+                      </Text>
+                    </Box>
+                  )}
+                </VStack>
+              </VStack>
             </CardBody>
           </Card>
         )}
@@ -819,16 +955,48 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       </VStack>
 
       {/* Performance Modal */}
-      <Modal isOpen={showPerformanceModal} onClose={() => setShowPerformanceModal(false)}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Exercise Complete!</ModalHeader>
+      <Modal isOpen={showPerformanceModal} onClose={() => setShowPerformanceModal(false)} size="lg">
+        <ModalOverlay backdropFilter="blur(8px)" />
+        <ModalContent
+          bg={cardBg}
+          backdropFilter="blur(16px)"
+          border="1px solid"
+          borderColor={useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)')}
+          borderRadius="xl"
+          boxShadow="0 20px 60px rgba(0,0,0,0.2)"
+        >
+          <ModalHeader
+            textAlign="center"
+            fontSize="xl"
+            fontWeight="bold"
+            color={textColor}
+            pb={2}
+          >
+            <VStack spacing={2}>
+              <Icon as={PiCheckBold} boxSize={8} color="green.500" />
+              <Text>Exercise Complete!</Text>
+            </VStack>
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <VStack spacing={4} align="stretch">
               <Text fontSize="lg" fontWeight="semibold" textAlign="center">
                 {currentExercise.name}
               </Text>
+
+              {/* Debug: Show recorded weights */}
+              <Box
+                bg={useColorModeValue('gray.50', 'gray.800')}
+                p={3}
+                borderRadius="md"
+              >
+                <Text fontSize="xs" fontWeight="bold" mb={2}>Recorded Weights:</Text>
+                <Text fontSize="xs" color={subtextColor}>
+                  {setWeights.map((weight, index) =>
+                    `Set ${index + 1}: ${weight ? `${weight} lbs` : 'N/A'}`
+                  ).join(', ') || 'No weights recorded'}
+                </Text>
+              </Box>
 
               <Divider />
 
@@ -857,7 +1025,9 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                             placeholder="Weight"
                             size="sm"
                             showQuickButtons={false}
+                            showNAOption={true}
                             isDisabled={!completedSets.includes(index)}
+                            previousWeight={index > 0 ? setWeights[index - 1] : undefined}
                           />
                         </Box>
                         <Badge
@@ -940,30 +1110,50 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       <Modal isOpen={showExitConfirmation} onClose={() => setShowExitConfirmation(false)}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Exit Workout?</ModalHeader>
+          <ModalHeader>Finish Workout?</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <VStack spacing={4}>
               <Icon as={PiWarningBold} boxSize={12} color="orange.500" />
-              <Text textAlign="center">
-                Are you sure you want to exit? Your progress will be saved, but the workout will be marked as incomplete.
+              <Text textAlign="center" fontSize="md">
+                How would you like to finish your workout?
               </Text>
-              <HStack spacing={3} w="100%">
+              <Text textAlign="center" fontSize="sm" color={subtextColor}>
+                You've completed {completedSets.length} sets so far. Your progress will be saved either way.
+              </Text>
+
+              <VStack spacing={3} w="100%">
                 <Button
-                  variant="outline"
-                  flex={1}
-                  onClick={() => setShowExitConfirmation(false)}
+                  colorScheme="blue"
+                  size="lg"
+                  w="100%"
+                  leftIcon={<Icon as={PiCheckBold} />}
+                  onClick={() => {
+                    setShowExitConfirmation(false);
+                    completeWorkoutEarly();
+                  }}
                 >
-                  Continue Workout
+                  Complete Workout Early
                 </Button>
-                <Button
-                  colorScheme="red"
-                  flex={1}
-                  onClick={exitWorkout}
-                >
-                  Exit Workout
-                </Button>
-              </HStack>
+
+                <HStack spacing={3} w="100%">
+                  <Button
+                    variant="outline"
+                    flex={1}
+                    onClick={() => setShowExitConfirmation(false)}
+                  >
+                    Continue Workout
+                  </Button>
+                  <Button
+                    colorScheme="red"
+                    variant="outline"
+                    flex={1}
+                    onClick={exitWorkout}
+                  >
+                    Exit & Save
+                  </Button>
+                </HStack>
+              </VStack>
             </VStack>
           </ModalBody>
         </ModalContent>

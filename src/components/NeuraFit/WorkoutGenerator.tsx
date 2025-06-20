@@ -355,7 +355,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
     // Validate workout type selection with detailed debugging
     if (!isValidWorkoutType(selectedWorkoutType)) {
-      const validTypes = ['mixed', 'strength', 'cardio', 'hiit', 'flexibility', 'upper_body', 'lower_body', 'push', 'pull', 'core', 'yoga', 'pilates', 'functional', 'full_body', 'legs'];
+      const validTypes = ['mixed', 'strength', 'cardio', 'hiit', 'flexibility', 'upper_body', 'lower_body', 'push', 'pull', 'core', 'yoga', 'pilates', 'functional', 'full_body', 'legs', 'push_day', 'pull_day', 'leg_day', 'upper', 'lower', 'chest', 'back', 'shoulders', 'arms', 'abs'];
 
       if (import.meta.env.DEV) {
         console.error('❌ Invalid workout type:', {
@@ -546,9 +546,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       const sessionContext = `${selectedWorkoutType}-${profile.fitnessLevel}-${profile.availableTime}min-${timestamp}-${browserFingerprint}`;
       const correlationId = `gen-${Date.now()}-${nanoTime}-${randomId1}-${Math.random().toString(36).substring(2, 10)}`;
 
-      // Additional entropy for absolute uniqueness
-      const entropyString = `${Math.random()}-${Date.now()}-${performance.now()}-${Math.random()}`;
-      const uniqueWorkoutSeed = btoa(entropyString).substring(0, 16);
+      // Additional entropy for absolute uniqueness (removed unused variable)
 
       // Client-side request validation
       const requestValidation = validateWorkoutRequest({
@@ -571,31 +569,26 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         return;
       }
 
-      // Create optimal API request that leverages full API flexibility
+      // Create API request aligned with new documentation format
       const workoutAPIRequest = {
-        // Core user metadata (required)
+        // User metadata according to new API spec
         userMetadata: {
           age: userMetadata.age,
-          fitnessLevel: userMetadata.fitnessLevel,
-          equipment: equipmentAPINames,
+          fitnessLevel: userMetadata.fitnessLevel, // Any string as per new docs
+          gender: userMetadata.gender,
+          weight: userMetadata.weight,
+          goals: goalValues, // Any goals as strings
+          equipment: equipmentAPINames, // Any equipment as strings
           timeAvailable: userMetadata.timeAvailable,
-          goals: goalValues,
-          injuries: userMetadata.injuries || []
+          injuries: userMetadata.injuries || [],
+          daysPerWeek: userMetadata.daysPerWeek || 3,
+          minutesPerSession: userMetadata.timeAvailable
         },
 
-        // Structured workout specification for consistency
-        workoutSpecification: {
-          workoutType: selectedWorkoutType,
-          duration: profile.availableTime,
-          difficulty: profile.fitnessLevel,
-          focusAreas: goalValues, // Use API values directly
-          equipment: equipmentAPINames // Use API-standard equipment names
-        },
+        // Workout history (optional) - convert to proper format
+        workoutHistory: [], // Empty for now - will implement proper conversion later
 
-        // Workout history for context and variety
-        workoutHistory: workoutHistory.slice(0, 3), // Last 3 workouts for context
-
-        // Intelligent free-form request for maximum AI flexibility
+        // Natural language workout description (required)
         workoutRequest: buildIntelligentWorkoutRequest(
           profile,
           recentWorkouts,
@@ -603,38 +596,44 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           profile.goals ? convertGoalCodesToNames(profile.goals) : undefined
         ),
 
-        // Additional structured notes for specific requirements
+        // Enhanced format (recommended) - workoutSpecification
+        workoutSpecification: {
+          workoutType: selectedWorkoutType, // Any workout type as string
+          duration: profile.availableTime, // Minutes
+          difficulty: profile.fitnessLevel, // Any difficulty level as string
+          focusAreas: goalValues, // Any focus areas as strings
+          equipment: equipmentAPINames // Any equipment as strings
+        },
+
+        // Additional notes (optional)
         additionalNotes: combinedNotes.length > 500
           ? combinedNotes.substring(0, 497) + '...' // Respect API limits
           : combinedNotes,
 
-        // Enhanced cache-busting and tracking for guaranteed fresh generation
+        // Optional tracking fields
         requestId,
         timestamp,
-        correlationId,
-        uniqueWorkoutSeed,
         sessionContext,
-        forceRefresh: true,
-        disableCache: true,
-        generationAttempt: retryCount + 1,
-        clientTimestamp: Date.now(),
-        entropyHash: entropyString
+        correlationId
       };
 
-      // Enhanced request logging with format details
-      console.group('🏋️ Enhanced Workout Generation Request');
+      // Request logging for new API format
+      console.group('🏋️ Workout Generation Request (New API Format)');
       console.log('');
-      console.log('🎯 ENHANCED API FORMAT:');
-      console.log(`  📋 Workout Type: %c${workoutSpecification.workoutType}%c (Guaranteed Consistency)`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
-      console.log(`  ⏱️ Duration: ${workoutSpecification.duration} minutes`);
-      console.log(`  🎚️ Difficulty: ${workoutSpecification.difficulty}`);
-      console.log(`  🎯 Focus Areas: ${workoutSpecification.focusAreas?.join(', ') || 'None specified'}`);
-      console.log(`  🛠️ Equipment: ${workoutSpecification.equipment?.join(', ') || 'None specified'}`);
+      console.log('🎯 WORKOUT SPECIFICATION:');
+      console.log(`  📋 Workout Type: %c${workoutAPIRequest.workoutSpecification?.workoutType}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+      console.log(`  ⏱️ Duration: ${workoutAPIRequest.workoutSpecification?.duration} minutes`);
+      console.log(`  🎚️ Difficulty: ${workoutAPIRequest.workoutSpecification?.difficulty}`);
+      console.log(`  🎯 Focus Areas: ${workoutAPIRequest.workoutSpecification?.focusAreas?.join(', ') || 'None specified'}`);
+      console.log(`  🛠️ Equipment: ${workoutAPIRequest.workoutSpecification?.equipment?.join(', ') || 'None specified'}`);
+      console.log('');
+      console.log('📝 NATURAL LANGUAGE REQUEST:');
+      console.log(`  ${workoutAPIRequest.workoutRequest.substring(0, 200)}...`);
       console.log('');
       console.log('📝 ADDITIONAL NOTES:');
-      console.log(`  ${additionalNotes || 'None specified'}`);
+      console.log(`  ${workoutAPIRequest.additionalNotes || 'None specified'}`);
       console.log('');
-      console.log('🔒 CACHE-BUSTING IDENTIFIERS:');
+      console.log('🆔 TRACKING IDENTIFIERS:');
       console.log('  🆔 Request ID:', requestId);
       console.log('  ⏰ Timestamp:', timestamp);
       console.log('  🔗 Correlation ID:', correlationId);
@@ -646,15 +645,15 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log(JSON.stringify(workoutAPIRequest, null, 2));
       console.log('');
       console.log('⚙️ REQUEST OPTIONS:');
-      console.log('  👤 User ID:', user?.uid || 'Not provided');
-      console.log('  ⏱️ Timeout:', retryCount > 0 ? '90s (retry)' : '60s (initial)');
+      console.log('  👤 User ID:', user?.uid || 'anonymous');
+      console.log('  ⏱️ Timeout:', '60s (as per new API docs)');
       console.log('  🌐 Backend URL:', 'https://neurastack-backend-638289111765.us-central1.run.app');
       console.groupEnd();
 
-      // Call the workout API with GUARANTEED FRESH GENERATION configuration
+      // Call the workout API with new format and proper timeout
       const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
         userId: user?.uid || '',
-        timeout: 75000, // Optimal 75s timeout for complex workout generation
+        timeout: 60000, // 60s timeout as per new API documentation
         useEnsemble: false // Use single best model for workout generation
       });
 
@@ -665,12 +664,21 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log('🔗 Correlation ID:', response.correlationId);
       console.log('⏱️ Generation Time:', performance.now() - startTime, 'ms');
       if (response.data?.workout) {
+        // Handle both new and legacy API formats for logging
+        const workout = response.data.workout;
+        const exerciseCount = workout.mainWorkout?.exercises?.length || workout.exercises?.length || 0;
+
         console.log('🏋️ Workout Details:', {
-          type: response.data.workout.type,
-          duration: response.data.workout.duration,
-          exerciseCount: response.data.workout.exercises?.length || 0,
-          difficulty: response.data.workout.difficulty,
-          equipment: response.data.workout.equipment
+          type: workout.type,
+          duration: workout.duration,
+          exerciseCount,
+          difficulty: workout.difficulty,
+          equipment: workout.equipment,
+          hasMainWorkout: !!workout.mainWorkout,
+          hasExercises: !!workout.exercises,
+          hasWarmup: !!workout.warmup,
+          hasCooldown: !!workout.cooldown,
+          professionalNotes: !!workout.professionalNotes
         });
       }
       if (response.data?.metadata) {
@@ -682,14 +690,34 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       setServiceStatus('healthy');
 
       if (response.status === 'success' && response.data) {
-        // Validate the API response structure
+        // Validate the API response structure for new format
         const workout = response.data.workout;
-        if (!workout || !workout.exercises || !Array.isArray(workout.exercises) || workout.exercises.length === 0) {
+        if (!workout) {
           throw new Error('Invalid workout data received from API');
         }
 
+        // Check for valid exercises structure - handle both new and legacy formats
+        const hasMainWorkout = workout.mainWorkout && workout.mainWorkout.exercises && Array.isArray(workout.mainWorkout.exercises);
+        const hasLegacyExercises = workout.exercises && Array.isArray(workout.exercises);
+
+        if (!hasMainWorkout && !hasLegacyExercises) {
+          throw new Error('Invalid workout data received from API - no exercises found');
+        }
+
+        // Check for empty exercises array
+        if (hasMainWorkout && workout.mainWorkout!.exercises.length === 0) {
+          throw new Error('Invalid workout data received from API - empty exercise list');
+        }
+
+        if (hasLegacyExercises && workout.exercises!.length === 0) {
+          throw new Error('Invalid workout data received from API - empty exercise list');
+        }
+
+        // Apply type correction if there's a mismatch
+        const correctedWorkout = correctWorkoutTypeMismatch(workout, selectedWorkoutType);
+
         // Transform the API response to our internal WorkoutPlan format
-        const workoutPlan = transformAPIWorkoutToPlan(workout);
+        const workoutPlan = transformAPIWorkoutToPlan(correctedWorkout);
 
         // Enhance workout with additional metadata
         const enhancedWorkout: WorkoutPlan = {
@@ -1027,154 +1055,300 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
   // Removed unused helper functions to fix TypeScript errors
 
+  // Correct workout type mismatch from backend
+  const correctWorkoutTypeMismatch = useCallback((workout: any, requestedType: string): any => {
+    if (!workout || !workout.type || !requestedType) return workout;
+
+    const normalizeType = (type: string) => type.toLowerCase().replace(/[_-]/g, '');
+    const requestedNormalized = normalizeType(requestedType);
+    const receivedNormalized = normalizeType(workout.type);
+
+    // Check if types match (exact or partial)
+    const exactMatch = workout.type === requestedType;
+    const partialMatch = receivedNormalized.includes(requestedNormalized.split('_')[0]) ||
+                        requestedNormalized.includes(receivedNormalized);
+
+    // If there's no match, correct the type
+    if (!exactMatch && !partialMatch) {
+      console.log(`🔧 Correcting workout type mismatch: ${workout.type} → ${requestedType}`);
+      return {
+        ...workout,
+        type: requestedType
+      };
+    }
+
+    // For partial matches, decide if we should correct based on context
+    if (!exactMatch && partialMatch) {
+      // Handle specific cases where backend uses abbreviated forms
+      const shouldCorrect = (
+        (requestedType === 'upper_body' && workout.type === 'pull') ||
+        (requestedType === 'upper_body' && workout.type === 'push') ||
+        (requestedType === 'lower_body' && workout.type === 'legs') ||
+        (requestedType === 'push_day' && workout.type === 'push') ||
+        (requestedType === 'pull_day' && workout.type === 'pull') ||
+        (requestedType === 'leg_day' && workout.type === 'legs')
+      );
+
+      if (shouldCorrect) {
+        console.log(`🔧 Correcting abbreviated workout type: ${workout.type} → ${requestedType}`);
+        return {
+          ...workout,
+          type: requestedType
+        };
+      }
+    }
+
+    return workout;
+  }, []);
+
   // Build intelligent, flexible workout request that leverages full API capabilities
   const buildIntelligentWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string, userGoals?: string[]) => {
     const selectedType = workoutTypes.find(type => type.value === workoutType);
     const workoutTypeDescription = selectedType ? selectedType.label : 'Mixed Training';
 
-    // Build contextual workout history
+    // Build contextual workout history for variety and progression
     const workoutHistoryContext = recentWorkouts.length > 0
       ? `Recent workout history: ${recentWorkouts.slice(0, 2).map((w: any) =>
           `${w.name || 'Workout'} (${w.exercises?.length || 0} exercises, ${w.duration || 0}min)`
-        ).join(', ')}.`
-      : '';
+        ).join(', ')}. Ensure variety and avoid repetition.`
+      : 'No recent workout history - create a foundational session.';
 
-    // Build equipment context
+    // Build comprehensive equipment context
     const equipmentContext = profile.equipment && profile.equipment.length > 0
-      ? `Available equipment: ${profile.equipment.join(', ')}.`
-      : 'Bodyweight exercises only.';
+      ? `Available equipment: ${profile.equipment.join(', ')}. Utilize equipment effectively for maximum training benefit.`
+      : 'Bodyweight exercises only - focus on progressive calisthenics and functional movements.';
 
-    // Build goals context
+    // Build detailed goals context
     const goalsContext = userGoals && userGoals.length > 0
-      ? `Primary goals: ${userGoals.join(', ')}.`
-      : '';
+      ? `Primary training objectives: ${userGoals.join(', ')}. Structure exercises to directly support these goals.`
+      : 'General fitness improvement - create a balanced, well-rounded session.';
 
-    // Build injury/limitation context
+    // Build comprehensive injury/limitation context
     const limitationsContext = profile.injuries && profile.injuries.length > 0
-      ? `Avoid exercises that may aggravate: ${profile.injuries.join(', ')}.`
-      : '';
+      ? `CRITICAL: Avoid exercises that may aggravate: ${profile.injuries.join(', ')}. Provide safe alternatives and modifications.`
+      : 'No reported injuries - full range of exercises available.';
 
-    // Create intelligent, free-form prompt that gives AI maximum flexibility
-    return `Design a personalized ${workoutTypeDescription.toLowerCase()} workout session.
+    // Determine experience-based complexity
+    const complexityGuidanceMap = {
+      'beginner': 'Focus on fundamental movement patterns, proper form instruction, and gradual progression. Include detailed form cues and common mistakes to avoid.',
+      'intermediate': 'Include moderate complexity exercises with progression options. Balance challenge with safety. Provide technique refinements.',
+      'advanced': 'Challenge with complex movements, advanced techniques, and higher intensity. Include performance optimization tips and advanced progressions.'
+    };
+    const complexityGuidance = complexityGuidanceMap[profile.fitnessLevel as keyof typeof complexityGuidanceMap] || 'Adapt complexity to user capabilities.';
 
-WORKOUT PARAMETERS:
-- Duration: ${profile.availableTime} minutes
-- Fitness Level: ${profile.fitnessLevel}
+    // Create professional-grade workout prompt
+    return `You are an elite personal trainer designing a ${workoutTypeDescription.toLowerCase()} workout for a ${profile.fitnessLevel} client.
+
+CLIENT PROFILE:
+- Training Duration: ${profile.availableTime} minutes
+- Experience Level: ${profile.fitnessLevel} (${complexityGuidance})
 - ${equipmentContext}
 - ${goalsContext}
 - ${limitationsContext}
 
-CONTEXT:
+TRAINING CONTEXT:
 ${workoutHistoryContext}
 
-REQUIREMENTS:
-Create a complete workout with warm-up, main exercises, and cool-down. Include detailed instructions, form cues, and safety notes for each exercise. Structure with appropriate sets, reps, and rest periods. Ensure variety and progression appropriate for the user's fitness level.
+PROFESSIONAL REQUIREMENTS:
+1. STRUCTURE: Create a complete periodized session with:
+   - Dynamic warm-up (5-8 minutes): Movement preparation and activation
+   - Main training block: Progressive exercise selection with optimal loading
+   - Cool-down (3-5 minutes): Recovery and mobility work
 
-Make this workout engaging, effective, and perfectly tailored to the user's specific needs and available time.`;
+2. EXERCISE PRESCRIPTION:
+   - Provide precise sets, reps, and rest intervals based on training goals
+   - Include RPE (Rate of Perceived Exertion) guidance for intensity
+   - Specify tempo and range of motion cues where applicable
+   - Ensure proper exercise sequencing and muscle group balance
+
+3. COACHING EXCELLENCE:
+   - Detailed form instructions with key coaching cues
+   - Common mistakes and how to avoid them
+   - Progression and regression options for each exercise
+   - Safety considerations and contraindications
+
+4. PERSONALIZATION:
+   - Adapt exercise selection to available equipment and space
+   - Consider individual limitations and provide modifications
+   - Ensure appropriate challenge level for fitness experience
+   - Include motivational elements and variety
+
+5. PROFESSIONAL STANDARDS:
+   - Evidence-based exercise selection and programming
+   - Logical progression and flow between exercises
+   - Time-efficient structure that maximizes training effect
+   - Clear, actionable instructions a client can follow independently
+
+Create a workout that demonstrates the expertise of a certified personal trainer with advanced exercise science knowledge.`;
   }, [workoutTypes]);
 
   // Build additional notes for specific user requirements (Enhanced API format)
   const buildAdditionalNotes = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
     const notes: string[] = [];
 
-    // Add injury considerations
+    // Add comprehensive injury considerations with professional guidance
     if (profile.injuries && profile.injuries.length > 0) {
-      notes.push(`Avoid exercises that may aggravate: ${profile.injuries.join(', ')}`);
+      notes.push(`SAFETY PRIORITY: Completely avoid exercises that may aggravate: ${profile.injuries.join(', ')}. Provide safe alternatives and modifications for affected areas.`);
     }
 
-    // Add recent workout context for variety
+    // Add recent workout context for intelligent variety and progression
     if (recentWorkouts.length > 0) {
       const recentExercises = recentWorkouts[0].exercises
         .slice(0, 3)
         .map((ex: any) => typeof ex === 'string' ? ex : ex.name || 'exercise')
         .join(', ');
-      notes.push(`Provide variety from recent workout: ${recentExercises}`);
+      notes.push(`VARIETY REQUIREMENT: Avoid repeating these recent exercises: ${recentExercises}. Provide fresh movement patterns and muscle activation strategies.`);
     }
 
-    // Add specific workout type preferences
+    // Add specific workout type preferences with professional programming principles
     const workoutTypeNotes: Record<string, string> = {
-      'mixed': 'Combine strength, cardio, and flexibility for balanced training',
-      'strength': 'Focus on progressive overload and muscle building',
-      'cardio': 'Maintain elevated heart rate with varied cardio exercises',
-      'hiit': 'Include high-intensity intervals with adequate rest periods',
-      'flexibility': 'Focus on mobility, stretching, and range of motion',
-      'upper_body': 'Focus on chest, back, shoulders, and arms with balanced push/pull movements',
-      'lower_body': 'Emphasize legs, glutes, and core with compound movements',
-      'push_day': 'Concentrate on pushing movements: chest, shoulders, triceps',
-      'pull_day': 'Focus on pulling movements: back, biceps, rear delts',
-      'leg_day': 'Target all leg muscles: quads, hamstrings, glutes, calves',
-      'core': 'Emphasize core stability, strength, and functional movements',
-      'yoga': 'Include flowing movements, balance, and mindfulness',
-      'pilates': 'Emphasize core strength, stability, and controlled movements',
-      'crossfit': 'Include functional movements at high intensity with varied exercises',
-      'bodyweight': 'Use only bodyweight exercises with progressive difficulty',
-      'functional': 'Focus on real-world movement patterns and practical strength'
+      'mixed': 'BALANCED TRAINING: Integrate strength, cardiovascular, and mobility components using periodization principles. Ensure smooth transitions between training modalities.',
+      'strength': 'STRENGTH FOCUS: Emphasize progressive overload, compound movements, and muscle hypertrophy. Include proper loading parameters and rest intervals for strength gains.',
+      'cardio': 'CARDIOVASCULAR TRAINING: Maintain target heart rate zones with varied movement patterns. Include both steady-state and interval components for optimal adaptation.',
+      'hiit': 'HIGH-INTENSITY INTERVALS: Structure work-to-rest ratios scientifically (typically 1:1 to 1:3). Monitor intensity through RPE and ensure adequate recovery between intervals.',
+      'flexibility': 'MOBILITY & FLEXIBILITY: Focus on dynamic stretching, PNF techniques, and range of motion improvement. Include both static and dynamic components.',
+      'upper_body': 'UPPER BODY SPECIALIZATION: Balance pushing and pulling movements in 1:1 ratio. Target all planes of motion and include rotational stability work.',
+      'lower_body': 'LOWER BODY FOCUS: Emphasize hip-dominant and knee-dominant movement patterns. Include unilateral work for balance and stability.',
+      'push_day': 'PUSHING MOVEMENTS: Target chest, shoulders, and triceps with varied angles and grip positions. Progress from compound to isolation exercises.',
+      'pull_day': 'PULLING MOVEMENTS: Focus on back, biceps, and rear delts with emphasis on postural muscles. Include both vertical and horizontal pulling patterns.',
+      'leg_day': 'LOWER BODY SPECIALIZATION: Target quadriceps, hamstrings, glutes, and calves with compound and accessory movements. Include single-leg stability work.',
+      'core': 'CORE SPECIALIZATION: Emphasize anti-extension, anti-flexion, and anti-rotation exercises. Include both stability and dynamic core training.',
+      'yoga': 'YOGA PRACTICE: Include flowing sequences, breath work, and mindfulness. Balance strength, flexibility, and mental focus components.',
+      'pilates': 'PILATES METHOD: Emphasize core control, precise movement, and mind-body connection. Focus on quality over quantity with controlled movements.',
+      'crossfit': 'FUNCTIONAL FITNESS: Include varied functional movements at high intensity. Combine weightlifting, gymnastics, and metabolic conditioning.',
+      'bodyweight': 'CALISTHENICS TRAINING: Use progressive bodyweight exercises with leverage and range of motion modifications. Focus on movement quality and control.',
+      'functional': 'FUNCTIONAL MOVEMENT: Emphasize real-world movement patterns, multi-planar exercises, and practical strength applications.'
     };
 
     if (workoutTypeNotes[workoutType]) {
       notes.push(workoutTypeNotes[workoutType]);
     }
 
-    // Add equipment-specific notes
+    // Add equipment-specific programming notes
     if (profile.equipment && profile.equipment.length > 0) {
       const equipmentNames = convertEquipmentCodesToNames(profile.equipment);
       if (equipmentNames.includes('none') || equipmentNames.includes('bodyweight')) {
-        notes.push('Use only bodyweight exercises, no equipment required');
+        notes.push('BODYWEIGHT SPECIALIZATION: Use progressive calisthenics with leverage modifications, tempo variations, and range of motion progressions.');
       } else {
-        notes.push(`Utilize available equipment: ${equipmentNames.join(', ')}`);
+        notes.push(`EQUIPMENT UTILIZATION: Maximize training effect using available equipment: ${equipmentNames.join(', ')}. Include equipment-specific techniques and safety protocols.`);
       }
     }
 
-    // Add time-specific considerations
+    // Add time-specific programming considerations
     if (profile.availableTime <= 15) {
-      notes.push('Keep workout efficient and high-intensity for short duration');
+      notes.push('TIME-EFFICIENT PROGRAMMING: Use compound movements, supersets, and minimal rest periods. Focus on maximum training density and metabolic impact.');
     } else if (profile.availableTime >= 60) {
-      notes.push('Include comprehensive warm-up, main workout, and extended cool-down');
+      notes.push('COMPREHENSIVE SESSION: Include extended warm-up with movement preparation, detailed main training blocks with adequate rest, and thorough cool-down with recovery protocols.');
+    } else {
+      notes.push('OPTIMAL DURATION: Balance training volume with recovery. Include efficient exercise selection and appropriate rest intervals for training adaptations.');
     }
 
-    // Add fitness level specific notes
+    // Add fitness level specific programming notes
     const fitnessLevelNotes: Record<string, string> = {
-      'beginner': 'Focus on proper form, basic movements, and gradual progression',
-      'intermediate': 'Include moderate complexity exercises with progression options',
-      'advanced': 'Challenge with complex movements, higher intensity, and advanced techniques'
+      'beginner': 'BEGINNER PROGRAMMING: Prioritize movement quality over intensity. Include detailed form instruction, basic movement patterns, and conservative progression. Focus on building exercise habits and confidence.',
+      'intermediate': 'INTERMEDIATE PROGRAMMING: Include moderate complexity exercises with clear progression pathways. Balance challenge with safety. Introduce advanced techniques gradually with proper instruction.',
+      'advanced': 'ADVANCED PROGRAMMING: Challenge with complex movement patterns, advanced training techniques, and higher intensities. Include performance optimization strategies and sophisticated periodization.'
     };
 
     if (fitnessLevelNotes[profile.fitnessLevel]) {
       notes.push(fitnessLevelNotes[profile.fitnessLevel]);
     }
 
-    return notes.length > 0 ? notes.join('. ') + '.' : '';
+    // Add professional standards note
+    notes.push('PROFESSIONAL STANDARDS: Apply evidence-based exercise science principles, ensure proper exercise sequencing, and maintain the highest safety standards throughout the session.');
+
+    return notes.length > 0 ? notes.join(' ') : '';
   }, [convertEquipmentCodesToNames]);
 
   // Transform API workout response to internal WorkoutPlan format
   const transformAPIWorkoutToPlan = useCallback((apiWorkout: any): WorkoutPlan => {
-    // Validate required fields
-    if (!apiWorkout || !apiWorkout.exercises || !Array.isArray(apiWorkout.exercises)) {
-      throw new Error('Invalid workout structure received from API');
+    // Handle both new and legacy API formats
+    let exercisesList: any[] = [];
+
+    // Check for new API format with mainWorkout structure
+    if (apiWorkout.mainWorkout && apiWorkout.mainWorkout.exercises && Array.isArray(apiWorkout.mainWorkout.exercises)) {
+      exercisesList = apiWorkout.mainWorkout.exercises;
+    }
+    // Fallback to legacy format
+    else if (apiWorkout.exercises && Array.isArray(apiWorkout.exercises)) {
+      exercisesList = apiWorkout.exercises;
+    }
+    else {
+      throw new Error('Invalid workout structure received from API - no exercises found');
+    }
+
+    if (exercisesList.length === 0) {
+      throw new Error('Invalid workout structure received from API - empty exercise list');
     }
 
     // Transform API exercises to internal format with validation
-    const exercises: Exercise[] = apiWorkout.exercises.map((apiExercise: any, index: number) => {
+    const exercises: Exercise[] = exercisesList.map((apiExercise: any, index: number) => {
       if (!apiExercise.name) {
         throw new Error(`Exercise ${index + 1} is missing a name`);
       }
 
+      // Parse reps - handle both string ranges (e.g., "8-12") and numbers
+      let reps = 10; // default
+      if (typeof apiExercise.reps === 'number') {
+        reps = apiExercise.reps;
+      } else if (typeof apiExercise.reps === 'string') {
+        const repsMatch = apiExercise.reps.match(/(\d+)/);
+        reps = repsMatch ? parseInt(repsMatch[1]) : 10;
+      }
+
+      // Parse rest time - handle both restTime and restInterval fields
+      let restTime = 60; // default
+      if (typeof apiExercise.restTime === 'number') {
+        restTime = apiExercise.restTime;
+      } else if (typeof apiExercise.restInterval === 'string') {
+        const restMatch = apiExercise.restInterval.match(/(\d+)/);
+        restTime = restMatch ? parseInt(restMatch[1]) : 60;
+      }
+
+      // Combine primary and secondary muscles for target muscles
+      const targetMuscles = [];
+      if (Array.isArray(apiExercise.primaryMuscles)) {
+        targetMuscles.push(...apiExercise.primaryMuscles);
+      }
+      if (Array.isArray(apiExercise.secondaryMuscles)) {
+        targetMuscles.push(...apiExercise.secondaryMuscles);
+      }
+      if (Array.isArray(apiExercise.targetMuscles)) {
+        targetMuscles.push(...apiExercise.targetMuscles);
+      }
+      if (targetMuscles.length === 0) {
+        targetMuscles.push('general');
+      }
+
+      // Combine form cues and tips
+      const tips = [];
+      if (apiExercise.tips) {
+        tips.push(apiExercise.tips);
+      }
+      if (Array.isArray(apiExercise.formCues)) {
+        tips.push(...apiExercise.formCues);
+      }
+      const combinedTips = tips.length > 0 ? tips.join(' ') : 'Focus on controlled movements';
+
       return {
         name: apiExercise.name,
         sets: typeof apiExercise.sets === 'number' ? apiExercise.sets : 3,
-        reps: typeof apiExercise.reps === 'number' ? apiExercise.reps : 10,
+        reps,
         duration: typeof apiExercise.duration === 'number' ? apiExercise.duration : 0,
-        restTime: typeof apiExercise.restTime === 'number' ? apiExercise.restTime : 60,
+        restTime,
         instructions: apiExercise.instructions || 'Perform exercise with proper form',
-        tips: apiExercise.tips || 'Focus on controlled movements',
-        targetMuscles: Array.isArray(apiExercise.targetMuscles) ? apiExercise.targetMuscles : ['general'],
+        tips: combinedTips,
+        targetMuscles: targetMuscles.map(m => m.toLowerCase()),
         equipment: Array.isArray(apiExercise.equipment) ? apiExercise.equipment : ['bodyweight'],
-        intensity: apiExercise.intensity || 'moderate',
+        intensity: apiExercise.intensity || apiExercise.rpe || 'moderate',
         progressionNotes: Array.isArray(apiExercise.progressionNotes)
           ? apiExercise.progressionNotes
-          : [apiExercise.progressionNotes || 'Progress gradually'],
-        modifications: Array.isArray(apiExercise.modifications) ? apiExercise.modifications : [],
-        safetyNotes: apiExercise.safetyNotes || 'Listen to your body and maintain proper form'
+          : [apiExercise.progressions || apiExercise.progressionNotes || 'Progress gradually'],
+        modifications: Array.isArray(apiExercise.modifications)
+          ? apiExercise.modifications
+          : (apiExercise.regressions ? [apiExercise.regressions] : []),
+        safetyNotes: apiExercise.safetyNotes ||
+                    (Array.isArray(apiExercise.commonMistakes) ? `Avoid: ${apiExercise.commonMistakes.join(', ')}` : 'Listen to your body and maintain proper form')
       };
     });
 
@@ -1185,17 +1359,67 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
       duration = durationMatch ? parseInt(durationMatch[1]) : profile.availableTime;
     }
 
-    // Safe warmup processing
-    const warmupExercises = Array.isArray(apiWorkout.warmup) ? apiWorkout.warmup : [];
-    const warmupDuration = warmupExercises.length > 0
-      ? warmupExercises.reduce((total: number, w: any) => total + (w.duration || 60), 0) / 60
-      : 3;
+    // Safe warmup processing - handle new API format
+    let warmupExercises: any[] = [];
+    let warmupDuration = 3; // default
 
-    // Safe cooldown processing
-    const cooldownExercises = Array.isArray(apiWorkout.cooldown) ? apiWorkout.cooldown : [];
-    const cooldownDuration = cooldownExercises.length > 0
-      ? cooldownExercises.reduce((total: number, c: any) => total + (c.duration || 60), 0) / 60
-      : 2;
+    if (apiWorkout.warmup) {
+      if (Array.isArray(apiWorkout.warmup)) {
+        // Legacy format - direct array
+        warmupExercises = apiWorkout.warmup;
+      } else if (apiWorkout.warmup.phases && Array.isArray(apiWorkout.warmup.phases)) {
+        // New format - phases with exercises
+        warmupExercises = apiWorkout.warmup.phases.flatMap((phase: any) =>
+          Array.isArray(phase.exercises) ? phase.exercises : []
+        );
+      } else if (apiWorkout.warmup.exercises && Array.isArray(apiWorkout.warmup.exercises)) {
+        // Alternative new format - direct exercises
+        warmupExercises = apiWorkout.warmup.exercises;
+      }
+
+      // Parse duration from new format
+      if (apiWorkout.warmup.duration) {
+        const durationMatch = String(apiWorkout.warmup.duration).match(/(\d+)/);
+        warmupDuration = durationMatch ? parseInt(durationMatch[1]) / 60 : 3; // convert to minutes
+      } else if (warmupExercises.length > 0) {
+        warmupDuration = warmupExercises.reduce((total: number, w: any) => {
+          const exerciseDuration = w.duration || 60;
+          const durationMatch = String(exerciseDuration).match(/(\d+)/);
+          return total + (durationMatch ? parseInt(durationMatch[1]) : 60);
+        }, 0) / 60;
+      }
+    }
+
+    // Safe cooldown processing - handle new API format
+    let cooldownExercises: any[] = [];
+    let cooldownDuration = 2; // default
+
+    if (apiWorkout.cooldown) {
+      if (Array.isArray(apiWorkout.cooldown)) {
+        // Legacy format - direct array
+        cooldownExercises = apiWorkout.cooldown;
+      } else if (apiWorkout.cooldown.phases && Array.isArray(apiWorkout.cooldown.phases)) {
+        // New format - phases with exercises
+        cooldownExercises = apiWorkout.cooldown.phases.flatMap((phase: any) =>
+          Array.isArray(phase.exercises) ? phase.exercises : []
+        );
+      } else if (apiWorkout.cooldown.exercises && Array.isArray(apiWorkout.cooldown.exercises)) {
+        // Alternative new format - direct exercises
+        cooldownExercises = apiWorkout.cooldown.exercises;
+      }
+
+      // Parse duration from new format
+      if (apiWorkout.cooldown.duration) {
+        const durationMatch = String(apiWorkout.cooldown.duration).match(/(\d+)/);
+        cooldownDuration = durationMatch ? parseInt(durationMatch[1]) / 60 : 2; // convert to minutes
+      } else if (cooldownExercises.length > 0) {
+        cooldownDuration = cooldownExercises.reduce((total: number, c: any) => {
+          const exerciseDuration = c.duration || 60;
+          const durationMatch = String(exerciseDuration).match(/(\d+)/);
+          return total + (durationMatch ? parseInt(durationMatch[1]) : 60);
+        }, 0) / 60;
+      }
+    }
 
     // Generate unique workout ID with timestamp and random component
     const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
@@ -1222,10 +1446,30 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
 
     const mappedWorkoutType = mapWorkoutType(apiWorkout.type, selectedWorkoutType);
 
+    // Build comprehensive coaching notes from new API format
+    const coachingNotes = [];
+    if (apiWorkout.professionalGuidance) {
+      if (apiWorkout.professionalGuidance.intensityGuidance) {
+        coachingNotes.push(apiWorkout.professionalGuidance.intensityGuidance);
+      }
+      if (apiWorkout.professionalGuidance.safetyConsiderations) {
+        coachingNotes.push(apiWorkout.professionalGuidance.safetyConsiderations);
+      }
+      if (apiWorkout.professionalGuidance.progressionPlan) {
+        coachingNotes.push(apiWorkout.professionalGuidance.progressionPlan);
+      }
+    }
+    if (apiWorkout.notes) {
+      coachingNotes.push(apiWorkout.notes);
+    }
+    const finalCoachingNotes = coachingNotes.length > 0
+      ? coachingNotes.join(' ')
+      : 'Focus on proper form and listen to your body';
+
     return {
       id: uniqueId,
       name: apiWorkout.type ?
-        (apiWorkout.type.charAt(0).toUpperCase() + apiWorkout.type.slice(1) + ' Workout') :
+        (apiWorkout.type.charAt(0).toUpperCase() + apiWorkout.type.slice(1).replace('_', ' ') + ' Workout') :
         `AI Generated ${workoutTypes.find(t => t.value === selectedWorkoutType)?.label || 'Mixed'} Workout`,
       duration,
       difficulty: apiWorkout.difficulty || profile.fitnessLevel,
@@ -1234,7 +1478,7 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
       completedAt: null,
       focusAreas: Array.isArray(apiWorkout.tags) ? apiWorkout.tags : ['general'],
       workoutType: mappedWorkoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core',
-      coachingNotes: apiWorkout.notes || 'Focus on proper form and listen to your body',
+      coachingNotes: finalCoachingNotes,
       warmUp: {
         duration: warmupDuration,
         exercises: warmupExercises.map((w: any) => w.name || 'Dynamic warm-up').filter(Boolean)
@@ -1558,26 +1802,28 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
       const sessionContext = `modify-${modifications.workoutType || selectedWorkoutType}-${modifications.difficulty || profile.fitnessLevel}-${timestamp}-${browserFingerprint}`;
       const correlationId = `mod-${Date.now()}-${nanoTime}-${randomId1}-${Math.random().toString(36).substring(2, 10)}`;
 
-      // Additional entropy for modification uniqueness
-      const entropyString = `${Math.random()}-${Date.now()}-${performance.now()}-${Math.random()}`;
-      const uniqueModificationSeed = btoa(entropyString).substring(0, 16);
+      // Additional entropy for modification uniqueness (removed unused variable)
 
-      // Create optimal modification API request
+      // Create modification API request aligned with new documentation format
       const workoutAPIRequest = {
-        // Core user metadata
+        // User metadata according to new API spec
         userMetadata: {
           age: userMetadata.age,
           fitnessLevel: modifications.difficulty || userMetadata.fitnessLevel,
+          gender: userMetadata.gender,
+          weight: userMetadata.weight,
+          goals: goalValues,
           equipment: equipmentAPINames,
           timeAvailable: modifications.duration || userMetadata.timeAvailable,
-          goals: goalValues,
-          injuries: userMetadata.injuries || []
+          injuries: userMetadata.injuries || [],
+          daysPerWeek: userMetadata.daysPerWeek || 3,
+          minutesPerSession: modifications.duration || userMetadata.timeAvailable
         },
 
-        // Structured workout specification
-        workoutSpecification: modificationWorkoutSpecification,
+        // Workout history (optional)
+        workoutHistory: [], // Empty for modifications
 
-        // Intelligent modification request
+        // Natural language workout description (required)
         workoutRequest: buildIntelligentWorkoutRequest(
           modifiedProfile,
           [],
@@ -1585,26 +1831,23 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
           modifications.focusAreas
         ),
 
-        // Additional notes for modifications
+        // Enhanced format (recommended) - workoutSpecification
+        workoutSpecification: modificationWorkoutSpecification,
+
+        // Additional notes (optional)
         additionalNotes: specificModificationNotes.length > 500
           ? specificModificationNotes.substring(0, 497) + '...'
           : specificModificationNotes,
 
-        // Enhanced cache-busting for fresh modification
+        // Optional tracking fields
         requestId,
         timestamp,
-        correlationId,
-        uniqueModificationSeed,
         sessionContext,
-        forceRefresh: true,
-        disableCache: true,
-        modificationType: 'fresh-generation',
-        clientTimestamp: Date.now(),
-        entropyHash: entropyString
+        correlationId
       };
 
-      // Comprehensive modification request logging
-      console.group('🔧 Workout Modification Request');
+      // Modification request logging for new API format
+      console.group('🔧 Workout Modification Request (New API Format)');
       console.log('📤 Modification Request Payload:', JSON.stringify(workoutAPIRequest, null, 2));
       console.log('🔑 Modification Identifiers:', {
         requestId,
@@ -1617,7 +1860,7 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
 
       const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
         userId: user?.uid || '',
-        timeout: 75000, // Optimal timeout for modifications
+        timeout: 60000, // 60s timeout as per new API documentation
         useEnsemble: false // Use single best model for consistency
       });
 
@@ -1627,18 +1870,30 @@ Make this workout engaging, effective, and perfectly tailored to the user's spec
       console.log('✅ Response Status:', response.status);
       console.log('🔗 Correlation ID:', response.correlationId);
       if (response.data?.workout) {
+        // Handle both new and legacy API formats for logging
+        const workout = response.data.workout;
+        const exerciseCount = workout.mainWorkout?.exercises?.length || workout.exercises?.length || 0;
+
         console.log('🏋️ Modified Workout Details:', {
-          type: response.data.workout.type,
-          duration: response.data.workout.duration,
-          exerciseCount: response.data.workout.exercises?.length || 0,
-          difficulty: response.data.workout.difficulty
+          type: workout.type,
+          duration: workout.duration,
+          exerciseCount,
+          difficulty: workout.difficulty,
+          hasMainWorkout: !!workout.mainWorkout,
+          hasExercises: !!workout.exercises,
+          hasWarmup: !!workout.warmup,
+          hasCooldown: !!workout.cooldown
         });
       }
       console.groupEnd();
 
       if (response.status === 'success' && response.data) {
         const workout = response.data.workout;
-        const workoutPlan = transformAPIWorkoutToPlan(workout);
+
+        // Apply type correction if there's a mismatch
+        const correctedWorkout = correctWorkoutTypeMismatch(workout, selectedWorkoutType);
+
+        const workoutPlan = transformAPIWorkoutToPlan(correctedWorkout);
 
         const enhancedWorkout: WorkoutPlan = {
           ...workoutPlan,

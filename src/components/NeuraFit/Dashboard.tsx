@@ -13,6 +13,7 @@ import {
     VStack
 } from '@chakra-ui/react';
 import {
+    PiClockBold,
     PiHeartBold,
     PiPlayBold,
     PiTrophyBold
@@ -23,10 +24,11 @@ import { useFitnessStore } from '../../store/useFitnessStore';
 interface DashboardProps {
   onStartWorkout: () => void;
   onViewProgress: () => void;
+  onViewHistory?: () => void;
   onEditSpecificSetting?: (step: number) => void;
 }
 
-export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecificSetting }: DashboardProps) {
+export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistory, onEditSpecificSetting }: DashboardProps) {
   const { profile, workoutPlans } = useFitnessStore();
 
   const subtextColor = useColorModeValue('gray.500', 'gray.400');
@@ -352,6 +354,29 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecif
           >
             View Progress & Analytics
           </Button>
+
+          {onViewHistory && (
+            <Button
+              variant="ghost"
+              colorScheme="purple"
+              size="md"
+              w="100%"
+              maxW="400px"
+              h="50px"
+              leftIcon={<Icon as={PiClockBold} boxSize={5} />}
+              onClick={onViewHistory}
+              fontSize="md"
+              fontWeight="medium"
+              borderRadius="xl"
+              _hover={{
+                bg: "purple.50",
+                transform: "translateY(-1px)",
+              }}
+              transition="all 0.2s ease"
+            >
+              Workout History
+            </Button>
+          )}
         </VStack>
       </VStack>
     </Box>

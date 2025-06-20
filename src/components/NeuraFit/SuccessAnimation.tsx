@@ -4,7 +4,6 @@ import { memo } from 'react';
 import { PiCheckCircleBold } from 'react-icons/pi';
 
 const MotionBox = motion(Box);
-const MotionIcon = motion(Icon);
 
 interface SuccessAnimationProps {
   isVisible: boolean;
@@ -73,14 +72,17 @@ const SuccessAnimation = memo(function SuccessAnimation({
                 stiffness: 200
               }}
             >
-              <MotionIcon
-                as={PiCheckCircleBold}
-                boxSize={{ base: 16, md: 20 }}
-                color="green.500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
-              />
+              <MotionBox
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.3, type: "spring", stiffness: 200 }}
+              >
+                <Icon
+                  as={PiCheckCircleBold}
+                  boxSize={{ base: 16, md: 20 }}
+                  color="green.500"
+                />
+              </MotionBox>
             </MotionBox>
 
             {/* Success Message */}

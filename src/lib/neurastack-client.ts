@@ -644,14 +644,14 @@ export class NeuraStackClient {
 
   /**
    * Generate a personalized workout using the enhanced workout API endpoint
-   * NO CACHING - Always makes fresh API calls with multiple cache-busting strategies
+   * Aligned with the latest API documentation format
    *
    * Enhanced Features:
-   * - Guaranteed workout type consistency via workoutSpecification
-   * - Multiple cache-busting techniques (URL params, headers, unique IDs)
-   * - Backward compatibility with legacy string format
-   * - Comprehensive request tracking and debugging
-   * - Ensemble mode support with custom model arrays
+   * - Professional trainer quality workouts
+   * - Flexible workout types (any string supported)
+   * - Enhanced error handling with retry logic
+   * - Proper timeout handling (60+ seconds)
+   * - Type consistency guarantees
    */
   async generateWorkout(
     request: WorkoutAPIRequest,
@@ -660,86 +660,73 @@ export class NeuraStackClient {
       models?: string[];
     } = {}
   ): Promise<WorkoutAPIResponse> {
-    // Generate comprehensive unique identifiers for cache-busting
+    // Generate unique identifiers for request tracking
     const timestamp = Date.now();
     const randomPart1 = Math.random().toString(36).substring(2, 15);
     const randomPart2 = Math.random().toString(36).substring(2, 15);
     const correlationId = `workout-${timestamp}-${randomPart1}-${randomPart2}`;
-    const sessionId = crypto.randomUUID();
 
-    // Enhanced request with guaranteed uniqueness and ensemble configuration
-    const enhancedRequest: WorkoutAPIRequest & {
-      useEnsemble?: boolean;
-      models?: string[];
-    } = {
-      ...request,
+    // Prepare the request according to new API documentation
+    const apiRequest: WorkoutAPIRequest = {
+      userMetadata: {
+        age: request.userMetadata.age,
+        fitnessLevel: request.userMetadata.fitnessLevel,
+        gender: request.userMetadata.gender,
+        weight: request.userMetadata.weight,
+        goals: request.userMetadata.goals,
+        equipment: request.userMetadata.equipment,
+        timeAvailable: request.userMetadata.timeAvailable,
+        injuries: request.userMetadata.injuries,
+        daysPerWeek: request.userMetadata.daysPerWeek,
+        minutesPerSession: request.userMetadata.minutesPerSession
+      },
+      workoutHistory: request.workoutHistory || [],
+      workoutRequest: request.workoutRequest,
+      // Enhanced format (recommended)
+      workoutSpecification: request.workoutSpecification,
+      additionalNotes: request.additionalNotes,
       requestId: request.requestId || `req-${timestamp}-${randomPart1}`,
       timestamp: request.timestamp || new Date().toISOString(),
       sessionContext: request.sessionContext || `${request.workoutSpecification?.workoutType || 'mixed'}-${timestamp}`,
-      correlationId: correlationId,
-      // Add ensemble configuration if provided
-      useEnsemble: options.useEnsemble ?? this.config.useEnsemble ?? true,
-      models: options.models || ['google:gemini-1.5-flash', 'xai:grok-3-mini', 'openai:gpt-4']
+      correlationId: correlationId
     };
 
-    // CORS-compliant headers with cache-busting (only allowed headers)
+    // Prepare headers according to new API documentation
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
-      // Note: Cache-Control, Pragma, and Expires headers cause CORS issues
-      // Cache-busting is handled via URL parameters instead
     };
 
-    // Add user identification headers (only allowed CORS headers)
+    // Add required X-User-ID header as per new API documentation
     const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
-      headers['X-User-Id'] = userId;
+      headers['X-User-ID'] = userId;
+    } else {
+      headers['X-User-ID'] = 'anonymous';
     }
 
     try {
-      // Multiple cache-busting strategies
-      const cacheBustParams = new URLSearchParams({
-        t: timestamp.toString(),
-        r: randomPart1,
-        r2: randomPart2,
-        rid: enhancedRequest.requestId!,
-        sid: sessionId,
-        v: '3.0', // Enhanced API version
-        wt: request.workoutSpecification?.workoutType || 'mixed',
-        cb: Math.random().toString(36).substring(2, 10) // Additional cache buster
-      });
+      // Use the workout endpoint directly (no cache-busting in URL as per new docs)
+      const workoutEndpoint = NEURASTACK_ENDPOINTS.WORKOUT;
 
-      const workoutEndpoint = `${NEURASTACK_ENDPOINTS.WORKOUT}?${cacheBustParams.toString()}`;
-
-      // Enhanced development logging
+      // Development logging for new API format
       if (import.meta.env.DEV) {
-        console.group('🏋️ Enhanced NeuraStack Workout API Request');
+        console.group('🏋️ NeuraStack Workout API Request (New Format)');
         console.log('');
-        console.log('📍 WORKOUT TYPE GUARANTEE:');
+        console.log('📍 WORKOUT SPECIFICATION:');
         if (request.workoutSpecification?.workoutType) {
-          console.log(`  🎯 Requested Type: %c${request.workoutSpecification.workoutType}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+          console.log(`  🎯 Workout Type: %c${request.workoutSpecification.workoutType}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+          console.log(`  ⏱️ Duration: ${request.workoutSpecification.duration} minutes`);
+          console.log(`  🎚️ Difficulty: ${request.workoutSpecification.difficulty}`);
           console.log('  ✅ Using Enhanced Format (Type Guaranteed)');
-        } else if (request.workoutRequest) {
-          console.log('  ⚠️  Using Legacy Format (Type Not Guaranteed)');
-          console.log(`  📝 Legacy Request: ${request.workoutRequest.substring(0, 100)}...`);
         }
         console.log('');
-        console.log('🔒 CACHE-BUSTING STRATEGIES:');
-        console.log('  📊 URL Parameters:', Object.fromEntries(cacheBustParams));
-        console.log('  🔧 Headers: CORS-compliant only (no cache headers to avoid CORS issues)');
-        console.log('  🆔 Unique Identifiers:', {
-          requestId: enhancedRequest.requestId,
-          correlationId: correlationId,
-          sessionId: sessionId,
-          timestamp: enhancedRequest.timestamp
-        });
-        console.log('');
         console.log('🌐 REQUEST DETAILS:');
-        console.log('  📤 Base Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
-        console.log('  🔗 Full URL:', `${this.config.baseUrl}${workoutEndpoint}`);
-        console.log('  📋 Request Body:', JSON.stringify(enhancedRequest, null, 2));
+        console.log('  📤 Endpoint:', `${this.config.baseUrl}${workoutEndpoint}`);
+        console.log('  📋 Request Body:', JSON.stringify(apiRequest, null, 2));
+        console.log('  📋 Headers:', headers);
         console.log('  ⚙️ Options:', {
-          userId: userId || 'Not provided',
-          timeout: options.timeout || this.config.timeout
+          userId: userId || 'anonymous',
+          timeout: options.timeout || 60000 // Default 60s as per new docs
         });
         console.groupEnd();
       }
@@ -749,90 +736,93 @@ export class NeuraStackClient {
         {
           method: 'POST',
           headers,
-          body: JSON.stringify(enhancedRequest),
+          body: JSON.stringify(apiRequest),
           signal: options.signal,
-          timeout: options.timeout || this.config.timeout,
-          bustCache: true // Force cache-busting for workout generation
+          timeout: options.timeout || 60000, // Default 60s timeout as per new docs
+          bustCache: false // No cache-busting in URL as per new docs
         }
       );
 
-      // Enhanced success logging with type verification
+      // Success logging for new API format
       if (import.meta.env.DEV) {
-        console.group('🎯 Enhanced Workout Generation Success');
+        console.group('🎯 Workout Generation Success (New API)');
         console.log('');
         console.log('✅ RESPONSE STATUS:', workoutResponse.status);
         console.log('🔗 Correlation ID:', workoutResponse.correlationId);
+        console.log('⏰ Timestamp:', workoutResponse.timestamp);
         console.log('');
 
         if (workoutResponse.data?.workout) {
           const workout = workoutResponse.data.workout;
           console.log('🏋️ WORKOUT DETAILS:');
           console.log(`  📋 Type: %c${workout.type}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+          console.log(`  📋 Original Type: ${workout.originalType || 'N/A'}`);
           console.log(`  ⏱️ Duration: ${workout.duration}`);
           console.log(`  📊 Exercise Count: ${workout.exercises?.length || 0}`);
           console.log(`  🎯 Difficulty: ${workout.difficulty}`);
           console.log(`  🛠️ Equipment: ${workout.equipment?.join(', ') || 'None specified'}`);
+          console.log(`  🏷️ Tags: ${workout.tags?.join(', ') || 'None'}`);
 
-          // Type consistency verification with flexible matching
-          const requestedType = request.workoutSpecification?.workoutType;
-          if (requestedType) {
-            // Create flexible type matching to handle backend variations
-            const normalizeType = (type: string) => type.toLowerCase().replace(/[_-]/g, '');
-            const requestedNormalized = normalizeType(requestedType);
-            const receivedNormalized = normalizeType(workout.type);
-
-            // Check for exact match or partial match (e.g., "lower_body" -> "lower")
-            const exactMatch = workout.type === requestedType;
-            const partialMatch = receivedNormalized.includes(requestedNormalized.split('_')[0]) ||
-                               requestedNormalized.includes(receivedNormalized);
-            const typeMatch = exactMatch || partialMatch;
-
+          // Type consistency information from new API
+          if (workout.typeConsistency) {
             console.log('');
-            console.log('🔍 TYPE CONSISTENCY CHECK:');
-            console.log(`  📝 Requested: %c${requestedType}%c`, 'color: #0099ff; font-weight: bold;', 'color: inherit;');
-            console.log(`  📋 Received: %c${workout.type}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
-            console.log(`  🔍 Normalized Match: ${requestedNormalized} ↔ ${receivedNormalized}`);
-            console.log(`  ✅ Match: %c${typeMatch ? (exactMatch ? 'EXACT' : 'PARTIAL') : 'NO'}%c`,
-              typeMatch ? 'color: #00ff00; font-weight: bold;' : 'color: #ff0000; font-weight: bold;',
-              'color: inherit;'
-            );
+            console.log('🔍 TYPE CONSISTENCY (API):');
+            console.log(`  📝 Requested: %c${workout.typeConsistency.requested}%c`, 'color: #0099ff; font-weight: bold;', 'color: inherit;');
+            console.log(`  🤖 AI Generated: %c${workout.typeConsistency.aiGenerated}%c`, 'color: #ff9900; font-weight: bold;', 'color: inherit;');
+            console.log(`  📋 Final: %c${workout.typeConsistency.final}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+            console.log(`  🔧 Was Adjusted: ${workout.typeConsistency.wasAdjusted ? 'Yes' : 'No'}`);
+          }
 
-            if (!typeMatch) {
-              console.warn('⚠️ TYPE MISMATCH DETECTED - Backend may need adjustment');
-            } else if (!exactMatch && partialMatch) {
-              console.info('ℹ️ Partial type match detected - backend using abbreviated format');
-            }
+          // Professional guidance information
+          if (workout.professionalNotes) {
+            console.log('');
+            console.log('👨‍⚕️ PROFESSIONAL NOTES:');
+            console.log(`  🏆 Certification: ${workout.professionalNotes.trainerCertification || 'N/A'}`);
+            console.log(`  📚 Principles: ${workout.professionalNotes.programmingPrinciples?.join(', ') || 'N/A'}`);
+            console.log(`  🛡️ Safety Priority: ${workout.professionalNotes.safetyPriority || 'N/A'}`);
           }
         }
 
         console.log('');
         console.log('📊 METADATA:');
         console.log(`  🤖 Model: ${workoutResponse.data?.metadata?.model || 'Unknown'}`);
+        console.log(`  🏢 Provider: ${workoutResponse.data?.metadata?.provider || 'Unknown'}`);
+        console.log(`  👤 User ID: ${workoutResponse.data?.metadata?.userId || 'Unknown'}`);
         console.log(`  ⏰ Timestamp: ${workoutResponse.data?.metadata?.timestamp || 'Unknown'}`);
+
+        // Debug information from new API
+        if (workoutResponse.data?.metadata?.debug) {
+          console.log('');
+          console.log('🐛 DEBUG INFO:');
+          console.log(`  📋 Request Format: ${workoutResponse.data.metadata.debug.requestFormat}`);
+          console.log(`  ✨ Enhanced Format: ${workoutResponse.data.metadata.debug.isEnhancedFormat}`);
+          console.log(`  🎯 Parsed Type: ${workoutResponse.data.metadata.debug.parsedWorkoutType}`);
+        }
+
         console.groupEnd();
       }
 
       return workoutResponse;
     } catch (error) {
-      // Enhanced error logging with request context
-      console.group('❌ Enhanced Workout Generation Error');
+      // Error logging for new API format
+      console.group('❌ Workout Generation Error (New API)');
       console.log('');
       console.log('🚫 ERROR DETAILS:');
       console.log('  💥 Error:', error);
       console.log('  🔗 Correlation ID:', correlationId);
-      console.log('  🆔 Request ID:', enhancedRequest.requestId);
-      console.log('  ⏰ Timestamp:', enhancedRequest.timestamp);
+      console.log('  🆔 Request ID:', apiRequest.requestId);
+      console.log('  ⏰ Timestamp:', apiRequest.timestamp);
       console.log('');
       console.log('📋 REQUEST CONTEXT:');
-      console.log('  🎯 Workout Type:', request.workoutSpecification?.workoutType || 'Legacy format');
-      console.log('  👤 User ID:', userId || 'Not provided');
+      console.log('  🎯 Workout Type:', request.workoutSpecification?.workoutType || 'Not specified');
+      console.log('  👤 User ID:', userId || 'anonymous');
       console.log('  🌐 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT}`);
       console.log('');
       console.log('🔧 TROUBLESHOOTING:');
-      console.log('  • Check if backend is running on the expected URL');
-      console.log('  • Verify workout type is supported by backend');
-      console.log('  • Check network connectivity and CORS settings');
-      console.log('  • Review request payload for invalid data');
+      console.log('  • Check if backend is running and accessible');
+      console.log('  • Verify request format matches new API documentation');
+      console.log('  • Check network connectivity');
+      console.log('  • Review timeout settings (should be 60+ seconds)');
       console.groupEnd();
       throw error;
     }

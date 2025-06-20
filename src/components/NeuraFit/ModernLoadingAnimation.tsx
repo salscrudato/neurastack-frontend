@@ -24,16 +24,13 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
   title = 'Creating Your Workout'
 }: ModernLoadingAnimationProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'white');
-  const subtextColor = useColorModeValue('gray.600', 'gray.400');
 
   useEffect(() => {
     if (!isVisible) {
       setCurrentMessageIndex(0);
-      setProgress(0);
       return;
     }
 
@@ -41,16 +38,8 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
       setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
     }, 2000);
 
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) return prev;
-        return prev + Math.random() * 15;
-      });
-    }, 300);
-
     return () => {
       clearInterval(messageInterval);
-      clearInterval(progressInterval);
     };
   }, [isVisible, messages.length]);
 
@@ -143,7 +132,7 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
             </Box>
 
             {/* Progress Bar - Enhanced for mobile */}
-            <Box px={{ base: 1, md: 0 }}>
+            {/* <Box px={{ base: 1, md: 0 }}>
               <Box
                 w="full"
                 h={{ base: "8px", md: "6px" }}
@@ -162,8 +151,8 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
                     boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)'
                   }}
                 />
-              </Box>
-              <Text
+              </Box> */}
+              {/* <Text
                 fontSize={{ base: "sm", md: "md" }}
                 color={subtextColor}
                 textAlign="center"
@@ -171,8 +160,8 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
                 fontWeight="medium"
               >
                 {Math.round(progress)}% Complete
-              </Text>
-            </Box>
+              </Text> */}
+            {/* </Box> */}
 
             {/* Rotating Messages - Enhanced for mobile */}
             <Box minH={{ base: "60px", md: "50px" }} display="flex" alignItems="center" justifyContent="center" px={{ base: 2, md: 0 }}>

@@ -4,7 +4,10 @@ import type { Exercise, FitnessProfile, WorkoutPlan } from '../lib/types';
 export const VALID_WORKOUT_TYPES = [
   'strength', 'cardio', 'hiit', 'flexibility', 'mixed',
   'upper_body', 'lower_body', 'push', 'pull', 'core',
-  'yoga', 'pilates', 'functional', 'full_body', 'legs'
+  'yoga', 'pilates', 'functional', 'full_body', 'legs',
+  // Additional variations that the API might return
+  'push_day', 'pull_day', 'leg_day', 'upper', 'lower',
+  'chest', 'back', 'shoulders', 'arms', 'abs'
 ] as const;
 
 export type ValidWorkoutType = typeof VALID_WORKOUT_TYPES[number];

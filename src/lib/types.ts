@@ -724,21 +724,56 @@ export interface Exercise {
   audioInstructions?: string;
 }
 
+// Enhanced completed exercise tracking
+export interface CompletedExercise {
+  exerciseIndex: number;
+  exerciseId: string;
+  exerciseName: string;
+  plannedSets: number;
+  completedSets: CompletedSet[];
+  skipped: boolean;
+  completedAt: Date;
+  totalTimeSpent: number; // in seconds
+  averageRPE?: number;
+  averageFormRating?: number;
+  exerciseNotes?: string;
+  personalRecordAchieved?: boolean;
+  progressionFromLastTime?: {
+    weightIncrease?: number;
+    repsIncrease?: number;
+    setsIncrease?: number;
+  };
+}
+
+// Individual set tracking
+export interface CompletedSet {
+  setIndex: number;
+  weight?: number; // undefined for bodyweight or N/A
+  actualReps: number;
+  plannedReps: number | string;
+  rpe?: number; // 1-10 scale
+  formRating?: number; // 1-5 scale
+  restTimeAfter?: number; // actual rest time taken after this set
+  setNotes?: string;
+  completedAt: Date;
+  isPersonalRecord?: boolean;
+}
+
 // ============================================================================
 // Workout API Types (for /workout endpoint)
 // ============================================================================
 
 export interface WorkoutUserMetadata {
-  age: number; // Required by API
-  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
-  gender?: string;
-  weight?: number;
-  goals?: string[]; // e.g., ['strength', 'cardio', 'flexibility', 'weight_loss']
-  equipment?: string[]; // e.g., ['dumbbells', 'resistance_bands', 'none']
-  timeAvailable?: number; // minutes per session
-  injuries?: string[];
-  daysPerWeek?: number;
-  minutesPerSession?: number;
+  age: number; // Required by API (13-100)
+  fitnessLevel: string; // Any string: 'beginner', 'intermediate', 'advanced', 'expert', 'professional', etc.
+  gender?: string; // Optional
+  weight?: number; // Optional
+  goals?: string[]; // Optional: Any goals as strings
+  equipment?: string[]; // Optional: Any equipment as strings
+  timeAvailable?: number; // Minutes available
+  injuries?: string[]; // Optional: injury considerations
+  daysPerWeek?: number; // Optional: workout frequency
+  minutesPerSession?: number; // Optional: session duration
 }
 
 export interface WorkoutHistoryEntry {
@@ -749,29 +784,25 @@ export interface WorkoutHistoryEntry {
 
 // Enhanced workout specification for guaranteed type consistency
 export interface WorkoutSpecification {
-  workoutType: 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core' | 'yoga' | 'pilates' | 'functional' | 'full_body' | 'legs';
-  duration?: number; // minutes
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
-  focusAreas?: string[]; // e.g., ['chest', 'shoulders', 'triceps']
-  equipment?: string[]; // Available equipment
+  workoutType: string; // Any workout type: 'strength', 'swimming', 'rock_climbing', etc.
+  duration: number; // Minutes
+  difficulty: string; // Any difficulty level: 'beginner', 'expert', 'professional', etc.
+  focusAreas?: string[]; // Any focus areas as strings
+  equipment?: string[]; // Any equipment as strings
 }
 
 export interface WorkoutAPIRequest {
   userMetadata: WorkoutUserMetadata;
-  workoutHistory?: WorkoutHistoryEntry[];
+  workoutHistory?: WorkoutPlan[]; // Optional: previous workouts
+  workoutRequest: string; // Natural language workout description
 
-  // Enhanced request format (recommended)
+  // Enhanced format (recommended)
   workoutSpecification?: WorkoutSpecification;
-  additionalNotes?: string; // Specific user requirements or modifications
-
-  // Legacy format (backward compatibility)
-  workoutRequest?: string; // Natural language description of desired workout
-
-  // Cache-busting identifiers
-  requestId?: string; // Unique identifier to prevent caching
-  timestamp?: string; // ISO timestamp for request tracking
-  sessionContext?: string; // Additional context to ensure uniqueness
-  correlationId?: string; // For request tracking and debugging
+  additionalNotes?: string; // Extra requirements
+  requestId?: string; // Optional: for tracking
+  timestamp?: string; // Optional: ISO timestamp
+  sessionContext?: string; // Optional: session identifier
+  correlationId?: string; // Optional: request correlation
 }
 
 export interface WorkoutAPIExercise {
@@ -798,20 +829,95 @@ export interface CooldownExercise {
 }
 
 export interface WorkoutAPIPlan {
-  type: string; // e.g., "mixed"
-  duration: string; // e.g., "30 minutes"
-  difficulty: string; // e.g., "beginner"
-  equipment: string[]; // e.g., ["none"]
-  exercises: WorkoutAPIExercise[];
-  warmup: WarmupExercise[];
-  cooldown: CooldownExercise[];
-  calorieEstimate: string; // e.g., "150-200 calories"
-  notes: string; // Additional workout notes
+  type: string; // e.g., "upper_body"
+  originalType?: string; // What the AI originally suggested
+  typeConsistency?: {
+    requested: string;
+    aiGenerated: string;
+    final: string;
+    wasAdjusted: boolean;
+  };
+  duration: string | number; // e.g., "45 minutes" or 45
+  difficulty: string; // e.g., "intermediate"
+  equipment: string[]; // e.g., ["dumbbells", "resistance_bands"]
+
+  // Legacy format (direct exercises)
+  exercises?: WorkoutAPIExercise[];
+
+  // New enhanced format (structured workout)
+  mainWorkout?: {
+    structure?: string;
+    exercises: WorkoutAPIExercise[];
+  };
+
+  warmup?: WarmupExercise[] | {
+    duration?: string;
+    purpose?: string;
+    phases?: Array<{
+      phase: string;
+      duration: string;
+      exercises: Array<{
+        name: string;
+        duration?: string;
+        sets?: number;
+        reps?: string;
+        instructions: string;
+        purpose?: string;
+      }>;
+    }>;
+  };
+
+  cooldown?: CooldownExercise[] | {
+    duration?: string;
+    purpose?: string;
+    phases?: Array<{
+      phase: string;
+      duration: string;
+      exercises: Array<{
+        name: string;
+        duration?: string;
+        instructions: string;
+        targetMuscles?: string[];
+      }>;
+    }>;
+  };
+
+  notes?: string; // Additional workout notes
+  calorieEstimate?: string; // e.g., "300-400 calories"
+  tags?: string[]; // Workout tags
+  nextSessionRecommendations?: string;
+
+  // Professional guidance (new in enhanced API)
+  professionalNotes?: {
+    trainerCertification?: string;
+    programmingPrinciples?: string[];
+    safetyPriority?: string;
+  };
+  professionalGuidance?: {
+    intensityGuidance?: string;
+    progressionPlan?: string;
+    safetyConsiderations?: string;
+    recoveryRecommendations?: string;
+    nutritionTips?: string;
+    hydrationGuidance?: string;
+  };
 }
 
 export interface WorkoutAPIMetadata {
   model: string; // e.g., "gpt-4o-mini"
+  provider: string; // e.g., "openai"
   timestamp: string; // ISO timestamp
+  correlationId: string;
+  userId: string;
+
+  // Debug information (new in enhanced API)
+  debug?: {
+    requestFormat: string;
+    isEnhancedFormat: boolean;
+    parsedWorkoutType: string;
+    typeConsistency?: any;
+    supportedWorkoutTypes?: string[];
+  };
 }
 
 export interface WorkoutAPIResponse {
@@ -821,9 +927,14 @@ export interface WorkoutAPIResponse {
     metadata: WorkoutAPIMetadata;
   };
   message?: string;
-  error?: string;
-  timestamp?: string;
-  correlationId?: string;
+  timestamp: string;
+  correlationId: string;
+  retryable?: boolean;
+  supportInfo?: {
+    correlationId: string;
+    timestamp: string;
+    suggestion: string;
+  };
 }
 
 // ============================================================================
@@ -840,7 +951,7 @@ export interface WorkoutSession {
 
   // Session progress
   currentExerciseIndex: number;
-  completedExercises: number[];
+  completedExercises: CompletedExercise[];
   skippedExercises: number[];
 
   // Timing data
@@ -853,11 +964,30 @@ export interface WorkoutSession {
   heartRateData?: HeartRateReading[];
   caloriesBurned?: number;
   averageRPE?: number;
+  overallRating?: number; // 1-5 overall workout rating
+  workoutNotes?: string; // overall workout notes
 
   // Environment and context
   location?: 'home' | 'gym' | 'outdoor' | 'other';
   weather?: string; // for outdoor workouts
   equipment?: string[];
+
+  // Enhanced session analytics
+  sessionAnalytics?: {
+    totalSetsCompleted: number;
+    totalRepsCompleted: number;
+    totalWeightLifted: number; // sum of all weights across all sets
+    averageRestTime: number;
+    exerciseCompletionRate: number; // percentage of exercises completed
+    strengthProgression?: number; // compared to previous similar workout
+    enduranceProgression?: number;
+    consistencyScore?: number;
+  };
+
+  // Early completion data
+  completedEarly?: boolean;
+  earlyCompletionReason?: string;
+  plannedDuration?: number; // original planned duration
 
   // Session notes and feedback
   notes?: string;
@@ -868,6 +998,23 @@ export interface WorkoutSession {
   stressLevel?: number; // 1-5 scale
   hydrationLevel?: number; // 1-5 scale
   nutritionTiming?: 'fasted' | 'pre_workout_meal' | 'post_meal';
+}
+
+// Workout session summary for history display
+export interface WorkoutSessionSummary {
+  id: string;
+  workoutName: string;
+  date: Date;
+  duration: number; // in minutes
+  exercisesCompleted: number;
+  totalExercises: number;
+  completionRate: number; // percentage
+  totalWeightLifted?: number;
+  averageRPE?: number;
+  overallRating?: number;
+  workoutType: string;
+  status: 'completed' | 'abandoned' | 'completed_early';
+  personalRecordsAchieved: number;
 }
 
 export interface HeartRateReading {

@@ -139,7 +139,7 @@ export async function storeWorkoutAnalytics(analytics: Omit<WorkoutAnalytics, 'c
 }
 
 /**
- * Generate workout insights from historical data
+ * Generate comprehensive workout insights from session data
  */
 export async function generateWorkoutInsights(): Promise<WorkoutInsights | null> {
   if (!auth.currentUser) {
@@ -148,33 +148,34 @@ export async function generateWorkoutInsights(): Promise<WorkoutInsights | null>
 
   try {
     const userId = auth.currentUser.uid;
-    // Fix: Use correct Firestore path structure - collections need odd number of segments
-    const analyticsRef = collection(db, 'users', userId, 'analytics');
-    
-    // Get last 30 workout analytics
+
+    // Get workout sessions for analysis
+    const sessionsRef = collection(db, 'users', userId, 'workoutSessions');
     const q = query(
-      analyticsRef,
+      sessionsRef,
       orderBy('createdAt', 'desc'),
-      limit(30)
+      limit(50)
     );
 
     const querySnapshot = await getDocs(q);
-    const analyticsData: WorkoutAnalytics[] = [];
+    const sessionData: any[] = [];
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      analyticsData.push({
+      sessionData.push({
         ...data,
         createdAt: data.createdAt.toDate(),
-      } as WorkoutAnalytics);
+        startTime: data.startTime.toDate(),
+        endTime: data.endTime?.toDate(),
+      });
     });
 
-    if (analyticsData.length === 0) {
+    if (sessionData.length === 0) {
       return null;
     }
 
-    // Generate insights from the data
-    const insights = analyzeWorkoutData(analyticsData, userId);
+    // Generate comprehensive insights
+    const insights = analyzeWorkoutSessionData(sessionData, userId);
     return insights;
 
   } catch (error) {
@@ -189,9 +190,14 @@ export async function generateWorkoutInsights(): Promise<WorkoutInsights | null>
 
 /**
  * Analyze workout data to generate insights
+ * @deprecated - Use analyzeWorkoutSessionData instead
  */
-function analyzeWorkoutData(analyticsData: WorkoutAnalytics[], userId: string): WorkoutInsights {
-  const recentData = analyticsData.slice(0, 10); // Last 10 workouts
+/*
+function analyzeWorkoutData(
+  _analyticsData: WorkoutAnalytics[],
+  _userId: string
+): WorkoutInsights {
+  const recentData = _analyticsData.slice(0, 10); // Last 10 workouts
   
   // Calculate progress trends
   const completionRatesTrend = recentData.map(a => a.completionRate);
@@ -290,8 +296,10 @@ function analyzeWorkoutData(analyticsData: WorkoutAnalytics[], userId: string): 
     lastUpdated: new Date()
   };
 }
+*/
 
-// Helper functions
+// Helper functions (commented out as they were only used by deprecated function)
+/*
 function calculateConsistencyScore(data: WorkoutAnalytics[]): number {
   if (data.length < 2) return 0;
   
@@ -385,6 +393,149 @@ function generateAIRecommendations(
   // Goal adjustments
   if (patterns.adherenceRate < 60) {
     recommendations.goalAdjustments.push('Consider adjusting workout frequency or duration goals');
+  }
+
+  return recommendations;
+}
+*/
+
+/**
+ * Analyze workout session data for enhanced insights
+ */
+function analyzeWorkoutSessionData(sessionData: any[], userId: string): WorkoutInsights {
+  const totalWorkouts = sessionData.length;
+  const completedWorkouts = sessionData.filter(s => s.status === 'completed');
+
+  if (completedWorkouts.length === 0) {
+    return {
+      userId,
+      progressTrends: {
+        completionRatesTrend: [],
+        durationTrend: [],
+        difficultyProgression: [],
+        strengthGains: {}
+      },
+      preferences: {
+        preferredWorkoutTypes: [],
+        preferredMuscleGroups: [],
+        optimalWorkoutTime: 'morning',
+        preferredDuration: 30,
+        equipmentUsage: {}
+      },
+      patterns: {
+        bestPerformanceDays: [],
+        bestPerformanceTimes: [],
+        consistencyScore: 0,
+        adherenceRate: 0
+      },
+      recommendations: {
+        nextWorkoutSuggestions: ['Start with your first workout!'],
+        progressionRecommendations: [],
+        recoveryRecommendations: [],
+        goalAdjustments: []
+      },
+      lastUpdated: new Date()
+    };
+  }
+
+  // Calculate averages and trends
+  const averageDuration = completedWorkouts.reduce((sum, w) => sum + (w.totalDuration / 60), 0) / completedWorkouts.length;
+  const averageCompletionRate = completedWorkouts.reduce((sum, w) => sum + (w.sessionAnalytics?.exerciseCompletionRate || 0), 0) / completedWorkouts.length;
+
+  // Calculate progression trends
+  const recentWorkouts = completedWorkouts.slice(0, 10);
+  const olderWorkouts = completedWorkouts.slice(10, 20);
+
+  const recentAvgWeight = recentWorkouts.reduce((sum, w) => sum + (w.sessionAnalytics?.totalWeightLifted || 0), 0) / recentWorkouts.length;
+  const olderAvgWeight = olderWorkouts.reduce((sum, w) => sum + (w.sessionAnalytics?.totalWeightLifted || 0), 0) / olderWorkouts.length;
+
+  const strengthProgression = olderAvgWeight > 0 ? (recentAvgWeight - olderAvgWeight) / olderAvgWeight : 0;
+
+  // Calculate consistency
+  const workoutDates = completedWorkouts.map(w => new Date(w.startTime).toDateString());
+  const uniqueDates = new Set(workoutDates);
+  const consistencyScore = (uniqueDates.size / Math.min(30, totalWorkouts)) * 100;
+
+  // Find patterns
+  const workoutsByDay = completedWorkouts.reduce((acc, w) => {
+    const day = new Date(w.startTime).toLocaleDateString('en-US', { weekday: 'long' });
+    acc[day] = (acc[day] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const bestWorkoutDay = Object.entries(workoutsByDay)
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || 'Monday';
+
+  return {
+    userId,
+    progressTrends: {
+      completionRatesTrend: recentWorkouts.map(w => w.sessionAnalytics?.exerciseCompletionRate || 0),
+      durationTrend: recentWorkouts.map(w => w.totalDuration / 60),
+      difficultyProgression: recentWorkouts.map(() => 'moderate'), // Simplified
+      strengthGains: { overall: strengthProgression * 100 }
+    },
+    preferences: {
+      preferredWorkoutTypes: [bestWorkoutDay],
+      preferredMuscleGroups: ['mixed'],
+      optimalWorkoutTime: 'morning',
+      preferredDuration: Math.round(averageDuration),
+      equipmentUsage: {}
+    },
+    patterns: {
+      bestPerformanceDays: [bestWorkoutDay],
+      bestPerformanceTimes: ['morning'],
+      consistencyScore,
+      adherenceRate: averageCompletionRate
+    },
+    recommendations: generateSessionRecommendations(sessionData, strengthProgression, consistencyScore, averageCompletionRate),
+    lastUpdated: new Date()
+  };
+}
+
+/**
+ * Generate personalized recommendations based on session data
+ */
+function generateSessionRecommendations(
+  sessionData: any[],
+  strengthProgression: number,
+  consistencyScore: number,
+  averageCompletionRate: number
+): WorkoutInsights['recommendations'] {
+  const recommendations: WorkoutInsights['recommendations'] = {
+    nextWorkoutSuggestions: [],
+    progressionRecommendations: [],
+    recoveryRecommendations: [],
+    goalAdjustments: []
+  };
+
+  // Next workout suggestions
+  if (averageCompletionRate > 90) {
+    recommendations.nextWorkoutSuggestions.push('You\'re crushing it! Try a more challenging workout');
+  } else if (averageCompletionRate < 70) {
+    recommendations.nextWorkoutSuggestions.push('Focus on completing exercises with good form');
+  } else {
+    recommendations.nextWorkoutSuggestions.push('Keep up the great work with your current routine');
+  }
+
+  // Progression recommendations
+  if (strengthProgression > 0.1) {
+    recommendations.progressionRecommendations.push('Excellent strength gains! Consider increasing weights by 5-10%');
+  } else if (strengthProgression < 0.05) {
+    recommendations.progressionRecommendations.push('Try progressive overload - gradually increase weight or reps');
+  }
+
+  // Recovery recommendations
+  const recentWorkouts = sessionData.slice(0, 5);
+  const earlyCompletions = recentWorkouts.filter(w => w.completedEarly).length;
+  if (earlyCompletions >= 3) {
+    recommendations.recoveryRecommendations.push('Consider taking a rest day or reducing workout intensity');
+  }
+
+  // Goal adjustments
+  if (consistencyScore < 60) {
+    recommendations.goalAdjustments.push('Try setting smaller, more achievable workout goals');
+  } else if (consistencyScore > 80) {
+    recommendations.goalAdjustments.push('Great consistency! Consider setting more ambitious goals');
   }
 
   return recommendations;
