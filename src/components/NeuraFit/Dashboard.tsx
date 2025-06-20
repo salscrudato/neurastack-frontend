@@ -17,6 +17,7 @@ import {
     PiPlayBold,
     PiTrophyBold
 } from 'react-icons/pi';
+import { ageCategories } from '../../constants/personalInfoOptions';
 import { useFitnessStore } from '../../store/useFitnessStore';
 
 interface DashboardProps {
@@ -51,6 +52,23 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecif
   // Helper function to format fitness level
   const formatFitnessLevel = (level: string) => {
     return level.charAt(0).toUpperCase() + level.slice(1);
+  };
+
+  // Helper function to get personal info display text
+  const getPersonalInfoDisplay = () => {
+    if (profile.ageCategory) {
+      const ageCategory = ageCategories.find(cat => cat.code === profile.ageCategory);
+      if (ageCategory) {
+        return `${ageCategory.range} years`;
+      }
+    }
+
+    // Fallback to legacy age field
+    if (profile.age) {
+      return `${profile.age} years`;
+    }
+
+    return 'Not set';
   };
 
 
@@ -247,9 +265,6 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecif
                   <Text fontSize="sm" fontWeight="medium" color="gray.700">
                     Equipment
                   </Text>
-                  <Badge colorScheme="orange" variant="subtle" borderRadius="full" px={2} fontSize="xs">
-                    {profile.equipment.length} items
-                  </Badge>
                 </VStack>
               </CardBody>
             </Card>
@@ -277,7 +292,7 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onEditSpecif
                     Personal Info
                   </Text>
                   <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={2} fontSize="xs">
-                    {profile.age ? `${profile.age} years` : 'Not set'}
+                    {getPersonalInfoDisplay()}
                   </Badge>
                 </VStack>
               </CardBody>

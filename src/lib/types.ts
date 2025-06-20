@@ -559,9 +559,11 @@ export interface FitnessProfile {
   completedOnboarding: boolean;
 
   // Enhanced fields for workout API integration
-  age?: number; // User's age
+  age?: number; // User's age (legacy - for backward compatibility)
+  ageCategory?: string; // User's age category (e.g., 'YOUNG_ADULT', 'ADULT', etc.)
   gender?: 'male' | 'female' | 'rather_not_say'; // User's gender
-  weight?: number; // User's weight in lbs
+  weight?: number; // User's weight in lbs (legacy - for backward compatibility)
+  weightCategory?: string; // User's weight category (e.g., 'MODERATE', 'HEAVY', etc.)
   injuries?: string[]; // Any injuries or limitations
 }
 

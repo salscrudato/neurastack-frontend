@@ -145,9 +145,11 @@ export async function loadFitnessProfile(): Promise<FitnessProfile | null> {
         timeAvailability: data.timeAvailability,
         completedOnboarding: data.completedOnboarding,
         // Enhanced fields for workout API integration (may be undefined for older profiles)
-        age: data.age,
+        age: data.age, // Legacy field for backward compatibility
+        ageCategory: data.ageCategory, // New category-based age field
         gender: data.gender,
-        weight: data.weight,
+        weight: data.weight, // Legacy field for backward compatibility
+        weightCategory: data.weightCategory, // New category-based weight field
         injuries: data.injuries || [],
       };
 
@@ -328,9 +330,11 @@ export function subscribeFitnessProfile(
         timeAvailability: data.timeAvailability,
         completedOnboarding: data.completedOnboarding,
         // Enhanced fields for workout API integration (may be undefined for older profiles)
-        age: data.age,
+        age: data.age, // Legacy field for backward compatibility
+        ageCategory: data.ageCategory, // New category-based age field
         gender: data.gender,
-        weight: data.weight,
+        weight: data.weight, // Legacy field for backward compatibility
+        weightCategory: data.weightCategory, // New category-based weight field
         injuries: data.injuries || [],
       };
       callback(profile);

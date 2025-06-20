@@ -33,6 +33,7 @@ import { neuraStackClient } from '../../lib/neurastack-client';
 import type { Exercise, WorkoutAPIRequest, WorkoutHistoryEntry, WorkoutPlan, WorkoutSpecification, WorkoutUserMetadata } from '../../lib/types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useFitnessStore } from '../../store/useFitnessStore';
+import { getRepresentativeAge, getRepresentativeWeight } from '../../utils/personalInfoUtils';
 import ExerciseSwapper from './ExerciseSwapper';
 import ModernLoadingAnimation from './ModernLoadingAnimation';
 import ModernProgressIndicator from './ModernProgressIndicator';
@@ -315,15 +316,16 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         return goal ? goal.value : label.toLowerCase().replace(' ', '_');
       });
 
-      // Ensure age is provided (required by API)
-      const userAge = profile.age || 25; // Default to 25 if not provided
+      // Get representative age and weight from categories or legacy values
+      const userAge = getRepresentativeAge(profile);
+      const userWeight = getRepresentativeWeight(profile);
 
       // Optimized user metadata - consistent and concise
       const userMetadata: WorkoutUserMetadata = {
         age: userAge, // Age is required by the API
         fitnessLevel: profile.fitnessLevel,
         gender: profile.gender || 'Rather Not Say',
-        weight: profile.weight,
+        weight: userWeight,
         goals: goalValues, // Use API values for backend
         equipment: equipmentNames, // Use full names instead of codes
         timeAvailable: profile.availableTime,
@@ -1118,10 +1120,10 @@ Requirements:
       });
 
       const userMetadata: WorkoutUserMetadata = {
-        age: profile.age || 25, // Ensure age is provided (required by API)
+        age: getRepresentativeAge(profile), // Use category-based age or fallback to legacy
         fitnessLevel: modifications.difficulty || profile.fitnessLevel,
         gender: profile.gender || 'Rather Not Say',
-        weight: profile.weight,
+        weight: getRepresentativeWeight(profile),
         goals: goalValues, // Use API values for backend
         equipment: convertEquipmentCodesToNames(profile.equipment || []),
         timeAvailable: modifications.duration || profile.availableTime,

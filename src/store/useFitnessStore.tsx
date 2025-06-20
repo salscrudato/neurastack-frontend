@@ -65,9 +65,11 @@ const defaultProfile: FitnessProfile = {
   },
   completedOnboarding: false,
   // Enhanced fields for workout API integration
-  age: undefined,
+  age: undefined, // Legacy field for backward compatibility
+  ageCategory: undefined, // New category-based age field
   gender: undefined,
-  weight: undefined,
+  weight: undefined, // Legacy field for backward compatibility
+  weightCategory: undefined, // New category-based weight field
   injuries: [],
 };
 
