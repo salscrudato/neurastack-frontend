@@ -4,8 +4,6 @@ import {
     Button,
     Card,
     CardBody,
-    CircularProgress,
-    CircularProgressLabel,
     Divider,
     HStack,
     Icon,
@@ -26,6 +24,7 @@ import {
     useToast,
     VStack
 } from '@chakra-ui/react';
+import { AnimatePresence } from 'framer-motion';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
     PiCheckBold,
@@ -40,6 +39,10 @@ import {
 } from 'react-icons/pi';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import type { WorkoutPlan, WorkoutSession } from '../../lib/types';
+
+// Import components
+import { EnhancedRestTimer } from './EnhancedRestTimer';
+import { WeightInput } from './WeightInput';
 
 interface EnhancedWorkoutExecutionProps {
   workoutPlan: WorkoutPlan;
@@ -78,6 +81,13 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const [rpeRating, setRpeRating] = useState(5);
   const [formRating, setFormRating] = useState(5);
   const [showPerformanceModal, setShowPerformanceModal] = useState(false);
+
+  // Weight tracking state
+  const [currentSetWeight, setCurrentSetWeight] = useState<number | undefined>();
+  const [setWeights, setSetWeights] = useState<(number | undefined)[]>([]);
+
+  // Rest timer enhancements
+  const [isRestPaused, setIsRestPaused] = useState(false);
 
   // Heart rate monitoring (simulated)
   const [heartRate, setHeartRate] = useState(0);
@@ -138,11 +148,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   useEffect(() => {
     if (isActive && !isPaused) {
       timerRef.current = setInterval(() => {
-        if (isResting) {
+        if (isResting && !isRestPaused) {
           setRestTimer(prev => {
             if (prev <= 1) {
               setIsResting(false);
               setRestTimer(0);
+              setIsRestPaused(false);
               triggerHaptic('success');
 
               // Voice coaching for rest period end
@@ -164,7 +175,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
             return prev - 1;
           });
-        } else {
+        } else if (!isResting) {
           setExerciseTimer(prev => prev + 1);
 
           // Periodic motivation during exercise (every 30 seconds)
@@ -187,7 +198,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         timerRef.current = null;
       }
     };
-  }, [isActive, isPaused, isResting, triggerHaptic, isVoiceEnabled, speakMotivation]);
+  }, [isActive, isPaused, isResting, isRestPaused, triggerHaptic, isVoiceEnabled, speakMotivation]);
 
   // Heart rate simulation
   useEffect(() => {
@@ -259,6 +270,11 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
   // Complete current set
   const completeSet = useCallback(() => {
+    // Store weight for current set if provided
+    const newSetWeights = [...setWeights];
+    newSetWeights[currentSetIndex] = currentSetWeight;
+    setSetWeights(newSetWeights);
+
     const newCompletedSets = [...completedSets, currentSetIndex];
     setCompletedSets(newCompletedSets);
 
@@ -277,9 +293,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     } else {
       // Move to next set
       setCurrentSetIndex(prev => prev + 1);
+      // Clear current set weight for next set
+      setCurrentSetWeight(undefined);
       // Start rest period
       setRestTimer(currentExercise.restTime);
       setIsResting(true);
+      setIsRestPaused(false);
       // Voice coaching for rest period
       if (isVoiceEnabled) {
         speakRestPeriod();
@@ -287,13 +306,32 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     }
 
     triggerHaptic('medium');
-  }, [completedSets, currentSetIndex, currentExercise, triggerHaptic, isVoiceEnabled, speakSetComplete, speakMotivation, speakRestPeriod]);
+  }, [completedSets, currentSetIndex, currentExercise, triggerHaptic, isVoiceEnabled, speakSetComplete, speakMotivation, speakRestPeriod, setWeights, currentSetWeight]);
 
   // Complete exercise
   const completeExercise = useCallback(() => {
     if (!currentSession) return;
 
     try {
+      // Store exercise performance data
+      const updatedExercise = {
+        ...currentExercise,
+        weight: setWeights.filter(w => w !== undefined) as number[],
+        rpe: Array(completedSets.length).fill(rpeRating),
+        formRating: Array(completedSets.length).fill(formRating),
+        setNotes: exerciseNotes ? Array(completedSets.length).fill(exerciseNotes) : undefined,
+        completed: true,
+        actualSets: completedSets.length,
+        lastPerformed: new Date()
+      };
+
+      // Log exercise completion for analytics
+      console.log('Exercise completed:', updatedExercise.name, {
+        sets: updatedExercise.actualSets,
+        weights: updatedExercise.weight,
+        rpe: updatedExercise.rpe
+      });
+
       if (isLastExercise) {
         // Complete entire workout
         const completedSession = {
@@ -314,6 +352,8 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         setCurrentExerciseIndex(prev => prev + 1);
         setCurrentSetIndex(0);
         setCompletedSets([]);
+        setSetWeights([]);
+        setCurrentSetWeight(undefined);
         setExerciseTimer(0);
         setExerciseNotes('');
         setRpeRating(5);
@@ -341,12 +381,18 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     }
   }, [
     currentSession,
+    currentExercise,
+    setWeights,
+    completedSets,
+    rpeRating,
+    formRating,
+    exerciseNotes,
+    workoutPlan,
+    currentExerciseIndex,
     isLastExercise,
     onComplete,
     triggerHaptic,
     toast,
-    workoutPlan.exercises,
-    currentExerciseIndex,
     isVoiceEnabled,
     speakWorkoutComplete,
     speakExerciseInstructions
@@ -368,6 +414,8 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         setCurrentExerciseIndex(prev => prev + 1);
         setCurrentSetIndex(0);
         setCompletedSets([]);
+        setSetWeights([]);
+        setCurrentSetWeight(undefined);
         setExerciseTimer(0);
       }
 
@@ -381,6 +429,34 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const exitWorkout = useCallback(() => {
     onExit();
   }, [onExit]);
+
+  // Rest timer controls
+  const pauseRestTimer = useCallback(() => {
+    setIsRestPaused(true);
+    triggerHaptic('light');
+  }, [triggerHaptic]);
+
+  const resumeRestTimer = useCallback(() => {
+    setIsRestPaused(false);
+    triggerHaptic('light');
+  }, [triggerHaptic]);
+
+  const skipRest = useCallback(() => {
+    setIsResting(false);
+    setRestTimer(0);
+    setIsRestPaused(false);
+    triggerHaptic('medium');
+  }, [triggerHaptic]);
+
+  const addRestTime = useCallback((seconds: number) => {
+    setRestTimer(prev => prev + seconds);
+    triggerHaptic('light');
+  }, [triggerHaptic]);
+
+  const subtractRestTime = useCallback((seconds: number) => {
+    setRestTimer(prev => Math.max(0, prev - seconds));
+    triggerHaptic('light');
+  }, [triggerHaptic]);
 
   // Format time display
   const formatTime = (seconds: number): string => {
@@ -530,27 +606,29 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 </HStack>
               </VStack>
 
-              {/* Rest timer */}
-              {isResting && (
-                <VStack spacing={3} py={4}>
-                  <Text fontSize="lg" fontWeight="bold" color={warningColor}>
-                    Rest Time
-                  </Text>
-                  <CircularProgress
-                    value={(1 - restTimer / currentExercise.restTime) * 100}
-                    color={restTimer <= 5 ? "red.400" : "orange.400"}
-                    size="120px"
-                    thickness="8px"
-                  >
-                    <CircularProgressLabel fontSize="2xl" fontWeight="bold">
-                      {restTimer}s
-                    </CircularProgressLabel>
-                  </CircularProgress>
-                  <Text fontSize="sm" color={subtextColor} textAlign="center">
-                    {restTimer <= 5 ? "Get ready!" : "Take deep breaths and recover"}
-                  </Text>
-                </VStack>
-              )}
+              {/* Enhanced Rest Timer */}
+              <AnimatePresence>
+                {isResting && (
+                  <EnhancedRestTimer
+                    timeRemaining={restTimer}
+                    totalRestTime={currentExercise.restTime}
+                    isActive={isActive}
+                    isPaused={isRestPaused}
+                    onPause={pauseRestTimer}
+                    onResume={resumeRestTimer}
+                    onSkip={skipRest}
+                    onAddTime={addRestTime}
+                    onSubtractTime={subtractRestTime}
+                    exerciseName={currentExercise.name}
+                    nextExerciseName={
+                      currentExerciseIndex < workoutPlan.exercises.length - 1
+                        ? workoutPlan.exercises[currentExerciseIndex + 1].name
+                        : undefined
+                    }
+                    onHapticFeedback={triggerHaptic}
+                  />
+                )}
+              </AnimatePresence>
 
               {/* Performance indicators */}
               {isActive && !isResting && (
@@ -618,6 +696,26 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
             </VStack>
           </CardBody>
         </Card>
+
+        {/* Weight Input Section */}
+        {isActive && !isResting && (
+          <Card w="100%" bg={bgColor} borderColor={borderColor}>
+            <CardBody>
+              <WeightInput
+                value={currentSetWeight}
+                onChange={setCurrentSetWeight}
+                placeholder={`Weight for Set ${currentSetIndex + 1}`}
+                size="md"
+                showQuickButtons={true}
+                previousWeight={
+                  setWeights[currentSetIndex - 1] ||
+                  (currentExercise.weight && currentExercise.weight[currentSetIndex - 1])
+                }
+                exerciseName={currentExercise.name}
+              />
+            </CardBody>
+          </Card>
+        )}
 
         {/* Control buttons */}
         <VStack spacing={4} w="100%">
@@ -735,6 +833,47 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               <Divider />
 
               <VStack spacing={3} align="stretch">
+                <Text fontSize="sm" fontWeight="semibold">Exercise Summary</Text>
+
+                {/* Weight Summary with Editing */}
+                <Box bg={useColorModeValue('blue.50', 'blue.900')} p={4} borderRadius="lg">
+                  <Text fontSize="sm" fontWeight="semibold" mb={3} color={useColorModeValue('blue.700', 'blue.200')}>
+                    Weight Tracking
+                  </Text>
+                  <VStack spacing={3} align="stretch">
+                    {Array.from({ length: currentExercise.sets }, (_, index) => (
+                      <HStack key={index} justify="space-between" align="center">
+                        <Text fontSize="sm" color={useColorModeValue('blue.600', 'blue.300')} minW="60px">
+                          Set {index + 1}:
+                        </Text>
+                        <Box flex={1} maxW="120px">
+                          <WeightInput
+                            value={setWeights[index]}
+                            onChange={(weight: number | undefined) => {
+                              const newWeights = [...setWeights];
+                              newWeights[index] = weight;
+                              setSetWeights(newWeights);
+                            }}
+                            placeholder="Weight"
+                            size="sm"
+                            showQuickButtons={false}
+                            isDisabled={!completedSets.includes(index)}
+                          />
+                        </Box>
+                        <Badge
+                          colorScheme={completedSets.includes(index) ? 'green' : 'gray'}
+                          variant={completedSets.includes(index) ? 'solid' : 'outline'}
+                          fontSize="xs"
+                          minW="70px"
+                          textAlign="center"
+                        >
+                          {completedSets.includes(index) ? 'Complete' : 'Pending'}
+                        </Badge>
+                      </HStack>
+                    ))}
+                  </VStack>
+                </Box>
+
                 <Text fontSize="sm" fontWeight="semibold">Rate Your Performance</Text>
 
                 <Box>

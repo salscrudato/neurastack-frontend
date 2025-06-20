@@ -567,6 +567,23 @@ export interface FitnessProfile {
   // Legacy category fields (kept for backward compatibility)
   ageCategory?: string; // User's age category (e.g., 'YOUNG_ADULT', 'ADULT', etc.)
   weightCategory?: string; // User's weight category (e.g., 'MODERATE', 'HEAVY', etc.)
+
+  // Workout preferences
+  workoutPreferences?: {
+    preferredWorkoutTime?: 'morning' | 'afternoon' | 'evening';
+    workoutReminders?: boolean;
+    voiceCoaching?: boolean;
+
+    // Rest timer preferences
+    restTimerPreferences?: {
+      autoStartNextSet?: boolean; // Auto-start next set after rest
+      soundEnabled?: boolean; // Play sound when rest is complete
+      vibrationEnabled?: boolean; // Haptic feedback during rest
+      warningTime?: number; // Seconds before rest ends to show warning (default: 5)
+      defaultRestTime?: number; // Default rest time in seconds
+      customRestTimes?: { [exerciseType: string]: number }; // Custom rest times by exercise type
+    };
+  };
 }
 
 export interface WorkoutPlan {
@@ -657,10 +674,37 @@ export interface Exercise {
   skipped?: boolean;
   modified?: boolean;
 
-  // Performance metrics
-  weight?: number[]; // Weight used for each set
-  rpe?: number[]; // Rate of perceived exertion for each set
-  formRating?: number; // 1-5 scale for form quality
+  // Performance metrics per set
+  weight?: number[]; // Weight used for each set (in lbs)
+  rpe?: number[]; // Rate of perceived exertion for each set (1-10 scale)
+  formRating?: number[]; // Form quality rating for each set (1-5 scale)
+  setNotes?: string[]; // Optional notes for each set
+
+  // Rest timer enhancements
+  customRestTime?: number; // Custom rest time for this exercise (overrides default)
+  restTimerPreferences?: {
+    autoStart?: boolean; // Auto-start next set after rest
+    soundEnabled?: boolean; // Play sound when rest is complete
+    vibrationEnabled?: boolean; // Haptic feedback during rest
+    warningTime?: number; // Seconds before rest ends to show warning (default: 5)
+  };
+
+  // Weight tracking metadata
+  weightHistory?: {
+    date: Date;
+    weights: number[]; // Weight for each set on this date
+    reps: number[]; // Actual reps completed for each set
+    notes?: string;
+  }[];
+
+  // Exercise progression tracking
+  lastPerformed?: Date;
+  personalBest?: {
+    maxWeight: number;
+    maxReps: number;
+    bestVolume: number; // weight * reps * sets
+    achievedDate: Date;
+  };
 
   // Exercise metadata
   category?: 'compound' | 'isolation' | 'cardio' | 'flexibility' | 'core';
