@@ -150,25 +150,13 @@ export class NeuraStackClient {
         return config.baseUrl.replace(/\/$/, "");
       }
 
-      // Check for environment variable
+      // Check for environment variable first (highest priority)
       if (import.meta.env.VITE_BACKEND_URL) {
         return import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
       }
 
-      // Auto-detect local development with more robust checks
-      const isLocalDev = import.meta.env.DEV &&
-                        (window.location.hostname === 'localhost' ||
-                         window.location.hostname === '127.0.0.1' ||
-                         window.location.hostname.includes('local') ||
-                         window.location.port === '5173' || // Vite dev server default port
-                         window.location.port === '3000');  // Alternative dev port
-
-      // Only use localhost in development mode AND when running on local hostname
-      if (isLocalDev) {
-        return "http://localhost:8080";
-      }
-
-      // Default to production for all other cases (including production builds)
+      // Always use production URL - no localhost auto-detection
+      // This prevents production builds from trying to connect to localhost
       return "https://neurastack-backend-638289111765.us-central1.run.app";
     };
 
@@ -184,23 +172,16 @@ export class NeuraStackClient {
      *
      * 1. EXPLICIT CONFIG: If baseUrl is provided in client config
      * 2. ENVIRONMENT VARIABLE: If VITE_BACKEND_URL is set in .env files
-     * 3. AUTO-DETECTION: Automatically detects local development environment
-     * 4. FALLBACK: Uses production backend as default
-     *
-     * LOCAL DEVELOPMENT DETECTION:
-     * - Checks if Vite is in DEV mode (import.meta.env.DEV) AND
-     * - Checks if hostname is 'localhost', '127.0.0.1', contains 'local', or port is 5173/3000
-     * - Both conditions must be true to use http://localhost:8080
+     * 3. FALLBACK: Always uses production backend as default
      *
      * EXPECTED OUTPUTS:
-     * - Development: "http://localhost:8080" (when running npm run dev)
-     * - Production: "https://neurastack-backend-638289111765.us-central1.run.app"
-     * - Override: Whatever URL is set in VITE_BACKEND_URL
+     * - Production: "https://neurastack-backend-638289111765.us-central1.run.app" (default)
+     * - Override: Whatever URL is set in VITE_BACKEND_URL or config.baseUrl
      *
      * TROUBLESHOOTING:
-     * - If you see production URL in dev mode, check if VITE_BACKEND_URL is set
-     * - If you see localhost in production, check your build environment
-     * - Environment variables take precedence over auto-detection
+     * - To use localhost in development: Set VITE_BACKEND_URL=http://localhost:8080 in .env.local
+     * - Environment variables take precedence over defaults
+     * - No automatic localhost detection to prevent production issues
      */
     if (import.meta.env.DEV) {
       console.group('🔧 NeuraStack Client Configuration Debug');
@@ -214,42 +195,21 @@ export class NeuraStackClient {
       console.log('  🎯 Config BaseURL:', config.baseUrl || '❌ Not Provided');
       console.log('');
 
-      // Show detection logic results
-      const isLocalDev = import.meta.env.DEV &&
-                        (window.location.hostname === 'localhost' ||
-                         window.location.hostname === '127.0.0.1' ||
-                         window.location.hostname.includes('local') ||
-                         window.location.port === '5173' ||
-                         window.location.port === '3000');
-
-      console.log('🧠 Auto-Detection Logic:');
-      console.log('  🔧 DEV Mode Check:', import.meta.env.DEV ? '✅ True' : '❌ False');
-      console.log('  🏠 Localhost Check:',
-        (window.location.hostname === 'localhost' ||
-         window.location.hostname === '127.0.0.1' ||
-         window.location.hostname.includes('local')) ? '✅ True' : '❌ False');
-      console.log('  🚪 Dev Port Check:',
-        (window.location.port === '5173' || window.location.port === '3000') ? '✅ True' : '❌ False');
-      console.log('  📊 Final Local Dev:', isLocalDev ? '✅ True (will use localhost:8080)' : '❌ False (will use production)');
-      console.log('');
-
       // Show which detection method was used
       if (config.baseUrl) {
         console.log('🎯 URL Source: %cExplicit Config Override%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
       } else if (import.meta.env.VITE_BACKEND_URL) {
         console.log('🎯 URL Source: %cEnvironment Variable (VITE_BACKEND_URL)%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
-      } else if (isLocalDev) {
-        console.log('🎯 URL Source: %cAuto-Detection (Local Development)%c', 'color: #00ff00; font-weight: bold;', 'color: inherit;');
       } else {
-        console.log('🎯 URL Source: %cDefault Fallback (Production)%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
+        console.log('🎯 URL Source: %cDefault Production Backend%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
       }
 
       console.log('');
       console.log('💡 Tips:');
-      console.log('  • To force localhost: Comment out VITE_BACKEND_URL in .env.local');
-      console.log('  • To force production: Set VITE_BACKEND_URL in .env.local');
-      console.log('  • Auto-detection requires BOTH DEV mode AND local hostname/port');
-      console.log('  • Production builds will always use production URL regardless of hostname');
+      console.log('  • To use localhost: Set VITE_BACKEND_URL=http://localhost:8080 in .env.local');
+      console.log('  • To use production: Remove VITE_BACKEND_URL or set to production URL');
+      console.log('  • No automatic localhost detection - must be explicitly configured');
+      console.log('  • This prevents production builds from accidentally using localhost');
       console.groupEnd();
     }
 
