@@ -30,10 +30,12 @@ import equipmentOptions from '../../constants/equipmentOptions';
 import { FITNESS_GOALS } from '../../constants/fitnessGoals';
 import { useMobileOptimization } from '../../hooks/useMobileOptimization';
 import { neuraStackClient } from '../../lib/neurastack-client';
-import type { Exercise, WorkoutAPIRequest, WorkoutHistoryEntry, WorkoutPlan, WorkoutSpecification, WorkoutUserMetadata } from '../../lib/types';
+import type { Exercise, FitnessProfile, WorkoutHistoryEntry, WorkoutPlan, WorkoutSpecification, WorkoutUserMetadata } from '../../lib/types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import { getRepresentativeAge, getRepresentativeWeight } from '../../utils/personalInfoUtils';
+import { applyProgressiveOverload, calculateProgressionMetrics, generateProgressionNotes } from '../../utils/progressiveOverload';
+import { isValidWorkoutType, validateFitnessProfile, validateWorkoutPlan } from '../../utils/typeValidation';
 import ExerciseSwapper from './ExerciseSwapper';
 import ModernLoadingAnimation from './ModernLoadingAnimation';
 import ModernProgressIndicator from './ModernProgressIndicator';
@@ -53,6 +55,10 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const { user } = useAuthStore();
   const { isMobile, triggerHaptic, workoutConfig } = useMobileOptimization();
   const toast = useToast();
+
+  // Performance monitoring for workout generation
+  // const { startTracking, endTracking, getPerformanceStats } = useWorkoutPerformanceMonitoring();
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<string>('');
   const [serviceStatus, setServiceStatus] = useState<'healthy' | 'degraded' | 'unavailable' | 'unknown'>('unknown');
@@ -161,7 +167,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const tipsBorderColor = useColorModeValue('blue.200', 'blue.600');
   const tipsIconColor = useColorModeValue('blue.500', 'blue.400');
 
-  // Define workout types with descriptions
+  // Define workout types with descriptions - ONLY VALID TYPES that pass validation
   const workoutTypes = useMemo(() => [
     {
       value: 'mixed',
@@ -199,19 +205,14 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       description: 'Legs, glutes, and core'
     },
     {
-      value: 'push_day',
+      value: 'push',
       label: 'Push Day',
       description: 'Chest, shoulders, and triceps'
     },
     {
-      value: 'pull_day',
+      value: 'pull',
       label: 'Pull Day',
       description: 'Back and biceps'
-    },
-    {
-      value: 'leg_day',
-      label: 'Leg Day',
-      description: 'Comprehensive leg and glute training'
     },
     {
       value: 'core',
@@ -221,27 +222,27 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     {
       value: 'yoga',
       label: 'Yoga',
-      description: 'Flow, balance, and mindfulness'
+      description: 'Mind-body practice with poses and breathing'
     },
     {
       value: 'pilates',
       label: 'Pilates',
-      description: 'Core strength and controlled movements'
-    },
-    {
-      value: 'crossfit',
-      label: 'CrossFit',
-      description: 'High-intensity functional fitness'
-    },
-    {
-      value: 'bodyweight',
-      label: 'Bodyweight',
-      description: 'No equipment required exercises'
+      description: 'Core-focused low-impact exercises'
     },
     {
       value: 'functional',
-      label: 'Functional',
+      label: 'Functional Training',
       description: 'Real-world movement patterns'
+    },
+    {
+      value: 'full_body',
+      label: 'Full Body',
+      description: 'Complete body workout targeting all muscle groups'
+    },
+    {
+      value: 'legs',
+      label: 'Leg Focus',
+      description: 'Comprehensive lower body and leg training'
     }
   ], []);
 
@@ -274,27 +275,179 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     };
   }, [isWorkoutActive, isResting, currentWorkout]);
 
-  const generateWorkout = useCallback(async (retryCount = 0) => {
-    if (isGenerating && retryCount === 0) return; // Prevent multiple simultaneous generations only for initial calls
+  // Enhanced workout request builder with safety and progression considerations
+  const buildEnhancedAdditionalNotes = useCallback((
+    profile: FitnessProfile,
+    _recentWorkouts: WorkoutHistoryEntry[],
+    workoutType: string,
+    allWorkouts: WorkoutPlan[]
+  ): string => {
+    const notes: string[] = [];
 
-    // Only set loading state on initial call, not retries
-    if (retryCount === 0) {
-      setIsGenerating(true);
+    // Safety considerations for injuries
+    if (profile.injuries && profile.injuries.length > 0) {
+      notes.push(`🚨 SAFETY PRIORITY: User has reported injuries: ${profile.injuries.join(', ')}. Please provide exercise modifications and avoid contraindicated movements. Include proper warm-up and cool-down sequences.`);
+    } else {
+      notes.push('Include proper warm-up and form cues for injury prevention.');
     }
+
+    // Progressive overload based on workout history
+    const completedWorkouts = allWorkouts.filter(w => w.completedAt);
+    if (completedWorkouts.length > 0) {
+      const avgCompletionRate = completedWorkouts.reduce((acc, w) => acc + (w.completionRate || 0), 0) / completedWorkouts.length;
+
+      if (avgCompletionRate > 0.9) {
+        notes.push('📈 PROGRESSION: User consistently completes workouts. Gradually increase difficulty, add complexity, or extend duration.');
+      } else if (avgCompletionRate < 0.7) {
+        notes.push('📉 ADAPTATION: User struggles with completion. Focus on achievable goals, reduce intensity, and emphasize proper form.');
+      } else {
+        notes.push('📊 MAINTENANCE: User shows good progress. Maintain current difficulty with slight variations.');
+      }
+    } else {
+      notes.push('🌟 BEGINNER-FRIENDLY: This appears to be an early workout. Focus on form over intensity, include detailed instructions.');
+    }
+
+    // Equipment-specific safety notes
+    const equipmentNames = convertEquipmentCodesToNames(profile.equipment || []);
+    if (equipmentNames.includes('Barbell') || equipmentNames.includes('Dumbbells')) {
+      notes.push('⚖️ WEIGHT SAFETY: Include proper lifting form cues, recommend starting with lighter weights, and emphasize controlled movements.');
+    }
+
+    // Age-specific considerations
+    const userAge = getRepresentativeAge(profile);
+    if (userAge >= 50) {
+      notes.push('👥 AGE CONSIDERATION: Focus on joint-friendly exercises, longer warm-ups, and mobility work. Avoid high-impact movements unless specifically requested.');
+    }
+
+    // Workout type specific guidance
+    const typeSpecificNotes: Record<string, string> = {
+      'yoga': 'Focus on breath awareness, proper alignment, and modifications for different skill levels.',
+      'pilates': 'Emphasize core engagement, precise movements, and mind-body connection.',
+      'hiit': 'Include work-to-rest ratios, intensity scaling options, and recovery periods.',
+      'functional': 'Focus on movement patterns used in daily life, multi-planar movements.',
+      'flexibility': 'Include both static and dynamic stretches, hold times, and breathing cues.'
+    };
+
+    if (typeSpecificNotes[workoutType]) {
+      notes.push(`🎯 ${workoutType.toUpperCase()} FOCUS: ${typeSpecificNotes[workoutType]}`);
+    }
+
+    return notes.join(' ');
+  }, []);
+
+  const generateWorkout = useCallback(async (retryCount = 0) => {
+    // ALWAYS GENERATE FRESH WORKOUT - Remove simultaneous generation check for fresh workouts
+    // Only prevent multiple calls during retries to avoid infinite loops
+    if (isGenerating && retryCount > 0) return;
+
+    // Validate profile before generation
+    const profileValidation = validateFitnessProfile(profile);
+    if (!profileValidation.isValid) {
+      toast({
+        title: 'Profile Validation Error',
+        description: profileValidation.errors.join(', '),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Validate workout type selection with detailed debugging
+    if (!isValidWorkoutType(selectedWorkoutType)) {
+      const validTypes = ['mixed', 'strength', 'cardio', 'hiit', 'flexibility', 'upper_body', 'lower_body', 'push', 'pull', 'core', 'yoga', 'pilates', 'functional', 'full_body', 'legs'];
+
+      if (import.meta.env.DEV) {
+        console.error('❌ Invalid workout type:', {
+          selected: selectedWorkoutType,
+          validTypes,
+          isValid: isValidWorkoutType(selectedWorkoutType)
+        });
+      }
+
+      toast({
+        title: 'Invalid Workout Type',
+        description: `"${selectedWorkoutType}" is not supported. Please select a different workout type.`,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Debug log for successful validation
+    if (import.meta.env.DEV) {
+      console.log('✅ Workout type validation passed:', selectedWorkoutType);
+    }
+
+    // Check API health before generation (except for retries)
+    if (retryCount === 0) {
+      try {
+        setGenerationStatus('Checking service availability...');
+        const healthCheck = await neuraStackClient.healthCheck();
+        if (healthCheck.status !== 'healthy' && healthCheck.status !== 'ok') {
+          toast({
+            title: 'Service Unavailable',
+            description: 'Workout generation service is temporarily unavailable. Please try again later.',
+            status: 'warning',
+            duration: 5000,
+            isClosable: true,
+          });
+          setIsGenerating(false);
+          setGenerationStatus('');
+          return;
+        }
+      } catch (healthError) {
+        console.warn('Health check failed, proceeding with generation:', healthError);
+        // Continue with generation even if health check fails
+      }
+    }
+
+    // Always set loading state for fresh generation
+    setIsGenerating(true);
     setGenerationStatus(retryCount > 0 ? `Retrying workout generation (attempt ${retryCount + 1}/3)...` : 'Generating your personalized workout...');
     const startTime = performance.now();
     const maxRetries = 2; // Allow up to 2 retries for 503 errors
 
     try {
-      // Configure the API client with user info - NO CACHING
+      // Configure the API client with user info - FORCE NO CACHING
       neuraStackClient.configure({
-        userId: user?.uid || '',
+        userId: user?.uid || ''
       });
 
-      // Clear any potential local caches to ensure fresh generation
+      // Aggressively clear any potential caches to ensure 100% fresh generation
       if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem('neurafit-workout-cache');
-        localStorage.removeItem('neurafit-last-workout');
+        // Clear all potential workout-related caches
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (
+            key.includes('workout') ||
+            key.includes('neurafit') ||
+            key.includes('exercise') ||
+            key.includes('generation')
+          )) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+      }
+
+      // Clear any session storage caches
+      if (typeof sessionStorage !== 'undefined') {
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && (
+            key.includes('workout') ||
+            key.includes('neurafit') ||
+            key.includes('exercise') ||
+            key.includes('generation')
+          )) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(key => sessionStorage.removeItem(key));
       }
 
       // Only show service status warning on first attempt, not retries
@@ -306,19 +459,25 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         // Let the actual workout generation call determine service status
       }
 
-      // Build user metadata for the workout API with converted names
-      const goalNames = convertGoalCodesToNames(profile.goals || []);
-      const equipmentNames = convertEquipmentCodesToNames(profile.equipment || []);
+      // Build user metadata for the workout API with optimized conversions
+      const goalValues = convertGoalsToAPIValues(profile.goals || []);
+      const equipmentAPINames = convertEquipmentCodesToAPINames(profile.equipment || []);
 
-      // Convert goal labels back to API values for the API request
-      const goalValues = goalNames.map(label => {
-        const goal = FITNESS_GOALS.find(g => g.label === label);
-        return goal ? goal.value : label.toLowerCase().replace(' ', '_');
-      });
-
-      // Get representative age and weight from categories or legacy values
+      // Get representative age and weight from numeric values (prioritized) or categories (fallback)
       const userAge = getRepresentativeAge(profile);
       const userWeight = getRepresentativeWeight(profile);
+
+      // Debug logging for age/weight handling
+      if (import.meta.env.DEV) {
+        console.log('🔍 Age/Weight Processing:', {
+          profileAge: profile.age,
+          profileAgeCategory: profile.ageCategory,
+          resolvedAge: userAge,
+          profileWeight: profile.weight,
+          profileWeightCategory: profile.weightCategory,
+          resolvedWeight: userWeight
+        });
+      }
 
       // Optimized user metadata - consistent and concise
       const userMetadata: WorkoutUserMetadata = {
@@ -327,7 +486,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         gender: profile.gender || 'Rather Not Say',
         weight: userWeight,
         goals: goalValues, // Use API values for backend
-        equipment: equipmentNames, // Use full names instead of codes
+        equipment: equipmentAPINames, // Use API-standard names
         timeAvailable: profile.availableTime,
         injuries: profile.injuries || [],
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
@@ -349,42 +508,117 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         rating: 4 // Default rating since we don't track this yet
       }));
 
-      // Enhanced workout specification for guaranteed type consistency
-      const workoutSpecification: WorkoutSpecification = {
-        workoutType: selectedWorkoutType as any, // Type assertion for supported workout types
+      // Calculate progressive overload metrics
+      const progressionMetrics = calculateProgressionMetrics(workoutPlans, profile);
+
+      // Apply progressive overload to workout parameters
+      const baseWorkoutParams = {
         duration: profile.availableTime,
-        difficulty: profile.fitnessLevel,
-        focusAreas: profile.goals ? convertGoalCodesToNames(profile.goals) : [],
-        equipment: equipmentNames
+        difficulty: profile.fitnessLevel
       };
 
-      // Create additional notes for specific user requirements
-      const additionalNotes = buildAdditionalNotes(profile, recentWorkouts, selectedWorkoutType);
+      const adjustedParams = applyProgressiveOverload(baseWorkoutParams, progressionMetrics);
 
-      // Generate comprehensive unique identifiers to prevent backend caching
+      // Enhanced workout specification with progressive overload
+      const workoutSpecification: WorkoutSpecification = {
+        workoutType: selectedWorkoutType as any, // Type assertion for supported workout types
+        duration: adjustedParams.duration, // Use progression-adjusted duration
+        difficulty: adjustedParams.difficulty, // Use progression-adjusted difficulty
+        focusAreas: goalValues, // Use API values directly
+        equipment: equipmentAPINames // Use API-standard equipment names
+      };
+
+      // Create enhanced additional notes with safety and progression considerations
+      const additionalNotes = buildEnhancedAdditionalNotes(profile, workoutHistory, selectedWorkoutType, workoutPlans);
+      const progressionNotes = generateProgressionNotes(progressionMetrics, selectedWorkoutType);
+      const combinedNotes = `${additionalNotes} ${progressionNotes}`;
+
+      // Generate HIGHLY UNIQUE identifiers to guarantee fresh workout generation
       const timestamp = new Date().toISOString();
-      const randomId = Math.random().toString(36).substring(2, 15);
-      const requestId = `workout-${Date.now()}-${randomId}-${user?.uid?.substring(0, 8) || 'anon'}`;
-      const sessionContext = `${selectedWorkoutType}-${profile.fitnessLevel}-${profile.availableTime}min-${timestamp.substring(0, 19)}`;
-      const correlationId = `gen-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+      const nanoTime = performance.now().toString().replace('.', '');
+      const randomId1 = Math.random().toString(36).substring(2, 15);
+      const randomId2 = Math.random().toString(36).substring(2, 15);
+      const userHash = user?.uid ? user.uid.substring(0, 8) : 'anon';
+      const browserFingerprint = navigator.userAgent.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '');
 
-      // Enhanced workout API request with guaranteed type consistency
-      const workoutAPIRequest: WorkoutAPIRequest = {
+      // Multi-layered unique identifiers to prevent ANY caching
+      const requestId = `workout-fresh-${Date.now()}-${nanoTime}-${randomId1}-${randomId2}-${userHash}-${retryCount}`;
+      const sessionContext = `${selectedWorkoutType}-${profile.fitnessLevel}-${profile.availableTime}min-${timestamp}-${browserFingerprint}`;
+      const correlationId = `gen-${Date.now()}-${nanoTime}-${randomId1}-${Math.random().toString(36).substring(2, 10)}`;
+
+      // Additional entropy for absolute uniqueness
+      const entropyString = `${Math.random()}-${Date.now()}-${performance.now()}-${Math.random()}`;
+      const uniqueWorkoutSeed = btoa(entropyString).substring(0, 16);
+
+      // Client-side request validation
+      const requestValidation = validateWorkoutRequest({
         userMetadata,
-        workoutHistory,
-
-        // Enhanced format (recommended)
         workoutSpecification,
-        additionalNotes,
+        selectedWorkoutType,
+        profile
+      });
 
-        // Legacy format for backward compatibility
-        workoutRequest: buildWorkoutRequest(profile, recentWorkouts, selectedWorkoutType),
+      if (!requestValidation.isValid) {
+        toast({
+          title: 'Request Validation Error',
+          description: requestValidation.errors.join(', '),
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        setIsGenerating(false);
+        setGenerationStatus('');
+        return;
+      }
 
-        // Cache-busting identifiers
+      // Create optimal API request that leverages full API flexibility
+      const workoutAPIRequest = {
+        // Core user metadata (required)
+        userMetadata: {
+          age: userMetadata.age,
+          fitnessLevel: userMetadata.fitnessLevel,
+          equipment: equipmentAPINames,
+          timeAvailable: userMetadata.timeAvailable,
+          goals: goalValues,
+          injuries: userMetadata.injuries || []
+        },
+
+        // Structured workout specification for consistency
+        workoutSpecification: {
+          workoutType: selectedWorkoutType,
+          duration: profile.availableTime,
+          difficulty: profile.fitnessLevel,
+          focusAreas: goalValues, // Use API values directly
+          equipment: equipmentAPINames // Use API-standard equipment names
+        },
+
+        // Workout history for context and variety
+        workoutHistory: workoutHistory.slice(0, 3), // Last 3 workouts for context
+
+        // Intelligent free-form request for maximum AI flexibility
+        workoutRequest: buildIntelligentWorkoutRequest(
+          profile,
+          recentWorkouts,
+          selectedWorkoutType,
+          profile.goals ? convertGoalCodesToNames(profile.goals) : undefined
+        ),
+
+        // Additional structured notes for specific requirements
+        additionalNotes: combinedNotes.length > 500
+          ? combinedNotes.substring(0, 497) + '...' // Respect API limits
+          : combinedNotes,
+
+        // Enhanced cache-busting and tracking for guaranteed fresh generation
         requestId,
         timestamp,
+        correlationId,
+        uniqueWorkoutSeed,
         sessionContext,
-        correlationId
+        forceRefresh: true,
+        disableCache: true,
+        generationAttempt: retryCount + 1,
+        clientTimestamp: Date.now(),
+        entropyHash: entropyString
       };
 
       // Enhanced request logging with format details
@@ -417,10 +651,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log('  🌐 Backend URL:', 'https://neurastack-backend-638289111765.us-central1.run.app');
       console.groupEnd();
 
-      // Call the dedicated workout API endpoint with extended timeout
+      // Call the workout API with GUARANTEED FRESH GENERATION configuration
       const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
         userId: user?.uid || '',
-        timeout: retryCount > 0 ? 90000 : 60000 // Increase timeout on retries: 60s first attempt, 90s on retries
+        timeout: 75000, // Optimal 75s timeout for complex workout generation
+        useEnsemble: false // Use single best model for workout generation
       });
 
       // Comprehensive response logging
@@ -474,6 +709,24 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           }
         };
 
+        // Validate the generated workout plan
+        const workoutValidation = validateWorkoutPlan(enhancedWorkout);
+        if (!workoutValidation.isValid) {
+          console.warn('Generated workout failed validation:', workoutValidation.errors);
+          toast({
+            title: 'Workout Validation Warning',
+            description: 'Generated workout has some issues but will proceed. Please review carefully.',
+            status: 'warning',
+            duration: 4000,
+            isClosable: true,
+          });
+        }
+
+        // Show validation warnings if any
+        if (workoutValidation.warnings.length > 0) {
+          console.info('Workout validation warnings:', workoutValidation.warnings);
+        }
+
         setCurrentWorkout(enhancedWorkout);
 
         // Store successful workout generation in memory (concise)
@@ -513,13 +766,35 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-      // Determine if this is a retryable error
+      // Enhanced error classification and handling
+      const errorCode = (error as any)?.statusCode || 0;
+      const isRateLimitError = errorCode === 429 || errorMessage.includes('429') || errorMessage.includes('rate limit');
       const isRetryableError = errorMessage.includes('503') ||
                               errorMessage.includes('500') ||
                               errorMessage.includes('timeout') ||
                               errorMessage.includes('temporarily unavailable') ||
                               errorMessage.includes('Service Unavailable') ||
-                              errorMessage.includes('Internal Server Error');
+                              errorMessage.includes('Internal Server Error') ||
+                              errorCode >= 500;
+
+      // Handle rate limiting with exponential backoff
+      if (isRateLimitError && retryCount < maxRetries) {
+        const baseDelay = 2000; // 2 seconds base delay
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+
+        console.log(`Rate limit detected, retrying in ${delay/1000} seconds (attempt ${retryCount + 1}/${maxRetries + 1})`);
+
+        toast({
+          title: 'Rate Limit Exceeded',
+          description: `Too many requests. Retrying in ${delay/1000} seconds...`,
+          status: 'warning',
+          duration: delay,
+          isClosable: true,
+        });
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return generateWorkout(retryCount + 1);
+      }
 
       // If this is a retryable error and we have retries left, don't show error to user yet
       if (isRetryableError && retryCount < maxRetries) {
@@ -540,7 +815,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       let toastTitle = 'Generation Failed';
 
       // Handle specific API errors with more detailed messaging
-      if (errorMessage.includes('timeout') || errorMessage.includes('Request timed out')) {
+      if (errorCode === 400 || errorMessage.includes('400') || errorMessage.includes('Bad Request')) {
+        toastDescription = 'Invalid request data. Please check your profile information and try again.';
+        toastTitle = 'Invalid Request';
+      } else if (isRateLimitError) {
+        toastDescription = 'Too many requests. Please wait a moment before trying again.';
+        toastTitle = 'Rate Limit Exceeded';
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('Request timed out')) {
         toastDescription = 'Workout generation timed out. Please try again with a simpler request.';
         toastTitle = 'Request Timeout';
       } else if (errorMessage.includes('Network Error') || errorMessage.includes('Failed to connect')) {
@@ -622,6 +903,25 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     return () => clearInterval(interval);
   }, []);
 
+  // Helper function to convert goal codes to API values (optimized)
+  const convertGoalsToAPIValues = useCallback((goalCodes: string[]): string[] => {
+    if (!goalCodes || !Array.isArray(goalCodes)) return [];
+
+    const goalMapping: Record<string, string> = {
+      'LW': 'lose_weight',
+      'BM': 'build_muscle',
+      'IC': 'improve_cardio',
+      'GF': 'general_fitness',
+      'AP': 'athletic_performance'
+    };
+
+    const validGoalValues = goalCodes
+      .map(code => goalMapping[code])
+      .filter((value): value is string => value !== undefined);
+
+    return [...new Set(validGoalValues)];
+  }, []);
+
   // Helper function to convert goal codes to readable names with deduplication
   const convertGoalCodesToNames = useCallback((goalCodes: string[]): string[] => {
     if (!goalCodes || !Array.isArray(goalCodes)) return [];
@@ -638,12 +938,82 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     return [...new Set(validGoalNames)];
   }, []);
 
-  // Helper function to convert equipment codes to full names
+  // Helper function to convert equipment codes to API-standard names
+  const convertEquipmentCodesToAPINames = useCallback((equipmentCodes: string[]): string[] => {
+    if (!equipmentCodes || !Array.isArray(equipmentCodes)) return [];
+
+    const apiMapping: Record<string, string> = {
+      'BW': 'bodyweight',
+      'DB': 'dumbbells',
+      'BB': 'barbell',
+      'KB': 'kettlebells',
+      'RB': 'resistance_bands',
+      'TM': 'treadmill',
+      'BK': 'exercise_bike',
+      'YM': 'yoga_mat'
+    };
+
+    const validEquipmentNames = equipmentCodes
+      .map(code => apiMapping[code])
+      .filter((name): name is string => name !== undefined && name.length > 0);
+
+    // Remove duplicates
+    return [...new Set(validEquipmentNames)];
+  }, []);
+
+  // Helper function to convert equipment codes to readable names for display
   const convertEquipmentCodesToNames = useCallback((equipmentCodes: string[]): string[] => {
     return equipmentCodes.map(code => {
       const equipment = equipmentOptions.find(e => e.code === code);
       return equipment ? equipment.label.toLowerCase() : code.toLowerCase();
     });
+  }, []);
+
+  // Client-side request validation
+  const validateWorkoutRequest = useCallback((requestData: {
+    userMetadata: any;
+    workoutSpecification: any;
+    selectedWorkoutType: string;
+    profile: any;
+  }) => {
+    const errors: string[] = [];
+
+    // Validate user metadata
+    if (!requestData.userMetadata.age || requestData.userMetadata.age < 13 || requestData.userMetadata.age > 100) {
+      errors.push('Invalid age: must be between 13 and 100');
+    }
+
+    if (!requestData.userMetadata.fitnessLevel || !['beginner', 'intermediate', 'advanced'].includes(requestData.userMetadata.fitnessLevel)) {
+      errors.push('Invalid fitness level');
+    }
+
+    if (!requestData.userMetadata.timeAvailable || requestData.userMetadata.timeAvailable < 5 || requestData.userMetadata.timeAvailable > 180) {
+      errors.push('Invalid workout duration: must be between 5 and 180 minutes');
+    }
+
+    // Validate workout specification
+    if (!requestData.workoutSpecification.workoutType) {
+      errors.push('Workout type is required');
+    }
+
+    if (!requestData.workoutSpecification.duration || requestData.workoutSpecification.duration < 5) {
+      errors.push('Workout duration must be at least 5 minutes');
+    }
+
+    // Validate goals array
+    if (requestData.userMetadata.goals && !Array.isArray(requestData.userMetadata.goals)) {
+      errors.push('Goals must be an array');
+    }
+
+    // Validate equipment array
+    if (requestData.userMetadata.equipment && !Array.isArray(requestData.userMetadata.equipment)) {
+      errors.push('Equipment must be an array');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
   }, []);
 
   // Helper function to convert gender for API compatibility
@@ -657,25 +1027,50 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
   // Removed unused helper functions to fix TypeScript errors
 
-  // Build optimized workout request for the API - concise and efficient
-  const buildWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string) => {
-    // Get workout type description
+  // Build intelligent, flexible workout request that leverages full API capabilities
+  const buildIntelligentWorkoutRequest = useCallback((profile: any, recentWorkouts: any[], workoutType: string, userGoals?: string[]) => {
     const selectedType = workoutTypes.find(type => type.value === workoutType);
     const workoutTypeDescription = selectedType ? selectedType.label : 'Mixed Training';
 
-    // Build recent workout context - fix object serialization issue
-    const recentWorkoutContext = recentWorkouts.length > 0
-      ? ` Previous workout: ${recentWorkouts[0].exercises.slice(0, 3).map((ex: any) => typeof ex === 'string' ? ex : ex.name || 'exercise').join(', ')}.`
+    // Build contextual workout history
+    const workoutHistoryContext = recentWorkouts.length > 0
+      ? `Recent workout history: ${recentWorkouts.slice(0, 2).map((w: any) =>
+          `${w.name || 'Workout'} (${w.exercises?.length || 0} exercises, ${w.duration || 0}min)`
+        ).join(', ')}.`
       : '';
 
-    // Concise request - avoid redundancy with userMetadata
-    return `Create a ${workoutTypeDescription.toLowerCase()} workout for ${profile.availableTime} minutes.${recentWorkoutContext}
+    // Build equipment context
+    const equipmentContext = profile.equipment && profile.equipment.length > 0
+      ? `Available equipment: ${profile.equipment.join(', ')}.`
+      : 'Bodyweight exercises only.';
 
-Requirements:
-- Include warm-up (3-5 min) and cool-down (3-5 min)
-- Provide exercise instructions and form tips
-- Structure with sets, reps, rest periods
-- Match user's fitness level and available equipment`;
+    // Build goals context
+    const goalsContext = userGoals && userGoals.length > 0
+      ? `Primary goals: ${userGoals.join(', ')}.`
+      : '';
+
+    // Build injury/limitation context
+    const limitationsContext = profile.injuries && profile.injuries.length > 0
+      ? `Avoid exercises that may aggravate: ${profile.injuries.join(', ')}.`
+      : '';
+
+    // Create intelligent, free-form prompt that gives AI maximum flexibility
+    return `Design a personalized ${workoutTypeDescription.toLowerCase()} workout session.
+
+WORKOUT PARAMETERS:
+- Duration: ${profile.availableTime} minutes
+- Fitness Level: ${profile.fitnessLevel}
+- ${equipmentContext}
+- ${goalsContext}
+- ${limitationsContext}
+
+CONTEXT:
+${workoutHistoryContext}
+
+REQUIREMENTS:
+Create a complete workout with warm-up, main exercises, and cool-down. Include detailed instructions, form cues, and safety notes for each exercise. Structure with appropriate sets, reps, and rest periods. Ensure variety and progression appropriate for the user's fitness level.
+
+Make this workout engaging, effective, and perfectly tailored to the user's specific needs and available time.`;
   }, [workoutTypes]);
 
   // Build additional notes for specific user requirements (Enhanced API format)
@@ -807,14 +1202,18 @@ Requirements:
 
     // Map backend workout type to our internal format
     const mapWorkoutType = (backendType: string, requestedType: string): string => {
-      // Handle common backend abbreviations
+      // Handle common backend abbreviations and new workout types
       const typeMapping: Record<string, string> = {
         'lower': 'lower_body',
         'upper': 'upper_body',
         'push': 'push_day',
         'pull': 'pull_day',
         'leg': 'leg_day',
-        'legs': 'leg_day'
+        'legs': 'leg_day',
+        'yoga': 'yoga',
+        'pilates': 'pilates',
+        'functional': 'functional',
+        'functional_training': 'functional'
       };
 
       // Return mapped type or fall back to requested type or backend type
@@ -905,7 +1304,7 @@ Requirements:
       exercises: basicExercises,
       createdAt: new Date(),
       completedAt: null,
-      workoutType: selectedWorkoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed',
+      workoutType: selectedWorkoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core' | 'yoga' | 'pilates' | 'functional' | 'full_body' | 'legs',
     };
   }, [profile, selectedWorkoutType, workoutTypes]);
 
@@ -1095,12 +1494,15 @@ Requirements:
       };
 
       // Enhanced workout specification for modifications
+      const goalValues = convertGoalsToAPIValues(profile.goals || []);
+      const equipmentAPINames = convertEquipmentCodesToAPINames(profile.equipment || []);
+
       const modificationWorkoutSpecification: WorkoutSpecification = {
         workoutType: (modifications.workoutType || selectedWorkoutType) as any,
         duration: modifications.duration || profile.availableTime,
         difficulty: modifications.difficulty || profile.fitnessLevel,
-        focusAreas: modifications.focusAreas || (profile.goals ? convertGoalCodesToNames(profile.goals) : []),
-        equipment: convertEquipmentCodesToNames(profile.equipment || [])
+        focusAreas: modifications.focusAreas || goalValues, // Use API values directly
+        equipment: equipmentAPINames // Use API-standard equipment names
       };
 
       // Create additional notes for modifications
@@ -1112,50 +1514,93 @@ Requirements:
         'This is a modification of a previous workout - provide fresh exercises and variety'
       ].filter(Boolean).join('. ');
 
-      // Convert goal labels back to API values for the API request
-      const goalNames = convertGoalCodesToNames(profile.goals || []);
-      const goalValues = goalNames.map(label => {
-        const goal = FITNESS_GOALS.find(g => g.label === label);
-        return goal ? goal.value : label.toLowerCase().replace(' ', '_');
-      });
+      // Use optimized goal conversion (already done above)
+
+      // Get representative age and weight for modification
+      const userAge = getRepresentativeAge(profile);
+      const userWeight = getRepresentativeWeight(profile);
+
+      // Debug logging for modification age/weight handling
+      if (import.meta.env.DEV) {
+        console.log('🔧 Modification Age/Weight Processing:', {
+          profileAge: profile.age,
+          profileAgeCategory: profile.ageCategory,
+          resolvedAge: userAge,
+          profileWeight: profile.weight,
+          profileWeightCategory: profile.weightCategory,
+          resolvedWeight: userWeight
+        });
+      }
 
       const userMetadata: WorkoutUserMetadata = {
-        age: getRepresentativeAge(profile), // Use category-based age or fallback to legacy
+        age: userAge, // Use numeric age (prioritized) or category fallback
         fitnessLevel: modifications.difficulty || profile.fitnessLevel,
         gender: profile.gender || 'Rather Not Say',
-        weight: getRepresentativeWeight(profile),
+        weight: userWeight,
         goals: goalValues, // Use API values for backend
-        equipment: convertEquipmentCodesToNames(profile.equipment || []),
+        equipment: equipmentAPINames, // Use API-standard equipment names
         timeAvailable: modifications.duration || profile.availableTime,
         injuries: profile.injuries || [],
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
         minutesPerSession: modifications.duration || profile.timeAvailability?.minutesPerSession || profile.availableTime,
       };
 
-      // Generate comprehensive unique identifiers for modification request
+      // Generate HIGHLY UNIQUE identifiers for fresh modification request
       const timestamp = new Date().toISOString();
-      const randomId = Math.random().toString(36).substring(2, 15);
-      const requestId = `modify-${Date.now()}-${randomId}-${user?.uid?.substring(0, 8) || 'anon'}`;
-      const sessionContext = `modify-${modifications.workoutType || selectedWorkoutType}-${modifications.difficulty || profile.fitnessLevel}-${timestamp.substring(0, 19)}`;
-      const correlationId = `mod-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+      const nanoTime = performance.now().toString().replace('.', '');
+      const randomId1 = Math.random().toString(36).substring(2, 15);
+      const randomId2 = Math.random().toString(36).substring(2, 15);
+      const userHash = user?.uid ? user.uid.substring(0, 8) : 'anon';
+      const browserFingerprint = navigator.userAgent.substring(0, 20).replace(/[^a-zA-Z0-9]/g, '');
 
-      // Enhanced workout API request for modifications
-      const workoutAPIRequest: WorkoutAPIRequest = {
-        userMetadata,
-        workoutHistory: [],
+      // Multi-layered unique identifiers for fresh modification
+      const requestId = `modify-fresh-${Date.now()}-${nanoTime}-${randomId1}-${randomId2}-${userHash}`;
+      const sessionContext = `modify-${modifications.workoutType || selectedWorkoutType}-${modifications.difficulty || profile.fitnessLevel}-${timestamp}-${browserFingerprint}`;
+      const correlationId = `mod-${Date.now()}-${nanoTime}-${randomId1}-${Math.random().toString(36).substring(2, 10)}`;
 
-        // Enhanced format (recommended)
+      // Additional entropy for modification uniqueness
+      const entropyString = `${Math.random()}-${Date.now()}-${performance.now()}-${Math.random()}`;
+      const uniqueModificationSeed = btoa(entropyString).substring(0, 16);
+
+      // Create optimal modification API request
+      const workoutAPIRequest = {
+        // Core user metadata
+        userMetadata: {
+          age: userMetadata.age,
+          fitnessLevel: modifications.difficulty || userMetadata.fitnessLevel,
+          equipment: equipmentAPINames,
+          timeAvailable: modifications.duration || userMetadata.timeAvailable,
+          goals: goalValues,
+          injuries: userMetadata.injuries || []
+        },
+
+        // Structured workout specification
         workoutSpecification: modificationWorkoutSpecification,
-        additionalNotes: specificModificationNotes,
 
-        // Legacy format for backward compatibility
-        workoutRequest: buildWorkoutRequest(modifiedProfile, [], modifications.workoutType || selectedWorkoutType),
+        // Intelligent modification request
+        workoutRequest: buildIntelligentWorkoutRequest(
+          modifiedProfile,
+          [],
+          modifications.workoutType || selectedWorkoutType,
+          modifications.focusAreas
+        ),
 
-        // Cache-busting identifiers
+        // Additional notes for modifications
+        additionalNotes: specificModificationNotes.length > 500
+          ? specificModificationNotes.substring(0, 497) + '...'
+          : specificModificationNotes,
+
+        // Enhanced cache-busting for fresh modification
         requestId,
         timestamp,
+        correlationId,
+        uniqueModificationSeed,
         sessionContext,
-        correlationId
+        forceRefresh: true,
+        disableCache: true,
+        modificationType: 'fresh-generation',
+        clientTimestamp: Date.now(),
+        entropyHash: entropyString
       };
 
       // Comprehensive modification request logging
@@ -1172,7 +1617,8 @@ Requirements:
 
       const response = await neuraStackClient.generateWorkout(workoutAPIRequest, {
         userId: user?.uid || '',
-        timeout: 60000
+        timeout: 75000, // Optimal timeout for modifications
+        useEnsemble: false // Use single best model for consistency
       });
 
       // Comprehensive modification response logging
@@ -1467,10 +1913,16 @@ Requirements:
             size="lg"
             w="100%"
             leftIcon={<Icon as={PiLightningBold} />}
-            onClick={() => generateWorkout()}
+            onClick={() => {
+              // Force fresh generation - clear any potential state
+              if (import.meta.env.DEV) {
+                console.log('🔄 FRESH WORKOUT GENERATION TRIGGERED - No caching, guaranteed new workout');
+              }
+              generateWorkout();
+            }}
             py={{ base: 5, md: 6 }}
             isLoading={isGenerating}
-            loadingText={generationStatus || "Generating..."}
+            loadingText={generationStatus || "Generating Fresh Workout..."}
             minH={{ base: "64px", md: "auto" }}
             fontSize={{ base: "lg", md: "xl" }}
             fontWeight="bold"
@@ -1491,7 +1943,7 @@ Requirements:
               touchAction: 'manipulation'
             }}
           >
-            Generate AI Workout
+            Generate Fresh AI Workout
           </Button>
 
           <Button

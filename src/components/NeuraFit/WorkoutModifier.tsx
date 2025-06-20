@@ -55,6 +55,9 @@ const WORKOUT_TYPES = [
   { value: 'hiit', label: 'HIIT', description: 'High-intensity interval training' },
   { value: 'flexibility', label: 'Flexibility', description: 'Improve mobility and flexibility' },
   { value: 'mixed', label: 'Mixed', description: 'Combination of different types' },
+  { value: 'yoga', label: 'Yoga', description: 'Mind-body practice with poses and breathing' },
+  { value: 'pilates', label: 'Pilates', description: 'Core-focused low-impact exercises' },
+  { value: 'functional', label: 'Functional Training', description: 'Real-world movement patterns' },
 ];
 
 const FOCUS_AREAS = [

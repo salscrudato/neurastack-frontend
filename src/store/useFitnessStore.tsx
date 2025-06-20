@@ -65,12 +65,14 @@ const defaultProfile: FitnessProfile = {
   },
   completedOnboarding: false,
   // Enhanced fields for workout API integration
-  age: undefined, // Legacy field for backward compatibility
-  ageCategory: undefined, // New category-based age field
+  age: undefined, // Primary field for API integration
+  weight: undefined, // Primary field for API integration
   gender: undefined,
-  weight: undefined, // Legacy field for backward compatibility
-  weightCategory: undefined, // New category-based weight field
   injuries: [],
+
+  // Legacy category fields (kept for backward compatibility)
+  ageCategory: undefined, // Legacy category-based age field
+  weightCategory: undefined, // Legacy category-based weight field
 };
 
 export const useFitnessStore = create<FitnessState>()(
@@ -310,7 +312,8 @@ export const useFitnessStore = create<FitnessState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         profile: state.profile,
-        workoutPlans: state.workoutPlans,
+        // Limit workout plans to prevent localStorage bloat
+        workoutPlans: state.workoutPlans.slice(-50), // Keep last 50 workout plans
       }),
     }
   )

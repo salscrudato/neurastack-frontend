@@ -45,6 +45,11 @@ export default function InjuriesStep({ onNext, onBack, isEditingFromDashboard }:
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const selectedBg = useColorModeValue('blue.50', 'blue.900');
   const selectedBorder = useColorModeValue('blue.200', 'blue.600');
+  const warningBg = useColorModeValue('orange.50', 'orange.900');
+  const warningTextColor = useColorModeValue('orange.700', 'orange.200');
+  const warningSubtextColor = useColorModeValue('orange.600', 'orange.300');
+  const infoBg = useColorModeValue('blue.50', 'blue.900');
+  const infoTextColor = useColorModeValue('blue.700', 'blue.200');
 
   // Update profile when injuries change
   useEffect(() => {
@@ -180,10 +185,10 @@ export default function InjuriesStep({ onNext, onBack, isEditingFromDashboard }:
 
       {/* Selected Injuries Summary */}
       {selectedInjuries.length > 0 && (
-        <Box bg={useColorModeValue('orange.50', 'orange.900')} p={4} borderRadius="md">
+        <Box bg={warningBg} p={4} borderRadius="md">
           <HStack spacing={2} mb={2}>
             <Icon as={PiHeartBold} color="orange.500" />
-            <Text fontSize="sm" fontWeight="medium" color={useColorModeValue('orange.700', 'orange.200')}>
+            <Text fontSize="sm" fontWeight="medium" color={warningTextColor}>
               Selected Injuries/Limitations:
             </Text>
           </HStack>
@@ -197,16 +202,16 @@ export default function InjuriesStep({ onNext, onBack, isEditingFromDashboard }:
               );
             })}
           </HStack>
-          <Text fontSize="xs" color={useColorModeValue('orange.600', 'orange.300')} mt={2}>
+          <Text fontSize="xs" color={warningSubtextColor} mt={2}>
             We'll modify exercises to accommodate these areas and suggest safer alternatives.
           </Text>
         </Box>
       )}
 
       {/* Info text */}
-      <Box bg={useColorModeValue('blue.50', 'blue.900')} p={4} borderRadius="md">
-        <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')}>
-          💡 This information helps us create safer, more appropriate workouts. 
+      <Box bg={infoBg} p={4} borderRadius="md">
+        <Text fontSize="sm" color={infoTextColor}>
+          💡 This information helps us create safer, more appropriate workouts.
           You can always update this information later in your profile settings.
         </Text>
       </Box>

@@ -8,6 +8,7 @@ import {
     SimpleGrid,
     Text,
     useColorModeValue,
+    useToast,
     VStack
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
@@ -24,39 +25,89 @@ interface PersonalInfoStepProps {
 
 export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboard }: PersonalInfoStepProps) {
   const { profile, updateProfile, syncToFirestore } = useFitnessStore();
+  const toast = useToast();
 
-  // Local state for form inputs
-  const [ageCategory, setAgeCategory] = useState<string>(profile.ageCategory || '');
+  // Local state for form inputs - using numeric values directly
+  const [age, setAge] = useState<number | undefined>(profile.age);
   const [gender, setGender] = useState<'male' | 'female' | 'rather_not_say' | ''>(profile.gender || '');
-  const [weightCategory, setWeightCategory] = useState<string>(profile.weightCategory || '');
+  const [weight, setWeight] = useState<number | undefined>(profile.weight);
+
+  // Validation state
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showValidation, setShowValidation] = useState(false);
 
   // Theme colors
   const textColor = useColorModeValue('gray.800', 'white');
   const subtextColor = useColorModeValue('gray.600', 'gray.400');
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
+  const hoverBorderColor = useColorModeValue('gray.300', 'gray.500');
+
+  // Validation function
+  const validateForm = useCallback(() => {
+    const errors: string[] = [];
+
+    if (!age || age < 13 || age > 100) {
+      errors.push('Please select a valid age range');
+    }
+
+    // Weight is optional, but if provided should be reasonable
+    if (weight && (weight < 50 || weight > 500)) {
+      errors.push('Please select a valid weight range');
+    }
+
+    setValidationErrors(errors);
+    return errors.length === 0;
+  }, [age, weight]);
 
   // Update profile when local state changes
   useEffect(() => {
     const updates: Partial<typeof profile> = {
-      ageCategory: ageCategory === '' ? undefined : ageCategory,
+      age: age,
       gender: gender === '' ? undefined : gender,
-      weightCategory: weightCategory === '' ? undefined : weightCategory,
+      weight: weight,
     };
 
     updateProfile(updates);
-  }, [ageCategory, gender, weightCategory, updateProfile]);
 
-  // Handle navigation with Firebase sync
+    // Validate form when values change
+    if (showValidation) {
+      validateForm();
+    }
+  }, [age, gender, weight, updateProfile, showValidation, validateForm]);
+
+  // Handle navigation with validation and Firebase sync
   const handleNext = useCallback(async () => {
+    setShowValidation(true);
+
+    if (!validateForm()) {
+      toast({
+        title: 'Please complete required fields',
+        description: validationErrors.join(', '),
+        status: 'warning',
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+
     try {
       await syncToFirestore();
       console.log('✅ Personal info synced to Firebase before navigation');
     } catch (error) {
       console.warn('Failed to sync personal info to Firebase:', error);
+      toast({
+        title: 'Sync Error',
+        description: 'Failed to save your information. Please try again.',
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
     }
     onNext();
-  }, [syncToFirestore, onNext]);
+  }, [validateForm, validationErrors, syncToFirestore, onNext, toast]);
 
   const handleBack = useCallback(() => {
     onBack();
@@ -64,7 +115,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
 
 
 
-  const canProceed = ageCategory !== ''; // Age category is required
+  const canProceed = age !== undefined && age > 0; // Age is required
 
   return (
     <VStack
@@ -108,21 +159,35 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
           </FormLabel>
           <SimpleGrid columns={2} spacing={3} w="100%">
             {ageCategories.map((category) => {
-              const isSelected = ageCategory === category.code;
+              // Calculate representative age for this category
+              const categoryAge = (() => {
+                const range = category.range;
+                if (range.includes('+')) {
+                  const minAge = parseInt(range.replace('+', ''));
+                  return minAge + 4; // 66+ becomes 70
+                }
+                if (range.includes('-')) {
+                  const [min, max] = range.split('-').map(num => parseInt(num.trim()));
+                  return Math.round((min + max) / 2);
+                }
+                return parseInt(range) || 25;
+              })();
+
+              const isSelected = age === categoryAge;
               return (
                 <Button
                   key={category.code}
                   variant={isSelected ? 'solid' : 'outline'}
                   colorScheme={isSelected ? category.color : 'gray'}
-                  onClick={() => setAgeCategory(isSelected ? '' : category.code)}
+                  onClick={() => setAge(isSelected ? undefined : categoryAge)}
                   h="70px"
                   flexDirection="column"
                   bg={isSelected ? `${category.color}.500` : bgColor}
                   borderColor={isSelected ? `${category.color}.500` : borderColor}
                   color={isSelected ? 'white' : textColor}
                   _hover={{
-                    bg: isSelected ? `${category.color}.600` : useColorModeValue('gray.50', 'gray.700'),
-                    borderColor: isSelected ? `${category.color}.600` : useColorModeValue('gray.300', 'gray.500'),
+                    bg: isSelected ? `${category.color}.600` : hoverBgColor,
+                    borderColor: isSelected ? `${category.color}.600` : hoverBorderColor,
                   }}
                 >
                   <Icon as={category.icon} boxSize={5} mb={1} />
@@ -145,21 +210,35 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
           </FormLabel>
           <SimpleGrid columns={2} spacing={3} w="100%">
             {weightCategories.map((category) => {
-              const isSelected = weightCategory === category.code;
+              // Calculate representative weight for this category
+              const categoryWeight = (() => {
+                const range = category.range;
+                if (range.includes('+')) {
+                  const minWeight = parseInt(range.replace('+', ''));
+                  return minWeight + 14; // 226+ becomes 240
+                }
+                if (range.includes('-')) {
+                  const [min, max] = range.split('-').map(num => parseInt(num.trim()));
+                  return Math.round((min + max) / 2);
+                }
+                return parseInt(range) || 150;
+              })();
+
+              const isSelected = weight === categoryWeight;
               return (
                 <Button
                   key={category.code}
                   variant={isSelected ? 'solid' : 'outline'}
                   colorScheme={isSelected ? category.color : 'gray'}
-                  onClick={() => setWeightCategory(isSelected ? '' : category.code)}
+                  onClick={() => setWeight(isSelected ? undefined : categoryWeight)}
                   h="70px"
                   flexDirection="column"
                   bg={isSelected ? `${category.color}.500` : bgColor}
                   borderColor={isSelected ? `${category.color}.500` : borderColor}
                   color={isSelected ? 'white' : textColor}
                   _hover={{
-                    bg: isSelected ? `${category.color}.600` : useColorModeValue('gray.50', 'gray.700'),
-                    borderColor: isSelected ? `${category.color}.600` : useColorModeValue('gray.300', 'gray.500'),
+                    bg: isSelected ? `${category.color}.600` : hoverBgColor,
+                    borderColor: isSelected ? `${category.color}.600` : hoverBorderColor,
                   }}
                 >
                   <Icon as={category.icon} boxSize={5} mb={1} />
@@ -192,8 +271,8 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
               borderColor={gender === 'male' ? 'blue.500' : borderColor}
               color={gender === 'male' ? 'white' : textColor}
               _hover={{
-                bg: gender === 'male' ? 'blue.600' : useColorModeValue('gray.50', 'gray.700'),
-                borderColor: gender === 'male' ? 'blue.600' : useColorModeValue('gray.300', 'gray.500'),
+                bg: gender === 'male' ? 'blue.600' : hoverBgColor,
+                borderColor: gender === 'male' ? 'blue.600' : hoverBorderColor,
               }}
             >
               <Icon as={FaUser} boxSize={5} mb={1} />
@@ -211,8 +290,8 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
               borderColor={gender === 'female' ? 'pink.500' : borderColor}
               color={gender === 'female' ? 'white' : textColor}
               _hover={{
-                bg: gender === 'female' ? 'pink.600' : useColorModeValue('gray.50', 'gray.700'),
-                borderColor: gender === 'female' ? 'pink.600' : useColorModeValue('gray.300', 'gray.500'),
+                bg: gender === 'female' ? 'pink.600' : hoverBgColor,
+                borderColor: gender === 'female' ? 'pink.600' : hoverBorderColor,
               }}
             >
               <Icon as={FaUserFriends} boxSize={5} mb={1} />
@@ -230,8 +309,8 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
               borderColor={gender === 'rather_not_say' ? 'purple.500' : borderColor}
               color={gender === 'rather_not_say' ? 'white' : textColor}
               _hover={{
-                bg: gender === 'rather_not_say' ? 'purple.600' : useColorModeValue('gray.50', 'gray.700'),
-                borderColor: gender === 'rather_not_say' ? 'purple.600' : useColorModeValue('gray.300', 'gray.500'),
+                bg: gender === 'rather_not_say' ? 'purple.600' : hoverBgColor,
+                borderColor: gender === 'rather_not_say' ? 'purple.600' : hoverBorderColor,
               }}
             >
               <Icon as={FaUserSlash} boxSize={5} mb={1} />

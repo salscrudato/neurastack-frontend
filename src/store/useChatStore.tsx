@@ -34,22 +34,54 @@ interface ChatState {
   isLoading: boolean;
   retryCount: number;
   sessionId: string;
+  // Memory management properties
+  maxMessages: number;
+  memoryUsage: number;
+  lastCleanup: number;
   sendMessage: (text: string) => Promise<void>;
   clearMessages: () => void;
   deleteMessage: (id: string) => void;
   retryMessage: (messageId: string) => Promise<void>;
   initializeSession: () => void;
+  // Memory management methods
+  pruneOldMessages: () => void;
+  getMemoryStats: () => { messageCount: number; estimatedSize: number; oldestMessage: number };
+  optimizeMemory: () => void;
 }
 
 const MAX_RETRIES = 2; // Reduced from 3
+const MAX_MESSAGES = 100; // Maximum messages to keep in memory
+const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const MESSAGE_SIZE_ESTIMATE = 1000; // Average bytes per message
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Estimate memory usage of messages
+ */
+const estimateMessageSize = (message: Message): number => {
+  try {
+    return JSON.stringify(message).length;
+  } catch {
+    return MESSAGE_SIZE_ESTIMATE;
+  }
+};
+
+/**
+ * Calculate total memory usage of messages array
+ */
+const calculateMemoryUsage = (messages: Message[]): number => {
+  return messages.reduce((total, message) => total + estimateMessageSize(message), 0);
+};
 
 export const useChatStore = create<ChatState>()((set, get) => ({
   messages: [],
   isLoading: false,
   retryCount: 0,
   sessionId: crypto.randomUUID(),
+  maxMessages: MAX_MESSAGES,
+  memoryUsage: 0,
+  lastCleanup: Date.now(),
 
       sendMessage: async (text: string) => {
         const startTime = Date.now();
@@ -62,11 +94,17 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           timestamp: Date.now()
         };
 
-        set(state => ({
-          messages: [...state.messages, userMsg],
-          isLoading: true,
-          retryCount: 0
-        }));
+        set(state => {
+          const newMessages = [...state.messages, userMsg];
+          const newMemoryUsage = calculateMemoryUsage(newMessages);
+
+          return {
+            messages: newMessages,
+            isLoading: true,
+            retryCount: 0,
+            memoryUsage: newMemoryUsage
+          };
+        });
 
         // User message saved - backend handles memory via sessionId
 
@@ -161,11 +199,32 @@ export const useChatStore = create<ChatState>()((set, get) => ({
               }
             };
 
-            set(state => ({
-              messages: [...state.messages, assistantMsg],
-              isLoading: false,
-              retryCount: 0
-            }));
+            set(state => {
+              const newMessages = [...state.messages, assistantMsg];
+              const newMemoryUsage = calculateMemoryUsage(newMessages);
+
+              // Check if we need to prune messages
+              const shouldPrune = newMessages.length > state.maxMessages ||
+                                 Date.now() - state.lastCleanup > CLEANUP_INTERVAL;
+
+              if (shouldPrune) {
+                const prunedMessages = newMessages.slice(-state.maxMessages);
+                return {
+                  messages: prunedMessages,
+                  isLoading: false,
+                  retryCount: 0,
+                  memoryUsage: calculateMemoryUsage(prunedMessages),
+                  lastCleanup: Date.now()
+                };
+              }
+
+              return {
+                messages: newMessages,
+                isLoading: false,
+                retryCount: 0,
+                memoryUsage: newMemoryUsage
+              };
+            });
 
             // Assistant message saved - backend handles memory via sessionId
 
@@ -222,7 +281,12 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       },
 
       clearMessages: () => {
-        set({ messages: [], sessionId: crypto.randomUUID() }); // New session when clearing
+        set({
+          messages: [],
+          sessionId: crypto.randomUUID(),
+          memoryUsage: 0,
+          lastCleanup: Date.now()
+        }); // New session when clearing
       },
 
       deleteMessage: (id: string) => {
@@ -258,5 +322,81 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
       initializeSession: () => {
         set({ sessionId: crypto.randomUUID() });
+      },
+
+      /**
+       * Prune old messages to prevent memory bloat
+       */
+      pruneOldMessages: () => {
+        const state = get();
+        if (state.messages.length <= state.maxMessages) return;
+
+        // Keep the most recent messages
+        const messagesToKeep = state.messages.slice(-state.maxMessages);
+        const newMemoryUsage = calculateMemoryUsage(messagesToKeep);
+
+        set({
+          messages: messagesToKeep,
+          memoryUsage: newMemoryUsage,
+          lastCleanup: Date.now()
+        });
+
+        if (import.meta.env.DEV) {
+          console.log(`🧹 Chat messages pruned: ${state.messages.length} → ${messagesToKeep.length}`);
+        }
+      },
+
+      /**
+       * Get memory usage statistics
+       */
+      getMemoryStats: () => {
+        const state = get();
+        const oldestMessage = state.messages.length > 0
+          ? Math.min(...state.messages.map(m => m.timestamp))
+          : Date.now();
+
+        return {
+          messageCount: state.messages.length,
+          estimatedSize: state.memoryUsage,
+          oldestMessage
+        };
+      },
+
+      /**
+       * Optimize memory usage by removing large metadata and old messages
+       */
+      optimizeMemory: () => {
+        const state = get();
+
+        // Remove large metadata from older messages (keep last 20 messages intact)
+        const optimizedMessages = state.messages.map((message, index) => {
+          const isRecent = index >= state.messages.length - 20;
+          if (isRecent) return message;
+
+          // Strip large metadata from older messages
+          const optimizedMessage = { ...message };
+          if (optimizedMessage.metadata) {
+            const { individualResponses, ...lightMetadata } = optimizedMessage.metadata;
+            optimizedMessage.metadata = lightMetadata;
+          }
+          return optimizedMessage;
+        });
+
+        // Prune if still too many messages
+        const finalMessages = optimizedMessages.length > state.maxMessages
+          ? optimizedMessages.slice(-state.maxMessages)
+          : optimizedMessages;
+
+        const newMemoryUsage = calculateMemoryUsage(finalMessages);
+
+        set({
+          messages: finalMessages,
+          memoryUsage: newMemoryUsage,
+          lastCleanup: Date.now()
+        });
+
+        if (import.meta.env.DEV) {
+          console.log(`🧠 Memory optimized: ${state.memoryUsage} → ${newMemoryUsage} bytes`);
+        }
       }
     }));

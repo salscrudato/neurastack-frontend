@@ -55,6 +55,8 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
     return profile.equipment?.includes(equipmentCode) || false;
   };
 
+  // Equipment validation is optional for this step
+
   const canProceed = profile.equipment && profile.equipment.length > 0;
 
   // Accessibility label id prefix

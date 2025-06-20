@@ -29,6 +29,8 @@ import type {
     WorkoutAPIResponse
 } from './types';
 
+
+
 // ============================================================================
 // Error Types
 // ============================================================================
@@ -143,20 +145,31 @@ export class NeuraStackClient {
   private config: Required<NeuraStackClientConfig>;
 
   constructor(config: NeuraStackClientConfig = {}) {
-    // Determine the appropriate backend URL based on environment
+    // Determine the appropriate backend URL based on environment with enhanced validation
     const getBackendUrl = () => {
-      // If explicitly provided in config, use that
+      // If explicitly provided in config, use that (highest priority)
       if (config.baseUrl) {
         return config.baseUrl.replace(/\/$/, "");
       }
 
-      // Check for environment variable first (highest priority)
-      if (import.meta.env.VITE_BACKEND_URL) {
-        return import.meta.env.VITE_BACKEND_URL.replace(/\/$/, "");
+      // Check for environment variable (second priority)
+      const envUrl = import.meta.env.VITE_BACKEND_URL;
+      if (envUrl && envUrl.trim() !== '') {
+        const cleanUrl = envUrl.replace(/\/$/, "");
+
+        // CRITICAL: Prevent localhost in production builds
+        if (cleanUrl.includes('localhost') && import.meta.env.PROD) {
+          console.error('🚨 CRITICAL: Production build detected localhost URL!');
+          console.error('🚨 Environment variable VITE_BACKEND_URL contains localhost in production');
+          console.error('🚨 Forcing production URL to prevent connection failures...');
+          return "https://neurastack-backend-638289111765.us-central1.run.app";
+        }
+
+        return cleanUrl;
       }
 
-      // Always use production URL - no localhost auto-detection
-      // This prevents production builds from trying to connect to localhost
+      // ALWAYS use production URL as fallback
+      // This ensures production builds never accidentally use localhost
       return "https://neurastack-backend-638289111765.us-central1.run.app";
     };
 
@@ -183,35 +196,57 @@ export class NeuraStackClient {
      * - Environment variables take precedence over defaults
      * - No automatic localhost detection to prevent production issues
      */
-    if (import.meta.env.DEV) {
-      console.group('🔧 NeuraStack Client Configuration Debug');
-      console.log('');
-      console.log('📍 FINAL BACKEND URL:', `%c${backendUrl}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
-      console.log('');
-      console.log('🔍 Detection Details:');
-      console.log('  🌐 Current Hostname:', window.location.hostname);
-      console.log('  🏗️  Vite DEV Mode:', import.meta.env.DEV ? '✅ Enabled' : '❌ Disabled');
-      console.log('  📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL || '❌ Not Set');
-      console.log('  🎯 Config BaseURL:', config.baseUrl || '❌ Not Provided');
-      console.log('');
 
-      // Show which detection method was used
-      if (config.baseUrl) {
-        console.log('🎯 URL Source: %cExplicit Config Override%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
-      } else if (import.meta.env.VITE_BACKEND_URL) {
-        console.log('🎯 URL Source: %cEnvironment Variable (VITE_BACKEND_URL)%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
-      } else {
-        console.log('🎯 URL Source: %cDefault Production Backend%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
-      }
+    // ALWAYS log backend URL configuration for debugging
+    console.group('🔧 NeuraStack Client Configuration');
+    console.log('');
+    console.log('📍 FINAL BACKEND URL:', `%c${backendUrl}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
+    console.log('');
+    console.log('🔍 Detection Details:');
+    console.log('  🌐 Current Hostname:', window.location.hostname);
+    console.log('  🏗️  Vite DEV Mode:', import.meta.env.DEV ? '✅ Enabled' : '❌ Disabled');
+    console.log('  🏗️  Vite PROD Mode:', import.meta.env.PROD ? '✅ Enabled' : '❌ Disabled');
+    console.log('  📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL || '❌ Not Set');
+    console.log('  🎯 Config BaseURL:', config.baseUrl || '❌ Not Provided');
+    console.log('  🔒 Mode:', import.meta.env.MODE);
+    console.log('');
 
-      console.log('');
-      console.log('💡 Tips:');
-      console.log('  • To use localhost: Set VITE_BACKEND_URL=http://localhost:8080 in .env.local');
-      console.log('  • To use production: Remove VITE_BACKEND_URL or set to production URL');
-      console.log('  • No automatic localhost detection - must be explicitly configured');
-      console.log('  • This prevents production builds from accidentally using localhost');
-      console.groupEnd();
+    // Show which detection method was used
+    if (config.baseUrl) {
+      console.log('🎯 URL Source: %cExplicit Config Override%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
+    } else if (import.meta.env.VITE_BACKEND_URL && import.meta.env.VITE_BACKEND_URL.trim() !== '') {
+      console.log('🎯 URL Source: %cEnvironment Variable (VITE_BACKEND_URL)%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
+    } else {
+      console.log('🎯 URL Source: %cDefault Production Backend%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
     }
+
+    // CRITICAL: Validate that we're not using localhost in production
+    if (backendUrl.includes('localhost') && import.meta.env.PROD) {
+      console.error('🚨 CRITICAL ERROR: Production build is trying to use localhost!');
+      console.error('🚨 This will cause connection failures in production.');
+      console.error('🚨 Forcing production URL...');
+      // Force production URL if localhost detected in production
+      const forcedUrl = "https://neurastack-backend-638289111765.us-central1.run.app";
+      console.log('🔧 FORCED URL:', `%c${forcedUrl}`, 'color: #ff0000; font-weight: bold;');
+      this.config = {
+        baseUrl: forcedUrl,
+        sessionId: config.sessionId || crypto.randomUUID(),
+        userId: config.userId || '',
+        authToken: config.authToken || '',
+        timeout: config.timeout || 60000,
+        useEnsemble: config.useEnsemble ?? true
+      };
+      console.groupEnd();
+      return;
+    }
+
+    console.log('');
+    console.log('💡 Tips:');
+    console.log('  • To use localhost: Set VITE_BACKEND_URL=http://localhost:8080 in .env.local');
+    console.log('  • To use production: Remove VITE_BACKEND_URL or set to production URL');
+    console.log('  • No automatic localhost detection - must be explicitly configured');
+    console.log('  • This prevents production builds from accidentally using localhost');
+    console.groupEnd();
 
     this.config = {
       baseUrl: backendUrl,
@@ -616,10 +651,14 @@ export class NeuraStackClient {
    * - Multiple cache-busting techniques (URL params, headers, unique IDs)
    * - Backward compatibility with legacy string format
    * - Comprehensive request tracking and debugging
+   * - Ensemble mode support with custom model arrays
    */
   async generateWorkout(
     request: WorkoutAPIRequest,
-    options: NeuraStackRequestOptions = {}
+    options: NeuraStackRequestOptions & {
+      useEnsemble?: boolean;
+      models?: string[];
+    } = {}
   ): Promise<WorkoutAPIResponse> {
     // Generate comprehensive unique identifiers for cache-busting
     const timestamp = Date.now();
@@ -628,13 +667,19 @@ export class NeuraStackClient {
     const correlationId = `workout-${timestamp}-${randomPart1}-${randomPart2}`;
     const sessionId = crypto.randomUUID();
 
-    // Enhanced request with guaranteed uniqueness
-    const enhancedRequest: WorkoutAPIRequest = {
+    // Enhanced request with guaranteed uniqueness and ensemble configuration
+    const enhancedRequest: WorkoutAPIRequest & {
+      useEnsemble?: boolean;
+      models?: string[];
+    } = {
       ...request,
       requestId: request.requestId || `req-${timestamp}-${randomPart1}`,
       timestamp: request.timestamp || new Date().toISOString(),
       sessionContext: request.sessionContext || `${request.workoutSpecification?.workoutType || 'mixed'}-${timestamp}`,
-      correlationId: correlationId
+      correlationId: correlationId,
+      // Add ensemble configuration if provided
+      useEnsemble: options.useEnsemble ?? this.config.useEnsemble ?? true,
+      models: options.models || ['google:gemini-1.5-flash', 'xai:grok-3-mini', 'openai:gpt-4']
     };
 
     // CORS-compliant headers with cache-busting (only allowed headers)

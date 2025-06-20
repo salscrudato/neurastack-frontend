@@ -559,12 +559,14 @@ export interface FitnessProfile {
   completedOnboarding: boolean;
 
   // Enhanced fields for workout API integration
-  age?: number; // User's age (legacy - for backward compatibility)
-  ageCategory?: string; // User's age category (e.g., 'YOUNG_ADULT', 'ADULT', etc.)
+  age?: number; // User's age - primary field for API integration
+  weight?: number; // User's weight in lbs - primary field for API integration
   gender?: 'male' | 'female' | 'rather_not_say'; // User's gender
-  weight?: number; // User's weight in lbs (legacy - for backward compatibility)
-  weightCategory?: string; // User's weight category (e.g., 'MODERATE', 'HEAVY', etc.)
   injuries?: string[]; // Any injuries or limitations
+
+  // Legacy category fields (kept for backward compatibility)
+  ageCategory?: string; // User's age category (e.g., 'YOUNG_ADULT', 'ADULT', etc.)
+  weightCategory?: string; // User's weight category (e.g., 'MODERATE', 'HEAVY', etc.)
 }
 
 export interface WorkoutPlan {
@@ -578,7 +580,7 @@ export interface WorkoutPlan {
 
   // Enhanced fields for AI optimization
   focusAreas?: string[];
-  workoutType?: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core';
+  workoutType?: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core' | 'yoga' | 'pilates' | 'functional' | 'full_body' | 'legs';
   actualDuration?: number; // actual time taken to complete
   completionRate?: number; // percentage of exercises completed
   coachingNotes?: string;
@@ -703,7 +705,7 @@ export interface WorkoutHistoryEntry {
 
 // Enhanced workout specification for guaranteed type consistency
 export interface WorkoutSpecification {
-  workoutType: 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'upper_body' | 'lower_body' | 'push_day' | 'pull_day' | 'leg_day' | 'core' | 'yoga' | 'pilates' | 'crossfit' | 'bodyweight' | 'functional';
+  workoutType: 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core' | 'yoga' | 'pilates' | 'functional' | 'full_body' | 'legs';
   duration?: number; // minutes
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
   focusAreas?: string[]; // e.g., ['chest', 'shoulders', 'triceps']

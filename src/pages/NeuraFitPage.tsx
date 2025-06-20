@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Dashboard from '../components/NeuraFit/Dashboard';
 import OnboardingWizard from '../components/NeuraFit/OnboardingWizard';
 import ProgressTracker from '../components/NeuraFit/ProgressTracker';
+import WorkoutErrorBoundary from '../components/NeuraFit/WorkoutErrorBoundary';
 import WorkoutGenerator from '../components/NeuraFit/WorkoutGenerator';
 import type { WorkoutPlan } from '../lib/types';
 import { useFitnessStore } from '../store/useFitnessStore';
@@ -80,10 +81,19 @@ export default function NeuraFitPage() {
     switch (currentView) {
       case 'workout':
         return (
-          <WorkoutGenerator
-            onWorkoutComplete={handleWorkoutComplete}
-            onBack={handleBackToDashboard}
-          />
+          <WorkoutErrorBoundary
+            onRetry={() => {
+              // Force re-render of WorkoutGenerator
+              setCurrentView('dashboard');
+              setTimeout(() => setCurrentView('workout'), 100);
+            }}
+            onBackToDashboard={handleBackToDashboard}
+          >
+            <WorkoutGenerator
+              onWorkoutComplete={handleWorkoutComplete}
+              onBack={handleBackToDashboard}
+            />
+          </WorkoutErrorBoundary>
         );
       case 'progress':
         return (
