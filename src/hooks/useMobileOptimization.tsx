@@ -92,7 +92,7 @@ export function useMobileOptimization() {
     overscrollBehavior: 'contain' as const,
   }), []);
 
-  // Workout-specific mobile optimizations
+  // Enhanced workout-specific mobile optimizations
   const workoutConfig = useMemo(() => ({
     // Prevent screen sleep during workouts
     preventSleep: () => {
@@ -104,29 +104,49 @@ export function useMobileOptimization() {
 
     // Enhanced timer display for mobile
     timerStyles: {
-      fontSize: isMobile ? '3rem' : '2rem',
+      fontSize: isMobile ? '4rem' : '2rem',
       fontWeight: 'bold',
       textAlign: 'center' as const,
-      padding: isMobile ? '1.5rem' : '1rem',
+      padding: isMobile ? '2rem' : '1rem',
       userSelect: 'none' as const,
+      lineHeight: '1.1',
     },
 
-    // Exercise card optimizations
+    // Enhanced exercise card optimizations
     exerciseCardStyles: {
-      padding: isMobile ? '1rem' : '0.75rem',
-      borderRadius: isMobile ? '1rem' : '0.5rem',
-      minHeight: isMobile ? '120px' : '100px',
+      padding: isMobile ? '1.25rem' : '0.75rem',
+      borderRadius: isMobile ? '1.25rem' : '0.5rem',
+      minHeight: isMobile ? '140px' : '100px',
       touchAction: 'manipulation' as const,
+      transition: 'all 0.2s ease',
     },
 
-    // Button optimizations for workout controls
+    // Enhanced button optimizations for workout controls
     workoutButtonStyles: {
       minHeight: isMobile ? '64px' : '48px',
-      fontSize: isMobile ? '1.125rem' : '1rem',
+      fontSize: isMobile ? '1.25rem' : '1rem',
       fontWeight: '600',
-      borderRadius: isMobile ? '0.75rem' : '0.5rem',
+      borderRadius: isMobile ? '1rem' : '0.5rem',
       touchAction: 'manipulation' as const,
       WebkitTapHighlightColor: 'transparent',
+      transition: 'all 0.2s ease',
+    },
+
+    // Rest timer specific optimizations
+    restTimerStyles: {
+      circularProgressSize: isMobile ? '180px' : '140px',
+      circularProgressThickness: isMobile ? '10px' : '8px',
+      timerFontSize: isMobile ? '4xl' : '2xl',
+      buttonHeight: isMobile ? '56px' : '40px',
+      buttonMinWidth: isMobile ? '140px' : '100px',
+    },
+
+    // Dashboard card optimizations
+    dashboardCardStyles: {
+      padding: isMobile ? '1.5rem' : '1rem',
+      minHeight: isMobile ? '120px' : 'auto',
+      borderRadius: isMobile ? '1.25rem' : '1rem',
+      spacing: isMobile ? 4 : 3,
     },
   }), [isMobile]);
 
@@ -146,18 +166,39 @@ export function useMobileOptimization() {
     performanceConfig,
     workoutConfig,
 
-    // Responsive values
+    // Enhanced responsive values for NeuraFit
     spacing: {
-      xs: isMobile ? 2 : 3,
-      sm: isMobile ? 3 : 4,
-      md: isMobile ? 4 : 5,
+      xs: isMobile ? 3 : 2,
+      sm: isMobile ? 4 : 3,
+      md: isMobile ? 5 : 4,
+      lg: isMobile ? 6 : 5,
+      xl: isMobile ? 7 : 6,
     },
 
-    // Touch target sizes
+    // Enhanced touch target sizes for workout interface
     touchTargets: {
       small: isMobile ? '44px' : '40px',
-      medium: isMobile ? '48px' : '44px',
-      large: isMobile ? '56px' : '52px',
+      medium: isMobile ? '52px' : '44px',
+      large: isMobile ? '64px' : '52px',
+      xlarge: isMobile ? '72px' : '60px',
+    },
+
+    // Typography scaling for mobile readability
+    typography: {
+      xs: isMobile ? 'sm' : 'xs',
+      sm: isMobile ? 'md' : 'sm',
+      md: isMobile ? 'lg' : 'md',
+      lg: isMobile ? 'xl' : 'lg',
+      xl: isMobile ? '2xl' : 'xl',
+    },
+
+    // Icon sizes for mobile optimization
+    iconSizes: {
+      xs: isMobile ? 4 : 3,
+      sm: isMobile ? 5 : 4,
+      md: isMobile ? 6 : 5,
+      lg: isMobile ? 7 : 6,
+      xl: isMobile ? 8 : 7,
     },
   };
 }

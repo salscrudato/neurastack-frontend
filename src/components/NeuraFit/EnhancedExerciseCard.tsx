@@ -81,57 +81,61 @@ const EnhancedExerciseCard = memo(function EnhancedExerciseCard({
       }}
       transition="all 0.2s ease-in-out"
     >
-      <CardBody p={{ base: 4, md: 3 }}>
-        <VStack spacing={3} align="stretch">
+      <CardBody p={{ base: 5, md: 3 }}>
+        <VStack spacing={{ base: 4, md: 3 }} align="stretch">
           {/* Exercise Header */}
           <HStack justify="space-between" align="start">
-            <VStack align="start" spacing={1} flex={1}>
-              <HStack spacing={2} align="center">
-                <Text 
-                  fontWeight="bold" 
-                  color={textColor} 
-                  fontSize={{ base: "md", md: "sm" }} 
+            <VStack align="start" spacing={{ base: 2, md: 1 }} flex={1}>
+              <HStack spacing={{ base: 3, md: 2 }} align="center">
+                <Text
+                  fontWeight="bold"
+                  color={textColor}
+                  fontSize={{ base: "lg", md: "sm" }}
                   lineHeight="1.2"
                 >
                   {exercise.name}
                 </Text>
                 {isCompleted && (
-                  <Icon as={PiCheckBold} color={completedColor} boxSize={{ base: 5, md: 4 }} />
+                  <Icon as={PiCheckBold} color={completedColor} boxSize={{ base: 6, md: 4 }} />
                 )}
                 {isActive && (
-                  <Badge colorScheme="blue" size="sm">Active</Badge>
+                  <Badge colorScheme="blue" size={{ base: "md", md: "sm" }} fontSize={{ base: "sm", md: "xs" }}>Active</Badge>
                 )}
               </HStack>
-              
+
               {/* Exercise Stats */}
-              <HStack spacing={4} fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>
-                <Text>{exercise.sets} sets</Text>
-                <Text>{exercise.reps} reps</Text>
-                <Text>{exercise.restTime}s rest</Text>
+              <HStack spacing={{ base: 5, md: 4 }} fontSize={{ base: "md", md: "xs" }} color={subtextColor}>
+                <Text fontWeight="medium">{exercise.sets} sets</Text>
+                <Text fontWeight="medium">{exercise.reps} reps</Text>
+                <Text fontWeight="medium">{exercise.restTime}s rest</Text>
               </HStack>
             </VStack>
 
             {/* Action Buttons */}
-            <HStack spacing={2}>
+            <HStack spacing={{ base: 3, md: 2 }}>
               <Button
-                size="xs"
+                size={{ base: "sm", md: "xs" }}
                 variant="ghost"
-                leftIcon={<Icon as={showDetails ? PiCaretUpBold : PiCaretDownBold} />}
+                leftIcon={<Icon as={showDetails ? PiCaretUpBold : PiCaretDownBold} boxSize={{ base: 4, md: 3 }} />}
                 onClick={handleToggleDetails}
-                fontSize="xs"
+                fontSize={{ base: "sm", md: "xs" }}
+                h={{ base: "36px", md: "28px" }}
+                minW={{ base: "80px", md: "60px" }}
               >
                 {showDetails ? 'Less' : 'More'}
               </Button>
-              
+
               {showSwapButton && onSwap && (
                 <Button
-                  size="xs"
+                  size={{ base: "sm", md: "xs" }}
                   variant="ghost"
                   colorScheme="blue"
-                  leftIcon={<Icon as={PiSwapBold} />}
+                  leftIcon={<Icon as={PiSwapBold} boxSize={{ base: 4, md: 3 }} />}
                   onClick={() => onSwap(index)}
                   isDisabled={isWorkoutActive}
-                  fontSize="xs"
+                  fontSize={{ base: "sm", md: "xs" }}
+                  h={{ base: "36px", md: "28px" }}
+                  minW={{ base: "80px", md: "60px" }}
                 >
                   Swap
                 </Button>
@@ -140,31 +144,32 @@ const EnhancedExerciseCard = memo(function EnhancedExerciseCard({
           </HStack>
 
           {/* Basic Instructions (Always Visible) */}
-          <Text 
-            fontSize={{ base: "sm", md: "xs" }} 
-            color={subtextColor} 
-            noOfLines={showDetails ? undefined : 2} 
-            lineHeight="1.4"
+          <Text
+            fontSize={{ base: "md", md: "xs" }}
+            color={subtextColor}
+            noOfLines={showDetails ? undefined : 2}
+            lineHeight={{ base: "1.5", md: "1.4" }}
+            fontWeight="medium"
           >
             {exercise.instructions}
           </Text>
 
           {/* Detailed Information (Collapsible) */}
           <Collapse in={showDetails} animateOpacity>
-            <VStack spacing={3} align="stretch">
+            <VStack spacing={{ base: 4, md: 3 }} align="stretch">
               <Divider />
 
               {/* Form Cues */}
               {exercise.tips && (
-                <Box bg={useColorModeValue('blue.50', 'blue.900')} p={3} borderRadius="md">
-                  <VStack spacing={2} align="start">
+                <Box bg={useColorModeValue('blue.50', 'blue.900')} p={{ base: 4, md: 3 }} borderRadius={{ base: "lg", md: "md" }}>
+                  <VStack spacing={{ base: 3, md: 2 }} align="start">
                     <HStack>
-                      <Icon as={PiTargetBold} color={useColorModeValue('blue.600', 'blue.300')} />
-                      <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')}>
+                      <Icon as={PiTargetBold} color={useColorModeValue('blue.600', 'blue.300')} boxSize={{ base: 5, md: 4 }} />
+                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')}>
                         Form Cues
                       </Text>
                     </HStack>
-                    <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')}>
+                    <Text fontSize={{ base: "md", md: "sm" }} color={useColorModeValue('blue.700', 'blue.200')} lineHeight="1.4">
                       {exercise.tips}
                     </Text>
                   </VStack>
@@ -173,17 +178,17 @@ const EnhancedExerciseCard = memo(function EnhancedExerciseCard({
 
               {/* Exercise Modifications */}
               {exercise.modifications && exercise.modifications.length > 0 && (
-                <Box bg={useColorModeValue('purple.50', 'purple.900')} p={3} borderRadius="md">
-                  <VStack spacing={2} align="start">
+                <Box bg={useColorModeValue('purple.50', 'purple.900')} p={{ base: 4, md: 3 }} borderRadius={{ base: "lg", md: "md" }}>
+                  <VStack spacing={{ base: 3, md: 2 }} align="start">
                     <HStack>
-                      <Icon as={PiLightbulbBold} color={tipColor} />
-                      <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('purple.700', 'purple.200')}>
+                      <Icon as={PiLightbulbBold} color={tipColor} boxSize={{ base: 5, md: 4 }} />
+                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('purple.700', 'purple.200')}>
                         Modifications
                       </Text>
                     </HStack>
-                    <VStack spacing={1} align="start">
+                    <VStack spacing={{ base: 2, md: 1 }} align="start">
                       {exercise.modifications.map((mod, idx) => (
-                        <Text key={idx} fontSize="sm" color={useColorModeValue('purple.700', 'purple.200')}>
+                        <Text key={idx} fontSize={{ base: "md", md: "sm" }} color={useColorModeValue('purple.700', 'purple.200')} lineHeight="1.4">
                           • {mod}
                         </Text>
                       ))}
@@ -194,17 +199,17 @@ const EnhancedExerciseCard = memo(function EnhancedExerciseCard({
 
               {/* Target Muscles */}
               {exercise.targetMuscles && exercise.targetMuscles.length > 0 && (
-                <Box bg={useColorModeValue('green.50', 'green.900')} p={3} borderRadius="md">
-                  <VStack spacing={2} align="start">
+                <Box bg={useColorModeValue('green.50', 'green.900')} p={{ base: 4, md: 3 }} borderRadius={{ base: "lg", md: "md" }}>
+                  <VStack spacing={{ base: 3, md: 2 }} align="start">
                     <HStack>
-                      <Icon as={PiHeartBold} color={useColorModeValue('green.600', 'green.300')} />
-                      <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('green.700', 'green.200')}>
+                      <Icon as={PiHeartBold} color={useColorModeValue('green.600', 'green.300')} boxSize={{ base: 5, md: 4 }} />
+                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('green.700', 'green.200')}>
                         Target Muscles
                       </Text>
                     </HStack>
-                    <HStack spacing={2} flexWrap="wrap">
+                    <HStack spacing={{ base: 3, md: 2 }} flexWrap="wrap">
                       {exercise.targetMuscles.map((muscle, idx) => (
-                        <Badge key={idx} colorScheme="green" size="sm" textTransform="capitalize">
+                        <Badge key={idx} colorScheme="green" size={{ base: "md", md: "sm" }} textTransform="capitalize" fontSize={{ base: "sm", md: "xs" }}>
                           {muscle}
                         </Badge>
                       ))}
@@ -215,17 +220,17 @@ const EnhancedExerciseCard = memo(function EnhancedExerciseCard({
 
               {/* Equipment */}
               {exercise.equipment && exercise.equipment.length > 0 && (
-                <Box bg={useColorModeValue('orange.50', 'orange.900')} p={3} borderRadius="md">
-                  <VStack spacing={2} align="start">
+                <Box bg={useColorModeValue('orange.50', 'orange.900')} p={{ base: 4, md: 3 }} borderRadius={{ base: "lg", md: "md" }}>
+                  <VStack spacing={{ base: 3, md: 2 }} align="start">
                     <HStack>
-                      <Icon as={PiShieldCheckBold} color={warningColor} />
-                      <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('orange.700', 'orange.200')}>
+                      <Icon as={PiShieldCheckBold} color={warningColor} boxSize={{ base: 5, md: 4 }} />
+                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('orange.700', 'orange.200')}>
                         Equipment Needed
                       </Text>
                     </HStack>
-                    <HStack spacing={2} flexWrap="wrap">
+                    <HStack spacing={{ base: 3, md: 2 }} flexWrap="wrap">
                       {exercise.equipment.map((item, idx) => (
-                        <Badge key={idx} colorScheme="orange" size="sm" textTransform="capitalize">
+                        <Badge key={idx} colorScheme="orange" size={{ base: "md", md: "sm" }} textTransform="capitalize" fontSize={{ base: "sm", md: "xs" }}>
                           {item}
                         </Badge>
                       ))}
@@ -236,12 +241,12 @@ const EnhancedExerciseCard = memo(function EnhancedExerciseCard({
 
               {/* Exercise Category */}
               {exercise.category && (
-                <HStack justify="space-between" align="center">
-                  <Text fontSize="xs" color={subtextColor}>
+                <HStack justify="space-between" align="center" pt={{ base: 2, md: 1 }}>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>
                     Category: <Text as="span" fontWeight="semibold" textTransform="capitalize">{exercise.category}</Text>
                   </Text>
                   {exercise.duration > 0 && (
-                    <Text fontSize="xs" color={subtextColor}>
+                    <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>
                       Duration: <Text as="span" fontWeight="semibold">{exercise.duration}s</Text>
                     </Text>
                   )}

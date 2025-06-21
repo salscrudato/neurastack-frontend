@@ -528,9 +528,9 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     <Box
       minH="100vh"
       bg={useColorModeValue('gray.50', 'gray.900')}
-      p={{ base: 3, md: 4 }}
+      p={{ base: 4, md: 4 }}
     >
-      <VStack spacing={4} maxW="md" mx="auto">
+      <VStack spacing={{ base: 5, md: 4 }} maxW="md" mx="auto">
         {/* Header with progress */}
         <Card
           w="100%"
@@ -541,14 +541,14 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
           borderRadius="xl"
           boxShadow="0 8px 32px rgba(0,0,0,0.1)"
         >
-          <CardBody p={6}>
-            <VStack spacing={4}>
+          <CardBody p={{ base: 6, md: 6 }}>
+            <VStack spacing={{ base: 5, md: 4 }}>
               <HStack w="100%" justify="space-between">
-                <VStack align="start" spacing={1}>
-                  <Text fontSize="sm" color={subtextColor} fontWeight="medium">
+                <VStack align="start" spacing={{ base: 2, md: 1 }}>
+                  <Text fontSize={{ base: "md", md: "sm" }} color={subtextColor} fontWeight="medium">
                     Exercise {currentExerciseIndex + 1} of {workoutPlan.exercises.length}
                   </Text>
-                  <Text fontSize="xs" color={subtextColor}>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>
                     {Math.round(progressPercentage)}% Complete
                   </Text>
                 </VStack>
@@ -556,9 +556,9 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                   colorScheme={isActive ? 'green' : 'gray'}
                   variant="solid"
                   borderRadius="full"
-                  px={3}
-                  py={1}
-                  fontSize="xs"
+                  px={{ base: 4, md: 3 }}
+                  py={{ base: 2, md: 1 }}
+                  fontSize={{ base: "sm", md: "xs" }}
                   fontWeight="bold"
                 >
                   {isActive ? (isPaused ? 'Paused' : 'Active') : 'Ready'}
@@ -570,7 +570,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 w="100%"
                 colorScheme="blue"
                 borderRadius="full"
-                size="lg"
+                size={{ base: "lg", md: "lg" }}
                 bg={useColorModeValue('gray.100', 'gray.700')}
                 sx={{
                   '& > div': {
@@ -579,27 +579,27 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 }}
               />
 
-              <HStack w="100%" justify="space-between" fontSize="sm">
-                <VStack spacing={0}>
+              <HStack w="100%" justify="space-between" fontSize={{ base: "md", md: "sm" }}>
+                <VStack spacing={{ base: 1, md: 0 }}>
                   <HStack>
-                    <Icon as={PiHeartBold} color="red.500" />
-                    <Text fontWeight="bold">{heartRate}</Text>
+                    <Icon as={PiHeartBold} color="red.500" boxSize={{ base: 5, md: 4 }} />
+                    <Text fontWeight="bold" fontSize={{ base: "lg", md: "md" }}>{heartRate}</Text>
                   </HStack>
-                  <Text fontSize="xs" color={subtextColor}>BPM</Text>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>BPM</Text>
                 </VStack>
-                <VStack spacing={0}>
+                <VStack spacing={{ base: 1, md: 0 }}>
                   <HStack>
-                    <Icon as={PiTargetBold} color="orange.500" />
-                    <Text fontWeight="bold">{Math.round(caloriesBurned)}</Text>
+                    <Icon as={PiTargetBold} color="orange.500" boxSize={{ base: 5, md: 4 }} />
+                    <Text fontWeight="bold" fontSize={{ base: "lg", md: "md" }}>{Math.round(caloriesBurned)}</Text>
                   </HStack>
-                  <Text fontSize="xs" color={subtextColor}>CAL</Text>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>CAL</Text>
                 </VStack>
-                <VStack spacing={0}>
+                <VStack spacing={{ base: 1, md: 0 }}>
                   <HStack>
-                    <Icon as={PiTimerBold} color={activeColor} />
-                    <Text fontWeight="bold">{formatTime(exerciseTimer)}</Text>
+                    <Icon as={PiTimerBold} color={activeColor} boxSize={{ base: 5, md: 4 }} />
+                    <Text fontWeight="bold" fontSize={{ base: "lg", md: "md" }}>{formatTime(exerciseTimer)}</Text>
                   </HStack>
-                  <Text fontSize="xs" color={subtextColor}>TIME</Text>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>TIME</Text>
                 </VStack>
               </HStack>
             </VStack>
@@ -608,41 +608,41 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
         {/* Current Exercise Display */}
         <Card w="100%" bg={bgColor} borderColor={borderColor}>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Text fontSize="xl" fontWeight="bold" textAlign="center" color={textColor}>
+          <CardBody p={{ base: 6, md: 4 }}>
+            <VStack spacing={{ base: 5, md: 4 }} align="stretch">
+              <Text fontSize={{ base: "2xl", md: "xl" }} fontWeight="bold" textAlign="center" color={textColor} lineHeight="1.2">
                 {currentExercise.name}
               </Text>
 
               {/* Exercise details */}
-              <HStack justify="center" spacing={6}>
-                <VStack spacing={1}>
-                  <Text fontSize="2xl" fontWeight="bold" color={activeColor}>
+              <HStack justify="center" spacing={{ base: 8, md: 6 }}>
+                <VStack spacing={{ base: 2, md: 1 }}>
+                  <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color={activeColor}>
                     {currentExercise.sets}
                   </Text>
-                  <Text fontSize="xs" color={subtextColor}>SETS</Text>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="medium">SETS</Text>
                 </VStack>
-                <VStack spacing={1}>
-                  <Text fontSize="2xl" fontWeight="bold" color={activeColor}>
+                <VStack spacing={{ base: 2, md: 1 }}>
+                  <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color={activeColor}>
                     {currentExercise.reps}
                   </Text>
-                  <Text fontSize="xs" color={subtextColor}>REPS</Text>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="medium">REPS</Text>
                 </VStack>
-                <VStack spacing={1}>
-                  <Text fontSize="2xl" fontWeight="bold" color={activeColor}>
+                <VStack spacing={{ base: 2, md: 1 }}>
+                  <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color={activeColor}>
                     {currentExercise.restTime}s
                   </Text>
-                  <Text fontSize="xs" color={subtextColor}>REST</Text>
+                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="medium">REST</Text>
                 </VStack>
               </HStack>
 
               {/* Set progress */}
-              <VStack spacing={3}>
+              <VStack spacing={{ base: 4, md: 3 }}>
                 <HStack justify="space-between" w="100%">
-                  <Text fontSize="sm" color={subtextColor}>
+                  <Text fontSize={{ base: "md", md: "sm" }} color={subtextColor} fontWeight="medium">
                     Set {currentSetIndex + 1} of {currentExercise.sets}
                   </Text>
-                  <Text fontSize="sm" color={activeColor} fontWeight="bold">
+                  <Text fontSize={{ base: "md", md: "sm" }} color={activeColor} fontWeight="bold">
                     {Math.round((completedSets.length / currentExercise.sets) * 100)}% Complete
                   </Text>
                 </HStack>
@@ -652,15 +652,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                   w="100%"
                   colorScheme="green"
                   borderRadius="full"
-                  size="sm"
+                  size={{ base: "md", md: "sm" }}
                 />
 
-                <HStack spacing={2} justify="center">
+                <HStack spacing={{ base: 3, md: 2 }} justify="center">
                   {Array.from({ length: currentExercise.sets }, (_, i) => (
                     <Box
                       key={i}
-                      w={10}
-                      h={10}
+                      w={{ base: 12, md: 10 }}
+                      h={{ base: 12, md: 10 }}
                       borderRadius="full"
                       bg={completedSets.includes(i) ? successColor :
                           i === currentSetIndex ? activeColor : 'gray.200'}
@@ -673,9 +673,9 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                       transform={i === currentSetIndex ? "scale(1.1)" : "scale(1)"}
                     >
                       {completedSets.includes(i) ? (
-                        <Icon as={PiCheckBold} color="white" boxSize={5} />
+                        <Icon as={PiCheckBold} color="white" boxSize={{ base: 6, md: 5 }} />
                       ) : (
-                        <Text fontSize="sm" fontWeight="bold" color={i === currentSetIndex ? "white" : "gray.500"}>
+                        <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={i === currentSetIndex ? "white" : "gray.500"}>
                           {i + 1}
                         </Text>
                       )}
@@ -854,34 +854,37 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         )}
 
         {/* Control buttons */}
-        <VStack spacing={4} w="100%">
+        <VStack spacing={{ base: 5, md: 4 }} w="100%">
           {!isActive ? (
             <Button
               colorScheme="blue"
               size="lg"
               w="100%"
-              leftIcon={<Icon as={PiPlayBold} boxSize={6} />}
+              leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 7, md: 6 }} />}
               onClick={startWorkout}
-              py={8}
-              fontSize="lg"
+              py={{ base: 8, md: 8 }}
+              fontSize={{ base: "xl", md: "lg" }}
               fontWeight="bold"
               borderRadius="xl"
+              h={{ base: "64px", md: "56px" }}
               _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
               transition="all 0.2s ease"
             >
               Start Workout
             </Button>
           ) : (
-            <VStack spacing={3} w="100%">
-              <HStack spacing={3} w="100%">
+            <VStack spacing={{ base: 4, md: 3 }} w="100%">
+              <HStack spacing={{ base: 4, md: 3 }} w="100%">
                 <Button
                   colorScheme={isPaused ? "green" : "orange"}
                   size="lg"
                   flex={1}
-                  leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={5} />}
+                  leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={{ base: 6, md: 5 }} />}
                   onClick={togglePause}
-                  py={6}
+                  py={{ base: 6, md: 6 }}
                   borderRadius="xl"
+                  h={{ base: "56px", md: "48px" }}
+                  fontSize={{ base: "lg", md: "md" }}
                   _hover={{ transform: 'translateY(-1px)' }}
                   transition="all 0.2s ease"
                 >
@@ -893,10 +896,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                     colorScheme="green"
                     size="lg"
                     flex={1}
-                    leftIcon={<Icon as={PiCheckBold} boxSize={5} />}
+                    leftIcon={<Icon as={PiCheckBold} boxSize={{ base: 6, md: 5 }} />}
                     onClick={completeSet}
-                    py={6}
+                    py={{ base: 6, md: 6 }}
                     borderRadius="xl"
+                    h={{ base: "56px", md: "48px" }}
+                    fontSize={{ base: "lg", md: "md" }}
                     _hover={{ transform: 'translateY(-1px)' }}
                     transition="all 0.2s ease"
                   >
@@ -906,22 +911,26 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               </HStack>
 
               {/* Quick action buttons */}
-              <HStack spacing={2} w="100%" justify="center">
+              <HStack spacing={{ base: 3, md: 2 }} w="100%" justify="center">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  leftIcon={<Icon as={PiTargetBold} />}
+                  size={{ base: "md", md: "sm" }}
+                  leftIcon={<Icon as={PiTargetBold} boxSize={{ base: 5, md: 4 }} />}
                   onClick={speakMotivation}
                   isDisabled={!isVoiceEnabled}
+                  fontSize={{ base: "md", md: "sm" }}
+                  h={{ base: "44px", md: "36px" }}
                 >
                   Motivate
                 </Button>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  leftIcon={<Icon as={PiTimerBold} />}
+                  size={{ base: "md", md: "sm" }}
+                  leftIcon={<Icon as={PiTimerBold} boxSize={{ base: 5, md: 4 }} />}
                   onClick={() => setRestTimer(30)}
                   isDisabled={!isResting}
+                  fontSize={{ base: "md", md: "sm" }}
+                  h={{ base: "44px", md: "36px" }}
                 >
                   +30s Rest
                 </Button>
@@ -929,13 +938,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
             </VStack>
           )}
 
-          <HStack spacing={3} w="100%">
+          <HStack spacing={{ base: 4, md: 3 }} w="100%">
             <Button
               variant="outline"
-              size="md"
+              size={{ base: "lg", md: "md" }}
               flex={1}
-              leftIcon={<Icon as={PiSkipForwardBold} />}
+              leftIcon={<Icon as={PiSkipForwardBold} boxSize={{ base: 5, md: 4 }} />}
               onClick={skipExercise}
+              h={{ base: "52px", md: "44px" }}
+              fontSize={{ base: "lg", md: "md" }}
             >
               Skip Exercise
             </Button>
@@ -943,10 +954,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
             <Button
               variant="outline"
               colorScheme="red"
-              size="md"
+              size={{ base: "lg", md: "md" }}
               flex={1}
-              leftIcon={<Icon as={PiStopBold} />}
+              leftIcon={<Icon as={PiStopBold} boxSize={{ base: 5, md: 4 }} />}
               onClick={() => setShowExitConfirmation(true)}
+              h={{ base: "52px", md: "44px" }}
+              fontSize={{ base: "lg", md: "md" }}
             >
               Exit Workout
             </Button>

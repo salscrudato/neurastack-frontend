@@ -1,21 +1,21 @@
 import {
-    Box,
-    Button,
-    Divider,
-    FormControl,
-    FormLabel,
-    HStack,
-    Icon,
-    NumberDecrementStepper,
-    NumberIncrementStepper,
-    NumberInput,
-    NumberInputField,
-    NumberInputStepper,
-    SimpleGrid,
-    Text,
-    useColorModeValue,
-    useToast,
-    VStack
+  Box,
+  Button,
+  Divider,
+  FormControl,
+  FormLabel,
+  HStack,
+  Icon,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  SimpleGrid,
+  Text,
+  useColorModeValue,
+  useToast,
+  VStack
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { FaUser, FaUserFriends, FaUserSlash } from 'react-icons/fa';
@@ -242,7 +242,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
             </NumberInput>
 
             {/* Age validation hint and clear button */}
-            <HStack justify="space-between" align="center" mt={2}>
+            {/* <HStack justify="space-between" align="center" mt={2}>
               <Text fontSize="xs" color={subtextColor} flex="1" textAlign="center">
                 Age must be between 13-100 years
               </Text>
@@ -264,7 +264,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
                   Clear
                 </Button>
               )}
-            </HStack>
+            </HStack> */}
           </Box>
         </FormControl>
 
@@ -354,7 +354,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
             </NumberInput>
 
             {/* Weight validation hint and clear button */}
-            <HStack justify="space-between" align="center" mt={2}>
+            {/* <HStack justify="space-between" align="center" mt={2}>
               <Text fontSize="xs" color={subtextColor} flex="1" textAlign="center">
                 Weight should be between 50-500 lbs (optional)
               </Text>
@@ -376,10 +376,10 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
                   Clear
                 </Button>
               )}
-            </HStack>
+            </HStack> */}
 
             {/* Quick weight presets for common ranges */}
-            <Box mt={4}>
+            {/* <Box mt={4}>
               <Text fontSize="xs" color={subtextColor} textAlign="center" mb={2}>
                 Quick select:
               </Text>
@@ -410,7 +410,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
                   </Button>
                 ))}
               </HStack>
-            </Box>
+            </Box> */}
           </Box>
         </FormControl>
 

@@ -250,24 +250,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       description: 'Mind-body practice with poses and breathing'
     },
     {
-      value: 'pilates',
-      label: 'Pilates',
-      description: 'Core-focused low-impact exercises'
-    },
-    {
-      value: 'functional',
-      label: 'Functional Training',
-      description: 'Real-world movement patterns'
-    },
-    {
       value: 'full_body',
       label: 'Full Body',
       description: 'Complete body workout targeting all muscle groups'
-    },
-    {
-      value: 'legs',
-      label: 'Leg Focus',
-      description: 'Comprehensive lower body and leg training'
     }
   ], []);
 
@@ -473,15 +458,22 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       const goalLabels = getGoalLabels(profile.goals || []);
       const equipmentLabels = getEquipmentLabels(profile.equipment || []);
 
-      // Build comprehensive additional information
-      const additionalInfo = [
+      // Build comprehensive additional information - only include if there's actual content
+      const additionalInfoParts = [
         goalLabels.length > 0 ? `Goals: ${goalLabels.join(', ')}` : '',
         `Available ${profile.timeAvailability?.daysPerWeek || 3} days per week`,
         additionalInstructions.trim() ? `Special instructions: ${additionalInstructions.trim()}` : ''
-      ].filter(Boolean).join('. ');
+      ].filter(Boolean);
+
+      const additionalInfo = additionalInfoParts.length > 0 ? additionalInfoParts.join('. ') : '';
 
       // Create flexible API request - new API supports natural language
-      const workoutAPIRequest = {
+      const selectedWorkoutTypeData = workoutTypes.find(t => t.value === selectedWorkoutType);
+      const humanReadableWorkoutType = selectedWorkoutTypeData
+        ? `${selectedWorkoutTypeData.label} - ${selectedWorkoutTypeData.description}`
+        : selectedWorkoutType;
+
+      const workoutAPIRequest: any = {
         age: userAge,
         fitnessLevel: profile.fitnessLevel,
         gender: profile.gender,
@@ -491,9 +483,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         injuries: profile.injuries || [], // Keep as-is for now
         timeAvailable: profile.availableTime,
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        workoutType: selectedWorkoutType,
-        additionalInformation: additionalInfo
+        workoutType: humanReadableWorkoutType
       };
+
+      // Only include additionalInformation if there's actual content
+      if (additionalInfo.trim()) {
+        workoutAPIRequest.additionalInformation = additionalInfo;
+      }
 
       // Skip validation for new flexible API - backend handles all validation
       // The new flexible API accepts natural language inputs and handles validation server-side
@@ -1048,15 +1044,23 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       const goalLabels = getGoalLabels(profile.goals || []);
       const equipmentLabels = getEquipmentLabels(profile.equipment || []);
 
-      // Build modification-specific additional information
-      const modificationInfo = [
+      // Build modification-specific additional information - only include if there's actual content
+      const modificationInfoParts = [
         'Workout modification requested',
         modifications.focusAreas?.length ? `Focus areas: ${modifications.focusAreas.join(', ')}` : '',
         goalLabels.length > 0 ? `User goals: ${goalLabels.join(', ')}` : ''
-      ].filter(Boolean).join('. ');
+      ].filter(Boolean);
+
+      const modificationInfo = modificationInfoParts.length > 0 ? modificationInfoParts.join('. ') : '';
 
       // Create flexible modification API request - new API supports natural language
-      const workoutAPIRequest = {
+      const modificationWorkoutType = modifications.workoutType || selectedWorkoutType;
+      const modificationWorkoutTypeData = workoutTypes.find(t => t.value === modificationWorkoutType);
+      const humanReadableModificationWorkoutType = modificationWorkoutTypeData
+        ? `${modificationWorkoutTypeData.label} - ${modificationWorkoutTypeData.description}`
+        : modificationWorkoutType;
+
+      const workoutAPIRequest: any = {
         age: userAge,
         fitnessLevel: modifications.difficulty || profile.fitnessLevel,
         gender: profile.gender,
@@ -1066,9 +1070,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         injuries: profile.injuries || [], // Keep as-is for now
         timeAvailable: modifications.duration || profile.availableTime,
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        workoutType: modifications.workoutType || selectedWorkoutType,
-        additionalInformation: modificationInfo
+        workoutType: humanReadableModificationWorkoutType
       };
+
+      // Only include additionalInformation if there's actual content
+      if (modificationInfo.trim()) {
+        workoutAPIRequest.additionalInformation = modificationInfo;
+      }
 
       // Modification request logging for new API format
       console.group('🔧 Workout Modification Request (New API Format)');
@@ -1321,8 +1329,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
               <Box>
                 <SimpleGrid
-                  columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
-                  spacing={{ base: 3, md: 4 }}
+                  columns={{ base: 1, sm: 2, md: 3 }}
+                  spacing={{ base: 4, md: 5 }}
                   justifyItems="stretch"
                 >
                   {workoutTypes.map((type) => (
@@ -1333,10 +1341,10 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                       size={{ base: "lg", md: "md" }}
                       onClick={() => setSelectedWorkoutType(type.value)}
                       w="full"
-                      h={{ base: "72px", md: "70px", lg: "76px" }}
-                      minH={{ base: "72px", md: "70px" }}
+                      h={{ base: "90px", md: "85px", lg: "90px" }}
+                      minH={{ base: "90px", md: "85px" }}
                       flexDirection="column"
-                      gap={1}
+                      gap={{ base: 2, md: 1 }}
                       position="relative"
                       _hover={{
                         transform: 'translateY(-2px)',
@@ -1358,7 +1366,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                       }}
                     >
                       <Text
-                        fontSize={{ base: "sm", md: "md" }}
+                        fontSize={{ base: "md", md: "md" }}
                         fontWeight="semibold"
                         textAlign="center"
                         lineHeight="1.2"
@@ -1367,11 +1375,12 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                         {type.label}
                       </Text>
                       <Text
-                        fontSize="xs"
+                        fontSize={{ base: "sm", md: "xs" }}
                         color={selectedWorkoutType === type.value ? "blue.100" : subtextColor}
                         noOfLines={2}
                         textAlign="center"
-                        lineHeight="1.1"
+                        lineHeight="1.2"
+                        px={1}
                       >
                         {type.description}
                       </Text>

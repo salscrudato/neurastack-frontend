@@ -114,25 +114,25 @@ export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
       overflow="hidden"
     >
       <CardBody p={{ base: 6, md: 8 }}>
-        <VStack spacing={{ base: 6, md: 8 }}>
+        <VStack spacing={{ base: 7, md: 8 }}>
           {/* Header */}
-          <VStack spacing={2}>
-            <HStack spacing={2} align="center">
-              <Icon 
-                as={PiTimerBold} 
-                boxSize={6} 
-                color={isWarning ? warningColor : timerColor} 
+          <VStack spacing={{ base: 3, md: 2 }}>
+            <HStack spacing={{ base: 3, md: 2 }} align="center">
+              <Icon
+                as={PiTimerBold}
+                boxSize={{ base: 7, md: 6 }}
+                color={isWarning ? warningColor : timerColor}
               />
-              <Text 
-                fontSize={{ base: 'xl', md: 'lg' }} 
-                fontWeight="bold" 
+              <Text
+                fontSize={{ base: '2xl', md: 'lg' }}
+                fontWeight="bold"
                 color={isWarning ? warningColor : textColor}
               >
                 Rest Time
               </Text>
             </HStack>
             {exerciseName && (
-              <Text fontSize="sm" color="gray.500" textAlign="center">
+              <Text fontSize={{ base: "md", md: "sm" }} color="gray.500" textAlign="center" lineHeight="1.3">
                 After {exerciseName}
               </Text>
             )}
@@ -151,27 +151,27 @@ export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
           >
             <CircularProgress
               value={progressPercentage}
-              size={{ base: '160px', md: '140px' }}
-              thickness="8px"
+              size={{ base: '180px', md: '140px' }}
+              thickness="10px"
               color={isWarning ? warningColor : timerColor}
               trackColor={useColorModeValue('gray.100', 'gray.700')}
               capIsRound
             >
               <CircularProgressLabel>
-                <VStack spacing={1}>
-                  <Text 
-                    fontSize={{ base: '3xl', md: '2xl' }} 
-                    fontWeight="bold" 
+                <VStack spacing={{ base: 2, md: 1 }}>
+                  <Text
+                    fontSize={{ base: '4xl', md: '2xl' }}
+                    fontWeight="bold"
                     color={isWarning ? warningColor : timerColor}
                     fontFamily="mono"
                   >
                     {formatTime(timeRemaining)}
                   </Text>
-                  <Text 
-                    fontSize="xs" 
-                    color="gray.500" 
+                  <Text
+                    fontSize={{ base: "sm", md: "xs" }}
+                    color="gray.500"
                     textAlign="center"
-                    maxW="80px"
+                    maxW={{ base: "100px", md: "80px" }}
                     lineHeight="1.2"
                   >
                     {getMotivationalMessage()}
@@ -184,28 +184,28 @@ export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
           {/* Next Exercise Preview */}
           {nextExerciseName && (
             <Box textAlign="center">
-              <Text fontSize="sm" color="gray.500" mb={1}>
+              <Text fontSize={{ base: "md", md: "sm" }} color="gray.500" mb={{ base: 2, md: 1 }}>
                 Next Exercise:
               </Text>
-              <Text fontSize="md" fontWeight="semibold" color={textColor}>
+              <Text fontSize={{ base: "lg", md: "md" }} fontWeight="semibold" color={textColor} lineHeight="1.2">
                 {nextExerciseName}
               </Text>
             </Box>
           )}
 
           {/* Control Buttons */}
-          <VStack spacing={4} w="100%">
+          <VStack spacing={{ base: 5, md: 4 }} w="100%">
             {/* Primary Controls */}
-            <HStack spacing={3} w="100%" justify="center">
+            <HStack spacing={{ base: 4, md: 3 }} w="100%" justify="center">
               <Button
                 colorScheme={isPaused ? 'green' : 'orange'}
                 size={{ base: 'lg', md: 'md' }}
-                leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={5} />}
+                leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={{ base: 6, md: 5 }} />}
                 onClick={isPaused ? onResume : onPause}
                 borderRadius="xl"
-                minW={{ base: '120px', md: '100px' }}
-                h={{ base: '48px', md: '40px' }}
-                fontSize={{ base: 'md', md: 'sm' }}
+                minW={{ base: '140px', md: '100px' }}
+                h={{ base: '56px', md: '40px' }}
+                fontSize={{ base: 'lg', md: 'sm' }}
                 _hover={{ transform: 'translateY(-1px)', shadow: 'md' }}
                 transition="all 0.2s ease"
               >
@@ -215,12 +215,12 @@ export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
               <Button
                 colorScheme="blue"
                 size={{ base: 'lg', md: 'md' }}
-                leftIcon={<Icon as={PiSkipForwardBold} boxSize={5} />}
+                leftIcon={<Icon as={PiSkipForwardBold} boxSize={{ base: 6, md: 5 }} />}
                 onClick={onSkip}
                 borderRadius="xl"
-                minW={{ base: '120px', md: '100px' }}
-                h={{ base: '48px', md: '40px' }}
-                fontSize={{ base: 'md', md: 'sm' }}
+                minW={{ base: '140px', md: '100px' }}
+                h={{ base: '56px', md: '40px' }}
+                fontSize={{ base: 'lg', md: 'sm' }}
                 _hover={{ transform: 'translateY(-1px)', shadow: 'md' }}
                 transition="all 0.2s ease"
               >
@@ -229,23 +229,23 @@ export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
             </HStack>
 
             {/* Time Adjustment Controls */}
-            <VStack spacing={2} w="100%">
-              <Text fontSize="xs" color="gray.500" textAlign="center">
+            <VStack spacing={{ base: 3, md: 2 }} w="100%">
+              <Text fontSize={{ base: "sm", md: "xs" }} color="gray.500" textAlign="center" fontWeight="medium">
                 Adjust Rest Time
               </Text>
-              <HStack spacing={2} justify="center" flexWrap="wrap">
+              <HStack spacing={{ base: 3, md: 2 }} justify="center" flexWrap="wrap">
                 {timeAdjustments.map(({ label, value, color }) => (
                   <Button
                     key={label}
-                    size="sm"
+                    size={{ base: "md", md: "sm" }}
                     variant="outline"
                     colorScheme={color}
                     onClick={() => value > 0 ? onAddTime(value) : onSubtractTime(Math.abs(value))}
                     isDisabled={value < 0 && timeRemaining + value <= 0}
                     borderRadius="lg"
-                    minW="60px"
-                    h="32px"
-                    fontSize="xs"
+                    minW={{ base: "72px", md: "60px" }}
+                    h={{ base: "40px", md: "32px" }}
+                    fontSize={{ base: "sm", md: "xs" }}
                     _hover={{ transform: 'translateY(-1px)' }}
                     transition="all 0.2s ease"
                   >

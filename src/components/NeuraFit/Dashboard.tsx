@@ -1,25 +1,20 @@
 import {
-    Badge,
-    Box,
-    Button,
-    Card,
-    CardBody,
-    HStack,
-    Icon,
-    Progress,
-    SimpleGrid,
-    Text,
-    useColorModeValue,
-    VStack
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Icon,
+  SimpleGrid,
+  Text,
+  useColorModeValue,
+  VStack
 } from '@chakra-ui/react';
 import {
-    PiClockBold,
-    PiHeartBold,
-    PiPlayBold,
-    PiTrophyBold
+  PiClockBold,
+  PiHeartBold,
+  PiPlayBold,
+  PiTrophyBold
 } from 'react-icons/pi';
-import { ageCategories } from '../../constants/personalInfoOptions';
-import { useFitnessStore } from '../../store/useFitnessStore';
 
 interface DashboardProps {
   onStartWorkout: () => void;
@@ -29,49 +24,13 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistory, onEditSpecificSetting }: DashboardProps) {
-  const { profile, workoutPlans } = useFitnessStore();
-
-  const subtextColor = useColorModeValue('gray.500', 'gray.400');
   const cardBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(26, 32, 44, 0.8)');
   const bgColor = useColorModeValue('linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%)', 'gray.900');
   const glassBorder = useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)');
 
-  // Calculate total weekly time commitment
-  const totalMinutesPerWeek = (profile.timeAvailability?.daysPerWeek || 0) * (profile.timeAvailability?.minutesPerSession || 0);
 
-  // Calculate current week's progress
-  const now = new Date();
-  const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-  const thisWeekWorkouts = (workoutPlans || []).filter((w: any) => {
-    if (!w.completedAt) return false;
-    const workoutDate = new Date(w.completedAt);
-    return workoutDate >= startOfWeek;
-  }).length;
 
-  const weeklyGoal = profile.timeAvailability?.daysPerWeek || 3;
-  const weeklyProgress = Math.min((thisWeekWorkouts / weeklyGoal) * 100, 100);
 
-  // Helper function to format fitness level
-  const formatFitnessLevel = (level: string) => {
-    return level.charAt(0).toUpperCase() + level.slice(1);
-  };
-
-  // Helper function to get personal info display text
-  const getPersonalInfoDisplay = () => {
-    if (profile.ageCategory) {
-      const ageCategory = ageCategories.find(cat => cat.code === profile.ageCategory);
-      if (ageCategory) {
-        return `${ageCategory.range} years`;
-      }
-    }
-
-    // Fallback to legacy age field
-    if (profile.age) {
-      return `${profile.age} years`;
-    }
-
-    return 'Not set';
-  };
 
 
 
@@ -91,103 +50,65 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
       position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
-      <VStack spacing={5} p={{ base: 4, md: 6 }} maxW="4xl" mx="auto" minH="100%">
+      <VStack spacing={{ base: 4, md: 3 }} p={{ base: 4, md: 5 }} maxW="4xl" mx="auto" minH="100%">
         {/* Personalized Hero Section */}
-        <VStack spacing={3} textAlign="center" w="100%" py={{ base: 3, md: 4 }}>
+        <VStack spacing={{ base: 2, md: 2 }} textAlign="center" w="100%" py={{ base: 2, md: 2 }}>
           <Text
-            fontSize={{ base: "lg", md: "xl" }}
+            fontSize={{ base: "lg", md: "lg" }}
             fontWeight="medium"
             color="gray.600"
+            lineHeight={{ base: "1.4", md: "1.3" }}
+            px={{ base: 2, md: 0 }}
           >
             {getGreeting()}. Your AI-powered workout is waiting.
           </Text>
         </VStack>
 
-        {/* Simplified Stats Overview */}
-        <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={2} w="100%">
-          {/* This Week Progress - Featured */}
-          <Card
-            bg={cardBg}
-            backdropFilter="blur(10px)"
-            border="1px solid"
-            borderColor={glassBorder}
-            borderRadius="2xl"
-            overflow="hidden"
-            transition="all 0.3s ease"
-            _hover={{
-              transform: "translateY(-4px)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-            }}
-          >
-            <CardBody p={5}>
-              <VStack spacing={1} align="stretch">
-                <HStack justify="space-between">
-                  <Text fontSize="sm" fontWeight="medium" color={subtextColor}>
-                    This Week
-                  </Text>
-                  <Badge
-                    colorScheme={weeklyProgress >= 100 ? "green" : weeklyProgress >= 50 ? "blue" : "orange"}
-                    variant="subtle"
-                    borderRadius="full"
-                    px={5}
-                  >
-                    {Math.round(weeklyProgress)}%
-                  </Badge>
-                </HStack>
-                <Text fontSize="xl" fontWeight="bold" bgGradient="linear(to-r, blue.400, purple.500)" bgClip="text">
-                  {thisWeekWorkouts}/{weeklyGoal}
-                </Text>
-                <Progress
-                  value={weeklyProgress}
-                  size="md"
-                  colorScheme={weeklyProgress >= 100 ? "green" : weeklyProgress >= 50 ? "blue" : "orange"}
-                  borderRadius="full"
-                  bg="gray.100"
-                />
-                <Text fontSize="xs" color={subtextColor}>
-                  {weeklyProgress >= 100 ? "Goal achieved!" : `${weeklyGoal - thisWeekWorkouts} workouts to go`}
-                </Text>
-              </VStack>
-            </CardBody>
-          </Card>
-
-          {/* Weekly Commitment */}
-          <Card
-            bg={cardBg}
-            backdropFilter="blur(10px)"
-            border="1px solid"
-            borderColor={glassBorder}
-            borderRadius="2xl"
-            as="button"
-            onClick={() => onEditSpecificSetting?.(5)}
-            cursor="pointer"
-            transition="all 0.3s ease"
-            _hover={{
-              transform: "translateY(-4px)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-            }}
-          >
-            <CardBody p={5} textAlign="center">
-              <VStack spacing={1}>
-                <Icon as={PiHeartBold} boxSize={6} color="purple.400" />
-                <Text fontSize="xl" fontWeight="bold" color="purple.500">
+        {/* Quick Stats Overview */}
+        {/* <Card
+          bg={cardBg}
+          backdropFilter="blur(10px)"
+          border="1px solid"
+          borderColor={glassBorder}
+          borderRadius="2xl"
+          w="100%"
+          maxW="500px"
+          transition="all 0.3s ease"
+          _hover={{
+            transform: "translateY(-2px)",
+            boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
+          }}
+        >
+          <CardBody p={{ base: 6, md: 5 }} textAlign="center">
+            <VStack spacing={{ base: 4, md: 3 }}>
+              <Icon as={PiHeartBold} boxSize={{ base: 8, md: 7 }} color="purple.400" />
+              <VStack spacing={{ base: 2, md: 1 }}>
+                <Text fontSize={{ base: "3xl", md: "2xl" }} fontWeight="bold" color="purple.500">
                   {totalMinutesPerWeek}
                 </Text>
-                <Text fontSize="sm" color={subtextColor}>
+                <Text fontSize={{ base: "lg", md: "md" }} color={subtextColor} fontWeight="medium">
                   minutes per week
                 </Text>
               </VStack>
-            </CardBody>
-          </Card>
-        </SimpleGrid>
+              <Text fontSize={{ base: "md", md: "sm" }} color="gray.600" textAlign="center" lineHeight="1.4">
+                Your weekly fitness commitment
+              </Text>
+            </VStack>
+          </CardBody>
+        </Card> */}
 
-        {/* Profile Customization Grid */}
-        <VStack spacing={4} w="100%" maxW="600px">
-          <Text fontSize="md" fontWeight="semibold" color="gray.700" textAlign="center">
-            Customize Your Profile
-          </Text>
-          <SimpleGrid columns={2} spacing={4} w="100%">
-            {/* Fitness Level */}
+        {/* Profile Setup Grid - All 6 Steps */}
+        <VStack spacing={{ base: 4, md: 3 }} w="100%" maxW="700px">
+          <VStack spacing={{ base: 2, md: 1 }} textAlign="center">
+            <Text fontSize={{ base: "lg", md: "md" }} fontWeight="bold" color="gray.700" lineHeight="1.2">
+              Complete Your Profile Setup
+            </Text>
+            <Text fontSize={{ base: "sm", md: "xs" }} color="gray.600" lineHeight="1.4" maxW="500px">
+              Customize each section to get the most personalized AI workout experience
+            </Text>
+          </VStack>
+          <SimpleGrid columns={2} spacing={{ base: 3, md: 2 }} w="100%">
+            {/* Step 1: Fitness Level */}
             <Card
               bg={cardBg}
               backdropFilter="blur(10px)"
@@ -203,20 +124,17 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={4} textAlign="center">
-                <VStack spacing={2}>
-                  <Icon as={PiTrophyBold} boxSize={5} color="blue.400" />
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+                  <Icon as={PiTrophyBold} boxSize={{ base: 5, md: 4 }} color="blue.400" />
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
                     Fitness Level
                   </Text>
-                  <Badge colorScheme="blue" variant="subtle" borderRadius="full" px={2} fontSize="xs">
-                    {formatFitnessLevel(profile.fitnessLevel)}
-                  </Badge>
                 </VStack>
               </CardBody>
             </Card>
 
-            {/* Goals */}
+            {/* Step 2: Goals */}
             <Card
               bg={cardBg}
               backdropFilter="blur(10px)"
@@ -232,20 +150,17 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={4} textAlign="center">
-                <VStack spacing={2}>
-                  <Icon as={PiHeartBold} boxSize={5} color="green.400" />
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+                  <Icon as={PiHeartBold} boxSize={{ base: 5, md: 4 }} color="green.400" />
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
                     Goals
                   </Text>
-                  <Badge colorScheme="green" variant="subtle" borderRadius="full" px={2} fontSize="xs">
-                    {profile.goals?.length || 0} selected
-                  </Badge>
                 </VStack>
               </CardBody>
             </Card>
 
-            {/* Equipment */}
+            {/* Step 3: Equipment */}
             <Card
               bg={cardBg}
               backdropFilter="blur(10px)"
@@ -261,17 +176,17 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={4} textAlign="center">
-                <VStack spacing={2}>
-                  <Icon as={PiHeartBold} boxSize={5} color="orange.400" />
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+                  <Icon as={PiTrophyBold} boxSize={{ base: 5, md: 4 }} color="orange.400" />
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
                     Equipment
                   </Text>
                 </VStack>
               </CardBody>
             </Card>
 
-            {/* Personal Info */}
+            {/* Step 4: Personal Info */}
             <Card
               bg={cardBg}
               backdropFilter="blur(10px)"
@@ -287,15 +202,64 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={4} textAlign="center">
-                <VStack spacing={2}>
-                  <Icon as={PiHeartBold} boxSize={5} color="teal.400" />
-                  <Text fontSize="sm" fontWeight="medium" color="gray.700">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+                  <Icon as={PiHeartBold} boxSize={{ base: 5, md: 4 }} color="teal.400" />
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
                     Personal Info
                   </Text>
-                  <Badge colorScheme="teal" variant="subtle" borderRadius="full" px={2} fontSize="xs">
-                    {getPersonalInfoDisplay()}
-                  </Badge>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Step 5: Injuries & Limitations */}
+            <Card
+              bg={cardBg}
+              backdropFilter="blur(10px)"
+              border="1px solid"
+              borderColor={glassBorder}
+              borderRadius="xl"
+              as="button"
+              onClick={() => onEditSpecificSetting?.(4)}
+              cursor="pointer"
+              transition="all 0.3s ease"
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+              }}
+            >
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+                  <Icon as={PiHeartBold} boxSize={{ base: 5, md: 4 }} color="red.400" />
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                    Injuries & Limitations
+                  </Text>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Step 6: Time Preferences */}
+            <Card
+              bg={cardBg}
+              backdropFilter="blur(10px)"
+              border="1px solid"
+              borderColor={glassBorder}
+              borderRadius="xl"
+              as="button"
+              onClick={() => onEditSpecificSetting?.(5)}
+              cursor="pointer"
+              transition="all 0.3s ease"
+              _hover={{
+                transform: "translateY(-2px)",
+                boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+              }}
+            >
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+                  <Icon as={PiClockBold} boxSize={{ base: 5, md: 4 }} color="purple.400" />
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                    Time Preferences
+                  </Text>
                 </VStack>
               </CardBody>
             </Card>
@@ -304,16 +268,25 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
 
 
 
-        {/* Primary Action Button */}
-        <VStack spacing={4} w="100%">
+        {/* Primary Action Section */}
+        <VStack spacing={{ base: 4, md: 3 }} w="100%" pt={{ base: 2, md: 1 }}>
+          <VStack spacing={{ base: 2, md: 1 }} textAlign="center">
+            <Text fontSize={{ base: "lg", md: "md" }} fontWeight="bold" color="gray.700" lineHeight="1.2">
+              Ready to Start Your Workout?
+            </Text>
+            <Text fontSize={{ base: "sm", md: "xs" }} color="gray.600" lineHeight="1.4" maxW="400px">
+              Generate a personalized AI workout based on your profile and preferences
+            </Text>
+          </VStack>
+
           <Button
             size="lg"
             w="100%"
-            maxW="400px"
-            h={{ base: "60px", md: "65px" }}
-            leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 6, md: 6 }} />}
+            maxW="450px"
+            h={{ base: "68px", md: "65px" }}
+            leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 7, md: 6 }} />}
             onClick={onStartWorkout}
-            fontSize={{ base: "lg", md: "xl" }}
+            fontSize={{ base: "xl", md: "xl" }}
             fontWeight="bold"
             borderRadius="2xl"
             bgGradient="linear(135deg, blue.400 0%, purple.500 100%)"
@@ -334,49 +307,51 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
           </Button>
 
           {/* Secondary Actions */}
-          <Button
-            variant="ghost"
-            colorScheme="blue"
-            size="md"
-            w="100%"
-            maxW="400px"
-            h="50px"
-            leftIcon={<Icon as={PiTrophyBold} boxSize={5} />}
-            onClick={onViewProgress}
-            fontSize="md"
-            fontWeight="medium"
-            borderRadius="xl"
-            _hover={{
-              bg: "blue.50",
-              transform: "translateY(-1px)",
-            }}
-            transition="all 0.2s ease"
-          >
-            View Progress & Analytics
-          </Button>
-
-          {onViewHistory && (
+          <VStack spacing={{ base: 3, md: 2 }} w="100%">
             <Button
               variant="ghost"
-              colorScheme="purple"
-              size="md"
+              colorScheme="blue"
+              size={{ base: "lg", md: "md" }}
               w="100%"
-              maxW="400px"
-              h="50px"
-              leftIcon={<Icon as={PiClockBold} boxSize={5} />}
-              onClick={onViewHistory}
-              fontSize="md"
+              maxW="450px"
+              h={{ base: "56px", md: "50px" }}
+              leftIcon={<Icon as={PiTrophyBold} boxSize={{ base: 6, md: 5 }} />}
+              onClick={onViewProgress}
+              fontSize={{ base: "lg", md: "md" }}
               fontWeight="medium"
               borderRadius="xl"
               _hover={{
-                bg: "purple.50",
+                bg: "blue.50",
                 transform: "translateY(-1px)",
               }}
               transition="all 0.2s ease"
             >
-              Workout History
+              View Progress & Analytics
             </Button>
-          )}
+
+            {onViewHistory && (
+              <Button
+                variant="ghost"
+                colorScheme="purple"
+                size={{ base: "lg", md: "md" }}
+                w="100%"
+                maxW="450px"
+                h={{ base: "56px", md: "50px" }}
+                leftIcon={<Icon as={PiClockBold} boxSize={{ base: 6, md: 5 }} />}
+                onClick={onViewHistory}
+                fontSize={{ base: "lg", md: "md" }}
+                fontWeight="medium"
+                borderRadius="xl"
+                _hover={{
+                  bg: "purple.50",
+                  transform: "translateY(-1px)",
+                }}
+                transition="all 0.2s ease"
+              >
+                Workout History
+              </Button>
+            )}
+          </VStack>
         </VStack>
       </VStack>
     </Box>
