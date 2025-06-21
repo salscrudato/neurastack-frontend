@@ -668,12 +668,30 @@ export interface WorkoutPlan {
 
   // AI generation context
   generationContext?: {
-    userContext: any;
-    aiModelsUsed: string[];
+    userContext?: any; // Legacy field - backend handles this now
+    aiModelsUsed?: string[]; // Legacy field - backend handles this now
     generationTime: number;
     sessionId: string;
     version: string; // Track workout generation version
     adaptations?: string[]; // Track what adaptations were made
+    // Enhanced backend personalization data
+    personalizationInsights?: {
+      appliedProgressiveOverload: boolean;
+      difficultyAdjustment: number;
+      varietyScore: number;
+      personalizedNotes: string[];
+    };
+    userProgress?: {
+      totalWorkoutsCompleted: number;
+      currentStreak: number;
+      averageCompletionRate: number;
+      fitnessLevelProgression: string;
+    };
+    nextWorkoutRecommendations?: {
+      suggestedRestDays: number;
+      recommendedNextType: string;
+      progressionOpportunities: string[];
+    };
   };
 
   // Workout structure
@@ -862,6 +880,24 @@ export interface WorkoutPhase {
   exercises: WorkoutExerciseDetail[];
 }
 
+// Enhanced Personalization Types (matching API documentation)
+export interface PersonalizationMetadata {
+  applied: boolean;
+  confidence: number; // 0-1 confidence score
+  dataQuality: 'high' | 'medium' | 'low' | 'insufficient' | 'no_data';
+  adjustments: {
+    duration: number; // Minutes adjusted from base duration (can be negative)
+    intensity: number; // Intensity multiplier (1.0 = no change, >1.0 = harder, <1.0 = easier)
+    volume: number; // Volume multiplier (1.0 = no change, >1.0 = more sets/reps)
+  };
+  insights: {
+    progressiveOverloadReady: boolean; // User is ready for difficulty progression
+    riskLevel: 'low' | 'medium' | 'high'; // Overall risk assessment
+    recommendationCount: number; // Number of personalization recommendations applied
+  };
+  reason?: string; // Reason why personalization wasn't applied (if applicable)
+}
+
 export interface WorkoutGenerateResponse {
   status: 'success' | 'error';
   data?: {
@@ -884,6 +920,26 @@ export interface WorkoutGenerateResponse {
       timestamp: string;
       correlationId: string;
       userId: string;
+      // Enhanced personalization metadata
+      personalization: PersonalizationMetadata;
+    };
+    // Enhanced backend response fields
+    personalizationInsights?: {
+      appliedProgressiveOverload: boolean;
+      difficultyAdjustment: number; // 0.9 = easier, 1.1 = harder
+      varietyScore: number; // How different from recent workouts
+      personalizedNotes: string[];
+    };
+    userProgress?: {
+      totalWorkoutsCompleted: number;
+      currentStreak: number;
+      averageCompletionRate: number;
+      fitnessLevelProgression: string;
+    };
+    nextWorkoutRecommendations?: {
+      suggestedRestDays: number;
+      recommendedNextType: string;
+      progressionOpportunities: string[];
     };
   };
   workoutId: string;

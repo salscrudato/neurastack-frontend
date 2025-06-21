@@ -766,6 +766,28 @@ export class NeuraStackClient {
         console.log(`  👤 User ID: ${workoutResponse.data?.metadata?.userId || 'Unknown'}`);
         console.log(`  ⏰ Timestamp: ${workoutResponse.data?.metadata?.timestamp || 'Unknown'}`);
 
+        // Enhanced personalization logging
+        if (workoutResponse.data?.metadata?.personalization) {
+          const personalization = workoutResponse.data.metadata.personalization;
+          console.log('');
+          console.log('🎯 PERSONALIZATION:');
+          console.log(`  ✅ Applied: ${personalization.applied ? 'Yes' : 'No'}`);
+          if (personalization.applied) {
+            console.log(`  📊 Confidence: ${(personalization.confidence * 100).toFixed(1)}%`);
+            console.log(`  📈 Data Quality: ${personalization.dataQuality}`);
+            console.log(`  🔧 Adjustments:`);
+            console.log(`    ⏱️ Duration: ${personalization.adjustments.duration > 0 ? '+' : ''}${personalization.adjustments.duration} min`);
+            console.log(`    💪 Intensity: ${personalization.adjustments.intensity}x`);
+            console.log(`    📊 Volume: ${personalization.adjustments.volume}x`);
+            console.log(`  🎯 Insights:`);
+            console.log(`    📈 Progressive Overload Ready: ${personalization.insights.progressiveOverloadReady ? 'Yes' : 'No'}`);
+            console.log(`    ⚠️ Risk Level: ${personalization.insights.riskLevel}`);
+            console.log(`    🔢 Recommendations Applied: ${personalization.insights.recommendationCount}`);
+          } else if (personalization.reason) {
+            console.log(`  ❓ Reason: ${personalization.reason}`);
+          }
+        }
+
         console.groupEnd();
       }
 

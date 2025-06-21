@@ -25,45 +25,29 @@ import { handleSilentError } from '../utils/errorHandler';
 export interface WorkoutAnalytics {
   userId: string;
   workoutId: string;
-  
-  // Performance metrics
+
+  // Basic performance metrics - backend calculates complex analytics
   completionRate: number; // 0-100
   actualDuration: number; // minutes
   plannedDuration: number; // minutes
-  efficiencyScore: number; // actual vs planned duration
-  
-  // Exercise-level analytics
-  exercisePerformance: ExercisePerformance[];
-  
+
   // User feedback
   difficultyRating: number; // 1-5 scale
   enjoymentRating: number; // 1-5 scale
   energyLevel: 'low' | 'moderate' | 'high';
   perceivedExertion: number; // 1-10 RPE scale
-  
-  // Contextual data
+
+  // Basic contextual data
   timeOfDay: string;
   dayOfWeek: string;
-  environmentalFactors: string[];
-  
-  // AI insights
-  aiRecommendations: string[];
-  adaptationSuggestions: string[];
-  
+
+  // Backend will calculate: efficiency scores, exercise performance analytics,
+  // environmental factors, AI recommendations, and adaptation suggestions
+
   createdAt: Date;
 }
 
-export interface ExercisePerformance {
-  exerciseName: string;
-  targetMuscles: string[];
-  plannedSets: number;
-  completedSets: number;
-  plannedReps: number;
-  actualReps: number[];
-  formQuality: number; // 1-5 scale
-  difficulty: number; // 1-5 scale
-  modifications: string[];
-}
+// ExercisePerformance tracking moved to backend
 
 export interface WorkoutInsights {
   userId: string;

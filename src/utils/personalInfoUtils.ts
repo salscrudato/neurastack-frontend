@@ -60,40 +60,5 @@ export function convertWeightCategoryToWeight(weightCategory?: string): number |
   return isNaN(parsed) ? undefined : parsed;
 }
 
-/**
- * Get a representative age from the fitness profile, preferring numeric value over category
- * @param profile - The fitness profile
- * @returns A representative age number for API calls
- */
-export function getRepresentativeAge(profile: { age?: number; ageCategory?: string }): number {
-  // Prefer the direct numeric age (primary field)
-  if (profile.age && profile.age > 0) return profile.age;
-
-  // Fallback to category-based age for backward compatibility
-  if (profile.ageCategory) {
-    const categoryAge = convertAgeCategoryToAge(profile.ageCategory);
-    if (categoryAge) return categoryAge;
-  }
-
-  // Default fallback
-  return 25;
-}
-
-/**
- * Get a representative weight from the fitness profile, preferring numeric value over category
- * @param profile - The fitness profile
- * @returns A representative weight number in lbs for API calls, or undefined if not provided
- */
-export function getRepresentativeWeight(profile: { weight?: number; weightCategory?: string }): number | undefined {
-  // Prefer the direct numeric weight (primary field)
-  if (profile.weight && profile.weight > 0) return profile.weight;
-
-  // Fallback to category-based weight for backward compatibility
-  if (profile.weightCategory) {
-    const categoryWeight = convertWeightCategoryToWeight(profile.weightCategory);
-    if (categoryWeight) return categoryWeight;
-  }
-
-  // Return undefined if no weight information is available
-  return undefined;
-}
+// getRepresentativeAge and getRepresentativeWeight functions removed
+// Backend handles complex data processing - frontend uses simple fallbacks

@@ -31,8 +31,7 @@ import {
 } from 'react-icons/pi';
 import { neuraStackClient } from '../../lib/neurastack-client';
 import type { WorkoutPlan } from '../../lib/types';
-import { dataOptimizationService } from '../../services/dataOptimizationService';
-import { storeWorkoutAnalytics, type ExercisePerformance, type WorkoutAnalytics } from '../../services/workoutAnalyticsService';
+import { storeWorkoutAnalytics, type WorkoutAnalytics } from '../../services/workoutAnalyticsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import SuccessAnimation from './SuccessAnimation';
 
@@ -108,23 +107,7 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
     setIsSubmitting(true);
 
     try {
-      // Prepare exercise performance data
-      const exercisePerformance: ExercisePerformance[] = workout.exercises.map((exercise, index) => {
-        const exerciseFeedback = feedback.exerciseFeedback[index] || {};
-        const wasCompleted = completedExercises.has(index);
-        
-        return {
-          exerciseName: exercise.name,
-          targetMuscles: exercise.targetMuscles,
-          plannedSets: exercise.sets,
-          completedSets: wasCompleted ? exercise.sets : 0,
-          plannedReps: exercise.reps,
-          actualReps: wasCompleted ? [exercise.reps] : [0],
-          formQuality: exerciseFeedback.formQuality || 3,
-          difficulty: exerciseFeedback.difficulty || 3,
-          modifications: exerciseFeedback.modifications || []
-        };
-      });
+      // Exercise performance tracking moved to backend
 
       // Calculate completion rate
       const completionRate = (completedExercises.size / workout.exercises.length) * 100;
@@ -134,49 +117,24 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
       const timeOfDay = getTimeOfDay(now);
       const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
 
-      // Enhanced analytics data collection with comprehensive context
+      // Simplified analytics data - backend handles complex calculations
       const analyticsData: Omit<WorkoutAnalytics, 'createdAt'> = {
         userId: user.uid,
         workoutId: workout.id,
         completionRate,
         actualDuration,
         plannedDuration: workout.duration,
-        efficiencyScore: (workout.duration / actualDuration) * 100,
-        exercisePerformance,
         difficultyRating: feedback.difficultyRating,
         enjoymentRating: feedback.enjoymentRating,
         energyLevel: feedback.energyLevel,
         perceivedExertion: feedback.perceivedExertion,
         timeOfDay,
         dayOfWeek,
-        environmentalFactors: [
-          // Enhanced environmental context
-          `device:${/Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop'}`,
-          `timezone:${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
-          `locale:${navigator.language}`,
-          `screen:${window.screen.width}x${window.screen.height}`,
-          `connection:${(navigator as any).connection?.effectiveType || 'unknown'}`,
-          `battery:${(navigator as any).getBattery ? 'available' : 'unavailable'}`
-        ],
-        aiRecommendations: generateAIRecommendations(feedback, completionRate),
-        adaptationSuggestions: generateAdaptationSuggestions(feedback, workout),
-
-        // Additional context for AI optimization (removed to fix type errors)
+        // Backend will calculate efficiency scores, recommendations, and environmental factors
       };
 
-      // Store analytics
+      // Store simplified analytics - backend handles optimization
       await storeWorkoutAnalytics(analyticsData);
-
-      // Trigger data optimization periodically (every 10th workout)
-      const workoutCount = await getWorkoutSequenceNumber(user.uid);
-      if (workoutCount % 10 === 0) {
-        try {
-          await dataOptimizationService.optimizeAllUserData(user.uid);
-          console.log('✅ Data optimization completed for user:', user.uid);
-        } catch (error) {
-          console.warn('Data optimization failed:', error);
-        }
-      }
 
       // Store concise feedback in AI memory for future workout generation
       if (workout.generationContext?.sessionId) {
@@ -471,56 +429,6 @@ function getTimeOfDay(date: Date): string {
   return 'night';
 }
 
-// Helper function to get workout sequence number
-async function getWorkoutSequenceNumber(_userId: string): Promise<number> {
-  try {
-    // Get total number of completed workouts for this user
-    // This would integrate with the fitness data service
-    return 1; // Placeholder
-  } catch (error) {
-    console.warn('Failed to get workout sequence number:', error);
-    return 1;
-  }
-}
+// Workout sequence tracking moved to backend
 
-function generateAIRecommendations(feedback: FeedbackData, completionRate: number): string[] {
-  const recommendations: string[] = [];
-
-  if (feedback.difficultyRating <= 2) {
-    recommendations.push('Increase workout intensity or add more challenging exercises');
-  } else if (feedback.difficultyRating >= 4) {
-    recommendations.push('Consider reducing intensity or providing more modifications');
-  }
-
-  if (completionRate < 80) {
-    recommendations.push('Focus on shorter workouts or break exercises into smaller sets');
-  }
-
-  if (feedback.enjoymentRating <= 2) {
-    recommendations.push('Try different exercise types or workout formats');
-  }
-
-  if (feedback.energyLevel === 'low' && feedback.perceivedExertion >= 8) {
-    recommendations.push('Consider adding more rest days or reducing workout frequency');
-  }
-
-  return recommendations;
-}
-
-function generateAdaptationSuggestions(feedback: FeedbackData, _workout: WorkoutPlan): string[] {
-  const suggestions: string[] = [];
-
-  if (feedback.difficultyRating <= 2 && feedback.enjoymentRating >= 4) {
-    suggestions.push('User enjoys this workout type - consider progressive overload');
-  }
-
-  if (feedback.perceivedExertion <= 4 && feedback.energyLevel === 'high') {
-    suggestions.push('User has capacity for higher intensity workouts');
-  }
-
-  if (feedback.difficultyRating >= 4 && feedback.enjoymentRating <= 3) {
-    suggestions.push('Reduce complexity while maintaining engagement');
-  }
-
-  return suggestions;
-}
+// Complex recommendation generation moved to backend
