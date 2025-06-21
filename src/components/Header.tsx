@@ -1,3 +1,16 @@
+/**
+ * Header Component
+ *
+ * The main navigation header that appears at the top of every page (except splash).
+ * Provides:
+ * - Navigation menu for switching between app sections
+ * - Brand logo that acts as a home button
+ * - User account menu with profile info and sign out
+ * - Responsive design that works on mobile and desktop
+ * - Accessibility features like keyboard navigation and screen reader support
+ */
+
+// Import UI components from Chakra UI for building the interface
 import {
     Avatar,
     Box,
@@ -20,8 +33,14 @@ import {
     useToast,
     VStack
 } from '@chakra-ui/react';
+
+// Import Firebase authentication functions
 import { signOut } from 'firebase/auth';
+
+// Import React hooks for component functionality
 import { useCallback, useMemo, useRef } from 'react';
+
+// Import icons for navigation and user interface
 import {
     PiChatCircleBold, PiClockCounterClockwiseBold,
     PiGearBold,
@@ -30,34 +49,49 @@ import {
     PiSignOutBold, PiUserCircleBold,
     PiUserLight
 } from 'react-icons/pi';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ADMIN_CONFIG, hasAdminAccess } from '../config/admin';
-import { auth } from '../firebase';
-import { useReducedMotion } from '../hooks/useAccessibility';
-import { useAuthStore } from '../store/useAuthStore';
-import { BrandLogo } from './BrandLogo';
 
+// Import routing functionality
+import { useLocation, useNavigate } from 'react-router-dom';
+
+// Import app-specific modules
+import { ADMIN_CONFIG, hasAdminAccess } from '../config/admin';  // Admin access control
+import { auth } from '../firebase';  // Firebase authentication
+import { useReducedMotion } from '../hooks/useAccessibility';  // Accessibility preferences
+import { useAuthStore } from '../store/useAuthStore';  // User authentication state
+import { BrandLogo } from './BrandLogo';  // App logo component
+
+/**
+ * Main Header Component Function
+ */
 export function Header() {
+  // Get navigation and routing functionality
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Get user authentication state and functions
   const setUser = useAuthStore(s => s.setUser);
   const user = useAuthStore(s => s.user);
+
+  // Get accessibility preferences (reduced motion for animations)
   const prefersReducedMotion = useReducedMotion();
+
+  // Control the mobile navigation drawer (open/close state)
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // Toast notifications for user feedback
   const toast = useToast();
 
-  // Responsive navigation menu configuration
+  // Detect if we're on mobile or desktop for responsive behavior
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  // Performance optimization: Close drawer on route change
+  // Automatically close mobile menu when user navigates to a different page
   const prevPathname = useRef(location.pathname);
   if (prevPathname.current !== location.pathname) {
     prevPathname.current = location.pathname;
     if (isOpen) onClose();
   }
 
-  // Determine brand text and navigation based on current page
+  // Customize the logo and navigation based on which section of the app we're in
   const isNeuraFitPage = location.pathname === '/neurafit';
   const brandText = isNeuraFitPage ? 'neurafit' : 'neurastack';
   const brandLabel = isNeuraFitPage ? 'NeuraFit - Go to NeuraFit' : 'Neurastack - Go to Chat';

@@ -21,8 +21,7 @@
     "type-check": "tsc --noEmit",
     "analyze": "npm run build && npx vite-bundle-analyzer dist/stats.html",
     "build:analyze": "npm run build",
-    "delete-firestore-data": "tsx scripts/delete-firestore-data.ts",
-    "test-api": "tsx scripts/test-flexible-api.ts"
+    "delete-firestore-data": "tsx scripts/delete-firestore-data.ts"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
