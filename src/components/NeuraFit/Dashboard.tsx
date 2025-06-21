@@ -47,10 +47,32 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
       h="100%"
       bgGradient={bgColor}
       overflow={{ base: "auto", md: "auto" }}
+      overflowX="hidden"
       position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
+      // Enhanced mobile support with proper viewport constraints
+      sx={{
+        overscrollBehavior: 'contain',
+        '@media (max-width: 768px)': {
+          // Ensure dashboard content fits within mobile viewport
+          maxHeight: 'calc(100vh - 56px)',
+          height: 'calc(100vh - 56px)',
+        },
+        '@media (min-width: 769px)': {
+          maxHeight: 'calc(100vh - 64px)',
+          height: 'calc(100vh - 64px)',
+        }
+      }}
     >
-      <VStack spacing={{ base: 4, md: 3 }} p={{ base: 4, md: 5 }} maxW="4xl" mx="auto" minH="100%">
+      <VStack
+        spacing={{ base: 3, md: 3 }}
+        p={{ base: 3, md: 4 }}
+        maxW="4xl"
+        mx="auto"
+        minH="100%"
+        w="100%"
+        pb={{ base: 4, md: 6 }}
+      >
         {/* Personalized Hero Section */}
         <VStack spacing={{ base: 2, md: 2 }} textAlign="center" w="100%" py={{ base: 2, md: 2 }}>
           <Text

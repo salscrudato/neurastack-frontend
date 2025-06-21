@@ -132,18 +132,37 @@ export default function NeuraFitPage() {
       position="relative"
       data-testid="page-content"
       className="mobile-scroll-container neurafit-page-container"
-      // Enhanced mobile scrolling support
+      // Enhanced mobile scrolling support with proper header spacing
       sx={{
         overflowX: 'hidden',
+        overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
-        // Mobile viewport support
+        // Mobile viewport support with proper header spacing
         '@media (max-width: 768px)': {
-          minHeight: ['100vh', '100dvh'],
+          // Full viewport height minus fixed header
+          height: 'calc(100vh - 56px)',
+          minHeight: 'calc(100vh - 56px)',
+          maxHeight: 'calc(100vh - 56px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         },
+        // Desktop viewport support
+        '@media (min-width: 769px)': {
+          height: 'calc(100vh - 64px)',
+          minHeight: 'calc(100vh - 64px)',
+          maxHeight: 'calc(100vh - 64px)',
+        },
         '@supports (-webkit-touch-callout: none)': {
-          minHeight: '-webkit-fill-available',
+          '@media (max-width: 768px)': {
+            height: 'calc(-webkit-fill-available - 56px)',
+            minHeight: 'calc(-webkit-fill-available - 56px)',
+            maxHeight: 'calc(-webkit-fill-available - 56px)',
+          },
+          '@media (min-width: 769px)': {
+            height: 'calc(-webkit-fill-available - 64px)',
+            minHeight: 'calc(-webkit-fill-available - 64px)',
+            maxHeight: 'calc(-webkit-fill-available - 64px)',
+          }
         }
       }}
     >

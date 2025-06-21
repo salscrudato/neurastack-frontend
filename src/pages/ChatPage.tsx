@@ -1,8 +1,8 @@
 import {
-    Box,
-    Flex,
-    IconButton,
-    Text,
+  Box,
+  Flex,
+  IconButton,
+  Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -62,8 +62,8 @@ export function ChatPage() {
     },
     scrollButton: {
       size: { xs: "sm", sm: "md", md: "md", lg: "lg" },
-      bottom: { xs: "80px", sm: "90px", md: "100px", lg: "110px", xl: "120px" },
-      right: { xs: "12px", sm: "16px", md: "20px", lg: "24px", xl: "28px" }
+      bottom: { xs: "100px", sm: "110px", md: "120px", lg: "130px", xl: "140px" },
+      right: { xs: "16px", sm: "20px", md: "24px", lg: "28px", xl: "32px" }
     }
   }), []);
 
@@ -168,7 +168,8 @@ export function ChatPage() {
       p="0px"
       bg={bgColor}
       position="relative"
-      // Enhanced mobile support with proper scrolling
+      data-testid="chat-page"
+      // Enhanced mobile support with proper header spacing
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
@@ -176,13 +177,31 @@ export function ChatPage() {
         overflowY: 'auto',
         overflowX: 'hidden',
         WebkitOverflowScrolling: 'touch',
-        // Mobile viewport support
+        // Mobile viewport support with proper header spacing
         '@media (max-width: 768px)': {
-          minHeight: ['100vh', '100dvh'],
+          // Full viewport height minus fixed header
+          height: 'calc(100vh - 56px)',
+          minHeight: 'calc(100vh - 56px)',
+          maxHeight: 'calc(100vh - 56px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         },
+        // Desktop viewport support
+        '@media (min-width: 769px)': {
+          height: 'calc(100vh - 64px)',
+          minHeight: 'calc(100vh - 64px)',
+          maxHeight: 'calc(100vh - 64px)',
+        },
         '@supports (-webkit-touch-callout: none)': {
-          minHeight: '-webkit-fill-available',
+          '@media (max-width: 768px)': {
+            height: 'calc(-webkit-fill-available - 56px)',
+            minHeight: 'calc(-webkit-fill-available - 56px)',
+            maxHeight: 'calc(-webkit-fill-available - 56px)',
+          },
+          '@media (min-width: 769px)': {
+            height: 'calc(-webkit-fill-available - 64px)',
+            minHeight: 'calc(-webkit-fill-available - 64px)',
+            maxHeight: 'calc(-webkit-fill-available - 64px)',
+          }
         }
       }}
     >
@@ -196,7 +215,7 @@ export function ChatPage() {
           align="center"
           justify="center"
           px={chatConfig.hero.padding}
-          pb={{ xs: 24, sm: 20, md: 16, lg: 0 }} // Enhanced mobile spacing
+          py={{ xs: 4, sm: 6, md: 8, lg: 12 }} // Better mobile vertical spacing
           role="main"
           aria-label="Welcome message"
         >
@@ -236,15 +255,24 @@ export function ChatPage() {
         flex="1"
         w="100%"
         px={chatConfig.container.padding}
-        py={{ xs: 4, sm: 4, md: 2, lg: 2.5, xl: 3 }}
+        py={{ xs: 2, sm: 3, md: 2, lg: 2.5, xl: 3 }}
         bg={containerBg}
-        // Enhanced scrolling performance - remove overflow restrictions
+        // Enhanced scrolling performance with mobile optimization
+        overflowY="auto"
+        overflowX="hidden"
         sx={{
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
           // Enhanced mobile support with proper spacing
           '@media (max-width: 768px)': {
-            paddingX: 2,
-            paddingTop: 4,
-            paddingBottom: 2,
+            paddingX: 3,
+            paddingY: 2,
+            // Ensure messages container doesn't exceed viewport
+            maxHeight: 'calc(100vh - 56px - 120px)', // viewport - header - input area
+          },
+          // Desktop support
+          '@media (min-width: 769px)': {
+            maxHeight: 'calc(100vh - 64px - 140px)', // viewport - header - input area
           }
         }}
         // Enhanced accessibility

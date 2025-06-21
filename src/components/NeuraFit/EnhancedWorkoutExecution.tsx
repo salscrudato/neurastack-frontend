@@ -526,11 +526,38 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
   return (
     <Box
-      minH="100vh"
+      h="100%"
       bg={useColorModeValue('gray.50', 'gray.900')}
-      p={{ base: 4, md: 4 }}
+      p={{ base: 3, md: 4 }}
+      overflowY="auto"
+      overflowX="hidden"
+      // Enhanced mobile support with proper header spacing
+      sx={{
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        '@media (max-width: 768px)': {
+          // Full viewport height minus fixed header
+          height: 'calc(100vh - 56px)',
+          minHeight: 'calc(100vh - 56px)',
+          maxHeight: 'calc(100vh - 56px)',
+          paddingX: 3,
+          paddingY: 2,
+        },
+        '@media (min-width: 769px)': {
+          height: 'calc(100vh - 64px)',
+          minHeight: 'calc(100vh - 64px)',
+          maxHeight: 'calc(100vh - 64px)',
+        }
+      }}
     >
-      <VStack spacing={{ base: 5, md: 4 }} maxW="md" mx="auto">
+      <VStack
+        spacing={{ base: 3, md: 4 }}
+        maxW="md"
+        mx="auto"
+        w="100%"
+        h="100%"
+        pb={{ base: 4, md: 6 }}
+      >
         {/* Header with progress */}
         <Card
           w="100%"

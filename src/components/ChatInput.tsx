@@ -286,13 +286,14 @@ export default function ChatInput() {
       ref={containerRef}
       w="full"
       px={inputConfig.padding}
-      py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
+      py={{ xs: 2, sm: 2.5, md: 3.5, lg: 4, xl: 4.5 }}
       bg={colorSystem.page.bg}
       borderTopWidth="1px"
       borderColor={colorSystem.page.borderTop}
       position="sticky"
       bottom={0}
       zIndex={100}
+      flexShrink={0}
       // Enhanced mobile support with performance optimization
       sx={{
         touchAction: 'manipulation',
@@ -302,13 +303,19 @@ export default function ChatInput() {
         // Performance optimizations
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
-        // Ensure input stays at bottom on mobile
+        // Ensure input stays at bottom on mobile with proper sizing
         '@media (max-width: 768px)': {
-          paddingX: 2,
+          paddingX: 3,
           paddingY: 2,
           position: 'sticky',
           bottom: 0,
           paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+          // Prevent input from taking too much space
+          maxHeight: '120px',
+        },
+        // Desktop optimization
+        '@media (min-width: 769px)': {
+          maxHeight: '140px',
         }
       }}
     >

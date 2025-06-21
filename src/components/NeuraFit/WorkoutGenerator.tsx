@@ -1247,7 +1247,20 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   // Show workout generation form when no workout exists
   if (!currentWorkout) {
     return (
-      <VStack spacing={{ base: 4, md: 6, lg: 8 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch">
+      <VStack
+        spacing={{ base: 3, md: 4, lg: 6 }}
+        p={{ base: 2, md: 3, lg: 4 }}
+        align="stretch"
+        h="100%"
+        overflowY="auto"
+        // Enhanced mobile support
+        sx={{
+          '@media (max-width: 768px)': {
+            paddingX: 3,
+            paddingY: 2,
+          }
+        }}
+      >
         {/* Service Status Indicator - Only show when service is actually unavailable */}
         {serviceStatus === 'unavailable' && (
           <Box
@@ -1520,11 +1533,23 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
       <Box
         minH="100%"
-        maxH="100vh"
+        h="100%"
         overflow={{ base: "auto", md: "auto" }}
         overflowX="hidden"
         style={{ WebkitOverflowScrolling: 'touch' }}
         className={`neurafit-scroll-container ${isWorkoutActive ? 'neurafit-workout-active' : ''} neurafit-no-zoom`}
+        // Enhanced mobile support with proper viewport constraints
+        sx={{
+          '@media (max-width: 768px)': {
+            // Ensure workout content fits within mobile viewport
+            maxHeight: 'calc(100vh - 56px)',
+            height: 'calc(100vh - 56px)',
+          },
+          '@media (min-width: 769px)': {
+            maxHeight: 'calc(100vh - 64px)',
+            height: 'calc(100vh - 64px)',
+          }
+        }}
       >
       <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch" w="100%" maxW="4xl" mx="auto" className="neurafit-workout-container">
       {/* Workout Header */}
