@@ -72,27 +72,28 @@ const ModernProgressIndicator = memo(function ModernProgressIndicator({
           overflow="hidden"
         />
         
-        {/* Animated progress bar */}
+        {/* Animated progress bar with NeuraFit gradient */}
         <MotionBox
           position="absolute"
           top={0}
           left={0}
           h={sizeProps[size].height}
-          bg={`linear-gradient(90deg, 
-            var(--chakra-colors-${colorScheme}-400), 
-            var(--chakra-colors-${colorScheme}-500)
-          )`}
+          bg="linear-gradient(90deg,
+            rgba(79, 156, 249, 0.8) 0%,
+            rgba(139, 92, 246, 1) 50%,
+            rgba(99, 102, 241, 0.8) 100%
+          )"
           borderRadius="full"
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
-          transition={{ 
-            duration: 0.8, 
+          transition={{
+            duration: 0.8,
             ease: "easeOut",
             type: "spring",
             stiffness: 100
           }}
           style={{
-            boxShadow: `0 0 10px var(--chakra-colors-${colorScheme}-300)`
+            boxShadow: "0 0 20px rgba(79, 156, 249, 0.4)"
           }}
         />
         

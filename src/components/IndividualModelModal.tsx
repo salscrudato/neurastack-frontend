@@ -6,33 +6,29 @@
  */
 
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  Box,
-  Text,
-  HStack,
-  VStack,
-  Badge,
-  useColorModeValue,
-  Flex,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Badge,
+    Box,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+    useColorModeValue,
+    VStack
 } from '@chakra-ui/react';
-import {
-  PiWarningBold,
-  PiClockBold
-} from 'react-icons/pi';
 import { useEffect } from 'react';
+import {
+    PiWarningBold
+} from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ModelResponseData } from '../hooks/useModelResponses';
-import { getModelDisplayInfo, formatModelName } from '../hooks/useModelResponses';
 
 // ============================================================================
 // Component Props
@@ -136,7 +132,6 @@ export function IndividualModelModal({
   const headerBg = '#F8FAFC';
   const borderColor = '#E2E8F0';
   const textColor = '#1E293B';
-  const mutedColor = '#64748B';
   const closeButtonColor = '#64748B';
   const closeButtonHoverColor = '#1E293B';
   const closeButtonHoverBg = '#F1F5F9';
@@ -160,7 +155,6 @@ export function IndividualModelModal({
   // Early return after all hooks
   if (!modelData) return null;
 
-  const displayInfo = getModelDisplayInfo(modelData.model);
   const isFailed = modelData.status === 'failed';
 
   return (
@@ -187,39 +181,25 @@ export function IndividualModelModal({
           borderColor={borderColor}
           pb={4}
         >
-          <VStack align="stretch" spacing={3}>
-            {/* Title and Badge */}
-            <Flex justify="space-between" align="center">
-              <VStack align="start" spacing={1}>
-                <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                  {formatModelName(modelData.model, modelData.role, modelData.provider)}
-                </Text>
-                {modelData.provider && (
-                  <Text fontSize="sm" color={mutedColor} fontWeight="medium">
-                    {modelData.provider.toUpperCase()} • {modelData.wordCount || 0} words
-                  </Text>
-                )}
-              </VStack>
-              <Badge colorScheme={displayInfo.color} variant="subtle">
-                AI Model
+          <VStack align="start" spacing={2}>
+            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+              {modelData.model}
+            </Text>
+            {modelData.confidence && (
+              <Badge
+                colorScheme={
+                  modelData.confidence.level === 'high' ? 'green' :
+                  modelData.confidence.level === 'medium' ? 'yellow' : 'red'
+                }
+                variant="solid"
+                size="md"
+                borderRadius="full"
+                px={3}
+                py={1}
+              >
+                {Math.round(modelData.confidence.score * 100)}% Confidence
               </Badge>
-            </Flex>
-
-            {/* Model Info - Left aligned execution time */}
-            <HStack spacing={4} fontSize="sm" color={mutedColor} justify="flex-start">
-              {modelData.executionTime && (
-                <HStack spacing={1}>
-                  <PiClockBold />
-                  <Text>{modelData.executionTime}ms</Text>
-                </HStack>
-              )}
-
-              {modelData.tokenCount && (
-                <HStack spacing={1}>
-                  <Text>{modelData.tokenCount} tokens</Text>
-                </HStack>
-              )}
-            </HStack>
+            )}
           </VStack>
         </ModalHeader>
 

@@ -3,14 +3,13 @@ import {
     Button,
     HStack,
     Icon,
-    SimpleGrid,
     Text,
-    VStack,
+    VStack
 } from '@chakra-ui/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { FITNESS_GOALS } from '../../constants/fitnessGoals'; // Moved constants import
+import { FITNESS_GOALS } from '../../constants/fitnessGoals';
 import { useReducedMotion } from '../../hooks/useAccessibility';
 import { trackGoalSelection, trackGoalStepCompletion } from '../../services/fitnessDataService';
 import { useFitnessStore } from '../../store/useFitnessStore';
@@ -60,11 +59,10 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
   const { profile, syncToFirestore } = useFitnessStore();
   const prefersReducedMotion = useReducedMotion();
 
-  // State for keyboard navigation and accessibility
+  // Enhanced state management
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Debounce timer ref for goal toggling
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Modern, minimalistic color scheme
@@ -160,7 +158,12 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
     return profile.goals?.includes(goalCode) || false;
   }, [profile.goals]);
 
+  // Helper functions for enhanced UX
+  const displayedGoals = FITNESS_GOALS.filter(goal => goal.isPrimary);
+
   const canProceed = profile.goals && profile.goals.length > 0;
+
+
 
   // Handle navigation with Firebase sync
   const handleNext = useCallback(async () => {
@@ -209,8 +212,8 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
       p={{ base: 3, md: 4 }}
       overflow="hidden"
     >
-      {/* Compact Header */}
-      <VStack spacing={2} textAlign="center" flex="0 0 auto">
+      {/* Enhanced Header with Selection Counter */}
+      <VStack spacing={3} textAlign="center" flex="0 0 auto">
         <Text
           id="goals-heading"
           as="h1"
@@ -226,7 +229,6 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
           id="goals-description"
           fontSize={{ base: "sm", md: "md" }}
           color={subtextColor}
-          maxW="400px"
           lineHeight="1.4"
           letterSpacing="-0.01em"
           fontWeight="400"
@@ -235,7 +237,7 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
         </Text>
       </VStack>
 
-      {/* Mobile-Optimized Goal Selection Grid */}
+      {/* Enhanced Goal Selection with Chips */}
       <Box
         as="fieldset"
         aria-labelledby="goals-heading"
@@ -247,17 +249,9 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
         justifyContent="center"
         overflow="visible"
       >
-        <SimpleGrid
-          columns={{ base: 1, sm: 2 }}
-          spacing={{ base: 3, md: 4 }}
-          w="100%"
-          maxW="500px"
-          mx="auto"
-          h="fit-content"
-          overflow="visible"
-        >
+        <VStack spacing={4} w="100%" maxW="600px" mx="auto">
           <AnimatePresence>
-            {FITNESS_GOALS.map((goal, index: number) => {
+            {displayedGoals.map((goal, index: number) => {
               const isSelected = isGoalSelected(goal.code);
               const isFocused = selectedIndex === index;
               const labelId = `goal-label-${goal.code}`;
@@ -277,16 +271,19 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
                   <Button
                     ref={(el) => { buttonRefs.current[index] = el; }}
                     w="100%"
-                    h={{ base: "80px", md: "88px" }}
-                    p={{ base: 4, md: 5 }}
+                    h="auto"
+                    minH="44px"
+                    p={4}
                     bg={isSelected ? goal.bgColor : cardBg}
-                    border="1px solid"
+                    border="2px solid"
                     borderColor={isSelected ? goal.borderColor : borderColor}
-                    borderRadius="xl"
+                    borderRadius="full"
                     onClick={() => handleGoalToggle(goal.code)}
+
                     variant="ghost"
                     role="checkbox"
                     aria-checked={isSelected}
+                    aria-pressed={isSelected}
                     aria-describedby={`goal-${goal.code}-description`}
                     aria-labelledby={labelId}
                     tabIndex={isFocused ? 0 : -1}
@@ -310,28 +307,18 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
                     }}
                     transition={prefersReducedMotion ? 'none' : 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)'}
                   >
-                    <HStack spacing={4} w="100%" justify="flex-start" align="center">
-                      {/* Modern Icon Container */}
-                      <Box
-                        minW="40px"
-                        h="40px"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        borderRadius="xl"
-                        bg={isSelected ? `${goal.borderColor}15` : 'gray.50'}
-                        transition="all 150ms ease"
-                      >
-                        <Icon
-                          as={goal.icon}
-                          boxSize="20px"
-                          color={isSelected ? goal.iconColor : 'gray.400'}
-                          transition="color 150ms ease"
-                        />
-                      </Box>
+                    <HStack spacing={3} w="100%" justify="flex-start" align="center">
+                      {/* Compact Icon */}
+                      <Icon
+                        as={goal.icon}
+                        boxSize="20px"
+                        color={isSelected ? goal.iconColor : 'gray.400'}
+                        transition="color 150ms ease"
+                        flexShrink={0}
+                      />
 
-                      {/* Enhanced Text Content */}
-                      <VStack align="flex-start" spacing={0.5} flex={1} minH="48px" justify="center">
+                      {/* Chip-style Text Content */}
+                      <VStack align="flex-start" spacing={0} flex={1} justify="center">
                         <Text
                           id={labelId}
                           fontSize={{ base: "md", md: "lg" }}
@@ -345,7 +332,7 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
                         </Text>
                         <Text
                           id={`goal-${goal.code}-description`}
-                          fontSize={{ base: "sm", md: "md" }}
+                          fontSize="sm"
                           color={subtextColor}
                           textAlign="left"
                           lineHeight="1.3"
@@ -360,10 +347,10 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
               );
             })}
           </AnimatePresence>
-        </SimpleGrid>
+        </VStack>
       </Box>
 
-      {/* Fixed Navigation */}
+      {/* Navigation */}
       <Box flex="0 0 auto" w="100%">
         <NavigationButtons
           onBack={handleBack}
@@ -384,11 +371,6 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
         {selectedIndex >= 0 && (
           <Text>
             {FITNESS_GOALS[selectedIndex].label} selected. Press Enter to toggle or use arrow keys to navigate.
-          </Text>
-        )}
-        {profile.goals && profile.goals.length > 0 && (
-          <Text>
-            {profile.goals.length} goal{profile.goals.length !== 1 ? 's' : ''} selected.
           </Text>
         )}
       </Box>

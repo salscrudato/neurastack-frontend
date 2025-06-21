@@ -5,7 +5,7 @@
  * model responses in modals with smooth UX interactions.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { SubAnswer } from '../lib/types';
 
 // ============================================================================
@@ -22,32 +22,95 @@ export interface ModelResponseData {
   status: 'success' | 'failed' | 'timeout';
   errorReason?: string;
   wordCount?: number;
+
+  // Enhanced ensemble metadata for customer-centric insights
+  confidence?: {
+    score: number;           // 0-1 confidence score
+    level: string;           // "low", "medium", "high"
+    factors: string[];       // Specific confidence reasoning
+  };
+
+  // Performance metrics
+  responseTime?: number;     // Processing time in milliseconds
+  characterCount?: number;   // Response character count
+
+  // Quality analysis
+  quality?: {
+    wordCount: number;
+    sentenceCount: number;
+    averageWordsPerSentence: number;
+    hasStructure: boolean;
+    hasReasoning: boolean;
+    complexity: string;      // "low", "medium", "high"
+  };
+
+  // Model reliability and metadata
+  metadata?: {
+    confidenceLevel: string;
+    modelReliability: number; // 0-1 reliability score
+    processingTime: number;
+    tokenCount: number;
+    complexity: string;
+  };
+}
+
+export interface EnsembleOverviewData {
+  totalRoles: number;
+  successfulRoles: number;
+  failedRoles: number;
+  synthesisStatus: string;
+  processingTimeMs: number;
+  synthesisStrategy?: string;
+
+  // Confidence analysis
+  confidenceAnalysis?: {
+    overallConfidence: number;
+    modelAgreement: number;
+    responseConsistency: number;
+    qualityDistribution: {
+      high: number;
+      medium: number;
+      low: number;
+    };
+  };
+
+  // Cost and performance
+  costEstimate?: {
+    promptTokens: number;
+    responseTokens: number;
+    totalTokens: number;
+    estimatedCost: string;
+    modelsUsed: number;
+  };
 }
 
 export interface UseModelResponsesResult {
   /** Currently selected model for modal display */
   selectedModel: ModelResponseData | null;
-  
+
   /** Whether modal is open */
   isModalOpen: boolean;
-  
+
   /** Open modal with specific model response */
   openModelModal: (model: ModelResponseData) => void;
-  
+
   /** Close modal */
   closeModal: () => void;
-  
+
   /** Get all available model responses */
   getAvailableModels: () => ModelResponseData[];
-  
+
   /** Navigate to next model in modal */
   nextModel: () => void;
-  
+
   /** Navigate to previous model in modal */
   previousModel: () => void;
-  
+
   /** Check if navigation is available */
   canNavigate: { next: boolean; previous: boolean };
+
+  /** Ensemble overview data for summary display */
+  ensembleOverview: EnsembleOverviewData | null;
 }
 
 // ============================================================================
@@ -86,7 +149,8 @@ export const MODEL_DISPLAY_INFO = {
 export function useModelResponses(
   individualResponses?: SubAnswer[],
   modelsUsed?: Record<string, boolean>,
-  fallbackReasons?: Record<string, string>
+  fallbackReasons?: Record<string, string>,
+  ensembleMetadata?: any // Full ensemble metadata from API
 ): UseModelResponsesResult {
   const [selectedModel, setSelectedModel] = useState<ModelResponseData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,7 +159,7 @@ export function useModelResponses(
   const availableModels = useMemo((): ModelResponseData[] => {
     const models: ModelResponseData[] = [];
 
-    // Process individual responses format
+    // Process individual responses format with enhanced metadata
     if (individualResponses && individualResponses.length > 0) {
       individualResponses.forEach(response => {
         models.push({
@@ -104,13 +168,38 @@ export function useModelResponses(
           role: response.role,
           provider: response.provider,
           status: response.status || 'success',
-          wordCount: response.wordCount
+          wordCount: response.wordCount,
+
+          // Extract enhanced metadata from API response
+          confidence: typeof response.confidence === 'number'
+            ? { score: response.confidence, level: 'unknown', factors: [] }
+            : response.confidence,
+          responseTime: response.responseTime,
+          characterCount: response.characterCount,
+          quality: response.quality,
+          metadata: response.metadata
         });
       });
     }
 
     return models;
-  }, [individualResponses, modelsUsed, fallbackReasons]);
+  }, [individualResponses, modelsUsed, fallbackReasons, ensembleMetadata]);
+
+  // Extract ensemble overview data for summary display
+  const ensembleOverview = useMemo((): EnsembleOverviewData | null => {
+    if (!ensembleMetadata) return null;
+
+    return {
+      totalRoles: ensembleMetadata.totalRoles || 0,
+      successfulRoles: ensembleMetadata.successfulRoles || 0,
+      failedRoles: ensembleMetadata.failedRoles || 0,
+      synthesisStatus: ensembleMetadata.synthesisStatus || 'unknown',
+      processingTimeMs: ensembleMetadata.processingTimeMs || 0,
+      synthesisStrategy: ensembleMetadata.synthesisStrategy,
+      confidenceAnalysis: ensembleMetadata.confidenceAnalysis,
+      costEstimate: ensembleMetadata.costEstimate
+    };
+  }, [ensembleMetadata]);
 
   const openModelModal = useCallback((model: ModelResponseData) => {
     setSelectedModel(model);
@@ -156,7 +245,8 @@ export function useModelResponses(
     getAvailableModels,
     nextModel,
     previousModel,
-    canNavigate
+    canNavigate,
+    ensembleOverview
   };
 }
 

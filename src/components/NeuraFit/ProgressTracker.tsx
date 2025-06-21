@@ -54,7 +54,7 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
 
   // Calculate progress statistics
   const progressStats = useMemo((): ProgressStats => {
-    const completedWorkouts = workoutPlans.filter(w => w.completedAt);
+    const completedWorkouts = (workoutPlans || []).filter((w: any) => w.completedAt);
     const now = new Date();
     
     // Filter workouts by selected period
@@ -68,17 +68,17 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
         cutoffDate.setMonth(now.getMonth() - 1);
       }
       
-      return completedWorkouts.filter(w => 
+      return completedWorkouts.filter((w: any) =>
         w.completedAt && new Date(w.completedAt) >= cutoffDate
       );
     };
 
     const filteredWorkouts = getFilteredWorkouts();
-    const totalMinutes = filteredWorkouts.reduce((sum, w) => sum + w.duration, 0);
+    const totalMinutes = filteredWorkouts.reduce((sum: number, w: any) => sum + w.duration, 0);
     
     // Calculate streaks
     const sortedWorkouts = completedWorkouts
-      .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime());
+      .sort((a: any, b: any) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime());
     
     let currentStreak = 0;
     let longestStreak = 0;
@@ -116,7 +116,7 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
 
     // Weekly goal progress (assuming goal is 3 workouts per week)
     const weeklyGoal = 3;
-    const thisWeekWorkouts = completedWorkouts.filter(w => {
+    const thisWeekWorkouts = completedWorkouts.filter((w: any) => {
       const workoutDate = new Date(w.completedAt!);
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - now.getDay());
@@ -128,7 +128,7 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
 
     // Monthly goal progress (assuming goal is 12 workouts per month)
     const monthlyGoal = 12;
-    const thisMonthWorkouts = completedWorkouts.filter(w => {
+    const thisMonthWorkouts = completedWorkouts.filter((w: any) => {
       const workoutDate = new Date(w.completedAt!);
       return workoutDate.getMonth() === now.getMonth() && 
              workoutDate.getFullYear() === now.getFullYear();
@@ -137,19 +137,19 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
     const monthlyGoalProgress = Math.min((thisMonthWorkouts / monthlyGoal) * 100, 100);
 
     // Favorite workout type
-    const workoutTypes = completedWorkouts.reduce((acc, w) => {
+    const workoutTypes = completedWorkouts.reduce((acc: Record<string, number>, w: any) => {
       acc[w.name] = (acc[w.name] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
     
     const favoriteWorkoutType = Object.entries(workoutTypes)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'None yet';
+      .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || 'None yet';
 
     // Improvement trend (simplified)
     const recentWorkouts = completedWorkouts.slice(0, 5);
     const olderWorkouts = completedWorkouts.slice(5, 10);
-    const recentAvg = recentWorkouts.reduce((sum, w) => sum + w.duration, 0) / recentWorkouts.length || 0;
-    const olderAvg = olderWorkouts.reduce((sum, w) => sum + w.duration, 0) / olderWorkouts.length || 0;
+    const recentAvg = recentWorkouts.reduce((sum: number, w: any) => sum + w.duration, 0) / recentWorkouts.length || 0;
+    const olderAvg = olderWorkouts.reduce((sum: number, w: any) => sum + w.duration, 0) / olderWorkouts.length || 0;
     
     let improvementTrend: 'up' | 'down' | 'stable' = 'stable';
     if (recentAvg > olderAvg * 1.1) improvementTrend = 'up';

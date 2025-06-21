@@ -87,8 +87,11 @@ Requirements:
 - Similar to ${currentExercise.sets} sets, ${currentExercise.reps} reps
 - Avoid injuries: ${profile.injuries?.join(', ') || 'none'}
 
-IMPORTANT: Respond with ONLY a valid JSON array, no markdown, no explanations, no code blocks.
+CRITICAL: Your response must be ONLY valid JSON. No text before or after. No markdown. No code blocks. No explanations.
 
+Start your response with [ and end with ]. Use double quotes for all strings. No trailing commas.
+
+Example format:
 [
   {
     "name": "Exercise Name",
@@ -102,7 +105,9 @@ IMPORTANT: Respond with ONLY a valid JSON array, no markdown, no explanations, n
     "reason": "Why this is a good alternative",
     "similarity": 85
   }
-]`;
+]
+
+Return exactly 3 exercises in this format. Nothing else.`;
 
       const response = await neuraStackClient.queryAI(prompt, {
         useEnsemble: true,
@@ -110,8 +115,10 @@ IMPORTANT: Respond with ONLY a valid JSON array, no markdown, no explanations, n
       });
 
       // Parse the AI response with robust JSON extraction
+      let jsonString = response.answer.trim();
       try {
-        let jsonString = response.answer.trim();
+
+        console.log('Raw AI response for debugging:', jsonString);
 
         // Remove markdown code blocks if present
         if (jsonString.includes('```json')) {
@@ -133,6 +140,16 @@ IMPORTANT: Respond with ONLY a valid JSON array, no markdown, no explanations, n
             jsonString = arrayMatch[0];
           }
         }
+
+        // Clean up common JSON formatting issues
+        jsonString = jsonString
+          .replace(/,\s*}/g, '}') // Remove trailing commas before closing braces
+          .replace(/,\s*]/g, ']') // Remove trailing commas before closing brackets
+          .replace(/'/g, '"') // Replace single quotes with double quotes
+          .replace(/(\w+):/g, '"$1":') // Quote unquoted keys
+          .replace(/:\s*([^",\[\]{}]+)(?=\s*[,}\]])/g, ': "$1"'); // Quote unquoted string values
+
+        console.log('Cleaned JSON string:', jsonString);
 
         const alternativeExercises = JSON.parse(jsonString);
         if (Array.isArray(alternativeExercises) && alternativeExercises.length > 0) {
@@ -158,7 +175,42 @@ IMPORTANT: Respond with ONLY a valid JSON array, no markdown, no explanations, n
       } catch (parseError) {
         console.error('Failed to parse AI response:', parseError);
         console.log('Raw AI response:', response.answer);
+        console.log('Attempted to parse:', jsonString);
+
+        // Try one more time with a more aggressive cleanup
+        try {
+          // Extract just the array part more aggressively
+          const arrayStart = response.answer.indexOf('[');
+          const arrayEnd = response.answer.lastIndexOf(']');
+
+          if (arrayStart !== -1 && arrayEnd !== -1 && arrayEnd > arrayStart) {
+            const extractedArray = response.answer.substring(arrayStart, arrayEnd + 1);
+            console.log('Extracted array attempt:', extractedArray);
+
+            const alternativeExercises = JSON.parse(extractedArray);
+            if (Array.isArray(alternativeExercises) && alternativeExercises.length > 0) {
+              const validAlternatives = alternativeExercises.filter(alt =>
+                alt.name && typeof alt.name === 'string' &&
+                typeof alt.sets === 'number' &&
+                typeof alt.reps === 'number'
+              ).map(alt => ({
+                ...alt,
+                similarity: typeof alt.similarity === 'number' ? alt.similarity : 80,
+                reason: typeof alt.reason === 'string' ? alt.reason : 'Alternative exercise option'
+              }));
+
+              if (validAlternatives.length > 0) {
+                setAlternatives(validAlternatives);
+                return; // Success with aggressive parsing
+              }
+            }
+          }
+        } catch (secondParseError) {
+          console.error('Second parse attempt also failed:', secondParseError);
+        }
+
         // Fallback to predefined alternatives
+        setError('AI response format was invalid. Using fallback alternatives.');
         setAlternatives(generateFallbackAlternatives());
       }
     } catch (error) {

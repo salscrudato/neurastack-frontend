@@ -62,6 +62,48 @@ export interface SubAnswer {
   provider?: string;      // Provider name (e.g., "openai", "gemini", "claude")
   status?: 'success' | 'failed'; // Response status
   wordCount?: number;     // Word count of the response
+
+  // Enhanced metadata from API response for customer-centric insights
+  confidence?: {
+    score: number;           // 0-1 confidence score
+    level: string;           // "low", "medium", "high"
+    factors: string[];       // Specific confidence reasoning
+  } | number;              // Allow both object and number for backward compatibility
+
+  // Performance metrics
+  responseTime?: number;     // Processing time in milliseconds
+  characterCount?: number;   // Response character count
+
+  // Quality analysis
+  quality?: {
+    wordCount: number;
+    sentenceCount: number;
+    averageWordsPerSentence: number;
+    hasStructure: boolean;
+    hasReasoning: boolean;
+    complexity: string;      // "low", "medium", "high"
+  };
+
+  // Model reliability and metadata
+  metadata?: {
+    confidenceLevel: string;
+    modelReliability: number; // 0-1 reliability score
+    processingTime: number;
+    tokenCount: number;
+    complexity: string;
+  };
+
+  // Enhanced ensemble data for model cards
+  overallConfidence?: number;     // Overall confidence score (0-1)
+  synthesisStrategy?: string;     // Strategy used (e.g., "consensus")
+  votingResults?: Array<{         // Voting results from ensemble
+    role: string;
+    model: string;
+    confidence: number;
+    weightedScore: number;
+    confidenceLevel: string;
+  }>;
+  isFineTuned?: boolean;         // Whether model is fine-tuned
 }
 
 /** New Ensemble API Response Types */
@@ -72,6 +114,11 @@ export interface EnsembleRole {
   provider: "openai" | "gemini" | "claude";
   status: "fulfilled" | "rejected";
   wordCount: number;
+  confidence?: number;
+  responseTime?: number;
+  characterCount?: number;
+  quality?: number;
+  metadata?: any;
 }
 
 export interface EnsembleSynthesis {
@@ -80,6 +127,10 @@ export interface EnsembleSynthesis {
   provider: "openai" | "gemini" | "claude";
   status: "success" | "failed";
   error?: string;
+  overallConfidence?: number;
+  synthesisStrategy?: string;
+  votingResults?: any;
+  isFineTuned?: boolean;
 }
 
 export interface EnsembleMetadata {
@@ -598,6 +649,7 @@ export interface WorkoutPlan {
   // Enhanced fields for AI optimization
   focusAreas?: string[];
   workoutType?: 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core' | 'yoga' | 'pilates' | 'functional' | 'full_body' | 'legs';
+  estimatedCalories?: number;
   actualDuration?: number; // actual time taken to complete
   completionRate?: number; // percentage of exercises completed
   coachingNotes?: string;
@@ -707,7 +759,7 @@ export interface Exercise {
   };
 
   // Exercise metadata
-  category?: 'compound' | 'isolation' | 'cardio' | 'flexibility' | 'core';
+  category?: 'compound' | 'isolation' | 'cardio' | 'flexibility' | 'core' | 'warmup' | 'cooldown';
   primaryMuscle?: string;
   secondaryMuscles?: string[];
   movementPattern?: 'push' | 'pull' | 'squat' | 'hinge' | 'lunge' | 'carry' | 'rotation';
@@ -760,181 +812,258 @@ export interface CompletedSet {
 }
 
 // ============================================================================
-// Workout API Types (for /workout endpoint)
+// New Optimized Workout API Types (2-endpoint system)
 // ============================================================================
 
+// Generate Workout Request Types (Updated to match latest API spec)
 export interface WorkoutUserMetadata {
-  age: number; // Required by API (13-100)
-  fitnessLevel: string; // Any string: 'beginner', 'intermediate', 'advanced', 'expert', 'professional', etc.
-  gender?: string; // Optional
-  weight?: number; // Optional
-  goals?: string[]; // Optional: Any goals as strings
-  equipment?: string[]; // Optional: Any equipment as strings
-  timeAvailable?: number; // Minutes available
-  injuries?: string[]; // Optional: injury considerations
-  daysPerWeek?: number; // Optional: workout frequency
-  minutesPerSession?: number; // Optional: session duration
+  // Required fields per API specification
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  fitnessGoals?: string[]; // Non-empty array of predefined goals
+  goals?: string[]; // Alternative field name for goals
+  equipment: string[]; // Can be empty for bodyweight
+  age: number; // 13-100
+  gender: 'male' | 'female' | 'rather_not_say'; // API expects lowercase, allow rather_not_say
+  weight?: number; // 30-500 (API spec range) - make optional to handle undefined
+  injuries: string[]; // Can be empty
+  daysPerWeek: number; // 1-7
+  minutesPerSession: number; // 10-180
+  timeAvailable?: number; // Alternative field name for available time
 }
 
+export interface WorkoutGenerateRequest {
+  // Required fields per API specification
+  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
+  fitnessGoals: string[]; // Non-empty array
+  equipment: string[]; // Can be empty for bodyweight
+  age: number; // 13-100
+  gender: 'male' | 'female'; // API expects lowercase
+  weight: number; // 30-500, required by API (fallback handled in component)
+  injuries: string[]; // Can be empty
+  daysPerWeek: number; // 1-7
+  minutesPerSession: number; // 10-180
+  workoutType: string; // Non-empty string
+}
+
+// Enhanced Workout Response Types (Updated to match latest API spec)
+export interface WorkoutExerciseDetail {
+  name: string;
+  sets: number;
+  reps: string; // e.g., "8-10", "30 seconds", "to failure"
+  duration: number; // in seconds, 0 for rep-based exercises
+  rest: string; // e.g., "90 seconds", "2 minutes"
+  instructions: string[];
+  targetMuscles: string[];
+  equipment: string[];
+  modifications: string[];
+}
+
+export interface WorkoutPhase {
+  exercises: WorkoutExerciseDetail[];
+}
+
+export interface WorkoutGenerateResponse {
+  status: 'success' | 'error';
+  data?: {
+    workout: {
+      id: string;
+      type: string;
+      duration: number; // minutes
+      difficulty: string;
+      mainWorkout: WorkoutPhase;
+      warmup: WorkoutExerciseDetail[];
+      cooldown: WorkoutExerciseDetail[];
+      equipment: string[];
+      targetMuscles: string[];
+      estimatedCalories: number;
+      safetyNotes: string[];
+    };
+    metadata: {
+      model: string;
+      provider: string;
+      timestamp: string;
+      correlationId: string;
+      userId: string;
+    };
+  };
+  workoutId: string;
+  correlationId: string;
+  timestamp: string;
+  message?: string;
+  retryable?: boolean;
+}
+
+// Complete Workout Request Types
+export interface WorkoutCompleteRequest {
+  workoutId: string;
+  completed: boolean;
+  rating?: number; // 1-5 stars
+  difficulty?: 'too_easy' | 'just_right' | 'too_hard';
+  notes?: string;
+  actualDuration?: number; // minutes
+}
+
+export interface WorkoutCompleteResponse {
+  status: 'success' | 'error';
+  message?: string;
+  timestamp: string;
+}
+
+// ============================================================================
+// Predefined Options for New API System
+// ============================================================================
+
+// Fitness Goals Options (predefined for multi-select)
+export const FITNESS_GOALS_OPTIONS = [
+  'Weight Loss',
+  'Muscle Building',
+  'Strength Training',
+  'Cardiovascular Health',
+  'Flexibility & Mobility',
+  'Athletic Performance',
+  'General Fitness',
+  'Rehabilitation',
+  'Stress Relief',
+  'Endurance Training',
+  'Functional Fitness',
+  'Body Composition',
+  'Balance & Coordination',
+  'Injury Prevention'
+] as const;
+
+export type FitnessGoal = typeof FITNESS_GOALS_OPTIONS[number];
+
+// Equipment Types (predefined for multi-select)
+export const EQUIPMENT_TYPES = [
+  'Dumbbells',
+  'Barbell',
+  'Resistance Bands',
+  'Kettlebells',
+  'Pull-up Bar',
+  'Yoga Mat',
+  'Stability Ball',
+  'Medicine Ball',
+  'Cable Machine',
+  'Treadmill',
+  'Stationary Bike',
+  'Rowing Machine',
+  'Bench',
+  'Squat Rack',
+  'TRX/Suspension Trainer',
+  'Foam Roller',
+  'Jump Rope',
+  'Battle Ropes',
+  'Bosu Ball',
+  'Resistance Loops',
+  'Ankle Weights',
+  'Weight Plates',
+  'Gymnastic Rings',
+  'Parallette Bars',
+  'No Equipment/Bodyweight'
+] as const;
+
+export type EquipmentType = typeof EQUIPMENT_TYPES[number];
+
+// Common Injury Types (predefined for multi-select)
+export const COMMON_INJURY_TYPES = [
+  'Lower Back Pain',
+  'Knee Issues',
+  'Shoulder Impingement',
+  'Neck Pain',
+  'Ankle Sprain',
+  'Wrist Pain',
+  'Hip Flexor Tightness',
+  'Plantar Fasciitis',
+  'Tennis Elbow',
+  'Rotator Cuff Injury',
+  'Sciatica',
+  'IT Band Syndrome',
+  'Hamstring Strain',
+  'Achilles Tendonitis',
+  'Carpal Tunnel',
+  'Previous Surgery',
+  'Arthritis',
+  'Herniated Disc',
+  'No Injuries'
+] as const;
+
+export type CommonInjury = typeof COMMON_INJURY_TYPES[number];
+
+// ============================================================================
+// API Specification Constants (from latest documentation)
+// ============================================================================
+
+export const API_FITNESS_GOALS = [
+  'weight_loss', 'muscle_gain', 'strength', 'endurance',
+  'flexibility', 'toning', 'general_fitness', 'athletic_performance',
+  'rehabilitation', 'stress_relief'
+] as const;
+
+export const API_EQUIPMENT_TYPES = [
+  'bodyweight', 'dumbbells', 'barbell', 'resistance_bands',
+  'kettlebells', 'pull_up_bar', 'yoga_mat', 'bench',
+  'cardio_machine', 'cable_machine', 'medicine_ball', 'foam_roller'
+] as const;
+
+export const API_INJURY_TYPES = [
+  'lower_back', 'knee', 'shoulder', 'neck', 'ankle',
+  'wrist', 'hip', 'elbow', 'chronic_pain', 'recent_surgery'
+] as const;
+
+export type ApiFitnessGoal = typeof API_FITNESS_GOALS[number];
+export type ApiEquipmentType = typeof API_EQUIPMENT_TYPES[number];
+export type ApiInjuryType = typeof API_INJURY_TYPES[number];
+
+// Workout History Entry for tracking completed workouts
 export interface WorkoutHistoryEntry {
-  date: string; // ISO date string, e.g., "2025-06-15"
-  type: string; // e.g., "upper_body"
-  duration: number; // minutes
+  id: string;
+  workoutType: string;
+  duration: number;
+  difficulty: string;
+  completedAt: Date;
+  exercises: Exercise[];
+  performance?: {
+    caloriesBurned?: number;
+    averageHeartRate?: number;
+    perceivedExertion?: number;
+  };
 }
 
-// Enhanced workout specification for guaranteed type consistency
-export interface WorkoutSpecification {
-  workoutType: string; // Any workout type: 'strength', 'swimming', 'rock_climbing', etc.
-  duration: number; // Minutes
-  difficulty: string; // Any difficulty level: 'beginner', 'expert', 'professional', etc.
-  focusAreas?: string[]; // Any focus areas as strings
-  equipment?: string[]; // Any equipment as strings
-}
-
+// Legacy types for backward compatibility (will be removed)
 export interface WorkoutAPIRequest {
   userMetadata: WorkoutUserMetadata;
-  workoutHistory?: WorkoutPlan[]; // Optional: previous workouts
-  workoutRequest: string; // Natural language workout description
-
-  // Enhanced format (recommended)
-  workoutSpecification?: WorkoutSpecification;
-  additionalNotes?: string; // Extra requirements
-  requestId?: string; // Optional: for tracking
-  timestamp?: string; // Optional: ISO timestamp
-  sessionContext?: string; // Optional: session identifier
-  correlationId?: string; // Optional: request correlation
-}
-
-export interface WorkoutAPIExercise {
-  name: string;
-  category: string; // e.g., "strength", "cardio"
-  sets: number;
-  reps: string; // e.g., "10-12" to allow ranges
-  rest: string; // e.g., "30 seconds"
-  instructions: string;
-  modifications: string; // easier variations
-  targetMuscles: string[];
-}
-
-export interface WarmupExercise {
-  name: string;
-  duration: string; // e.g., "2 minutes"
-  instructions: string;
-}
-
-export interface CooldownExercise {
-  name: string;
-  duration: string; // e.g., "2 minutes"
-  instructions: string;
-}
-
-export interface WorkoutAPIPlan {
-  type: string; // e.g., "upper_body"
-  originalType?: string; // What the AI originally suggested
-  typeConsistency?: {
-    requested: string;
-    aiGenerated: string;
-    final: string;
-    wasAdjusted: boolean;
+  workoutHistory?: WorkoutPlan[];
+  workoutRequest: string;
+  workoutSpecification?: {
+    workoutType: string;
+    duration: number;
+    difficulty: string;
+    focusAreas?: string[];
+    equipment?: string[];
   };
-  duration: string | number; // e.g., "45 minutes" or 45
-  difficulty: string; // e.g., "intermediate"
-  equipment: string[]; // e.g., ["dumbbells", "resistance_bands"]
-
-  // Legacy format (direct exercises)
-  exercises?: WorkoutAPIExercise[];
-
-  // New enhanced format (structured workout)
-  mainWorkout?: {
-    structure?: string;
-    exercises: WorkoutAPIExercise[];
-  };
-
-  warmup?: WarmupExercise[] | {
-    duration?: string;
-    purpose?: string;
-    phases?: Array<{
-      phase: string;
-      duration: string;
-      exercises: Array<{
-        name: string;
-        duration?: string;
-        sets?: number;
-        reps?: string;
-        instructions: string;
-        purpose?: string;
-      }>;
-    }>;
-  };
-
-  cooldown?: CooldownExercise[] | {
-    duration?: string;
-    purpose?: string;
-    phases?: Array<{
-      phase: string;
-      duration: string;
-      exercises: Array<{
-        name: string;
-        duration?: string;
-        instructions: string;
-        targetMuscles?: string[];
-      }>;
-    }>;
-  };
-
-  notes?: string; // Additional workout notes
-  calorieEstimate?: string; // e.g., "300-400 calories"
-  tags?: string[]; // Workout tags
-  nextSessionRecommendations?: string;
-
-  // Professional guidance (new in enhanced API)
-  professionalNotes?: {
-    trainerCertification?: string;
-    programmingPrinciples?: string[];
-    safetyPriority?: string;
-  };
-  professionalGuidance?: {
-    intensityGuidance?: string;
-    progressionPlan?: string;
-    safetyConsiderations?: string;
-    recoveryRecommendations?: string;
-    nutritionTips?: string;
-    hydrationGuidance?: string;
-  };
-}
-
-export interface WorkoutAPIMetadata {
-  model: string; // e.g., "gpt-4o-mini"
-  provider: string; // e.g., "openai"
-  timestamp: string; // ISO timestamp
-  correlationId: string;
-  userId: string;
-
-  // Debug information (new in enhanced API)
-  debug?: {
-    requestFormat: string;
-    isEnhancedFormat: boolean;
-    parsedWorkoutType: string;
-    typeConsistency?: any;
-    supportedWorkoutTypes?: string[];
-  };
+  additionalNotes?: string;
+  requestId?: string;
+  timestamp?: string;
+  sessionContext?: string;
+  correlationId?: string;
 }
 
 export interface WorkoutAPIResponse {
   status: 'success' | 'error';
   data?: {
-    workout: WorkoutAPIPlan;
-    metadata: WorkoutAPIMetadata;
+    workout: any; // Legacy format
+    metadata: {
+      model: string;
+      provider: string;
+      timestamp: string;
+      correlationId: string;
+      userId: string;
+    };
   };
   message?: string;
   timestamp: string;
   correlationId: string;
   retryable?: boolean;
-  supportInfo?: {
-    correlationId: string;
-    timestamp: string;
-    suggestion: string;
-  };
 }
 
 // ============================================================================

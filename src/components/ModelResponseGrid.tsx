@@ -6,27 +6,25 @@
  */
 
 import {
-  Box,
-  SimpleGrid,
-  Button,
-  HStack,
-  VStack,
-  Text,
-  Badge,
-  Tooltip,
-  useColorModeValue,
-  Icon,
-  Flex,
-  useBreakpointValue
+    Box,
+    Button,
+    Flex,
+    HStack,
+    Icon,
+    SimpleGrid,
+    Text,
+    Tooltip,
+    useBreakpointValue,
+    useColorModeValue,
+    VStack
 } from '@chakra-ui/react';
 import {
-  PiCheckCircleBold,
-  PiXCircleBold,
-  PiClockBold,
-  PiWarningBold
+    PiCheckCircleBold,
+    PiClockBold,
+    PiWarningBold,
+    PiXCircleBold
 } from 'react-icons/pi';
 import type { ModelResponseData } from '../hooks/useModelResponses';
-import { getModelDisplayInfo, formatModelName } from '../hooks/useModelResponses';
 
 // ============================================================================
 // Component Props
@@ -57,7 +55,6 @@ interface ModelCardProps {
 // ============================================================================
 
 function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
-  const displayInfo = getModelDisplayInfo(model.model);
   const isFailed = model.status === 'failed';
   const isSuccess = model.status === 'success';
 
@@ -66,11 +63,10 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
   const cardHoverBg = 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)';
   const borderColor = '#E2E8F0';
   const textColor = '#1E293B';
-  const mutedColor = '#64748B';
   const shadowColor = 'rgba(0, 0, 0, 0.04)';
   const hoverShadowColor = 'rgba(79, 156, 249, 0.15)';
 
-  // Status colors
+  // Status colors and icons
   const statusColor = isFailed ? 'red' : isSuccess ? 'green' : 'yellow';
   const StatusIcon = isFailed ? PiXCircleBold : isSuccess ? PiCheckCircleBold : PiClockBold;
 
@@ -79,7 +75,7 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
       label={
         isFailed
           ? `Failed: ${model.errorReason || 'Unknown error'}`
-          : `Click to view ${formatModelName(model.model, model.role, model.provider)} response`
+          : `Click to view ${model.provider?.toUpperCase() || 'AI MODEL'} response`
       }
       placement="top"
       hasArrow
@@ -111,18 +107,16 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
         borderRadius="xl"
       >
         <VStack spacing={compact ? 2 : 3} w="100%" align="stretch">
-          {/* Enhanced Header with better typography */}
-          <HStack justify="space-between" w="100%" spacing={3} align="center">
+          <HStack justify="space-between" w="100%" align="center">
             <Text
               fontSize={compact ? "sm" : "md"}
               fontWeight="600"
               color={textColor}
               noOfLines={1}
               textAlign="left"
-              flex="1"
               letterSpacing="-0.025em"
             >
-              {formatModelName(model.model, model.role, model.provider)}
+              {model.provider?.toUpperCase() || 'AI MODEL'}
             </Text>
 
             <Icon
@@ -131,46 +125,6 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
               boxSize={compact ? 4 : 5}
             />
           </HStack>
-
-          {/* Enhanced Badges and Info */}
-          {!compact && (
-            <HStack justify="space-between" w="100%" spacing={2} align="flex-start">
-              <VStack spacing={1.5} align="start" flex="1">
-                <Badge
-                  colorScheme={displayInfo.color}
-                  variant="subtle"
-                  size="sm"
-                  borderRadius="full"
-                  px={3}
-                  py={1}
-                  fontSize="xs"
-                  fontWeight="600"
-                >
-                  {model.provider?.toUpperCase() || 'AI MODEL'}
-                </Badge>
-
-                {model.wordCount && (
-                  <Text fontSize="xs" color={mutedColor} noOfLines={1} fontWeight="500">
-                    {model.wordCount} words
-                  </Text>
-                )}
-              </VStack>
-
-              {/* Enhanced Metrics */}
-              <VStack spacing={1} align="end">
-                {model.tokenCount && (
-                  <Text fontSize="xs" color={mutedColor} fontWeight="500">
-                    {model.tokenCount}t
-                  </Text>
-                )}
-                {model.executionTime && (
-                  <Text fontSize="xs" color={mutedColor} fontWeight="500">
-                    {model.executionTime}ms
-                  </Text>
-                )}
-              </VStack>
-            </HStack>
-          )}
 
           {/* Error indicator for compact view */}
           {compact && isFailed && (

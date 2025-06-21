@@ -1,24 +1,24 @@
 import {
-  Box,
-  HStack,
-  Flex,
-  Text,
-  IconButton,
-  Tooltip,
-  useClipboard,
-  VStack,
+    Box,
+    Flex,
+    HStack,
+    IconButton,
+    Text,
+    Tooltip,
+    useClipboard,
+    VStack,
 } from "@chakra-ui/react";
 import { memo, useMemo } from "react";
 
 import {
-  PiCopyBold,
-  PiCheckBold,
+    PiCheckBold,
+    PiCopyBold,
 } from "react-icons/pi";
-import type { Message } from "../store/useChatStore";
-import { Loader } from "./LoadingSpinner";
 import { useModelResponses } from "../hooks/useModelResponses";
-import { ModelResponseGrid } from "./ModelResponseGrid";
+import type { Message } from "../store/useChatStore";
 import { IndividualModelModal } from "./IndividualModelModal";
+import { Loader } from "./LoadingSpinner";
+import { ModelResponseGrid } from "./ModelResponseGrid";
 import { UnifiedAIResponse } from "./UnifiedAIResponse";
 
 interface ChatMessageProps {
@@ -125,11 +125,13 @@ export const ChatMessage = memo<ChatMessageProps>(({
     isModalOpen,
     openModelModal,
     closeModal,
-    getAvailableModels
+    getAvailableModels,
+    ensembleOverview
   } = useModelResponses(
     message.metadata?.individualResponses,
     message.metadata?.modelsUsed,
-    message.metadata?.fallbackReasons
+    message.metadata?.fallbackReasons,
+    message.metadata?.metadata // Pass full ensemble metadata
   );
 
   const availableModels = getAvailableModels();
@@ -210,7 +212,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
         {/* Message Content */}
         <Box>
           {isLoading ? (
-            <Loader variant="skeleton" lines={2} />
+            <Loader variant="team" size="sm" />
           ) : isError ? (
             <Text fontSize={fontSizes.content} color={textErr}>
               {processedContent || 'An error occurred'}
@@ -233,9 +235,54 @@ export const ChatMessage = memo<ChatMessageProps>(({
           )}
         </Box>
 
+        {/* Ensemble Overview Section */}
+        {!isUser && !isError && !isLoading && ensembleOverview && (
+          <Box mt={6}>
+            <Box
+              bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
+              borderRadius="xl"
+              border="1px solid #E2E8F0"
+              p={4}
+              w="100%"
+            >
+              <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={3}>
+                🎯 Ensemble Performance
+              </Text>
+              <HStack spacing={4} justify="space-between">
+                <VStack spacing={0} align="center">
+                  <Text fontSize="lg" fontWeight="700" color="#1E293B">
+                    {Math.round((ensembleOverview.successfulRoles / ensembleOverview.totalRoles) * 100)}%
+                  </Text>
+                  <Text fontSize="xs" color="#64748B" fontWeight="600">
+                    SUCCESS
+                  </Text>
+                </VStack>
+                <VStack spacing={0} align="center">
+                  <Text fontSize="lg" fontWeight="700" color="#1E293B">
+                    {ensembleOverview.processingTimeMs < 1000 ? `${ensembleOverview.processingTimeMs}ms` : `${(ensembleOverview.processingTimeMs / 1000).toFixed(1)}s`}
+                  </Text>
+                  <Text fontSize="xs" color="#64748B" fontWeight="600">
+                    TIME
+                  </Text>
+                </VStack>
+                {ensembleOverview.confidenceAnalysis?.overallConfidence && (
+                  <VStack spacing={0} align="center">
+                    <Text fontSize="lg" fontWeight="700" color="#1E293B">
+                      {Math.round(ensembleOverview.confidenceAnalysis.overallConfidence * 100)}%
+                    </Text>
+                    <Text fontSize="xs" color="#64748B" fontWeight="600">
+                      CONFIDENCE
+                    </Text>
+                  </VStack>
+                )}
+              </HStack>
+            </Box>
+          </Box>
+        )}
+
         {/* Enhanced Individual Model Responses Section */}
         {!isUser && !isError && !isLoading && hasIndividualResponses && (
-          <Box mt={6}>
+          <Box mt={4}>
             <ModelResponseGrid
               models={availableModels}
               onModelClick={openModelModal}

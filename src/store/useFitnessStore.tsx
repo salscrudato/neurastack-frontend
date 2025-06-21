@@ -3,9 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { FitnessProfile, WorkoutPlan } from '../lib/types';
 import {
     loadFitnessProfile,
-    loadWorkoutPlans,
     saveFitnessProfile,
-    saveWorkoutPlan,
     subscribeFitnessProfile,
     updateFitnessLevel as updateFitnessLevelFirestore
 } from '../services/fitnessDataService';
@@ -19,9 +17,11 @@ interface FitnessState {
   totalSteps: number;
   isEditingFromDashboard: boolean; // Track if user is editing from dashboard
 
-  // Workout plans
-  workoutPlans: WorkoutPlan[];
+  // Current workout only (backend handles history)
   currentWorkout: WorkoutPlan | null;
+
+  // Legacy workout plans for backward compatibility (deprecated - use backend API)
+  workoutPlans?: WorkoutPlan[];
 
   // Loading states
   isLoading: boolean;
@@ -42,13 +42,11 @@ interface FitnessState {
   startEditingFromDashboard: (step: number) => void;
   finishEditingFromDashboard: () => void;
 
-  // Workout actions
+  // Workout actions (simplified - backend handles history)
   setCurrentWorkout: (workout: WorkoutPlan | null) => void;
-  addWorkoutPlan: (plan: WorkoutPlan) => void;
 
-  // Firestore sync actions
+  // Firestore sync actions (simplified)
   loadProfileFromFirestore: () => Promise<void>;
-  loadWorkoutPlansFromFirestore: () => Promise<void>;
   syncToFirestore: () => Promise<void>;
   subscribeToFirestore: () => () => void;
 }
@@ -83,8 +81,8 @@ export const useFitnessStore = create<FitnessState>()(
       currentStep: 0,
       totalSteps: 6, // Updated to include PersonalInfo and Injuries steps
       isEditingFromDashboard: false,
-      workoutPlans: [],
       currentWorkout: null,
+      workoutPlans: [], // Legacy property for backward compatibility
       isLoading: false,
       isProfileLoaded: false,
 
@@ -225,23 +223,9 @@ export const useFitnessStore = create<FitnessState>()(
         });
       },
 
-      // Workout actions with Firestore sync
+      // Workout actions (simplified - backend handles persistence)
       setCurrentWorkout: (workout) => {
         set({ currentWorkout: workout });
-      },
-
-      addWorkoutPlan: async (plan) => {
-        // Update local state immediately
-        set(state => ({
-          workoutPlans: [...state.workoutPlans, plan]
-        }));
-
-        // Sync to Firestore
-        try {
-          await saveWorkoutPlan(plan);
-        } catch (error) {
-          console.warn('Failed to sync workout plan to Firestore:', error);
-        }
       },
 
       // Firestore sync actions
@@ -271,31 +255,15 @@ export const useFitnessStore = create<FitnessState>()(
         }
       },
 
-      loadWorkoutPlansFromFirestore: async () => {
-        try {
-          const workoutPlans = await loadWorkoutPlans();
-          set({ workoutPlans });
-          console.log(`✅ Loaded ${workoutPlans.length} workout plans from Firestore`);
-        } catch (error) {
-          console.warn('Failed to load workout plans from Firestore:', error);
-        }
-      },
-
       syncToFirestore: async () => {
-        const { profile, workoutPlans } = get();
+        const { profile } = get();
 
         try {
-          // Sync profile
+          // Sync profile only (backend handles workout data)
           await saveFitnessProfile(profile);
-
-          // Sync workout plans (only new ones)
-          for (const plan of workoutPlans) {
-            await saveWorkoutPlan(plan);
-          }
-
-          console.log('✅ All fitness data synced to Firestore');
+          console.log('✅ Profile synced to Firestore');
         } catch (error) {
-          console.warn('Failed to sync data to Firestore:', error);
+          console.warn('Failed to sync profile to Firestore:', error);
         }
       },
 
@@ -312,8 +280,7 @@ export const useFitnessStore = create<FitnessState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         profile: state.profile,
-        // Limit workout plans to prevent localStorage bloat
-        workoutPlans: state.workoutPlans.slice(-50), // Keep last 50 workout plans
+        // Only store profile - backend handles workout data
       }),
     }
   )

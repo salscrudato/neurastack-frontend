@@ -1,9 +1,8 @@
 import {
-  Box,
-  HStack,
-  Text,
-  useColorModeValue,
-  Progress,
+    Box,
+    HStack,
+    Text,
+    useColorModeValue
 } from '@chakra-ui/react';
 import { memo, useMemo } from 'react';
 
@@ -36,23 +35,31 @@ const ProgressIndicator = memo(function ProgressIndicator({
         </Text>
       </HStack>
 
-      {/* Progress bar - Enhanced with padding and modern styling */}
-      <Box px={1}>
-        <Progress
-          value={progressValue}
-          colorScheme="blue"
+      {/* Progress bar - Enhanced with NeuraFit gradient styling */}
+      <Box px={1} position="relative">
+        <Box
+          w="full"
+          h={{ base: "8px", md: "10px" }}
           bg={progressBg}
           borderRadius="full"
-          size={{ base: "md", md: "lg" }}
-          hasStripe
-          isAnimated
-          transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-          sx={{
-            '& > div': {
-              borderRadius: 'full',
-            }
-          }}
-        />
+          overflow="hidden"
+          position="relative"
+        >
+          <Box
+            w={`${progressValue}%`}
+            h="full"
+            bg="linear-gradient(90deg,
+              rgba(79, 156, 249, 0.8) 0%,
+              rgba(139, 92, 246, 1) 50%,
+              rgba(99, 102, 241, 0.8) 100%
+            )"
+            borderRadius="full"
+            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+            style={{
+              boxShadow: "0 0 20px rgba(79, 156, 249, 0.4)"
+            }}
+          />
+        </Box>
       </Box>
 
 

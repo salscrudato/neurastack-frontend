@@ -1,16 +1,18 @@
 import {
-  Box,
-  Spinner,
-  Text,
-  Flex,
-  Skeleton,
-  SkeletonText,
-  useColorModeValue,
+    Box,
+    Flex,
+    HStack,
+    Skeleton,
+    SkeletonText,
+    Spinner,
+    Text,
+    useColorModeValue,
 } from '@chakra-ui/react';
-import { memo, useState, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
+import FuturisticLoader from './FuturisticLoader';
 
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team';
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
@@ -890,34 +892,26 @@ const SkeletonLoader = memo(({ lines = 3 }: { lines?: number }) => (
 
 SkeletonLoader.displayName = 'SkeletonLoader';
 
-// Enhanced alternating text component for team discussions
+// Clean, innovative chat loading text component
 const AlternatingText = memo(({ baseMessage }: { baseMessage?: string }) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const textColor = '#64748B';
 
   const messages = [
-    'Neural networks synchronizing...',
-    'AI ensemble harmonizing responses...',
-    'Quantum cognition processing...',
-    'Multi-model consensus building...',
-    'Optimizing intelligence synthesis...',
-    'Context patterns emerging...',
-    'Cognitive architectures aligning...',
-    'Deep learning matrices active...',
-    'Parallel reasoning streams flowing...',
-    'Advanced neural pathways engaged...',
-    'Semantic understanding crystallizing...',
-    'Intelligence convergence in progress...',
-    'Computational consciousness awakening...',
-    'Synaptic networks orchestrating...',
-    'Cognitive fusion protocols active...',
-    'Neural symphony composing response...'
+    'thinking...',
+    'analyzing your request...',
+    'processing context...',
+    'generating response...',
+    'synthesizing insights...',
+    'crafting answer...',
+    'finalizing thoughts...',
+    'almost ready...'
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
-    }, 2800); // Optimized timing for better readability
+    }, 1800); // Faster, more responsive timing
 
     return () => clearInterval(interval);
   }, [messages.length]);
@@ -926,441 +920,67 @@ const AlternatingText = memo(({ baseMessage }: { baseMessage?: string }) => {
   const displayMessage = baseMessage || messages[currentMessageIndex];
 
   return (
-    <Box position="relative" textAlign="center" py={2}>
-      {/* Quantum text field background */}
-      <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        transform="translate(-50%, -50%)"
-        w="200px"
-        h="40px"
-        bg="radial-gradient(ellipse, rgba(79, 156, 249, 0.03) 0%, rgba(139, 92, 246, 0.02) 50%, transparent 80%)"
-        borderRadius="full"
-        animation="textFieldPulse 3s ease-in-out infinite"
-        sx={{
-          '@keyframes textFieldPulse': {
-            '0%, 100%': { opacity: 0.3, transform: 'translate(-50%, -50%) scale(0.8)' },
-            '50%': { opacity: 0.7, transform: 'translate(-50%, -50%) scale(1.2)' }
-          }
-        }}
-      />
-
+    <Box position="relative" textAlign="center" py={3}>
       <Text
         fontSize="sm"
         color={textColor}
-        fontWeight="600"
-        letterSpacing="1.2px"
-        opacity={0.95}
-        animation="futuristicTextFade 2.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite"
+        fontWeight="500"
+        letterSpacing="0.5px"
+        opacity={0.8}
+        animation="cleanTextFade 1.5s ease-in-out infinite"
         position="relative"
-        textShadow="0 0 12px rgba(79, 156, 249, 0.15), 0 0 24px rgba(139, 92, 246, 0.08)"
-        textTransform="lowercase"
         fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 
-        _before={{
-          content: '""',
-          position: 'absolute',
-          bottom: '-8px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '0px',
-          height: '2px',
-          background: `linear-gradient(90deg,
-            transparent 0%,
-            rgba(79, 156, 249, 0.6) 20%,
-            rgba(139, 92, 246, 0.9) 50%,
-            rgba(99, 102, 241, 0.6) 80%,
-            transparent 100%
-          )`,
-          borderRadius: 'full',
-          animation: 'futuristicUnderline 2.4s ease-in-out infinite',
-          filter: 'blur(0.3px)',
-        }}
-        _after={{
-          content: '""',
-          position: 'absolute',
-          top: '50%',
-          left: '0',
-          right: '0',
-          height: '1px',
-          background: `linear-gradient(90deg,
-            transparent 0%,
-            rgba(79, 156, 249, 0.08) 15%,
-            rgba(139, 92, 246, 0.12) 35%,
-            rgba(99, 102, 241, 0.15) 50%,
-            rgba(59, 130, 246, 0.12) 65%,
-            rgba(79, 156, 249, 0.08) 85%,
-            transparent 100%
-          )`,
-          transform: 'translateY(-50%)',
-          animation: 'neuralScanline 5s linear infinite',
-        }}
         sx={{
-          '@keyframes futuristicTextFade': {
+          '@keyframes cleanTextFade': {
             '0%': {
-              opacity: 0.2,
-              transform: 'translateY(4px) scale(0.96) rotateX(5deg)',
-              filter: 'blur(0.8px) saturate(0.8)',
-              textShadow: '0 0 8px rgba(79, 156, 249, 0.1)'
-            },
-            '10%': {
-              opacity: 0.5,
-              transform: 'translateY(2px) scale(0.98) rotateX(2deg)',
-              filter: 'blur(0.4px) saturate(1.0)',
-              textShadow: '0 0 10px rgba(79, 156, 249, 0.12)'
-            },
-            '20%': {
-              opacity: 0.8,
-              transform: 'translateY(1px) scale(0.99) rotateX(1deg)',
-              filter: 'blur(0.2px) saturate(1.2)',
-              textShadow: '0 0 12px rgba(79, 156, 249, 0.15)'
-            },
-            '30%': {
-              opacity: 1,
-              transform: 'translateY(0px) scale(1) rotateX(0deg)',
-              filter: 'blur(0px) saturate(1.4)',
-              textShadow: '0 0 15px rgba(79, 156, 249, 0.18), 0 0 30px rgba(139, 92, 246, 0.1)'
-            },
-            '70%': {
-              opacity: 1,
-              transform: 'translateY(0px) scale(1) rotateX(0deg)',
-              filter: 'blur(0px) saturate(1.4)',
-              textShadow: '0 0 15px rgba(79, 156, 249, 0.18), 0 0 30px rgba(139, 92, 246, 0.1)'
-            },
-            '80%': {
-              opacity: 0.8,
-              transform: 'translateY(-1px) scale(0.99) rotateX(-1deg)',
-              filter: 'blur(0.2px) saturate(1.2)',
-              textShadow: '0 0 12px rgba(79, 156, 249, 0.15)'
-            },
-            '90%': {
-              opacity: 0.5,
-              transform: 'translateY(-2px) scale(0.98) rotateX(-2deg)',
-              filter: 'blur(0.4px) saturate(1.0)',
-              textShadow: '0 0 10px rgba(79, 156, 249, 0.12)'
-            },
-            '100%': {
-              opacity: 0.2,
-              transform: 'translateY(-4px) scale(0.96) rotateX(-5deg)',
-              filter: 'blur(0.8px) saturate(0.8)',
-              textShadow: '0 0 8px rgba(79, 156, 249, 0.1)'
-            }
-          },
-          '@keyframes futuristicUnderline': {
-            '0%': {
-              width: '0px',
-              opacity: 0,
-              transform: 'translateX(-50%) scaleX(0.3) skewX(0deg)',
-              filter: 'blur(0.8px)'
-            },
-            '12%': {
-              width: '15px',
               opacity: 0.4,
-              transform: 'translateX(-50%) scaleX(0.7) skewX(2deg)',
-              filter: 'blur(0.5px)'
-            },
-            '25%': {
-              width: '35px',
-              opacity: 0.8,
-              transform: 'translateX(-50%) scaleX(1.1) skewX(3deg)',
-              filter: 'blur(0.3px)'
-            },
-            '35%': {
-              width: '50px',
-              opacity: 1,
-              transform: 'translateX(-50%) scaleX(1.4) skewX(4deg)',
-              filter: 'blur(0px)'
-            },
-            '65%': {
-              width: '50px',
-              opacity: 1,
-              transform: 'translateX(-50%) scaleX(1.4) skewX(-4deg)',
-              filter: 'blur(0px)'
-            },
-            '75%': {
-              width: '35px',
-              opacity: 0.8,
-              transform: 'translateX(-50%) scaleX(1.1) skewX(-3deg)',
-              filter: 'blur(0.3px)'
-            },
-            '88%': {
-              width: '15px',
-              opacity: 0.4,
-              transform: 'translateX(-50%) scaleX(0.7) skewX(-2deg)',
-              filter: 'blur(0.5px)'
-            },
-            '100%': {
-              width: '0px',
-              opacity: 0,
-              transform: 'translateX(-50%) scaleX(0.3) skewX(0deg)',
-              filter: 'blur(0.8px)'
-            }
-          },
-          '@keyframes neuralScanline': {
-            '0%': {
-              opacity: 0,
-              transform: 'translateY(-50%) scaleX(0) skewX(0deg)',
-              filter: 'blur(1px)'
-            },
-            '25%': {
-              opacity: 0.3,
-              transform: 'translateY(-50%) scaleX(0.5) skewX(1deg)',
-              filter: 'blur(0.5px)'
+              transform: 'translateY(1px)'
             },
             '50%': {
-              opacity: 0.7,
-              transform: 'translateY(-50%) scaleX(1) skewX(2deg)',
-              filter: 'blur(0.2px)'
-            },
-            '75%': {
-              opacity: 0.3,
-              transform: 'translateY(-50%) scaleX(0.5) skewX(1deg)',
-              filter: 'blur(0.5px)'
+              opacity: 1,
+              transform: 'translateY(0px)'
             },
             '100%': {
-              opacity: 0,
-              transform: 'translateY(-50%) scaleX(0) skewX(0deg)',
-              filter: 'blur(1px)'
+              opacity: 0.4,
+              transform: 'translateY(1px)'
             }
-          }
+          },
         }}
       >
         {displayMessage}
       </Text>
 
-      {/* Enhanced quantum dots constellation with neural network pattern */}
-      <Flex justify="center" mt={4} gap={3} position="relative">
-        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+      {/* Clean dots animation */}
+      <HStack spacing={1} justify="center" mt={2}>
+        {[0, 1, 2].map((index) => (
           <Box
-            key={i}
-            w={`${1.8 + Math.sin(i * 0.7) * 0.6}px`}
-            h={`${1.8 + Math.sin(i * 0.7) * 0.6}px`}
-            bg={`rgba(${79 + i * 6}, ${156 - i * 3}, ${249 - i * 8}, ${0.4 + Math.cos(i * 0.8) * 0.3})`}
+            key={index}
+            w="3px"
+            h="3px"
+            bg="#4F9CF9"
             borderRadius="full"
-            position="relative"
-            animation={`neuralConstellation${i} 3.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${i * 0.15}s infinite`}
+            animation={`cleanDotPulse 1.2s ease-in-out infinite ${index * 0.2}s`}
 
-            _before={{
-              content: '""',
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '400%',
-              height: '400%',
-              background: `radial-gradient(circle,
-                rgba(${79 + i * 6}, ${156 - i * 3}, ${249 - i * 8}, 0.12) 0%,
-                rgba(${139 - i * 4}, ${92 + i * 2}, ${246 - i * 6}, 0.08) 40%,
-                transparent 75%
-              )`,
-              borderRadius: 'full',
-              animation: `neuralAura${i} 3.2s ease-in-out ${i * 0.15}s infinite`,
-            }}
-            _after={{
-              content: '""',
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '200%',
-              height: '200%',
-              background: `conic-gradient(from ${i * 51.4}deg,
-                rgba(79, 156, 249, 0.15) 0deg,
-                rgba(139, 92, 246, 0.20) 120deg,
-                rgba(99, 102, 241, 0.15) 240deg,
-                rgba(79, 156, 249, 0.15) 360deg
-              )`,
-              borderRadius: 'full',
-              opacity: 0.6,
-              animation: `neuralSpin${i} 4.8s linear infinite`,
-            }}
             sx={{
-              [`@keyframes neuralConstellation${i}`]: {
-                '0%, 100%': {
+              '@keyframes cleanDotPulse': {
+                '0%': {
                   opacity: 0.3,
-                  transform: `scale(0.5) rotate(0deg)`,
-                  boxShadow: '0 0 0 0 rgba(79, 156, 249, 0.2)',
-                  filter: 'blur(0.5px)'
-                },
-                '20%': {
-                  opacity: 0.6,
-                  transform: `scale(0.8) rotate(72deg)`,
-                  boxShadow: '0 0 3px 1px rgba(79, 156, 249, 0.25)',
-                  filter: 'blur(0.3px)'
-                },
-                '40%': {
-                  opacity: 0.9,
-                  transform: `scale(1.2) rotate(144deg)`,
-                  boxShadow: '0 0 6px 2px rgba(79, 156, 249, 0.35)',
-                  filter: 'blur(0.1px)'
+                  transform: 'scale(0.8)'
                 },
                 '50%': {
                   opacity: 1,
-                  transform: `scale(1.5) rotate(180deg)`,
-                  boxShadow: '0 0 10px 3px rgba(79, 156, 249, 0.5)',
-                  filter: 'blur(0px)'
-                },
-                '60%': {
-                  opacity: 0.9,
-                  transform: `scale(1.2) rotate(216deg)`,
-                  boxShadow: '0 0 6px 2px rgba(79, 156, 249, 0.35)',
-                  filter: 'blur(0.1px)'
-                },
-                '80%': {
-                  opacity: 0.6,
-                  transform: `scale(0.8) rotate(288deg)`,
-                  boxShadow: '0 0 3px 1px rgba(79, 156, 249, 0.25)',
-                  filter: 'blur(0.3px)'
-                }
-              },
-              [`@keyframes neuralAura${i}`]: {
-                '0%, 100%': {
-                  opacity: 0.2,
-                  transform: 'translate(-50%, -50%) scale(0.4) rotate(0deg)',
-                  filter: 'blur(1px)'
-                },
-                '33%': {
-                  opacity: 0.6,
-                  transform: 'translate(-50%, -50%) scale(1.2) rotate(120deg)',
-                  filter: 'blur(1.5px)'
-                },
-                '66%': {
-                  opacity: 0.9,
-                  transform: 'translate(-50%, -50%) scale(1.8) rotate(240deg)',
-                  filter: 'blur(2px)'
-                }
-              },
-              [`@keyframes neuralSpin${i}`]: {
-                '0%': {
-                  transform: 'translate(-50%, -50%) rotate(0deg) scale(0.8)',
-                  opacity: 0.3
-                },
-                '50%': {
-                  transform: 'translate(-50%, -50%) rotate(180deg) scale(1.1)',
-                  opacity: 0.8
+                  transform: 'scale(1.2)'
                 },
                 '100%': {
-                  transform: 'translate(-50%, -50%) rotate(360deg) scale(0.8)',
-                  opacity: 0.3
+                  opacity: 0.3,
+                  transform: 'scale(0.8)'
                 }
               }
             }}
           />
         ))}
-
-        {/* Neural network connecting lines */}
-        <Box
-          position="absolute"
-          top="50%"
-          left="0"
-          right="0"
-          height="1px"
-          bg={`linear-gradient(90deg,
-            transparent 0%,
-            rgba(79, 156, 249, 0.15) 10%,
-            rgba(139, 92, 246, 0.25) 25%,
-            rgba(99, 102, 241, 0.35) 40%,
-            rgba(59, 130, 246, 0.4) 50%,
-            rgba(99, 102, 241, 0.35) 60%,
-            rgba(139, 92, 246, 0.25) 75%,
-            rgba(79, 156, 249, 0.15) 90%,
-            transparent 100%
-          )`}
-          transform="translateY(-50%)"
-          animation="neuralNetworkConnect 4s ease-in-out infinite"
-          filter="blur(0.2px)"
-          sx={{
-            '@keyframes neuralNetworkConnect': {
-              '0%, 100%': {
-                opacity: 0.3,
-                transform: 'translateY(-50%) scaleX(0.4) skewX(0deg)',
-                filter: 'blur(0.5px)'
-              },
-              '25%': {
-                opacity: 0.6,
-                transform: 'translateY(-50%) scaleX(0.8) skewX(1deg)',
-                filter: 'blur(0.3px)'
-              },
-              '50%': {
-                opacity: 1,
-                transform: 'translateY(-50%) scaleX(1.3) skewX(2deg)',
-                filter: 'blur(0.1px)'
-              },
-              '75%': {
-                opacity: 0.6,
-                transform: 'translateY(-50%) scaleX(0.8) skewX(1deg)',
-                filter: 'blur(0.3px)'
-              }
-            }
-          }}
-        />
-
-        {/* Secondary neural connection */}
-        <Box
-          position="absolute"
-          top="30%"
-          left="15%"
-          right="15%"
-          height="0.5px"
-          bg={`linear-gradient(90deg,
-            transparent 0%,
-            rgba(139, 92, 246, 0.2) 30%,
-            rgba(99, 102, 241, 0.3) 50%,
-            rgba(139, 92, 246, 0.2) 70%,
-            transparent 100%
-          )`}
-          transform="translateY(-50%)"
-          animation="secondaryNeuralConnect 5s ease-in-out infinite 1s"
-          filter="blur(0.1px)"
-          sx={{
-            '@keyframes secondaryNeuralConnect': {
-              '0%, 100%': {
-                opacity: 0.2,
-                transform: 'translateY(-50%) scaleX(0.3)',
-                filter: 'blur(0.3px)'
-              },
-              '50%': {
-                opacity: 0.7,
-                transform: 'translateY(-50%) scaleX(1.1)',
-                filter: 'blur(0.1px)'
-              }
-            }
-          }}
-        />
-
-        {/* Tertiary neural connection */}
-        <Box
-          position="absolute"
-          top="70%"
-          left="20%"
-          right="20%"
-          height="0.5px"
-          bg={`linear-gradient(90deg,
-            transparent 0%,
-            rgba(99, 102, 241, 0.15) 40%,
-            rgba(79, 156, 249, 0.25) 60%,
-            transparent 100%
-          )`}
-          transform="translateY(-50%)"
-          animation="tertiaryNeuralConnect 6s ease-in-out infinite 2s"
-          filter="blur(0.1px)"
-          sx={{
-            '@keyframes tertiaryNeuralConnect': {
-              '0%, 100%': {
-                opacity: 0.1,
-                transform: 'translateY(-50%) scaleX(0.2)',
-                filter: 'blur(0.4px)'
-              },
-              '50%': {
-                opacity: 0.5,
-                transform: 'translateY(-50%) scaleX(0.9)',
-                filter: 'blur(0.1px)'
-              }
-            }
-          }}
-        />
-      </Flex>
+      </HStack>
     </Box>
   );
 });
@@ -1385,6 +1005,8 @@ export const Loader = memo(({
         return <WaveAnimation size={size} />;
       case 'skeleton':
         return <SkeletonLoader lines={lines} />;
+      case 'futuristic':
+        return <FuturisticLoader size={size} message={message} variant="neural" />;
       default:
         return <Spinner size={size} color="blue.500" thickness="3px" />;
     }

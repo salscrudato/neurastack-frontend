@@ -42,7 +42,7 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
   // Calculate current week's progress
   const now = new Date();
   const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-  const thisWeekWorkouts = workoutPlans.filter(w => {
+  const thisWeekWorkouts = (workoutPlans || []).filter((w: any) => {
     if (!w.completedAt) return false;
     const workoutDate = new Date(w.completedAt);
     return workoutDate >= startOfWeek;

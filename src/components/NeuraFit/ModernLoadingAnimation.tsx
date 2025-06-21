@@ -99,36 +99,65 @@ const ModernLoadingAnimation = memo(function ModernLoadingAnimation({
               {title}
             </Text>
 
-            {/* Modern Wave Animation - Enhanced for mobile */}
-            <Box position="relative" h={{ base: "50px", md: "60px" }} overflow="hidden">
-              {[...Array(5)].map((_, i) => (
-                <MotionBox
-                  key={i}
-                  position="absolute"
-                  top="50%"
-                  left={0}
-                  right={0}
-                  h={{ base: "3px", md: "4px" }}
-                  bg={`linear-gradient(90deg,
-                    rgba(59, 130, 246, 0.1) 0%,
-                    rgba(59, 130, 246, 0.8) 50%,
-                    rgba(147, 51, 234, 0.8) 100%
-                  )`}
-                  borderRadius="full"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "100%" }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                    ease: "easeInOut"
-                  }}
-                  style={{
-                    transform: `translateY(${(i - 2) * 6}px)`,
-                    opacity: 1 - Math.abs(i - 2) * 0.2
-                  }}
-                />
-              ))}
+            {/* NeuraFit Flow Loading Gradient Bar */}
+            <Box position="relative" w="100%" h={{ base: "8px", md: "10px" }} overflow="hidden">
+              {/* Background track */}
+              <Box
+                w="100%"
+                h="100%"
+                bg="gray.100"
+                borderRadius="full"
+                position="relative"
+                overflow="hidden"
+              />
+
+              {/* Animated gradient bar */}
+              <MotionBox
+                position="absolute"
+                top={0}
+                left={0}
+                h="100%"
+                w="40%"
+                bg="linear-gradient(90deg,
+                  rgba(79, 156, 249, 0.8) 0%,
+                  rgba(139, 92, 246, 1) 50%,
+                  rgba(99, 102, 241, 0.8) 100%
+                )"
+                borderRadius="full"
+                initial={{ x: "-100%" }}
+                animate={{ x: "250%" }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                style={{
+                  boxShadow: "0 0 20px rgba(79, 156, 249, 0.4)"
+                }}
+              />
+
+              {/* Shimmer effect */}
+              <MotionBox
+                position="absolute"
+                top={0}
+                left={0}
+                h="100%"
+                w="20%"
+                bg="linear-gradient(90deg,
+                  transparent 0%,
+                  rgba(255, 255, 255, 0.6) 50%,
+                  transparent 100%
+                )"
+                borderRadius="full"
+                initial={{ x: "-100%" }}
+                animate={{ x: "400%" }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: 0.5,
+                  ease: "easeInOut"
+                }}
+              />
             </Box>
 
             {/* Progress Bar - Enhanced for mobile */}
