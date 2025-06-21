@@ -1,3 +1,18 @@
+/**
+ * Loading Spinner Component
+ *
+ * Provides various loading animations and indicators for the app:
+ * - Simple spinner for quick loading states
+ * - Animated dots for AI processing
+ * - Skeleton placeholders for content loading
+ * - Futuristic animations for special effects
+ * - Full-screen loading overlays
+ *
+ * Used throughout the app to show users that something is happening
+ * and provide visual feedback during wait times.
+ */
+
+// Import UI components for building different loading animations
 import {
     Box,
     Flex,
@@ -8,15 +23,22 @@ import {
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
+
+// Import React hooks for component state and lifecycle
 import { memo, useEffect, useState } from 'react';
+
+// Import custom futuristic loader component
 import FuturisticLoader from './FuturisticLoader';
 
+/**
+ * Props for the LoadingSpinner component
+ */
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic';
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  message?: string;
-  fullScreen?: boolean;
-  lines?: number; // For skeleton variant
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic';  // Type of loading animation
+  size?: 'sm' | 'md' | 'lg' | 'xl';  // Size of the loading indicator
+  message?: string;  // Optional text to show with the loading animation
+  fullScreen?: boolean;  // Whether to cover the entire screen
+  lines?: number;  // Number of skeleton lines to show (for skeleton variant)
 }
 
 const LoadingDots = memo(({ size = 'md' }: { size?: string }) => {
