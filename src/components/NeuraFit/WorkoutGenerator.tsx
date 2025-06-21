@@ -1176,6 +1176,16 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   // Load saved workout state on component mount
   useEffect(() => {
     const savedState = loadWorkoutState();
+
+    if (import.meta.env.DEV) {
+      console.log('🔍 WorkoutGenerator mount - checking saved state:', {
+        hasSavedState: !!savedState,
+        hasWorkout: savedState?.workout ? true : false,
+        hasExercises: savedState?.workout?.exercises?.length || 0,
+        currentWorkoutExists: !!currentWorkout
+      });
+    }
+
     if (savedState && !currentWorkout) {
       // Ask user if they want to resume the saved workout
       const shouldResume = window.confirm(
@@ -1203,7 +1213,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         clearWorkoutState();
       }
     }
-  }, [loadWorkoutState, clearWorkoutState, currentWorkout, toast]);
+  }, [loadWorkoutState, clearWorkoutState, toast]); // Removed currentWorkout dependency to avoid infinite loop
 
   // Save workout state whenever it changes
   useEffect(() => {
@@ -1930,20 +1940,65 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         )}
 
         {!isWorkoutActive && (
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            size={{ base: "lg", md: "md" }}
-            minH={{ base: "48px", md: "auto" }}
-            fontSize={{ base: "md", md: "md" }}
-            // Enhanced touch targets for mobile
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              touchAction: 'manipulation'
-            }}
-          >
-            Back to Dashboard
-          </Button>
+          <VStack spacing={{ base: 3, md: 4 }} w="100%">
+            <Button
+              colorScheme="blue"
+              variant="outline"
+              size="lg"
+              w="100%"
+              leftIcon={<Icon as={PiLightningBold} />}
+              onClick={() => {
+                // Clear current workout to show generation form
+                setCurrentWorkout(null);
+                setIsWorkoutActive(false);
+                setCurrentExerciseIndex(0);
+                setCompletedExercises(new Set());
+                setWorkoutStartTime(null);
+                clearWorkoutState();
+
+                if (import.meta.env.DEV) {
+                  console.log('🔄 CLEARED WORKOUT STATE - Showing generation form');
+                }
+              }}
+              py={{ base: 5, md: 6 }}
+              minH={{ base: "64px", md: "auto" }}
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              borderRadius="xl"
+              _hover={{
+                transform: 'translateY(-2px)',
+                shadow: 'xl',
+                bg: 'blue.50'
+              }}
+              _active={{
+                transform: 'translateY(0px)',
+                shadow: 'lg'
+              }}
+              transition="all 0.2s ease-in-out"
+              // Enhanced touch targets for mobile
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
+            >
+              Generate New Workout
+            </Button>
+
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              size={{ base: "lg", md: "md" }}
+              minH={{ base: "48px", md: "auto" }}
+              fontSize={{ base: "md", md: "md" }}
+              // Enhanced touch targets for mobile
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
+            >
+              Back to Dashboard
+            </Button>
+          </VStack>
         )}
       </VStack>
       </VStack>
