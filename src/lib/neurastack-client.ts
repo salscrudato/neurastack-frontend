@@ -649,12 +649,12 @@ export class NeuraStackClient {
   }
 
   /**
-   * Generate a personalized workout using the latest API specification
+   * Generate a personalized workout using the new flexible API specification
    *
-   * Updated to match the latest API documentation:
-   * - Direct field mapping (no nested userMetadata)
-   * - Proper validation according to API spec
-   * - Correct field names and types
+   * Updated to match the new flexible API documentation:
+   * - Flexible field mapping supporting natural language
+   * - Optional fields with string or array support
+   * - Free-form additionalInformation field
    */
   async generateWorkout(
     request: WorkoutGenerateRequest,
@@ -666,18 +666,19 @@ export class NeuraStackClient {
     const randomPart2 = Math.random().toString(36).substring(2, 15);
     const correlationId = `workout-gen-${timestamp}-${randomPart1}-${randomPart2}`;
 
-    // Prepare the request according to latest API specification
+    // Prepare the request according to new flexible API specification
     const apiRequest: WorkoutGenerateRequest = {
-      fitnessLevel: request.fitnessLevel,
-      fitnessGoals: request.fitnessGoals,
-      equipment: request.equipment,
       age: request.age,
+      fitnessLevel: request.fitnessLevel,
       gender: request.gender,
       weight: request.weight,
+      goals: request.goals,
+      equipment: request.equipment,
       injuries: request.injuries,
+      timeAvailable: request.timeAvailable,
       daysPerWeek: request.daysPerWeek,
-      minutesPerSession: request.minutesPerSession,
-      workoutType: request.workoutType
+      workoutType: request.workoutType,
+      additionalInformation: request.additionalInformation
     };
 
     // Prepare headers according to new API documentation
@@ -685,7 +686,7 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    // Add required X-User-Id header (per API documentation)
+    // Add optional X-User-Id header for personalization
     const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
       headers['X-User-Id'] = userId;
@@ -698,16 +699,19 @@ export class NeuraStackClient {
       // Use the new generate workout endpoint
       const workoutEndpoint = NEURASTACK_ENDPOINTS.WORKOUT_GENERATE;
 
-      // Development logging for new optimized API
+      // Development logging for new flexible API
       if (import.meta.env.DEV) {
-        console.group('🏋️ NeuraStack Workout Generate API Request');
+        console.group('🏋️ NeuraStack Flexible Workout API Request');
         console.log('');
         console.log('📍 WORKOUT REQUEST:');
-        console.log(`  🎯 Workout Type: %c${request.workoutType}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
-        console.log(`  ⏱️ Duration: ${request.minutesPerSession} minutes`);
+        console.log(`  🎯 Workout Type: %c${request.workoutType || 'Not specified'}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
+        console.log(`  ⏱️ Duration: ${request.timeAvailable || 'Not specified'} minutes`);
         console.log(`  🎚️ Fitness Level: ${request.fitnessLevel}`);
-        console.log(`  🎯 Goals: ${request.fitnessGoals.join(', ')}`);
-        console.log('  ✅ Using Latest API Specification');
+        console.log(`  🎯 Goals: ${Array.isArray(request.goals) ? request.goals.join(', ') : request.goals || 'Not specified'}`);
+        console.log(`  🎂 Age: ${request.age}`);
+        console.log(`  👤 Gender: ${request.gender || 'Not specified'}`);
+        console.log(`  ⚖️ Weight: ${request.weight || 'Not specified'}`);
+        console.log('  ✅ Using New Flexible API Specification');
         console.log('');
         console.log('🌐 REQUEST DETAILS:');
         console.log('  📤 Endpoint:', `${this.config.baseUrl}${workoutEndpoint}`);
@@ -732,9 +736,9 @@ export class NeuraStackClient {
         }
       );
 
-      // Success logging for new optimized API
+      // Success logging for new flexible API
       if (import.meta.env.DEV) {
-        console.group('🎯 Workout Generation Success (Optimized API)');
+        console.group('🎯 Workout Generation Success (Flexible API)');
         console.log('');
         console.log('✅ RESPONSE STATUS:', workoutResponse.status);
         console.log('🔗 Correlation ID:', workoutResponse.correlationId);
@@ -747,16 +751,23 @@ export class NeuraStackClient {
           console.log(`  📋 Type: %c${workout.type}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
           console.log(`  ⏱️ Duration: ${workout.duration} minutes`);
           console.log(`  🎯 Difficulty: ${workout.difficulty}`);
-          console.log(`  🔥 Estimated Calories: ${workout.estimatedCalories || 'N/A'}`);
+          console.log(`  🔥 Estimated Calories: ${workout.calorieEstimate || 'N/A'}`);
           console.log(`  🎯 Target Muscles: ${workout.targetMuscles?.join(', ') || 'N/A'}`);
-          console.log(`  🛡️ Safety Notes: ${workout.safetyNotes?.length || 0} items`);
+          console.log(`  💡 Coaching Tips: ${workout.coachingTips?.length || 0} tips`);
 
-          // Workout phases (updated structure)
+          // Workout phases (new structure)
           console.log('');
           console.log('📋 WORKOUT STRUCTURE:');
           console.log(`  🔥 Warmup: ${workout.warmup?.length || 0} exercises`);
-          console.log(`  💪 Main Workout: ${workout.mainWorkout?.exercises?.length || 0} exercises`);
+          console.log(`  💪 Main Exercises: ${workout.exercises?.length || 0} exercises`);
           console.log(`  🧘 Cooldown: ${workout.cooldown?.length || 0} exercises`);
+
+          if (workout.progressionNotes) {
+            console.log(`  📈 Progression Notes: ${workout.progressionNotes}`);
+          }
+          if (workout.safetyNotes) {
+            console.log(`  🛡️ Safety Notes: ${workout.safetyNotes}`);
+          }
         }
 
         console.log('');
@@ -765,28 +776,8 @@ export class NeuraStackClient {
         console.log(`  🏢 Provider: ${workoutResponse.data?.metadata?.provider || 'Unknown'}`);
         console.log(`  👤 User ID: ${workoutResponse.data?.metadata?.userId || 'Unknown'}`);
         console.log(`  ⏰ Timestamp: ${workoutResponse.data?.metadata?.timestamp || 'Unknown'}`);
-
-        // Enhanced personalization logging
-        if (workoutResponse.data?.metadata?.personalization) {
-          const personalization = workoutResponse.data.metadata.personalization;
-          console.log('');
-          console.log('🎯 PERSONALIZATION:');
-          console.log(`  ✅ Applied: ${personalization.applied ? 'Yes' : 'No'}`);
-          if (personalization.applied) {
-            console.log(`  📊 Confidence: ${(personalization.confidence * 100).toFixed(1)}%`);
-            console.log(`  📈 Data Quality: ${personalization.dataQuality}`);
-            console.log(`  🔧 Adjustments:`);
-            console.log(`    ⏱️ Duration: ${personalization.adjustments.duration > 0 ? '+' : ''}${personalization.adjustments.duration} min`);
-            console.log(`    💪 Intensity: ${personalization.adjustments.intensity}x`);
-            console.log(`    📊 Volume: ${personalization.adjustments.volume}x`);
-            console.log(`  🎯 Insights:`);
-            console.log(`    📈 Progressive Overload Ready: ${personalization.insights.progressiveOverloadReady ? 'Yes' : 'No'}`);
-            console.log(`    ⚠️ Risk Level: ${personalization.insights.riskLevel}`);
-            console.log(`    🔢 Recommendations Applied: ${personalization.insights.recommendationCount}`);
-          } else if (personalization.reason) {
-            console.log(`  ❓ Reason: ${personalization.reason}`);
-          }
-        }
+        console.log(`  🔧 Approach: ${workoutResponse.data?.metadata?.approach || 'Unknown'}`);
+        console.log(`  🧠 Prompt Crafting Model: ${workoutResponse.data?.metadata?.promptCraftingModel || 'Unknown'}`);
 
         console.groupEnd();
       }
@@ -884,7 +875,16 @@ export class NeuraStackClient {
         console.log('');
         console.log('✅ RESPONSE STATUS:', completeResponse.status);
         console.log('💬 Message:', completeResponse.message || 'No message');
+        console.log('🔗 Correlation ID:', completeResponse.correlationId);
         console.log('⏰ Timestamp:', completeResponse.timestamp);
+
+        if (completeResponse.data) {
+          console.log('📊 COMPLETION DATA:');
+          console.log(`  🆔 Workout ID: ${completeResponse.data.workoutId}`);
+          console.log(`  ✅ Completed: ${completeResponse.data.completed}`);
+          console.log(`  🔄 Processed: ${completeResponse.data.processed}`);
+        }
+
         console.groupEnd();
       }
 

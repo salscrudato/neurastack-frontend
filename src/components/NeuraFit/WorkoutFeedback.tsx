@@ -29,9 +29,7 @@ import {
     PiStarBold,
     PiStarFill,
 } from 'react-icons/pi';
-import { neuraStackClient } from '../../lib/neurastack-client';
 import type { WorkoutPlan } from '../../lib/types';
-import { storeWorkoutAnalytics, type WorkoutAnalytics } from '../../services/workoutAnalyticsService';
 import { useAuthStore } from '../../store/useAuthStore';
 import SuccessAnimation from './SuccessAnimation';
 
@@ -109,46 +107,14 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
     try {
       // Exercise performance tracking moved to backend
 
-      // Calculate completion rate
-      const completionRate = (completedExercises.size / workout.exercises.length) * 100;
+      // Backend handles all analytics storage - no local storage needed
+      // Analytics data is automatically captured via the completeWorkout API endpoint
 
-      // Get current context
-      const now = new Date();
-      const timeOfDay = getTimeOfDay(now);
-      const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
+      // Backend handles all analytics storage - no local storage needed
+      // Analytics data is automatically captured via the completeWorkout API endpoint
 
-      // Simplified analytics data - backend handles complex calculations
-      const analyticsData: Omit<WorkoutAnalytics, 'createdAt'> = {
-        userId: user.uid,
-        workoutId: workout.id,
-        completionRate,
-        actualDuration,
-        plannedDuration: workout.duration,
-        difficultyRating: feedback.difficultyRating,
-        enjoymentRating: feedback.enjoymentRating,
-        energyLevel: feedback.energyLevel,
-        perceivedExertion: feedback.perceivedExertion,
-        timeOfDay,
-        dayOfWeek,
-        // Backend will calculate efficiency scores, recommendations, and environmental factors
-      };
-
-      // Store simplified analytics - backend handles optimization
-      await storeWorkoutAnalytics(analyticsData);
-
-      // Store concise feedback in AI memory for future workout generation
-      if (workout.generationContext?.sessionId) {
-        const memoryContent = `Feedback: ${workout.name} - D:${feedback.difficultyRating}/5, E:${feedback.enjoymentRating}/5, Energy:${feedback.energyLevel}, RPE:${feedback.perceivedExertion}/10, Complete:${completionRate.toFixed(0)}%${feedback.comments ? `, Notes:${feedback.comments.substring(0,50)}` : ''}`;
-
-        await neuraStackClient.storeMemory({
-          userId: user.uid,
-          sessionId: workout.generationContext.sessionId,
-          content: memoryContent,
-          isUserPrompt: false,
-          responseQuality: feedback.enjoymentRating >= 4 ? 0.9 : 0.7,
-          ensembleMode: true
-        });
-      }
+      // Backend automatically stores feedback and memory through the completeWorkout API
+      // No manual memory storage needed - the new API handles this intelligently
 
       // Show success animation
       setShowSuccess(true);
@@ -419,15 +385,7 @@ const WorkoutFeedback = memo(function WorkoutFeedback({
 
 export default WorkoutFeedback;
 
-// Helper functions
-function getTimeOfDay(date: Date): string {
-  const hour = date.getHours();
-  if (hour < 6) return 'early_morning';
-  if (hour < 12) return 'morning';
-  if (hour < 17) return 'afternoon';
-  if (hour < 21) return 'evening';
-  return 'night';
-}
+// Helper functions removed - unused
 
 // Workout sequence tracking moved to backend
 

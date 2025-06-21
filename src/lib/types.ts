@@ -672,6 +672,8 @@ export interface WorkoutPlan {
     aiModelsUsed?: string[]; // Legacy field - backend handles this now
     generationTime: number;
     sessionId: string;
+    correlationId?: string; // API correlation ID for tracking
+    approach?: string; // AI approach used for generation
     version: string; // Track workout generation version
     adaptations?: string[]; // Track what adaptations were made
     // Enhanced backend personalization data
@@ -850,17 +852,20 @@ export interface WorkoutUserMetadata {
 }
 
 export interface WorkoutGenerateRequest {
-  // Required fields per API specification
-  fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
-  fitnessGoals: string[]; // Non-empty array
-  equipment: string[]; // Can be empty for bodyweight
-  age: number; // 13-100
-  gender: 'male' | 'female'; // API expects lowercase
-  weight: number; // 30-500, required by API (fallback handled in component)
-  injuries: string[]; // Can be empty
-  daysPerWeek: number; // 1-7
-  minutesPerSession: number; // 10-180
-  workoutType: string; // Non-empty string
+  // Required fields per new flexible API specification
+  age: number; // Required: 13-100
+  fitnessLevel: string; // Required: any string (e.g., "beginner", "intermediate", "expert")
+
+  // Optional fields - flexible format
+  gender?: string; // Optional: any string
+  weight?: number; // Optional: number in kg/lbs
+  goals?: string | string[]; // Flexible: string or array
+  equipment?: string | string[]; // Flexible: string or array
+  injuries?: string | string[]; // Flexible: string or array
+  timeAvailable?: number; // Optional: minutes (10-120)
+  daysPerWeek?: number; // Optional: 1-7
+  workoutType?: string; // Optional: any string
+  additionalInformation?: string; // Optional: free-form text for additional context
 }
 
 // Enhanced Workout Response Types (Updated to match latest API spec)
@@ -901,18 +906,36 @@ export interface PersonalizationMetadata {
 export interface WorkoutGenerateResponse {
   status: 'success' | 'error';
   data?: {
+    workoutId: string;
     workout: {
-      id: string;
       type: string;
       duration: number; // minutes
       difficulty: string;
-      mainWorkout: WorkoutPhase;
-      warmup: WorkoutExerciseDetail[];
-      cooldown: WorkoutExerciseDetail[];
       equipment: string[];
       targetMuscles: string[];
-      estimatedCalories: number;
-      safetyNotes: string[];
+      calorieEstimate: number;
+      exercises: {
+        name: string;
+        sets: number;
+        reps: string;
+        rest: string;
+        instructions: string;
+        modifications: string;
+        targetMuscles: string[];
+      }[];
+      warmup: {
+        name: string;
+        duration: string;
+        instructions: string;
+      }[];
+      cooldown: {
+        name: string;
+        duration: string;
+        instructions: string;
+      }[];
+      coachingTips: string[];
+      progressionNotes: string;
+      safetyNotes: string;
     };
     metadata: {
       model: string;
@@ -920,33 +943,13 @@ export interface WorkoutGenerateResponse {
       timestamp: string;
       correlationId: string;
       userId: string;
-      // Enhanced personalization metadata
-      personalization: PersonalizationMetadata;
-    };
-    // Enhanced backend response fields
-    personalizationInsights?: {
-      appliedProgressiveOverload: boolean;
-      difficultyAdjustment: number; // 0.9 = easier, 1.1 = harder
-      varietyScore: number; // How different from recent workouts
-      personalizedNotes: string[];
-    };
-    userProgress?: {
-      totalWorkoutsCompleted: number;
-      currentStreak: number;
-      averageCompletionRate: number;
-      fitnessLevelProgression: string;
-    };
-    nextWorkoutRecommendations?: {
-      suggestedRestDays: number;
-      recommendedNextType: string;
-      progressionOpportunities: string[];
+      approach: string;
+      promptCraftingModel: string;
     };
   };
-  workoutId: string;
   correlationId: string;
   timestamp: string;
   message?: string;
-  retryable?: boolean;
 }
 
 // Complete Workout Request Types
@@ -962,6 +965,12 @@ export interface WorkoutCompleteRequest {
 export interface WorkoutCompleteResponse {
   status: 'success' | 'error';
   message?: string;
+  data?: {
+    workoutId: string;
+    completed: boolean;
+    processed: boolean;
+  };
+  correlationId: string;
   timestamp: string;
 }
 

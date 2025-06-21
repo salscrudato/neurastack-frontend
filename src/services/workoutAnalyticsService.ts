@@ -6,14 +6,11 @@
  */
 
 import {
-    addDoc,
     collection,
     getDocs,
     limit,
     orderBy,
-    query,
-    serverTimestamp,
-    type Timestamp
+    query
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { handleSilentError } from '../utils/errorHandler';
@@ -94,32 +91,13 @@ export interface WorkoutInsights {
 
 /**
  * Store workout analytics data
+ * @deprecated Backend now handles all analytics automatically via the completeWorkout API
+ * This function is kept for backward compatibility but is no longer used
  */
-export async function storeWorkoutAnalytics(analytics: Omit<WorkoutAnalytics, 'createdAt'>): Promise<void> {
-  if (!auth.currentUser) {
-    throw new Error('User must be authenticated to store analytics');
-  }
-
-  try {
-    const userId = auth.currentUser.uid;
-    // Fix: Use correct Firestore path structure - collections need odd number of segments
-    const analyticsRef = collection(db, 'users', userId, 'analytics');
-
-    const analyticsData = {
-      ...analytics,
-      createdAt: serverTimestamp() as Timestamp,
-    };
-
-    await addDoc(analyticsRef, analyticsData);
-    console.log('✅ Workout analytics stored successfully');
-  } catch (error) {
-    handleSilentError(error, {
-      component: 'workoutAnalyticsService',
-      action: 'storeWorkoutAnalytics',
-      userId: auth.currentUser?.uid
-    });
-    throw error;
-  }
+export async function storeWorkoutAnalytics(_analytics: Omit<WorkoutAnalytics, 'createdAt'>): Promise<void> {
+  console.warn('storeWorkoutAnalytics is deprecated - backend handles analytics automatically');
+  // Backend handles all analytics through the completeWorkout API
+  // No local storage needed
 }
 
 /**

@@ -9,6 +9,7 @@ import {
     Icon,
     SimpleGrid,
     Text,
+    Textarea,
     useColorModeValue,
     useToast,
     VStack
@@ -33,7 +34,6 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useFitnessStore } from '../../store/useFitnessStore';
 // Removed complex data processing imports - backend handles this
 import { isValidWorkoutType, validateFitnessProfile, validateWorkoutPlan } from '../../utils/typeValidation';
-import { apiConverters, validateWorkoutRequest } from '../../utils/workoutApiValidation';
 import ExerciseSwapper from './ExerciseSwapper';
 import ModernLoadingAnimation from './ModernLoadingAnimation';
 import ModernProgressIndicator from './ModernProgressIndicator';
@@ -44,6 +44,10 @@ import WorkoutModifier from './WorkoutModifier';
 // Import PersonalizationInsights component
 import PersonalizationInsights from './PersonalizationInsights';
 import PersonalizationStatusCard from './PersonalizationStatusCard';
+
+// Import constants for code-to-label conversion
+import equipmentOptions from '../../constants/equipmentOptions';
+import { FITNESS_GOALS } from '../../constants/fitnessGoals';
 
 const MotionBox = motion(Box);
 
@@ -66,6 +70,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const [serviceStatus, setServiceStatus] = useState<'healthy' | 'degraded' | 'unavailable' | 'unknown'>('unknown');
   const [currentWorkout, setCurrentWorkout] = useState<WorkoutPlan | null>(null);
   const [selectedWorkoutType, setSelectedWorkoutType] = useState<string>('mixed');
+  const [additionalInstructions, setAdditionalInstructions] = useState<string>('');
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
   const [exerciseTimer, setExerciseTimer] = useState(0);
@@ -169,6 +174,23 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const instructionsBgColor = useColorModeValue('gray.50', 'gray.700');
   const tipsBorderColor = useColorModeValue('blue.200', 'blue.600');
   const tipsIconColor = useColorModeValue('blue.500', 'blue.400');
+
+  // Helper functions to convert codes to human-readable names
+  const getGoalLabels = useCallback((goalCodes: string[]): string[] => {
+    if (!goalCodes || goalCodes.length === 0) return [];
+    return goalCodes.map(code => {
+      const goal = FITNESS_GOALS.find(g => g.code === code);
+      return goal ? goal.label : code;
+    }).filter(Boolean);
+  }, []);
+
+  const getEquipmentLabels = useCallback((equipmentCodes: string[]): string[] => {
+    if (!equipmentCodes || equipmentCodes.length === 0) return [];
+    return equipmentCodes.map(code => {
+      const equipment = equipmentOptions.find(e => e.code === code);
+      return equipment ? equipment.label : code;
+    }).filter(Boolean);
+  }, []);
 
   // Define workout types with descriptions - ONLY VALID TYPES that pass validation
   const workoutTypes = useMemo(() => [
@@ -447,45 +469,44 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
       // Additional entropy for absolute uniqueness (removed unused variable)
 
-      // Create simplified API request - backend handles data processing
+      // Convert codes to human-readable names for backend processing
+      const goalLabels = getGoalLabels(profile.goals || []);
+      const equipmentLabels = getEquipmentLabels(profile.equipment || []);
+
+      // Build comprehensive additional information
+      const additionalInfo = [
+        goalLabels.length > 0 ? `Goals: ${goalLabels.join(', ')}` : '',
+        `Available ${profile.timeAvailability?.daysPerWeek || 3} days per week`,
+        additionalInstructions.trim() ? `Special instructions: ${additionalInstructions.trim()}` : ''
+      ].filter(Boolean).join('. ');
+
+      // Create flexible API request - new API supports natural language
       const workoutAPIRequest = {
-        fitnessLevel: profile.fitnessLevel,
-        fitnessGoals: profile.goals || [], // Send raw goals - backend handles conversion
-        equipment: profile.equipment || [], // Send raw equipment - backend handles conversion
         age: userAge,
-        gender: apiConverters.gender(profile.gender), // Basic gender conversion
+        fitnessLevel: profile.fitnessLevel,
+        gender: profile.gender,
         weight: userWeight,
-        injuries: profile.injuries || [],
+        goals: goalLabels, // Human-readable goal names
+        equipment: equipmentLabels, // Human-readable equipment names
+        injuries: profile.injuries || [], // Keep as-is for now
+        timeAvailable: profile.availableTime,
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        minutesPerSession: profile.availableTime,
-        workoutType: selectedWorkoutType
+        workoutType: selectedWorkoutType,
+        additionalInformation: additionalInfo
       };
 
-      // Basic client-side validation - backend handles comprehensive validation
-      const requestValidation = validateWorkoutRequest(workoutAPIRequest);
-
-      if (!requestValidation.isValid) {
-        toast({
-          title: 'Basic Validation Error',
-          description: requestValidation.errors.join(', '),
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        setIsGenerating(false);
-        setGenerationStatus('');
-        return;
-      }
+      // Skip validation for new flexible API - backend handles all validation
+      // The new flexible API accepts natural language inputs and handles validation server-side
 
       // Request logging for latest API
       console.group('🏋️ Workout Generation Request (Latest API)');
       console.log('');
       console.log('🎯 WORKOUT REQUEST:');
       console.log(`  📋 Workout Type: %c${workoutAPIRequest.workoutType}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
-      console.log(`  ⏱️ Duration: ${workoutAPIRequest.minutesPerSession} minutes`);
+      console.log(`  ⏱️ Duration: ${workoutAPIRequest.timeAvailable} minutes`);
       console.log(`  🎚️ Fitness Level: ${workoutAPIRequest.fitnessLevel}`);
-      console.log(`  🎯 Goals: ${workoutAPIRequest.fitnessGoals.join(', ') || 'None specified'}`);
-      console.log(`  🛠️ Equipment: ${workoutAPIRequest.equipment.join(', ') || 'None specified'}`);
+      console.log(`  🎯 Goals: ${Array.isArray(workoutAPIRequest.goals) ? workoutAPIRequest.goals.join(', ') : workoutAPIRequest.goals || 'None specified'}`);
+      console.log(`  🛠️ Equipment: ${Array.isArray(workoutAPIRequest.equipment) ? workoutAPIRequest.equipment.join(', ') : workoutAPIRequest.equipment || 'None specified'}`);
       console.log(`  🩹 Injuries: ${workoutAPIRequest.injuries.join(', ') || 'None'}`);
       console.log('');
       console.log('👤 USER PROFILE:');
@@ -493,6 +514,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log(`  ⚖️ Weight: ${workoutAPIRequest.weight} lbs`);
       console.log(`  👤 Gender: ${workoutAPIRequest.gender}`);
       console.log(`  📅 Days/Week: ${workoutAPIRequest.daysPerWeek}`);
+      console.log('');
+      console.log('📝 ADDITIONAL INFORMATION:');
+      console.log(`  ${workoutAPIRequest.additionalInformation || 'None provided'}`);
       console.log('');
       console.log('📤 FULL REQUEST PAYLOAD:');
       console.log(JSON.stringify(workoutAPIRequest, null, 2));
@@ -522,11 +546,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           duration: workout.duration,
           difficulty: workout.difficulty,
           warmupExercises: workout.warmup?.length || 0,
-          mainExercises: workout.mainWorkout?.exercises?.length || 0,
+          mainExercises: workout.exercises?.length || 0,
           cooldownExercises: workout.cooldown?.length || 0,
-          hasProfessionalNotes: false, // !!workout.professionalNotes,
-          estimatedCalories: workout.estimatedCalories,
-          targetHeartRateZone: undefined // workout.targetHeartRateZone
+          hasProfessionalNotes: !!workout.progressionNotes,
+          estimatedCalories: workout.calorieEstimate,
+          coachingTips: workout.coachingTips?.length || 0
         });
       }
       if (response.data?.metadata) {
@@ -538,27 +562,23 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       setServiceStatus('healthy');
 
       if (response.status === 'success' && response.data) {
-        // Validate the optimized API response structure
+        // Validate the flexible API response structure
         const workout = response.data.workout;
         if (!workout) {
           throw new Error('Invalid workout data received from API');
         }
 
-        // Validate new structured workout format
-        if (!workout.warmup || !workout.mainWorkout || !workout.cooldown) {
-          throw new Error('Invalid workout structure - missing required phases');
+        // Validate new flexible workout format
+        if (!workout.exercises || !Array.isArray(workout.exercises)) {
+          throw new Error('Invalid workout data - no exercises found');
         }
 
-        if (!workout.mainWorkout.exercises || !Array.isArray(workout.mainWorkout.exercises)) {
-          throw new Error('Invalid workout data - no main exercises found');
-        }
-
-        if (workout.mainWorkout.exercises.length === 0) {
+        if (workout.exercises.length === 0) {
           throw new Error('Invalid workout data - empty exercise list');
         }
 
-        // Transform the optimized API response to our internal WorkoutPlan format
-        const workoutPlan = transformOptimizedAPIWorkoutToPlan(workout, selectedWorkoutType);
+        // Transform the flexible API response to our internal WorkoutPlan format
+        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, selectedWorkoutType);
 
         // Enhanced workout with backend personalization data
         const enhancedWorkout: WorkoutPlan = {
@@ -567,15 +587,15 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             sessionId: response.correlationId || 'unknown',
             generationTime: performance.now() - startTime,
             version: '3.0.0', // Updated for backend-optimized API
-            // Include backend personalization insights (legacy format for backward compatibility)
-            personalizationInsights: response.data.personalizationInsights,
-            userProgress: response.data.userProgress,
-            nextWorkoutRecommendations: response.data.nextWorkoutRecommendations
+            // New flexible API metadata
+            correlationId: response.correlationId,
+            approach: response.data.metadata.approach
           }
         };
 
         // Store enhanced personalization metadata separately for new UI components
-        setPersonalizationMetadata(response.data.metadata?.personalization);
+        // New flexible API doesn't include personalization metadata in the same format
+        setPersonalizationMetadata(null);
 
         // Validate the generated workout plan
         const workoutValidation = validateWorkoutPlan(enhancedWorkout);
@@ -754,265 +774,18 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
 
 
-  // Transform API workout response to internal WorkoutPlan format
-  const transformAPIWorkoutToPlan = useCallback((apiWorkout: any): WorkoutPlan => {
-    // Handle both new and legacy API formats
-    let exercisesList: any[] = [];
+  // Legacy transformation function - removed to fix syntax error
 
-    // Check for new API format with mainWorkout structure
-    if (apiWorkout.mainWorkout && apiWorkout.mainWorkout.exercises && Array.isArray(apiWorkout.mainWorkout.exercises)) {
-      exercisesList = apiWorkout.mainWorkout.exercises;
-    }
-    // Fallback to legacy format
-    else if (apiWorkout.exercises && Array.isArray(apiWorkout.exercises)) {
-      exercisesList = apiWorkout.exercises;
-    }
-    else {
-      throw new Error('Invalid workout structure received from API - no exercises found');
-    }
-
-    if (exercisesList.length === 0) {
-      throw new Error('Invalid workout structure received from API - empty exercise list');
-    }
-
-    // Transform API exercises to internal format with validation
-    const exercises: Exercise[] = exercisesList.map((apiExercise: any, index: number) => {
-      if (!apiExercise.name) {
-        throw new Error(`Exercise ${index + 1} is missing a name`);
-      }
-
-      // Parse reps - handle both string ranges (e.g., "8-12") and numbers
-      let reps = 10; // default
-      if (typeof apiExercise.reps === 'number') {
-        reps = apiExercise.reps;
-      } else if (typeof apiExercise.reps === 'string') {
-        const repsMatch = apiExercise.reps.match(/(\d+)/);
-        reps = repsMatch ? parseInt(repsMatch[1]) : 10;
-      }
-
-      // Parse rest time - handle both restTime and restInterval fields
-      let restTime = 60; // default
-      if (typeof apiExercise.restTime === 'number') {
-        restTime = apiExercise.restTime;
-      } else if (typeof apiExercise.restInterval === 'string') {
-        const restMatch = apiExercise.restInterval.match(/(\d+)/);
-        restTime = restMatch ? parseInt(restMatch[1]) : 60;
-      }
-
-      // Combine primary and secondary muscles for target muscles
-      const targetMuscles = [];
-      if (Array.isArray(apiExercise.primaryMuscles)) {
-        targetMuscles.push(...apiExercise.primaryMuscles);
-      }
-      if (Array.isArray(apiExercise.secondaryMuscles)) {
-        targetMuscles.push(...apiExercise.secondaryMuscles);
-      }
-      if (Array.isArray(apiExercise.targetMuscles)) {
-        targetMuscles.push(...apiExercise.targetMuscles);
-      }
-      if (targetMuscles.length === 0) {
-        targetMuscles.push('general');
-      }
-
-      // Combine form cues and tips
-      const tips = [];
-      if (apiExercise.tips) {
-        tips.push(apiExercise.tips);
-      }
-      if (Array.isArray(apiExercise.formCues)) {
-        tips.push(...apiExercise.formCues);
-      }
-      const combinedTips = tips.length > 0 ? tips.join(' ') : 'Focus on controlled movements';
-
-      return {
-        name: apiExercise.name,
-        sets: typeof apiExercise.sets === 'number' ? apiExercise.sets : 3,
-        reps,
-        duration: typeof apiExercise.duration === 'number' ? apiExercise.duration : 0,
-        restTime,
-        instructions: apiExercise.instructions || 'Perform exercise with proper form',
-        tips: combinedTips,
-        targetMuscles: targetMuscles.map(m => m.toLowerCase()),
-        equipment: Array.isArray(apiExercise.equipment) ? apiExercise.equipment : ['bodyweight'],
-        intensity: apiExercise.intensity || apiExercise.rpe || 'moderate',
-        progressionNotes: Array.isArray(apiExercise.progressionNotes)
-          ? apiExercise.progressionNotes
-          : [apiExercise.progressions || apiExercise.progressionNotes || 'Progress gradually'],
-        modifications: Array.isArray(apiExercise.modifications)
-          ? apiExercise.modifications
-          : (apiExercise.regressions ? [apiExercise.regressions] : []),
-        safetyNotes: apiExercise.safetyNotes ||
-                    (Array.isArray(apiExercise.commonMistakes) ? `Avoid: ${apiExercise.commonMistakes.join(', ')}` : 'Listen to your body and maintain proper form')
-      };
-    });
-
-    // Parse duration string to number (e.g., "45 minutes" -> 45)
-    let duration = profile.availableTime;
-    if (apiWorkout.duration) {
-      const durationMatch = String(apiWorkout.duration).match(/(\d+)/);
-      duration = durationMatch ? parseInt(durationMatch[1]) : profile.availableTime;
-    }
-
-    // Safe warmup processing - handle new API format
-    let warmupExercises: any[] = [];
-    let warmupDuration = 3; // default
-
-    if (apiWorkout.warmup) {
-      if (Array.isArray(apiWorkout.warmup)) {
-        // Legacy format - direct array
-        warmupExercises = apiWorkout.warmup;
-      } else if (apiWorkout.warmup.phases && Array.isArray(apiWorkout.warmup.phases)) {
-        // New format - phases with exercises
-        warmupExercises = apiWorkout.warmup.phases.flatMap((phase: any) =>
-          Array.isArray(phase.exercises) ? phase.exercises : []
-        );
-      } else if (apiWorkout.warmup.exercises && Array.isArray(apiWorkout.warmup.exercises)) {
-        // Alternative new format - direct exercises
-        warmupExercises = apiWorkout.warmup.exercises;
-      }
-
-      // Parse duration from new format
-      if (apiWorkout.warmup.duration) {
-        const durationMatch = String(apiWorkout.warmup.duration).match(/(\d+)/);
-        warmupDuration = durationMatch ? parseInt(durationMatch[1]) / 60 : 3; // convert to minutes
-      } else if (warmupExercises.length > 0) {
-        warmupDuration = warmupExercises.reduce((total: number, w: any) => {
-          const exerciseDuration = w.duration || 60;
-          const durationMatch = String(exerciseDuration).match(/(\d+)/);
-          return total + (durationMatch ? parseInt(durationMatch[1]) : 60);
-        }, 0) / 60;
-      }
-    }
-
-    // Safe cooldown processing - handle new API format
-    let cooldownExercises: any[] = [];
-    let cooldownDuration = 2; // default
-
-    if (apiWorkout.cooldown) {
-      if (Array.isArray(apiWorkout.cooldown)) {
-        // Legacy format - direct array
-        cooldownExercises = apiWorkout.cooldown;
-      } else if (apiWorkout.cooldown.phases && Array.isArray(apiWorkout.cooldown.phases)) {
-        // New format - phases with exercises
-        cooldownExercises = apiWorkout.cooldown.phases.flatMap((phase: any) =>
-          Array.isArray(phase.exercises) ? phase.exercises : []
-        );
-      } else if (apiWorkout.cooldown.exercises && Array.isArray(apiWorkout.cooldown.exercises)) {
-        // Alternative new format - direct exercises
-        cooldownExercises = apiWorkout.cooldown.exercises;
-      }
-
-      // Parse duration from new format
-      if (apiWorkout.cooldown.duration) {
-        const durationMatch = String(apiWorkout.cooldown.duration).match(/(\d+)/);
-        cooldownDuration = durationMatch ? parseInt(durationMatch[1]) / 60 : 2; // convert to minutes
-      } else if (cooldownExercises.length > 0) {
-        cooldownDuration = cooldownExercises.reduce((total: number, c: any) => {
-          const exerciseDuration = c.duration || 60;
-          const durationMatch = String(exerciseDuration).match(/(\d+)/);
-          return total + (durationMatch ? parseInt(durationMatch[1]) : 60);
-        }, 0) / 60;
-      }
-    }
-
-    // Generate unique workout ID with timestamp and random component
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-
-    // Map backend workout type to our internal format
-    const mapWorkoutType = (backendType: string, requestedType: string): string => {
-      // Handle common backend abbreviations and new workout types
-      const typeMapping: Record<string, string> = {
-        'lower': 'lower_body',
-        'upper': 'upper_body',
-        'push': 'push_day',
-        'pull': 'pull_day',
-        'leg': 'leg_day',
-        'legs': 'leg_day',
-        'yoga': 'yoga',
-        'pilates': 'pilates',
-        'functional': 'functional',
-        'functional_training': 'functional'
-      };
-
-      // Return mapped type or fall back to requested type or backend type
-      return typeMapping[backendType.toLowerCase()] || requestedType || backendType;
-    };
-
-    const mappedWorkoutType = mapWorkoutType(apiWorkout.type, selectedWorkoutType);
-
-    // Build comprehensive coaching notes from new API format
-    const coachingNotes = [];
-    if (apiWorkout.professionalGuidance) {
-      if (apiWorkout.professionalGuidance.intensityGuidance) {
-        coachingNotes.push(apiWorkout.professionalGuidance.intensityGuidance);
-      }
-      if (apiWorkout.professionalGuidance.safetyConsiderations) {
-        coachingNotes.push(apiWorkout.professionalGuidance.safetyConsiderations);
-      }
-      if (apiWorkout.professionalGuidance.progressionPlan) {
-        coachingNotes.push(apiWorkout.professionalGuidance.progressionPlan);
-      }
-    }
-    if (apiWorkout.notes) {
-      coachingNotes.push(apiWorkout.notes);
-    }
-    const finalCoachingNotes = coachingNotes.length > 0
-      ? coachingNotes.join(' ')
-      : 'Focus on proper form and listen to your body';
-
-    return {
-      id: uniqueId,
-      name: apiWorkout.type ?
-        (apiWorkout.type.charAt(0).toUpperCase() + apiWorkout.type.slice(1).replace('_', ' ') + ' Workout') :
-        `AI Generated ${workoutTypes.find(t => t.value === selectedWorkoutType)?.label || 'Mixed'} Workout`,
-      duration,
-      difficulty: apiWorkout.difficulty || profile.fitnessLevel,
-      exercises,
-      createdAt: new Date(),
-      completedAt: null,
-      focusAreas: Array.isArray(apiWorkout.tags) ? apiWorkout.tags : ['general'],
-      workoutType: mappedWorkoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core',
-      coachingNotes: finalCoachingNotes,
-      warmUp: {
-        duration: warmupDuration,
-        exercises: warmupExercises.map((w: any) => w.name || 'Dynamic warm-up').filter(Boolean)
-      },
-      coolDown: {
-        duration: cooldownDuration,
-        exercises: cooldownExercises.map((c: any) => c.name || 'Cool-down stretch').filter(Boolean)
-      }
-    };
-  }, [profile, selectedWorkoutType, workoutTypes]);
-
-  // Transform optimized API workout response to internal WorkoutPlan format
-  const transformOptimizedAPIWorkoutToPlan = useCallback((apiWorkout: any, requestedType: string): WorkoutPlan => {
+  // Transform new flexible API workout response to internal WorkoutPlan format
+  const transformFlexibleAPIWorkoutToPlan = useCallback((apiWorkout: any, requestedType: string): WorkoutPlan => {
     // Generate unique workout ID
     const uniqueId = `workout-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
 
-    // Extract exercises from structured phases
+    // Transform main exercises from new API format
     const exercises: Exercise[] = [];
 
-    // Add warmup exercises
-    if (apiWorkout.warmup?.exercises) {
-      apiWorkout.warmup.exercises.forEach((exercise: any) => {
-        exercises.push({
-          name: exercise.name,
-          sets: exercise.sets || 1,
-          reps: exercise.reps || '5-10',
-          duration: exercise.duration ? parseInt(exercise.duration) : 0,
-          restTime: 30, // Short rest for warmup
-          instructions: exercise.instructions || '',
-          tips: exercise.formCues?.join('. ') || '',
-          targetMuscles: exercise.targetMuscles || [],
-          equipment: exercise.equipment || [],
-          category: 'warmup'
-        });
-      });
-    }
-
-    // Add main workout exercises
-    if (apiWorkout.mainWorkout?.exercises) {
-      apiWorkout.mainWorkout.exercises.forEach((exercise: any) => {
+    if (apiWorkout.exercises && Array.isArray(apiWorkout.exercises)) {
+      apiWorkout.exercises.forEach((exercise: any) => {
         const restTime = exercise.rest ? parseInt(exercise.rest.replace(/\D/g, '')) : 60;
         exercises.push({
           name: exercise.name,
@@ -1021,53 +794,30 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           duration: 0,
           restTime: restTime,
           instructions: exercise.instructions || '',
-          tips: exercise.formCues?.join('. ') || '',
+          tips: exercise.modifications || '',
           targetMuscles: exercise.targetMuscles || [],
-          equipment: exercise.equipment || [],
-          category: exercise.category || 'strength',
-          modifications: exercise.modifications ? [exercise.modifications.easier, exercise.modifications.harder].filter(Boolean) : []
+          equipment: ['bodyweight'], // Default equipment
+          category: 'compound',
+          modifications: exercise.modifications ? [exercise.modifications] : []
         });
       });
     }
 
-    // Add cooldown exercises
-    if (apiWorkout.cooldown?.exercises) {
-      apiWorkout.cooldown.exercises.forEach((exercise: any) => {
-        exercises.push({
-          name: exercise.name,
-          sets: exercise.sets || 1,
-          reps: exercise.reps || '1',
-          duration: exercise.duration ? parseInt(exercise.duration) : 30,
-          restTime: 15, // Short rest for cooldown
-          instructions: exercise.instructions || '',
-          tips: exercise.formCues?.join('. ') || '',
-          targetMuscles: exercise.targetMuscles || [],
-          equipment: exercise.equipment || [],
-          category: 'cooldown'
-        });
-      });
-    }
-
-    // Build coaching notes from professional elements
+    // Build coaching notes from new API format
     const coachingNotes = [];
-    if (apiWorkout.professionalNotes) {
-      if (apiWorkout.professionalNotes.coachingTips) {
-        coachingNotes.push(...apiWorkout.professionalNotes.coachingTips);
-      }
-      if (apiWorkout.professionalNotes.safetyConsiderations) {
-        coachingNotes.push(...apiWorkout.professionalNotes.safetyConsiderations);
-      }
-      if (apiWorkout.professionalNotes.progressionGuidance) {
-        coachingNotes.push(...apiWorkout.professionalNotes.progressionGuidance);
-      }
+    if (apiWorkout.coachingTips && Array.isArray(apiWorkout.coachingTips)) {
+      coachingNotes.push(...apiWorkout.coachingTips);
+    }
+    if (apiWorkout.progressionNotes) {
+      coachingNotes.push(apiWorkout.progressionNotes);
+    }
+    if (apiWorkout.safetyNotes) {
+      coachingNotes.push(apiWorkout.safetyNotes);
     }
 
     const finalCoachingNotes = coachingNotes.length > 0
       ? coachingNotes.join(' ')
       : 'Focus on proper form and listen to your body';
-
-    // Map workout type
-    const mappedWorkoutType = requestedType || apiWorkout.type || 'mixed';
 
     return {
       id: uniqueId,
@@ -1078,22 +828,22 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       exercises,
       createdAt: new Date(),
       completedAt: null,
-      focusAreas: ['general'], // Backend handles focus areas through memory
-      workoutType: mappedWorkoutType as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core',
+      focusAreas: ['general'],
+      workoutType: (requestedType || apiWorkout.type || 'mixed') as 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'mixed' | 'upper_body' | 'lower_body' | 'push' | 'pull' | 'core',
       coachingNotes: finalCoachingNotes,
       warmUp: {
-        duration: apiWorkout.warmup?.duration ? parseInt(apiWorkout.warmup.duration) : 5,
-        exercises: apiWorkout.warmup?.exercises?.map((e: any) => e.name) || []
+        duration: 5, // Default warmup duration
+        exercises: apiWorkout.warmup?.map((w: any) => w.name || 'Dynamic warm-up') || []
       },
       coolDown: {
-        duration: apiWorkout.cooldown?.duration ? parseInt(apiWorkout.cooldown.duration) : 5,
-        exercises: apiWorkout.cooldown?.exercises?.map((e: any) => e.name) || []
+        duration: 5, // Default cooldown duration
+        exercises: apiWorkout.cooldown?.map((c: any) => c.name || 'Cool-down stretch') || []
       },
-      // Additional optimized API fields
-      estimatedCalories: apiWorkout.estimatedCalories
-      // targetHeartRateZone: apiWorkout.targetHeartRateZone // Not part of WorkoutPlan interface
+      estimatedCalories: apiWorkout.calorieEstimate
     };
   }, [profile, workoutTypes]);
+
+  // Legacy transformation function - removed to fix syntax error
 
   // Fallback workout generation removed - backend provides reliable fallbacks
 
@@ -1294,18 +1044,30 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
       // Additional entropy for modification uniqueness (removed unused variable)
 
-      // Create simplified modification API request - backend handles complex processing
+      // Convert codes to human-readable names for modification request
+      const goalLabels = getGoalLabels(profile.goals || []);
+      const equipmentLabels = getEquipmentLabels(profile.equipment || []);
+
+      // Build modification-specific additional information
+      const modificationInfo = [
+        'Workout modification requested',
+        modifications.focusAreas?.length ? `Focus areas: ${modifications.focusAreas.join(', ')}` : '',
+        goalLabels.length > 0 ? `User goals: ${goalLabels.join(', ')}` : ''
+      ].filter(Boolean).join('. ');
+
+      // Create flexible modification API request - new API supports natural language
       const workoutAPIRequest = {
-        fitnessLevel: modifications.difficulty || profile.fitnessLevel,
-        fitnessGoals: profile.goals || [], // Send raw goals - backend handles conversion
-        equipment: profile.equipment || [], // Send raw equipment - backend handles conversion
         age: userAge,
-        gender: apiConverters.gender(profile.gender),
+        fitnessLevel: modifications.difficulty || profile.fitnessLevel,
+        gender: profile.gender,
         weight: userWeight,
-        injuries: profile.injuries || [],
+        goals: goalLabels, // Human-readable goal names
+        equipment: equipmentLabels, // Human-readable equipment names
+        injuries: profile.injuries || [], // Keep as-is for now
+        timeAvailable: modifications.duration || profile.availableTime,
         daysPerWeek: profile.timeAvailability?.daysPerWeek || 3,
-        minutesPerSession: modifications.duration || profile.availableTime,
-        workoutType: modifications.workoutType || selectedWorkoutType
+        workoutType: modifications.workoutType || selectedWorkoutType,
+        additionalInformation: modificationInfo
       };
 
       // Modification request logging for new API format
@@ -1334,15 +1096,14 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       if (response.data?.workout) {
         // Handle both new and legacy API formats for logging
         const workout = response.data.workout;
-        const exerciseCount = workout.mainWorkout?.exercises?.length || 0;
+        const exerciseCount = workout.exercises?.length || 0;
 
         console.log('🏋️ Modified Workout Details:', {
           type: workout.type,
           duration: workout.duration,
           exerciseCount,
           difficulty: workout.difficulty,
-          hasMainWorkout: !!workout.mainWorkout,
-          hasExercises: !!workout.mainWorkout?.exercises,
+          hasExercises: !!workout.exercises,
           hasWarmup: !!workout.warmup,
           hasCooldown: !!workout.cooldown
         });
@@ -1352,8 +1113,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       if (response.status === 'success' && response.data) {
         const workout = response.data.workout;
 
-        // Backend handles workout type consistency
-        const workoutPlan = transformAPIWorkoutToPlan(workout);
+        // Use new flexible API transformation
+        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, modifications.workoutType || selectedWorkoutType);
 
         const enhancedWorkout: WorkoutPlan = {
           ...workoutPlan,
@@ -1618,6 +1379,51 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                   ))}
                 </SimpleGrid>
               </Box>
+            </VStack>
+          </CardBody>
+        </Card>
+
+        {/* Additional Instructions Card */}
+        <Card bg={bgColor} borderColor={borderColor}>
+          <CardBody p={{ base: 5, md: 6 }}>
+            <VStack spacing={{ base: 4, md: 5 }} align="stretch">
+              <Box textAlign="center">
+                <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={textColor} mb={2}>
+                  Additional Instructions (Optional)
+                </Text>
+                <Text fontSize="sm" color={subtextColor}>
+                  Add any specific preferences, modifications, or special requests for your workout
+                </Text>
+              </Box>
+
+              <Textarea
+                value={additionalInstructions}
+                onChange={(e) => setAdditionalInstructions(e.target.value)}
+                placeholder="e.g., Focus on form over speed, avoid jumping exercises, include more core work, prefer unilateral exercises..."
+                size="lg"
+                minH={{ base: "120px", md: "100px" }}
+                resize="vertical"
+                borderRadius="xl"
+                borderColor={borderColor}
+                _focus={{
+                  borderColor: "blue.400",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)"
+                }}
+                _hover={{
+                  borderColor: "blue.300"
+                }}
+                fontSize={{ base: "md", md: "sm" }}
+                lineHeight="1.5"
+                bg={bgColor}
+                color={textColor}
+                maxLength={500}
+              />
+
+              {additionalInstructions.length > 0 && (
+                <Text fontSize="xs" color={subtextColor} textAlign="right">
+                  {additionalInstructions.length}/500 characters
+                </Text>
+              )}
             </VStack>
           </CardBody>
         </Card>

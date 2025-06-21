@@ -4,7 +4,13 @@ import {
     Divider,
     FormControl,
     FormLabel,
+    HStack,
     Icon,
+    NumberDecrementStepper,
+    NumberIncrementStepper,
+    NumberInput,
+    NumberInputField,
+    NumberInputStepper,
     SimpleGrid,
     Text,
     useColorModeValue,
@@ -13,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { FaUser, FaUserFriends, FaUserSlash } from 'react-icons/fa';
-import { ageCategories, weightCategories } from '../../constants/personalInfoOptions';
+import { PiCalendarBold, PiMinusBold, PiPlusBold, PiScalesBold } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
@@ -152,104 +158,260 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
 
       {/* Compact Form */}
       <VStack spacing={{ base: 4, md: 5 }} align="stretch" flex="1 1 auto" justify="center">
-        {/* Age Category - Required */}
+        {/* Age Input - Required */}
         <FormControl isRequired>
           <FormLabel color={textColor} fontSize="sm" fontWeight="medium" mb={3}>
-            Age Range
+            <HStack spacing={2}>
+              <Icon as={PiCalendarBold} color="blue.500" boxSize={4} />
+              <Text>Age</Text>
+            </HStack>
           </FormLabel>
-          <SimpleGrid columns={2} spacing={3} w="100%">
-            {ageCategories.map((category) => {
-              // Calculate representative age for this category
-              const categoryAge = (() => {
-                const range = category.range;
-                if (range.includes('+')) {
-                  const minAge = parseInt(range.replace('+', ''));
-                  return minAge + 4; // 66+ becomes 70
-                }
-                if (range.includes('-')) {
-                  const [min, max] = range.split('-').map(num => parseInt(num.trim()));
-                  return Math.round((min + max) / 2);
-                }
-                return parseInt(range) || 25;
-              })();
 
-              const isSelected = age === categoryAge;
-              return (
-                <Button
-                  key={category.code}
-                  variant={isSelected ? 'solid' : 'outline'}
-                  colorScheme={isSelected ? category.color : 'gray'}
-                  onClick={() => setAge(isSelected ? undefined : categoryAge)}
-                  h="70px"
-                  flexDirection="column"
-                  bg={isSelected ? `${category.color}.500` : bgColor}
-                  borderColor={isSelected ? `${category.color}.500` : borderColor}
-                  color={isSelected ? 'white' : textColor}
+          <Box position="relative">
+            <NumberInput
+              value={age || ''}
+              onChange={(valueString, valueNumber) => {
+                if (valueString === '') {
+                  setAge(undefined);
+                } else if (!isNaN(valueNumber) && valueNumber >= 13 && valueNumber <= 100) {
+                  setAge(valueNumber);
+                }
+              }}
+              min={13}
+              max={100}
+              step={1}
+              size="lg"
+              bg={bgColor}
+              borderRadius="xl"
+              borderColor={borderColor}
+              _hover={{
+                borderColor: "blue.300",
+              }}
+              _focus={{
+                borderColor: "blue.400",
+                boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)"
+              }}
+            >
+              <NumberInputField
+                placeholder="Enter your age"
+                textAlign="center"
+                fontWeight="semibold"
+                fontSize={{ base: "lg", md: "xl" }}
+                h={{ base: "56px", md: "60px" }}
+                _placeholder={{
+                  color: subtextColor,
+                  fontSize: { base: "sm", md: "md" }
+                }}
+                inputMode="numeric"
+                pattern="[0-9]*"
+              />
+              <NumberInputStepper w={{ base: "40px", md: "32px" }}>
+                <NumberIncrementStepper
+                  bg={bgColor}
                   _hover={{
-                    bg: isSelected ? `${category.color}.600` : hoverBgColor,
-                    borderColor: isSelected ? `${category.color}.600` : hoverBorderColor,
+                    bg: "blue.50",
+                    borderColor: "blue.300"
+                  }}
+                  _active={{
+                    bg: "blue.100",
+                    transform: "scale(0.95)"
+                  }}
+                  borderColor={borderColor}
+                  h={{ base: "28px", md: "30px" }}
+                  transition="all 0.2s"
+                >
+                  <Icon as={PiPlusBold} boxSize={{ base: 4, md: 3 }} color="blue.500" />
+                </NumberIncrementStepper>
+                <NumberDecrementStepper
+                  bg={bgColor}
+                  _hover={{
+                    bg: "blue.50",
+                    borderColor: "blue.300"
+                  }}
+                  _active={{
+                    bg: "blue.100",
+                    transform: "scale(0.95)"
+                  }}
+                  borderColor={borderColor}
+                  h={{ base: "28px", md: "30px" }}
+                  transition="all 0.2s"
+                >
+                  <Icon as={PiMinusBold} boxSize={{ base: 4, md: 3 }} color="blue.500" />
+                </NumberDecrementStepper>
+              </NumberInputStepper>
+            </NumberInput>
+
+            {/* Age validation hint and clear button */}
+            <HStack justify="space-between" align="center" mt={2}>
+              <Text fontSize="xs" color={subtextColor} flex="1" textAlign="center">
+                Age must be between 13-100 years
+              </Text>
+              {age && (
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  colorScheme="gray"
+                  onClick={() => setAge(undefined)}
+                  fontSize="xs"
+                  h="20px"
+                  minW="auto"
+                  px={2}
+                  _hover={{
+                    bg: "red.50",
+                    color: "red.500"
                   }}
                 >
-                  <Icon as={category.icon} boxSize={5} mb={1} />
-                  <VStack spacing={0}>
-                    <Text fontSize="xs" fontWeight="medium">{category.label}</Text>
-                    <Text fontSize="2xs" opacity={0.8}>{category.range}</Text>
-                  </VStack>
+                  Clear
                 </Button>
-              );
-            })}
-          </SimpleGrid>
+              )}
+            </HStack>
+          </Box>
         </FormControl>
 
         <Divider />
 
-        {/* Weight Category - Optional */}
+        {/* Weight Input - Optional */}
         <FormControl>
           <FormLabel color={textColor} fontSize="sm" fontWeight="medium" mb={3}>
-            Weight Range (Optional)
+            <HStack spacing={2}>
+              <Icon as={PiScalesBold} color="green.500" boxSize={4} />
+              <Text>Weight (Optional)</Text>
+            </HStack>
           </FormLabel>
-          <SimpleGrid columns={2} spacing={3} w="100%">
-            {weightCategories.map((category) => {
-              // Calculate representative weight for this category
-              const categoryWeight = (() => {
-                const range = category.range;
-                if (range.includes('+')) {
-                  const minWeight = parseInt(range.replace('+', ''));
-                  return minWeight + 14; // 226+ becomes 240
-                }
-                if (range.includes('-')) {
-                  const [min, max] = range.split('-').map(num => parseInt(num.trim()));
-                  return Math.round((min + max) / 2);
-                }
-                return parseInt(range) || 150;
-              })();
 
-              const isSelected = weight === categoryWeight;
-              return (
-                <Button
-                  key={category.code}
-                  variant={isSelected ? 'solid' : 'outline'}
-                  colorScheme={isSelected ? category.color : 'gray'}
-                  onClick={() => setWeight(isSelected ? undefined : categoryWeight)}
-                  h="70px"
-                  flexDirection="column"
-                  bg={isSelected ? `${category.color}.500` : bgColor}
-                  borderColor={isSelected ? `${category.color}.500` : borderColor}
-                  color={isSelected ? 'white' : textColor}
+          <Box position="relative">
+            <NumberInput
+              value={weight || ''}
+              onChange={(valueString, valueNumber) => {
+                if (valueString === '') {
+                  setWeight(undefined);
+                } else if (!isNaN(valueNumber) && valueNumber >= 50 && valueNumber <= 500) {
+                  setWeight(valueNumber);
+                }
+              }}
+              min={50}
+              max={500}
+              step={1}
+              size="lg"
+              bg={bgColor}
+              borderRadius="xl"
+              borderColor={borderColor}
+              _hover={{
+                borderColor: "green.300",
+              }}
+              _focus={{
+                borderColor: "green.400",
+                boxShadow: "0 0 0 1px var(--chakra-colors-green-400)"
+              }}
+            >
+              <NumberInputField
+                placeholder="Enter weight in lbs"
+                textAlign="center"
+                fontWeight="semibold"
+                fontSize={{ base: "lg", md: "xl" }}
+                h={{ base: "56px", md: "60px" }}
+                _placeholder={{
+                  color: subtextColor,
+                  fontSize: { base: "sm", md: "md" }
+                }}
+                inputMode="numeric"
+                pattern="[0-9]*"
+              />
+              <NumberInputStepper w={{ base: "40px", md: "32px" }}>
+                <NumberIncrementStepper
+                  bg={bgColor}
                   _hover={{
-                    bg: isSelected ? `${category.color}.600` : hoverBgColor,
-                    borderColor: isSelected ? `${category.color}.600` : hoverBorderColor,
+                    bg: "green.50",
+                    borderColor: "green.300"
+                  }}
+                  _active={{
+                    bg: "green.100",
+                    transform: "scale(0.95)"
+                  }}
+                  borderColor={borderColor}
+                  h={{ base: "28px", md: "30px" }}
+                  transition="all 0.2s"
+                >
+                  <Icon as={PiPlusBold} boxSize={{ base: 4, md: 3 }} color="green.500" />
+                </NumberIncrementStepper>
+                <NumberDecrementStepper
+                  bg={bgColor}
+                  _hover={{
+                    bg: "green.50",
+                    borderColor: "green.300"
+                  }}
+                  _active={{
+                    bg: "green.100",
+                    transform: "scale(0.95)"
+                  }}
+                  borderColor={borderColor}
+                  h={{ base: "28px", md: "30px" }}
+                  transition="all 0.2s"
+                >
+                  <Icon as={PiMinusBold} boxSize={{ base: 4, md: 3 }} color="green.500" />
+                </NumberDecrementStepper>
+              </NumberInputStepper>
+            </NumberInput>
+
+            {/* Weight validation hint and clear button */}
+            <HStack justify="space-between" align="center" mt={2}>
+              <Text fontSize="xs" color={subtextColor} flex="1" textAlign="center">
+                Weight should be between 50-500 lbs (optional)
+              </Text>
+              {weight && (
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  colorScheme="gray"
+                  onClick={() => setWeight(undefined)}
+                  fontSize="xs"
+                  h="20px"
+                  minW="auto"
+                  px={2}
+                  _hover={{
+                    bg: "red.50",
+                    color: "red.500"
                   }}
                 >
-                  <Icon as={category.icon} boxSize={5} mb={1} />
-                  <VStack spacing={0}>
-                    <Text fontSize="xs" fontWeight="medium">{category.label}</Text>
-                    <Text fontSize="2xs" opacity={0.8}>{category.range} lbs</Text>
-                  </VStack>
+                  Clear
                 </Button>
-              );
-            })}
-          </SimpleGrid>
+              )}
+            </HStack>
+
+            {/* Quick weight presets for common ranges */}
+            <Box mt={4}>
+              <Text fontSize="xs" color={subtextColor} textAlign="center" mb={2}>
+                Quick select:
+              </Text>
+              <HStack spacing={{ base: 1, md: 2 }} justify="center" flexWrap="wrap">
+                {[100, 125, 150, 175, 200, 225].map((presetWeight) => (
+                  <Button
+                    key={presetWeight}
+                    size="xs"
+                    variant={weight === presetWeight ? "solid" : "ghost"}
+                    colorScheme="green"
+                    onClick={() => setWeight(presetWeight)}
+                    borderRadius="full"
+                    fontSize={{ base: "xs", md: "xs" }}
+                    minW={{ base: "42px", md: "45px" }}
+                    h={{ base: "32px", md: "28px" }}
+                    _hover={{
+                      bg: weight === presetWeight ? "green.600" : "green.50",
+                      color: weight === presetWeight ? "white" : "green.600",
+                      transform: "scale(1.05)"
+                    }}
+                    _active={{
+                      transform: "scale(0.95)"
+                    }}
+                    transition="all 0.2s"
+                    fontWeight="semibold"
+                  >
+                    {presetWeight}
+                  </Button>
+                ))}
+              </HStack>
+            </Box>
+          </Box>
         </FormControl>
 
         <Divider />

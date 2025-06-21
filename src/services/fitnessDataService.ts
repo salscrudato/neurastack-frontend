@@ -6,7 +6,6 @@
  */
 
 import {
-    addDoc,
     collection,
     doc,
     getDoc,
@@ -224,37 +223,13 @@ export async function updateFitnessLevel(
 
 /**
  * Save workout plan to Firestore
+ * @deprecated Backend now handles all workout storage automatically via the completeWorkout API
+ * This function is kept for backward compatibility but is no longer used
  */
-export async function saveWorkoutPlan(workoutPlan: WorkoutPlan): Promise<void> {
-  if (!auth.currentUser) {
-    throw new Error('User must be authenticated to save workout plan');
-  }
-
-  try {
-    const userId = auth.currentUser.uid;
-    // Fix: Use correct Firestore path structure - collections need odd number of segments
-    const workoutsRef = collection(db, 'users', userId, 'workouts');
-
-    const workoutData: Omit<StoredWorkoutPlan, 'id'> = {
-      name: workoutPlan.name,
-      duration: workoutPlan.duration,
-      exercises: workoutPlan.exercises,
-      difficulty: workoutPlan.difficulty,
-      createdAt: serverTimestamp() as Timestamp,
-      completedAt: workoutPlan.completedAt ? serverTimestamp() as Timestamp : null,
-      userId
-    };
-
-    await addDoc(workoutsRef, workoutData);
-    console.log('✅ Workout plan saved to Firestore');
-  } catch (error) {
-    handleSilentError(error, {
-      component: 'fitnessDataService',
-      action: 'saveWorkoutPlan',
-      userId: auth.currentUser?.uid
-    });
-    throw error;
-  }
+export async function saveWorkoutPlan(_workoutPlan: WorkoutPlan): Promise<void> {
+  console.warn('saveWorkoutPlan is deprecated - backend handles workout storage automatically');
+  // Backend handles all workout storage through the completeWorkout API
+  // No local storage needed
 }
 
 /**

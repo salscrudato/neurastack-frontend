@@ -1,6 +1,9 @@
 /**
  * Enhanced Workout Session Service
- * 
+ *
+ * @deprecated Backend now handles all session management automatically via the completeWorkout API
+ * This service is kept for backward compatibility but most functions are no longer used
+ *
  * Comprehensive service for managing workout sessions with detailed tracking,
  * analytics, and data persistence for professional-grade workout applications.
  */
