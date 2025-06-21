@@ -1,12 +1,13 @@
 import type { Exercise, FitnessProfile, WorkoutPlan } from '../lib/types';
 
-// Strict workout type validation - comprehensive list of supported workout types
+// Strict workout type validation - updated to match new workout types specification
 export const VALID_WORKOUT_TYPES = [
-  'strength', 'cardio', 'hiit', 'flexibility', 'mixed',
-  'upper_body', 'lower_body', 'push', 'pull', 'core',
-  'yoga', 'pilates', 'functional', 'full_body', 'legs',
-  // Additional variations that the API might return
-  'push_day', 'pull_day', 'leg_day', 'upper', 'lower',
+  // Primary workout types in order of preference
+  'mixed', 'strength', 'hiit', 'cardio', 'flexibility',
+  'push', 'pull', 'lower_body', 'core',
+  // Additional variations that the API might return for backward compatibility
+  'upper_body', 'full_body', 'yoga', 'pilates', 'functional',
+  'push_day', 'pull_day', 'leg_day', 'upper', 'lower', 'legs',
   'chest', 'back', 'shoulders', 'arms', 'abs'
 ] as const;
 

@@ -50,14 +50,15 @@ export interface WorkoutModifications {
 }
 
 const WORKOUT_TYPES = [
-  { value: 'strength', label: 'Strength Training', description: 'Build muscle and power' },
-  { value: 'cardio', label: 'Cardio', description: 'Improve cardiovascular health' },
-  { value: 'hiit', label: 'HIIT', description: 'High-intensity interval training' },
-  { value: 'flexibility', label: 'Flexibility', description: 'Improve mobility and flexibility' },
-  { value: 'mixed', label: 'Mixed', description: 'Combination of different types' },
-  { value: 'yoga', label: 'Yoga', description: 'Mind-body practice with poses and breathing' },
-  { value: 'pilates', label: 'Pilates', description: 'Core-focused low-impact exercises' },
-  { value: 'functional', label: 'Functional Training', description: 'Real-world movement patterns' },
+  { value: 'mixed', label: 'Mixed Training', description: 'Balanced combo of strength, cardio, and flexibility' },
+  { value: 'strength', label: 'Strength Training', description: 'Core demand for muscle building and power' },
+  { value: 'hiit', label: 'HIIT', description: 'High-efficiency workouts for fat burn and endurance' },
+  { value: 'cardio', label: 'Cardio', description: 'Foundational for heart health and weight loss' },
+  { value: 'flexibility', label: 'Flexibility', description: 'Essential for injury prevention and recovery' },
+  { value: 'push', label: 'Push Day', description: 'Popular split targeting chest, shoulders, triceps' },
+  { value: 'pull', label: 'Pull Day', description: 'Complements push day, focused on back and biceps' },
+  { value: 'lower_body', label: 'Lower Body', description: 'High impact zone: legs, glutes, and core' },
+  { value: 'core', label: 'Core Focus', description: 'Widely desired for aesthetics and stability' },
 ];
 
 const FOCUS_AREAS = [
@@ -79,8 +80,8 @@ export default function WorkoutModifier({
   currentWorkout,
   onModifyWorkout,
 }: WorkoutModifierProps) {
-  const [workoutType, setWorkoutType] = useState<'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility'>(
-    (currentWorkout.workoutType as 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility') || 'mixed'
+  const [workoutType, setWorkoutType] = useState<'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'push' | 'pull' | 'lower_body' | 'core'>(
+    (currentWorkout.workoutType as 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility' | 'push' | 'pull' | 'lower_body' | 'core') || 'mixed'
   );
   const [duration, setDuration] = useState(currentWorkout.duration);
   const [difficulty, setDifficulty] = useState(currentWorkout.difficulty);
@@ -170,22 +171,81 @@ export default function WorkoutModifier({
               <FormLabel color={textColor} fontWeight="semibold">
                 Workout Type
               </FormLabel>
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 3 }}>
                 {WORKOUT_TYPES.map((type) => (
                   <Button
                     key={type.value}
                     variant={workoutType === type.value ? "solid" : "outline"}
                     colorScheme={workoutType === type.value ? "blue" : "gray"}
-                    size="md"
-                    onClick={() => setWorkoutType(type.value as 'mixed' | 'strength' | 'cardio' | 'hiit' | 'flexibility')}
-                    h="60px"
+                    onClick={() => setWorkoutType(type.value as typeof workoutType)}
+                    h="auto"
+                    minH={{ base: "80px", md: "85px" }}
                     flexDirection="column"
-                    gap={1}
+                    gap={{ base: 2, md: 2 }}
+                    bg={workoutType === type.value ?
+                      'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)' :
+                      'rgba(255, 255, 255, 0.9)'
+                    }
+                    backdropFilter="blur(12px)"
+                    borderRadius="xl"
+                    borderWidth="2px"
+                    borderColor={workoutType === type.value ?
+                      "transparent" :
+                      "rgba(255, 255, 255, 0.3)"
+                    }
+                    shadow={workoutType === type.value ?
+                      "0 8px 32px rgba(79, 156, 249, 0.3)" :
+                      "0 4px 16px rgba(31, 38, 135, 0.1)"
+                    }
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      shadow: workoutType === type.value ?
+                        "0 12px 40px rgba(79, 156, 249, 0.4)" :
+                        "0 8px 24px rgba(31, 38, 135, 0.15)",
+                      bg: workoutType === type.value ?
+                        'linear-gradient(135deg, #3182CE 0%, #553C9A 100%)' :
+                        'rgba(255, 255, 255, 0.95)',
+                      borderColor: workoutType === type.value ?
+                        "transparent" :
+                        "rgba(79, 156, 249, 0.4)"
+                    }}
+                    _active={{
+                      transform: 'translateY(0px)',
+                      shadow: workoutType === type.value ?
+                        "0 4px 16px rgba(79, 156, 249, 0.3)" :
+                        "0 2px 8px rgba(31, 38, 135, 0.1)"
+                    }}
+                    transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                    px={{ base: 4, md: 3 }}
+                    py={{ base: 4, md: 3 }}
+                    style={{
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation'
+                    }}
                   >
-                    <Text fontSize="sm" fontWeight="semibold">
+                    <Text
+                      fontSize={{ base: "sm", md: "md" }}
+                      fontWeight="bold"
+                      textAlign="center"
+                      color={workoutType === type.value ? "white" : textColor}
+                      mb={1}
+                    >
                       {type.label}
                     </Text>
-                    <Text fontSize="xs" color={workoutType === type.value ? "blue.100" : subtextColor}>
+                    <Text
+                      fontSize={{ base: "xs", md: "xs" }}
+                      color={workoutType === type.value ? "rgba(255, 255, 255, 0.9)" : subtextColor}
+                      textAlign="center"
+                      lineHeight="1.4"
+                      fontWeight="medium"
+                      px={{ base: 1, md: 1 }}
+                      overflow="hidden"
+                      display="-webkit-box"
+                      style={{
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical'
+                      }}
+                    >
                       {type.description}
                     </Text>
                   </Button>

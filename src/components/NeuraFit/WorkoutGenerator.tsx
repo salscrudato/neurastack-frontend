@@ -192,67 +192,52 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     }).filter(Boolean);
   }, []);
 
-  // Define workout types with descriptions - ONLY VALID TYPES that pass validation
+  // Define workout types with descriptions - Updated order and descriptions per user specifications
   const workoutTypes = useMemo(() => [
     {
       value: 'mixed',
       label: 'Mixed Training',
-      description: 'Combination of strength, cardio, and flexibility'
+      description: 'Balanced combo of strength, cardio, and flexibility'
     },
     {
       value: 'strength',
       label: 'Strength Training',
-      description: 'Focus on building muscle and power'
-    },
-    {
-      value: 'cardio',
-      label: 'Cardio',
-      description: 'Heart-pumping cardiovascular exercises'
+      description: 'Core demand for muscle building and power'
     },
     {
       value: 'hiit',
       label: 'HIIT',
-      description: 'High-intensity interval training'
+      description: 'High-efficiency workouts for fat burn and endurance'
+    },
+    {
+      value: 'cardio',
+      label: 'Cardio',
+      description: 'Foundational for heart health and weight loss'
     },
     {
       value: 'flexibility',
       label: 'Flexibility',
-      description: 'Stretching and mobility work'
-    },
-    {
-      value: 'upper_body',
-      label: 'Upper Body',
-      description: 'Chest, back, shoulders, and arms'
-    },
-    {
-      value: 'lower_body',
-      label: 'Lower Body',
-      description: 'Legs, glutes, and core'
+      description: 'Essential for injury prevention and recovery'
     },
     {
       value: 'push',
       label: 'Push Day',
-      description: 'Chest, shoulders, and triceps'
+      description: 'Popular split targeting chest, shoulders, triceps'
     },
     {
       value: 'pull',
       label: 'Pull Day',
-      description: 'Back and biceps'
+      description: 'Complements push day, focused on back and biceps'
+    },
+    {
+      value: 'lower_body',
+      label: 'Lower Body',
+      description: 'High impact zone: legs, glutes, and core'
     },
     {
       value: 'core',
       label: 'Core Focus',
-      description: 'Abdominals and core stability'
-    },
-    {
-      value: 'yoga',
-      label: 'Yoga',
-      description: 'Mind-body practice with poses and breathing'
-    },
-    {
-      value: 'full_body',
-      label: 'Full Body',
-      description: 'Complete body workout targeting all muscle groups'
+      description: 'Widely desired for aesthetics and stability'
     }
   ], []);
 
@@ -307,7 +292,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
     // Validate workout type selection with detailed debugging
     if (!isValidWorkoutType(selectedWorkoutType)) {
-      const validTypes = ['mixed', 'strength', 'cardio', 'hiit', 'flexibility', 'upper_body', 'lower_body', 'push', 'pull', 'core', 'yoga', 'pilates', 'functional', 'full_body', 'legs', 'push_day', 'pull_day', 'leg_day', 'upper', 'lower', 'chest', 'back', 'shoulders', 'arms', 'abs'];
+      const validTypes = ['mixed', 'strength', 'hiit', 'cardio', 'flexibility', 'push', 'pull', 'lower_body', 'core'];
 
       if (import.meta.env.DEV) {
         console.error('❌ Invalid workout type:', {
@@ -1257,20 +1242,32 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   // Show workout generation form when no workout exists
   if (!currentWorkout) {
     return (
-      <VStack
-        spacing={{ base: 3, md: 4, lg: 6 }}
-        p={{ base: 2, md: 3, lg: 4 }}
-        align="stretch"
+      <Box
         h="100%"
         overflowY="auto"
-        // Enhanced mobile support
+        overflowX="hidden"
+        // Enhanced mobile support with proper scrolling
         sx={{
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
           '@media (max-width: 768px)': {
-            paddingX: 3,
-            paddingY: 2,
+            // Ensure content fits within mobile viewport
+            maxHeight: 'calc(100vh - 56px)',
+            height: 'calc(100vh - 56px)',
+          },
+          '@media (min-width: 769px)': {
+            maxHeight: 'calc(100vh - 64px)',
+            height: 'calc(100vh - 64px)',
           }
         }}
       >
+        <VStack
+          spacing={{ base: 4, md: 5, lg: 6 }}
+          p={{ base: 3, md: 4, lg: 5 }}
+          align="stretch"
+          minH="100%"
+          pb={{ base: 6, md: 8 }} // Extra bottom padding to ensure button visibility
+        >
         {/* Service Status Indicator - Only show when service is actually unavailable */}
         {serviceStatus === 'unavailable' && (
           <Box
@@ -1337,9 +1334,16 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           </CardBody>
         </Card>
 
-        {/* Workout Type Selector */}
-        <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }}>
-          <CardBody p={{ base: 5, md: 6 }}>
+        {/* Workout Type Selector - Enhanced Glass Morphism */}
+        <Card
+          bg="rgba(255, 255, 255, 0.8)"
+          backdropFilter="blur(20px)"
+          borderColor="rgba(255, 255, 255, 0.3)"
+          borderWidth="1px"
+          shadow="0 8px 32px rgba(31, 38, 135, 0.15)"
+          borderRadius="2xl"
+        >
+          <CardBody p={{ base: 4, md: 6 }}>
             <VStack spacing={{ base: 4, md: 5 }} align="stretch">
               <Box textAlign="center">
                 <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="bold" color={textColor} mb={2}>
@@ -1352,8 +1356,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
               <Box>
                 <SimpleGrid
-                  columns={{ base: 1, sm: 2, md: 3 }}
-                  spacing={{ base: 4, md: 5 }}
+                  columns={{ base: 1, sm: 2 }}
+                  spacing={{ base: 3, sm: 3, md: 4 }}
                   justifyItems="stretch"
                 >
                   {workoutTypes.map((type) => (
@@ -1361,49 +1365,77 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                       key={type.value}
                       variant={selectedWorkoutType === type.value ? "solid" : "outline"}
                       colorScheme={selectedWorkoutType === type.value ? "blue" : "gray"}
-                      size={{ base: "lg", md: "md" }}
                       onClick={() => setSelectedWorkoutType(type.value)}
                       w="full"
-                      h={{ base: "90px", md: "85px", lg: "90px" }}
-                      minH={{ base: "90px", md: "85px" }}
+                      h={{ base: "auto", sm: "auto" }}
+                      minH={{ base: "80px", sm: "85px", md: "90px" }}
                       flexDirection="column"
-                      gap={{ base: 2, md: 1 }}
+                      gap={{ base: 2, md: 2 }}
                       position="relative"
+                      bg={selectedWorkoutType === type.value ?
+                        'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)' :
+                        'rgba(255, 255, 255, 0.9)'
+                      }
+                      backdropFilter="blur(12px)"
+                      borderWidth="2px"
+                      borderColor={selectedWorkoutType === type.value ?
+                        "transparent" :
+                        "rgba(255, 255, 255, 0.3)"
+                      }
+                      borderRadius="xl"
+                      shadow={selectedWorkoutType === type.value ?
+                        "0 8px 32px rgba(79, 156, 249, 0.3)" :
+                        "0 4px 16px rgba(31, 38, 135, 0.1)"
+                      }
                       _hover={{
                         transform: 'translateY(-2px)',
-                        shadow: 'lg',
-                        borderColor: 'blue.300',
-                        bg: selectedWorkoutType === type.value ? 'blue.600' : 'gray.50'
+                        shadow: selectedWorkoutType === type.value ?
+                          "0 12px 40px rgba(79, 156, 249, 0.4)" :
+                          "0 8px 24px rgba(31, 38, 135, 0.15)",
+                        bg: selectedWorkoutType === type.value ?
+                          'linear-gradient(135deg, #3182CE 0%, #553C9A 100%)' :
+                          'rgba(255, 255, 255, 0.95)',
+                        borderColor: selectedWorkoutType === type.value ?
+                          "transparent" :
+                          "rgba(79, 156, 249, 0.4)"
                       }}
                       _active={{
-                        transform: 'translateY(0px)'
+                        transform: 'translateY(0px)',
+                        shadow: selectedWorkoutType === type.value ?
+                          "0 4px 16px rgba(79, 156, 249, 0.3)" :
+                          "0 2px 8px rgba(31, 38, 135, 0.1)"
                       }}
-                      transition="all 0.2s ease-in-out"
-                      bg={selectedWorkoutType === type.value ? 'blue.500' : 'transparent'}
-                      borderWidth="2px"
-                      borderColor={selectedWorkoutType === type.value ? "blue.500" : "gray.300"}
-                      // Enhanced touch targets for mobile
+                      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                       style={{
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation'
                       }}
+                      px={{ base: 4, md: 4 }}
+                      py={{ base: 4, md: 4 }}
                     >
                       <Text
-                        fontSize={{ base: "md", md: "md" }}
-                        fontWeight="semibold"
+                        fontSize={{ base: "md", sm: "md", md: "lg" }}
+                        fontWeight="bold"
                         textAlign="center"
                         lineHeight="1.2"
                         color={selectedWorkoutType === type.value ? "white" : textColor}
+                        mb={1}
                       >
                         {type.label}
                       </Text>
                       <Text
-                        fontSize={{ base: "sm", md: "xs" }}
-                        color={selectedWorkoutType === type.value ? "blue.100" : subtextColor}
-                        noOfLines={2}
+                        fontSize={{ base: "xs", sm: "xs", md: "sm" }}
+                        color={selectedWorkoutType === type.value ? "rgba(255, 255, 255, 0.9)" : subtextColor}
                         textAlign="center"
-                        lineHeight="1.2"
-                        px={1}
+                        lineHeight="1.4"
+                        fontWeight="medium"
+                        px={{ base: 2, md: 1 }}
+                        overflow="hidden"
+                        display="-webkit-box"
+                        style={{
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical'
+                        }}
                       >
                         {type.description}
                       </Text>
@@ -1433,9 +1465,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 onChange={(e) => setAdditionalInstructions(e.target.value)}
                 placeholder="e.g., Focus on form over speed, avoid jumping exercises, include more core work, prefer unilateral exercises..."
                 size="lg"
-                minH={{ base: "120px", md: "100px" }}
+                minH={{ base: "110px", sm: "105px", md: "100px" }}
+                maxH={{ base: "150px", md: "140px" }}
                 resize="vertical"
                 borderRadius="xl"
+                borderWidth="2px"
                 borderColor={borderColor}
                 _focus={{
                   borderColor: "blue.400",
@@ -1444,11 +1478,18 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 _hover={{
                   borderColor: "blue.300"
                 }}
-                fontSize={{ base: "md", md: "sm" }}
+                fontSize={{ base: "md", sm: "sm", md: "sm" }}
                 lineHeight="1.5"
                 bg={bgColor}
                 color={textColor}
                 maxLength={500}
+                px={{ base: 4, md: 3 }}
+                py={{ base: 3, md: 3 }}
+                // Enhanced mobile touch targets
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               />
 
               {additionalInstructions.length > 0 && (
@@ -1460,61 +1501,101 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           </CardBody>
         </Card>
 
-        <VStack spacing={{ base: 3, md: 4 }} px={{ base: 2, md: 0 }}>
-          <Button
-            colorScheme="blue"
-            size="lg"
-            w="100%"
-            leftIcon={<Icon as={PiLightningBold} />}
-            onClick={() => {
-              // Force fresh generation - clear any potential state
-              if (import.meta.env.DEV) {
-                console.log('🔄 FRESH WORKOUT GENERATION TRIGGERED - No caching, guaranteed new workout');
-              }
-              generateWorkout();
-            }}
-            py={{ base: 5, md: 6 }}
-            isLoading={isGenerating}
-            loadingText={generationStatus || "Generating Fresh Workout..."}
-            minH={{ base: "64px", md: "auto" }}
-            fontSize={{ base: "lg", md: "xl" }}
-            fontWeight="bold"
-            borderRadius="xl"
-            _hover={{
-              transform: 'translateY(-2px)',
-              shadow: 'xl',
-              bg: 'blue.600'
-            }}
-            _active={{
-              transform: 'translateY(0px)',
-              shadow: 'lg'
-            }}
-            transition="all 0.2s ease-in-out"
-            // Enhanced touch targets for mobile
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              touchAction: 'manipulation'
-            }}
-          >
-            Generate Fresh AI Workout
-          </Button>
+        {/* Prominent Generate Button Section */}
+        <Box
+          position="sticky"
+          bottom={0}
+          bg={bgColor}
+          borderTop="1px solid"
+          borderColor={borderColor}
+          p={{ base: 4, md: 5 }}
+          mx={{ base: -3, md: -4, lg: -5 }}
+          mt={{ base: 6, md: 8 }}
+          zIndex={10}
+          // Enhanced mobile support
+          sx={{
+            backdropFilter: 'blur(8px)',
+            '@media (max-width: 768px)': {
+              paddingX: 4,
+              paddingY: 4,
+            }
+          }}
+        >
+          <VStack spacing={{ base: 3, md: 4 }} w="100%">
+            <Button
+              colorScheme="blue"
+              size="lg"
+              w="100%"
+              leftIcon={<Icon as={PiLightningBold} boxSize={{ base: 6, md: 5 }} />}
+              onClick={() => {
+                // Force fresh generation - clear any potential state
+                if (import.meta.env.DEV) {
+                  console.log('🔄 FRESH WORKOUT GENERATION TRIGGERED - No caching, guaranteed new workout');
+                }
+                generateWorkout();
+              }}
+              py={{ base: 7, md: 6 }}
+              px={{ base: 8, md: 10 }}
+              isLoading={isGenerating}
+              loadingText={generationStatus || "Generating Fresh Workout..."}
+              minH={{ base: "80px", sm: "76px", md: "68px" }}
+              fontSize={{ base: "xl", sm: "xl", md: "xl" }}
+              fontWeight="bold"
+              borderRadius="2xl"
+              shadow="lg"
+              bg="blue.500"
+              _hover={{
+                transform: 'translateY(-3px)',
+                shadow: '2xl',
+                bg: 'blue.600'
+              }}
+              _active={{
+                transform: 'translateY(-1px)',
+                shadow: 'xl'
+              }}
+              transition="all 0.3s ease-in-out"
+              // Enhanced touch targets for mobile with better accessibility
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
+              // Better mobile spacing and visual hierarchy
+              sx={{
+                '@media (max-width: 768px)': {
+                  fontSize: 'xl',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px',
+                  boxShadow: '0 8px 25px rgba(66, 153, 225, 0.3)'
+                }
+              }}
+            >
+              Generate Fresh AI Workout
+            </Button>
 
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            size={{ base: "lg", md: "md" }}
-            minH={{ base: "48px", md: "auto" }}
-            fontSize={{ base: "md", md: "md" }}
-            // Enhanced touch targets for mobile
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              touchAction: 'manipulation'
-            }}
-          >
-            Back to Dashboard
-          </Button>
-        </VStack>
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              size={{ base: "lg", md: "md" }}
+              minH={{ base: "52px", md: "44px" }}
+              fontSize={{ base: "md", md: "md" }}
+              fontWeight="medium"
+              color={subtextColor}
+              _hover={{
+                bg: "gray.100",
+                color: textColor
+              }}
+              // Enhanced touch targets for mobile
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
+            >
+              Back to Dashboard
+            </Button>
+          </VStack>
+        </Box>
       </VStack>
+      </Box>
     );
   }
 
@@ -1940,13 +2021,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         )}
 
         {!isWorkoutActive && (
-          <VStack spacing={{ base: 3, md: 4 }} w="100%">
+          <VStack spacing={{ base: 4, md: 4 }} w="100%" px={{ base: 1, md: 0 }}>
             <Button
               colorScheme="blue"
               variant="outline"
               size="lg"
               w="100%"
-              leftIcon={<Icon as={PiLightningBold} />}
+              leftIcon={<Icon as={PiLightningBold} boxSize={{ base: 5, md: 4 }} />}
               onClick={() => {
                 // Clear current workout to show generation form
                 setCurrentWorkout(null);
@@ -1960,15 +2041,19 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                   console.log('🔄 CLEARED WORKOUT STATE - Showing generation form');
                 }
               }}
-              py={{ base: 5, md: 6 }}
-              minH={{ base: "64px", md: "auto" }}
-              fontSize={{ base: "lg", md: "xl" }}
+              py={{ base: 6, md: 6 }}
+              px={{ base: 6, md: 8 }}
+              minH={{ base: "72px", sm: "68px", md: "60px" }}
+              fontSize={{ base: "lg", sm: "lg", md: "xl" }}
               fontWeight="bold"
               borderRadius="xl"
+              borderWidth="2px"
+              shadow="md"
               _hover={{
                 transform: 'translateY(-2px)',
                 shadow: 'xl',
-                bg: 'blue.50'
+                bg: 'blue.50',
+                borderColor: 'blue.400'
               }}
               _active={{
                 transform: 'translateY(0px)',
@@ -1979,6 +2064,14 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
               style={{
                 WebkitTapHighlightColor: 'transparent',
                 touchAction: 'manipulation'
+              }}
+              // Better mobile spacing and visual hierarchy
+              sx={{
+                '@media (max-width: 768px)': {
+                  fontSize: 'lg',
+                  fontWeight: 'bold',
+                  letterSpacing: '0.5px'
+                }
               }}
             >
               Generate New Workout
