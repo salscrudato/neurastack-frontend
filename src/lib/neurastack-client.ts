@@ -101,7 +101,7 @@ export const NEURASTACK_ENDPOINTS = {
 
   // New optimized workout endpoints (3-endpoint system) - Using enhanced API specification
   WORKOUT_GENERATE: '/workout/generate-workout',
-  WORKOUT_COMPLETE: '/workout/workout-completion',
+  WORKOUT_COMPLETE: '/workout/complete-workout',
   WORKOUT_HISTORY: '/workout/workout-history',
 
   // Legacy workout endpoint (for backward compatibility)
