@@ -568,8 +568,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             generationTime: performance.now() - startTime,
             version: '3.0.0', // Updated for backend-optimized API
             // New flexible API metadata
-            correlationId: response.correlationId,
-            approach: response.data.metadata.approach
+            correlationId: response.correlationId
           }
         };
 
