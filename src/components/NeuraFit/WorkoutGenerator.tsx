@@ -1705,26 +1705,23 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       )}
 
       <Box
-        minH="100%"
-        h="100%"
+        minH="100vh"
         overflow={{ base: "auto", md: "auto" }}
         overflowX="hidden"
         style={{ WebkitOverflowScrolling: 'touch' }}
         className={`neurafit-scroll-container ${isWorkoutActive ? 'neurafit-workout-active' : ''} neurafit-no-zoom`}
-        // Enhanced mobile support with proper viewport constraints
+        // Enhanced mobile support - remove height constraints that cut off content
         sx={{
           '@media (max-width: 768px)': {
-            // Ensure workout content fits within mobile viewport
-            maxHeight: 'calc(100vh - 56px)',
-            height: 'calc(100vh - 56px)',
+            // Allow full height scrolling on mobile
+            minHeight: 'calc(100vh - 56px)',
           },
           '@media (min-width: 769px)': {
-            maxHeight: 'calc(100vh - 64px)',
-            height: 'calc(100vh - 64px)',
+            minHeight: 'calc(100vh - 64px)',
           }
         }}
       >
-      <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch" w="100%" maxW="4xl" mx="auto" className="neurafit-workout-container">
+      <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch" w="100%" maxW="4xl" mx="auto" className="neurafit-workout-container" pb={{ base: 32, md: 16 }}>
       {/* Workout Header */}
       <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }} mx={{ base: 1, md: 0 }}>
         <CardBody p={{ base: 3, md: 4, lg: 6 }}>
@@ -2099,8 +2096,19 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         </VStack>
       )}
 
-      {/* Action Buttons */}
-      <VStack spacing={{ base: 3, md: 4 }} px={{ base: 2, md: 0 }}>
+      {/* Action Buttons - Always visible with proper spacing */}
+      <Box
+        position="sticky"
+        bottom={0}
+        bg="white"
+        borderTop="1px solid"
+        borderColor="gray.200"
+        p={{ base: 4, md: 4 }}
+        mt={{ base: 6, md: 8 }}
+        zIndex={10}
+        boxShadow="0 -4px 6px -1px rgba(0, 0, 0, 0.1)"
+      >
+        <VStack spacing={{ base: 3, md: 4 }} w="100%" maxW="4xl" mx="auto">
         {!isWorkoutActive ? (
           <Button
             colorScheme="blue"
@@ -2273,7 +2281,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             </Button>
           </VStack>
         )}
-      </VStack>
+        </VStack>
+      </Box>
       </VStack>
     </Box>
     </>

@@ -1,19 +1,19 @@
 import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  Icon,
-  SimpleGrid,
-  Text,
-  useColorModeValue,
-  VStack
+    Box,
+    Button,
+    Card,
+    CardBody,
+    Icon,
+    SimpleGrid,
+    Text,
+    useColorModeValue,
+    VStack
 } from '@chakra-ui/react';
 import {
-  PiClockBold,
-  PiHeartBold,
-  PiPlayBold,
-  PiTrophyBold
+    PiClockBold,
+    PiHeartBold,
+    PiPlayBold,
+    PiTrophyBold
 } from 'react-icons/pi';
 
 interface DashboardProps {
@@ -146,10 +146,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
-                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" align="center" h="100%">
                   <Icon as={PiTrophyBold} boxSize={{ base: 5, md: 4 }} color="blue.400" />
-                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3" textAlign="center">
                     Fitness Level
                   </Text>
                 </VStack>
@@ -172,10 +172,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
-                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" align="center" h="100%">
                   <Icon as={PiHeartBold} boxSize={{ base: 5, md: 4 }} color="green.400" />
-                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3" textAlign="center">
                     Goals
                   </Text>
                 </VStack>
@@ -198,10 +198,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
-                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" align="center" h="100%">
                   <Icon as={PiTrophyBold} boxSize={{ base: 5, md: 4 }} color="orange.400" />
-                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3" textAlign="center">
                     Equipment
                   </Text>
                 </VStack>
@@ -224,10 +224,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
-                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" align="center" h="100%">
                   <Icon as={PiHeartBold} boxSize={{ base: 5, md: 4 }} color="teal.400" />
-                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3" textAlign="center">
                     Personal Info
                   </Text>
                 </VStack>
@@ -250,10 +250,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
-                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" align="center" h="100%">
                   <Icon as={PiHeartBold} boxSize={{ base: 5, md: 4 }} color="red.400" />
-                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3" textAlign="center">
                     Injuries & Limitations
                   </Text>
                 </VStack>
@@ -276,10 +276,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
               }}
             >
-              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }}>
-                <VStack spacing={{ base: 2, md: 1 }} justify="center" h="100%">
+              <CardBody p={{ base: 3, md: 3 }} textAlign="center" minH={{ base: "80px", md: "70px" }} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={{ base: 2, md: 1 }} justify="center" align="center" h="100%">
                   <Icon as={PiClockBold} boxSize={{ base: 5, md: 4 }} color="purple.400" />
-                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3">
+                  <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="medium" color="gray.700" lineHeight="1.3" textAlign="center">
                     Time Preferences
                   </Text>
                 </VStack>
