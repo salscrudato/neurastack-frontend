@@ -1,5 +1,4 @@
 import {
-    Badge,
     Box,
     Button,
     Divider,
@@ -7,23 +6,14 @@ import {
     FormLabel,
     HStack,
     Icon,
-    NumberDecrementStepper,
-    NumberIncrementStepper,
-    NumberInput,
-    NumberInputField,
-    NumberInputStepper,
-    SimpleGrid,
     Text,
-    Tooltip,
     useColorModeValue,
     useToast,
-    VStack,
-    Wrap,
-    WrapItem
+    VStack
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { FaUser, FaUserFriends, FaUserSlash } from 'react-icons/fa';
-import { PiArrowUpBold, PiCalendarBold, PiMinusBold, PiPlusBold, PiScalesBold, PiStarBold } from 'react-icons/pi';
+import { PiCalendarBold, PiScalesBold } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
@@ -33,24 +23,24 @@ interface PersonalInfoStepProps {
   isEditingFromDashboard?: boolean;
 }
 
-// Age and weight range definitions
+// Age and weight range definitions for smart defaults
 const ageRanges = [
-  { label: 'Teen', range: '13-17', midpoint: 15, color: 'purple', icon: PiStarBold },
-  { label: 'Young Adult', range: '18-25', midpoint: 22, color: 'blue', icon: PiArrowUpBold },
-  { label: 'Adult', range: '26-35', midpoint: 30, color: 'green', icon: PiCalendarBold },
-  { label: 'Middle Adult', range: '36-45', midpoint: 40, color: 'orange', icon: PiCalendarBold },
-  { label: 'Mature Adult', range: '46-55', midpoint: 50, color: 'red', icon: PiCalendarBold },
-  { label: 'Senior', range: '56-65', midpoint: 60, color: 'teal', icon: PiCalendarBold },
-  { label: 'Elder', range: '66+', midpoint: 70, color: 'gray', icon: PiCalendarBold },
+  { label: 'Teen (13-17)', value: '13-17', midpoint: 15 },
+  { label: 'Young Adult (18-25)', value: '18-25', midpoint: 22 },
+  { label: 'Adult (26-35)', value: '26-35', midpoint: 30 },
+  { label: 'Middle Adult (36-45)', value: '36-45', midpoint: 40 },
+  { label: 'Mature Adult (46-55)', value: '46-55', midpoint: 50 },
+  { label: 'Senior (56-65)', value: '56-65', midpoint: 60 },
+  { label: 'Elder (66+)', value: '66+', midpoint: 70 },
 ];
 
 const weightRanges = [
-  { label: 'Light', range: '90-125', midpoint: 108, color: 'cyan', icon: PiStarBold },
-  { label: 'Moderate Light', range: '126-150', midpoint: 138, color: 'blue', icon: PiArrowUpBold },
-  { label: 'Moderate', range: '151-175', midpoint: 163, color: 'green', icon: PiScalesBold },
-  { label: 'Moderate Heavy', range: '176-200', midpoint: 188, color: 'orange', icon: PiScalesBold },
-  { label: 'Heavy', range: '201-225', midpoint: 213, color: 'red', icon: PiScalesBold },
-  { label: 'Very Heavy', range: '226+', midpoint: 240, color: 'purple', icon: PiScalesBold },
+  { label: 'Light (90-125 lbs)', value: '90-125', midpoint: 108 },
+  { label: 'Moderate Light (126-150 lbs)', value: '126-150', midpoint: 138 },
+  { label: 'Moderate (151-175 lbs)', value: '151-175', midpoint: 163 },
+  { label: 'Moderate Heavy (176-200 lbs)', value: '176-200', midpoint: 188 },
+  { label: 'Heavy (201-225 lbs)', value: '201-225', midpoint: 213 },
+  { label: 'Very Heavy (226+ lbs)', value: '226+', midpoint: 240 },
 ];
 
 export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboard }: PersonalInfoStepProps) {
@@ -144,29 +134,18 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
   }, [onBack]);
 
   // Helper functions for range selection
-  const handleAgeRangeSelect = (midpoint: number) => {
-    setAge(midpoint);
+  const handleAgeRangeSelect = (rangeValue: string) => {
+    const selectedRange = ageRanges.find(range => range.value === rangeValue);
+    if (selectedRange) {
+      setAge(selectedRange.midpoint);
+    }
   };
 
-  const handleWeightRangeSelect = (midpoint: number) => {
-    setWeight(midpoint);
-  };
-
-  // Get selected range for display
-  const getSelectedAgeRange = () => {
-    if (!age) return null;
-    return ageRanges.find(range =>
-      age >= parseInt(range.range.split('-')[0]) &&
-      (range.range.includes('+') ? true : age <= parseInt(range.range.split('-')[1]))
-    );
-  };
-
-  const getSelectedWeightRange = () => {
-    if (!weight) return null;
-    return weightRanges.find(range =>
-      weight >= parseInt(range.range.split('-')[0]) &&
-      (range.range.includes('+') ? true : weight <= parseInt(range.range.split('-')[1]))
-    );
+  const handleWeightRangeSelect = (rangeValue: string) => {
+    const selectedRange = weightRanges.find(range => range.value === rangeValue);
+    if (selectedRange) {
+      setWeight(selectedRange.midpoint);
+    }
   };
 
   const canProceed = age !== undefined && age > 0; // Age is required
@@ -193,334 +172,196 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
         </Text>
       </VStack>
 
-      {/* Optimized Form */}
-      <VStack spacing={{ base: 6, md: 7 }} align="stretch" flex="1 1 auto" justify="center" px={{ base: 1, md: 0 }}>
-        {/* Age Input - Enhanced with Range Selectors */}
+      {/* Clean, Modern Form */}
+      <VStack spacing={{ base: 8, md: 10 }} align="stretch" flex="1 1 auto" justify="center" px={{ base: 2, md: 4 }}>
+        {/* Age Selection */}
         <FormControl isRequired>
-          <FormLabel color={textColor} fontSize="md" fontWeight="semibold" mb={4}>
+          <FormLabel color={textColor} fontSize="lg" fontWeight="bold" mb={6}>
             <HStack spacing={3}>
-              <Icon as={PiCalendarBold} color="blue.500" boxSize={5} />
+              <Icon as={PiCalendarBold} color="blue.500" boxSize={6} />
               <Text>Age</Text>
-              {getSelectedAgeRange() && (
-                <Badge colorScheme={getSelectedAgeRange()!.color} variant="subtle" fontSize="xs">
-                  {getSelectedAgeRange()!.label}
-                </Badge>
-              )}
             </HStack>
           </FormLabel>
 
           <VStack spacing={4}>
-            {/* Age Range Quick Selectors */}
-            <Box w="100%">
-              <Text fontSize="sm" color={subtextColor} mb={3} textAlign="center">
-                Quick Select Age Range
-              </Text>
-              <Wrap justify="center" spacing={2}>
-                {ageRanges.map((range) => (
-                  <WrapItem key={range.label}>
-                    <Tooltip label={`${range.range} years`} hasArrow>
-                      <Button
-                        size="sm"
-                        variant={getSelectedAgeRange()?.label === range.label ? "solid" : "outline"}
-                        colorScheme={range.color}
-                        onClick={() => handleAgeRangeSelect(range.midpoint)}
-                        leftIcon={<Icon as={range.icon} boxSize={3} />}
-                        fontSize="xs"
-                        h="32px"
-                        px={3}
-                        bg={getSelectedAgeRange()?.label === range.label ?
-                          `${range.color}.500` :
-                          'rgba(255, 255, 255, 0.8)'
-                        }
-                        backdropFilter="blur(10px)"
-                        border="1px solid"
-                        borderColor={getSelectedAgeRange()?.label === range.label ?
-                          `${range.color}.500` :
-                          'rgba(255, 255, 255, 0.3)'
-                        }
-                        _hover={{
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px rgba(0, 0, 0, 0.15)`,
-                          bg: getSelectedAgeRange()?.label === range.label ?
-                            `${range.color}.600` :
-                            'rgba(255, 255, 255, 0.95)'
-                        }}
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                      >
-                        {range.range}
-                      </Button>
-                    </Tooltip>
-                  </WrapItem>
-                ))}
-              </Wrap>
-            </Box>
-
-            {/* Precise Age Input */}
-            <NumberInput
-              value={age || ''}
-              onChange={(valueString, valueNumber) => {
-                if (valueString === '') {
-                  setAge(undefined);
-                } else if (!isNaN(valueNumber) && valueNumber >= 13 && valueNumber <= 100) {
-                  setAge(valueNumber);
-                }
-              }}
-              min={13}
-              max={100}
-              step={1}
+            {/* Age Range Selector */}
+            <Select
+              placeholder="Select your age range"
+              value=""
+              onChange={(e) => handleAgeRangeSelect(e.target.value)}
               size="lg"
-              bg="rgba(255, 255, 255, 0.9)"
-              backdropFilter="blur(12px)"
-              borderRadius="xl"
+              bg="rgba(255, 255, 255, 0.95)"
+              backdropFilter="blur(16px)"
+              borderRadius="2xl"
               borderWidth="2px"
-              borderColor={age ? "blue.300" : "rgba(255, 255, 255, 0.3)"}
-              shadow="0 8px 32px rgba(31, 38, 135, 0.15)"
+              borderColor="rgba(79, 156, 249, 0.2)"
+              shadow="0 8px 32px rgba(31, 38, 135, 0.1)"
+              fontSize={{ base: "md", md: "lg" }}
+              fontWeight="medium"
+              h={{ base: "60px", md: "64px" }}
               _hover={{
-                borderColor: "blue.400",
-                shadow: "0 12px 40px rgba(31, 38, 135, 0.2)",
-                bg: "rgba(255, 255, 255, 0.95)"
+                borderColor: "blue.300",
+                shadow: "0 12px 40px rgba(31, 38, 135, 0.15)",
+                bg: "rgba(255, 255, 255, 1)"
               }}
               _focus={{
                 borderColor: "blue.500",
-                boxShadow: "0 0 0 3px rgba(66, 153, 225, 0.1), 0 16px 40px rgba(79, 156, 249, 0.15)"
+                boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.1), 0 16px 40px rgba(79, 156, 249, 0.2)"
               }}
             >
-              <NumberInputField
-                placeholder="Enter exact age"
-                textAlign="center"
-                fontWeight="bold"
-                fontSize={{ base: "xl", md: "2xl" }}
-                h={{ base: "72px", md: "80px" }}
-                color={age ? "blue.600" : textColor}
-                _placeholder={{
-                  color: subtextColor,
-                  fontSize: { base: "md", md: "lg" },
-                  fontWeight: "medium"
-                }}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                style={{
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation'
-                }}
-              />
-              <NumberInputStepper w={{ base: "48px", md: "40px" }}>
-                <NumberIncrementStepper
-                  bg="rgba(255, 255, 255, 0.8)"
-                  backdropFilter="blur(8px)"
+              {ageRanges.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
+              ))}
+            </Select>
+
+            {/* Fine-tune Age Input */}
+            {age && (
+              <Box w="100%">
+                <Text fontSize="sm" color={subtextColor} mb={3} textAlign="center">
+                  Fine-tune your exact age
+                </Text>
+                <Input
+                  type="number"
+                  value={age}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 13 && value <= 100) {
+                      setAge(value);
+                    }
+                  }}
+                  min={13}
+                  max={100}
+                  size="lg"
+                  textAlign="center"
+                  fontWeight="bold"
+                  fontSize={{ base: "xl", md: "2xl" }}
+                  bg="rgba(255, 255, 255, 0.95)"
+                  backdropFilter="blur(16px)"
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="blue.300"
+                  shadow="0 8px 32px rgba(79, 156, 249, 0.15)"
+                  h={{ base: "60px", md: "64px" }}
+                  color="blue.600"
                   _hover={{
-                    bg: "rgba(79, 156, 249, 0.1)",
-                    borderColor: "blue.300"
+                    borderColor: "blue.400",
+                    shadow: "0 12px 40px rgba(79, 156, 249, 0.2)"
                   }}
-                  _active={{
-                    bg: "rgba(79, 156, 249, 0.2)",
-                    transform: "scale(0.95)"
+                  _focus={{
+                    borderColor: "blue.500",
+                    boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.1), 0 16px 40px rgba(79, 156, 249, 0.25)"
                   }}
-                  borderColor="rgba(255, 255, 255, 0.3)"
-                  h={{ base: "36px", md: "40px" }}
-                  transition="all 0.2s"
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
-                  }}
-                >
-                  <Icon as={PiPlusBold} boxSize={{ base: 5, md: 4 }} color="blue.500" />
-                </NumberIncrementStepper>
-                <NumberDecrementStepper
-                  bg="rgba(255, 255, 255, 0.8)"
-                  backdropFilter="blur(8px)"
-                  _hover={{
-                    bg: "rgba(79, 156, 249, 0.1)",
-                    borderColor: "blue.300"
-                  }}
-                  _active={{
-                    bg: "rgba(79, 156, 249, 0.2)",
-                    transform: "scale(0.95)"
-                  }}
-                  borderColor="rgba(255, 255, 255, 0.3)"
-                  h={{ base: "36px", md: "40px" }}
-                  transition="all 0.2s"
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
-                  }}
-                >
-                  <Icon as={PiMinusBold} boxSize={{ base: 5, md: 4 }} color="blue.500" />
-                </NumberDecrementStepper>
-              </NumberInputStepper>
-            </NumberInput>
+                  placeholder="Enter your age"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+              </Box>
+            )}
           </VStack>
         </FormControl>
 
-        <Divider />
+        <Divider opacity={0.3} />
 
-        {/* Weight Input - Enhanced with Range Selectors */}
+        {/* Weight Selection */}
         <FormControl>
-          <FormLabel color={textColor} fontSize="md" fontWeight="semibold" mb={4}>
+          <FormLabel color={textColor} fontSize="lg" fontWeight="bold" mb={6}>
             <HStack spacing={3}>
-              <Icon as={PiScalesBold} color="green.500" boxSize={5} />
+              <Icon as={PiScalesBold} color="green.500" boxSize={6} />
               <Text>Weight (Optional)</Text>
-              {getSelectedWeightRange() && (
-                <Badge colorScheme={getSelectedWeightRange()!.color} variant="subtle" fontSize="xs">
-                  {getSelectedWeightRange()!.label}
-                </Badge>
-              )}
             </HStack>
           </FormLabel>
 
           <VStack spacing={4}>
-            {/* Weight Range Quick Selectors */}
-            <Box w="100%">
-              <Text fontSize="sm" color={subtextColor} mb={3} textAlign="center">
-                Quick Select Weight Range (lbs)
-              </Text>
-              <Wrap justify="center" spacing={2}>
-                {weightRanges.map((range) => (
-                  <WrapItem key={range.label}>
-                    <Tooltip label={`${range.range} lbs`} hasArrow>
-                      <Button
-                        size="sm"
-                        variant={getSelectedWeightRange()?.label === range.label ? "solid" : "outline"}
-                        colorScheme={range.color}
-                        onClick={() => handleWeightRangeSelect(range.midpoint)}
-                        leftIcon={<Icon as={range.icon} boxSize={3} />}
-                        fontSize="xs"
-                        h="32px"
-                        px={3}
-                        bg={getSelectedWeightRange()?.label === range.label ?
-                          `${range.color}.500` :
-                          'rgba(255, 255, 255, 0.8)'
-                        }
-                        backdropFilter="blur(10px)"
-                        border="1px solid"
-                        borderColor={getSelectedWeightRange()?.label === range.label ?
-                          `${range.color}.500` :
-                          'rgba(255, 255, 255, 0.3)'
-                        }
-                        _hover={{
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px rgba(0, 0, 0, 0.15)`,
-                          bg: getSelectedWeightRange()?.label === range.label ?
-                            `${range.color}.600` :
-                            'rgba(255, 255, 255, 0.95)'
-                        }}
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                      >
-                        {range.range}
-                      </Button>
-                    </Tooltip>
-                  </WrapItem>
-                ))}
-              </Wrap>
-            </Box>
-
-            {/* Precise Weight Input */}
-            <NumberInput
-              value={weight || ''}
-              onChange={(valueString, valueNumber) => {
-                if (valueString === '') {
-                  setWeight(undefined);
-                } else if (!isNaN(valueNumber) && valueNumber >= 50 && valueNumber <= 500) {
-                  setWeight(valueNumber);
-                }
-              }}
-              min={50}
-              max={500}
-              step={1}
+            {/* Weight Range Selector */}
+            <Select
+              placeholder="Select your weight range"
+              value=""
+              onChange={(e) => handleWeightRangeSelect(e.target.value)}
               size="lg"
-              bg="rgba(255, 255, 255, 0.9)"
-              backdropFilter="blur(12px)"
-              borderRadius="xl"
+              bg="rgba(255, 255, 255, 0.95)"
+              backdropFilter="blur(16px)"
+              borderRadius="2xl"
               borderWidth="2px"
-              borderColor={weight ? "green.300" : "rgba(255, 255, 255, 0.3)"}
-              shadow="0 8px 32px rgba(31, 38, 135, 0.15)"
+              borderColor="rgba(72, 187, 120, 0.2)"
+              shadow="0 8px 32px rgba(31, 38, 135, 0.1)"
+              fontSize={{ base: "md", md: "lg" }}
+              fontWeight="medium"
+              h={{ base: "60px", md: "64px" }}
               _hover={{
-                borderColor: "green.400",
-                shadow: "0 12px 40px rgba(31, 38, 135, 0.2)",
-                bg: "rgba(255, 255, 255, 0.95)"
+                borderColor: "green.300",
+                shadow: "0 12px 40px rgba(31, 38, 135, 0.15)",
+                bg: "rgba(255, 255, 255, 1)"
               }}
               _focus={{
                 borderColor: "green.500",
-                boxShadow: "0 0 0 3px rgba(72, 187, 120, 0.1), 0 16px 40px rgba(72, 187, 120, 0.15)"
+                boxShadow: "0 0 0 3px rgba(72, 187, 120, 0.1), 0 16px 40px rgba(72, 187, 120, 0.2)"
               }}
             >
-              <NumberInputField
-                placeholder="Enter exact weight (lbs)"
-                textAlign="center"
-                fontWeight="bold"
-                fontSize={{ base: "xl", md: "2xl" }}
-                h={{ base: "72px", md: "80px" }}
-                color={weight ? "green.600" : textColor}
-                _placeholder={{
-                  color: subtextColor,
-                  fontSize: { base: "md", md: "lg" },
-                  fontWeight: "medium"
-                }}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                style={{
-                  WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation'
-                }}
-              />
-              <NumberInputStepper w={{ base: "48px", md: "40px" }}>
-                <NumberIncrementStepper
-                  bg="rgba(255, 255, 255, 0.8)"
-                  backdropFilter="blur(8px)"
+              {weightRanges.map((range) => (
+                <option key={range.value} value={range.value}>
+                  {range.label}
+                </option>
+              ))}
+            </Select>
+
+            {/* Fine-tune Weight Input */}
+            {weight && (
+              <Box w="100%">
+                <Text fontSize="sm" color={subtextColor} mb={3} textAlign="center">
+                  Fine-tune your exact weight (lbs)
+                </Text>
+                <Input
+                  type="number"
+                  value={weight}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 50 && value <= 500) {
+                      setWeight(value);
+                    }
+                  }}
+                  min={50}
+                  max={500}
+                  size="lg"
+                  textAlign="center"
+                  fontWeight="bold"
+                  fontSize={{ base: "xl", md: "2xl" }}
+                  bg="rgba(255, 255, 255, 0.95)"
+                  backdropFilter="blur(16px)"
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="green.300"
+                  shadow="0 8px 32px rgba(72, 187, 120, 0.15)"
+                  h={{ base: "60px", md: "64px" }}
+                  color="green.600"
                   _hover={{
-                    bg: "rgba(72, 187, 120, 0.1)",
-                    borderColor: "green.300"
+                    borderColor: "green.400",
+                    shadow: "0 12px 40px rgba(72, 187, 120, 0.2)"
                   }}
-                  _active={{
-                    bg: "rgba(72, 187, 120, 0.2)",
-                    transform: "scale(0.95)"
+                  _focus={{
+                    borderColor: "green.500",
+                    boxShadow: "0 0 0 3px rgba(72, 187, 120, 0.1), 0 16px 40px rgba(72, 187, 120, 0.25)"
                   }}
-                  borderColor="rgba(255, 255, 255, 0.3)"
-                  h={{ base: "36px", md: "40px" }}
-                  transition="all 0.2s"
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
-                  }}
-                >
-                  <Icon as={PiPlusBold} boxSize={{ base: 5, md: 4 }} color="green.500" />
-                </NumberIncrementStepper>
-                <NumberDecrementStepper
-                  bg="rgba(255, 255, 255, 0.8)"
-                  backdropFilter="blur(8px)"
-                  _hover={{
-                    bg: "rgba(72, 187, 120, 0.1)",
-                    borderColor: "green.300"
-                  }}
-                  _active={{
-                    bg: "rgba(72, 187, 120, 0.2)",
-                    transform: "scale(0.95)"
-                  }}
-                  borderColor="rgba(255, 255, 255, 0.3)"
-                  h={{ base: "36px", md: "40px" }}
-                  transition="all 0.2s"
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
-                  }}
-                >
-                  <Icon as={PiMinusBold} boxSize={{ base: 5, md: 4 }} color="green.500" />
-                </NumberDecrementStepper>
-              </NumberInputStepper>
-            </NumberInput>
+                  placeholder="Enter your weight"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+              </Box>
+            )}
 
             {/* Skip Weight Option */}
             <Button
-              size="sm"
+              size="md"
               variant="ghost"
               colorScheme="gray"
               onClick={() => setWeight(undefined)}
               fontSize="sm"
               fontWeight="medium"
-              minH={{ base: "44px", md: "auto" }}
-              bg="rgba(255, 255, 255, 0.6)"
-              backdropFilter="blur(8px)"
-              border="1px solid rgba(255, 255, 255, 0.2)"
+              bg="rgba(255, 255, 255, 0.7)"
+              backdropFilter="blur(12px)"
+              borderRadius="xl"
+              border="1px solid rgba(255, 255, 255, 0.3)"
               _hover={{
                 bg: "rgba(255, 255, 255, 0.8)",
                 transform: "translateY(-1px)"
