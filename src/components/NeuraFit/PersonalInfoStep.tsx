@@ -3,19 +3,13 @@ import {
     Button,
     Divider,
     FormControl,
-    FormLabel,
-    HStack,
-    Icon,
-    Input,
-    Select,
+    SimpleGrid,
     Text,
     useColorModeValue,
     useToast,
     VStack
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
-import { FaUser } from 'react-icons/fa';
-import { PiCalendarBold, PiScalesBold } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
@@ -25,24 +19,23 @@ interface PersonalInfoStepProps {
   isEditingFromDashboard?: boolean;
 }
 
-// Age and weight range definitions for smart defaults
+// Age and weight range definitions - 6 optimized ranges each
 const ageRanges = [
-  { label: 'Teen (13-17)', value: '13-17', midpoint: 15 },
-  { label: 'Young Adult (18-25)', value: '18-25', midpoint: 22 },
-  { label: 'Adult (26-35)', value: '26-35', midpoint: 30 },
-  { label: 'Middle Adult (36-45)', value: '36-45', midpoint: 40 },
-  { label: 'Mature Adult (46-55)', value: '46-55', midpoint: 50 },
-  { label: 'Senior (56-65)', value: '56-65', midpoint: 60 },
-  { label: 'Elder (66+)', value: '66+', midpoint: 70 },
+  { label: '13-17', value: '13-17', midpoint: 15 },
+  { label: '18-25', value: '18-25', midpoint: 22 },
+  { label: '26-35', value: '26-35', midpoint: 30 },
+  { label: '36-45', value: '36-45', midpoint: 40 },
+  { label: '46-55', value: '46-55', midpoint: 50 },
+  { label: '56+', value: '56+', midpoint: 65 },
 ];
 
 const weightRanges = [
-  { label: 'Light (90-125 lbs)', value: '90-125', midpoint: 108 },
-  { label: 'Moderate Light (126-150 lbs)', value: '126-150', midpoint: 138 },
-  { label: 'Moderate (151-175 lbs)', value: '151-175', midpoint: 163 },
-  { label: 'Moderate Heavy (176-200 lbs)', value: '176-200', midpoint: 188 },
-  { label: 'Heavy (201-225 lbs)', value: '201-225', midpoint: 213 },
-  { label: 'Very Heavy (226+ lbs)', value: '226+', midpoint: 240 },
+  { label: '90-125', value: '90-125', midpoint: 108 },
+  { label: '126-150', value: '126-150', midpoint: 138 },
+  { label: '151-175', value: '151-175', midpoint: 163 },
+  { label: '176-200', value: '176-200', midpoint: 188 },
+  { label: '201-225', value: '201-225', midpoint: 213 },
+  { label: '226+', value: '226+', midpoint: 240 },
 ];
 
 export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboard }: PersonalInfoStepProps) {
@@ -60,7 +53,6 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
 
   // Theme colors
   const textColor = useColorModeValue('gray.800', 'white');
-  const subtextColor = useColorModeValue('gray.600', 'gray.400');
 
   // Validation function
   const validateForm = useCallback(() => {
@@ -131,20 +123,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
     onBack();
   }, [onBack]);
 
-  // Helper functions for range selection
-  const handleAgeRangeSelect = (rangeValue: string) => {
-    const selectedRange = ageRanges.find(range => range.value === rangeValue);
-    if (selectedRange) {
-      setAge(selectedRange.midpoint);
-    }
-  };
 
-  const handleWeightRangeSelect = (rangeValue: string) => {
-    const selectedRange = weightRanges.find(range => range.value === rangeValue);
-    if (selectedRange) {
-      setWeight(selectedRange.midpoint);
-    }
-  };
 
   const canProceed = age !== undefined && age > 0; // Age is required
 
@@ -158,261 +137,265 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
       p={{ base: 3, md: 4 }}
       overflow="hidden"
     >
-      {/* Header - Simplified */}
-      <VStack spacing={2} textAlign="center" flex="0 0 auto">
+      {/* Header - Compact */}
+      <VStack spacing={1} textAlign="center" flex="0 0 auto" mb={4}>
         <Text
-          fontSize={{ base: "xl", md: "2xl" }}
+          fontSize={{ base: "lg", md: "xl" }}
           fontWeight="bold"
           color={textColor}
-          lineHeight="1.25"
+          lineHeight="1.2"
         >
           Personal Information
         </Text>
       </VStack>
 
-      {/* Clean, Modern Form */}
-      <VStack spacing={{ base: 8, md: 10 }} align="stretch" flex="1 1 auto" justify="center" px={{ base: 2, md: 4 }}>
-        {/* Age Selection */}
+      {/* Mobile-Optimized Form */}
+      <VStack spacing={{ base: 5, md: 6 }} align="stretch" flex="1 1 auto" px={{ base: 1, md: 2 }}>
+        {/* Age Selection - 6 Boxes */}
         <FormControl isRequired>
-          <FormLabel color={textColor} fontSize="lg" fontWeight="bold" mb={6}>
-            <HStack spacing={3}>
-              <Icon as={PiCalendarBold} color="blue.500" boxSize={6} />
-              <Text>Age</Text>
-            </HStack>
-          </FormLabel>
-
-          <VStack spacing={4}>
-            {/* Age Range Selector */}
-            <Select
-              placeholder="Select your age range"
-              value=""
-              onChange={(e) => handleAgeRangeSelect(e.target.value)}
-              size="lg"
-              bg="rgba(255, 255, 255, 0.95)"
-              backdropFilter="blur(16px)"
-              borderRadius="2xl"
-              borderWidth="2px"
-              borderColor="rgba(79, 156, 249, 0.2)"
-              shadow="0 8px 32px rgba(31, 38, 135, 0.1)"
-              fontSize={{ base: "md", md: "lg" }}
-              fontWeight="medium"
-              h={{ base: "60px", md: "64px" }}
-              _hover={{
-                borderColor: "blue.300",
-                shadow: "0 12px 40px rgba(31, 38, 135, 0.15)",
-                bg: "rgba(255, 255, 255, 1)"
-              }}
-              _focus={{
-                borderColor: "blue.500",
-                boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.1), 0 16px 40px rgba(79, 156, 249, 0.2)"
-              }}
-            >
-              {ageRanges.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </Select>
-
-            {/* Fine-tune Age Input */}
-            {age && (
-              <Box w="100%">
-                <Text fontSize="sm" color={subtextColor} mb={3} textAlign="center">
-                  Fine-tune your exact age
-                </Text>
-                <Input
-                  type="number"
-                  value={age}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 13 && value <= 100) {
-                      setAge(value);
-                    }
-                  }}
-                  min={13}
-                  max={100}
-                  size="lg"
-                  textAlign="center"
-                  fontWeight="bold"
-                  fontSize={{ base: "xl", md: "2xl" }}
-                  bg="rgba(255, 255, 255, 0.95)"
-                  backdropFilter="blur(16px)"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="blue.300"
-                  shadow="0 8px 32px rgba(79, 156, 249, 0.15)"
-                  h={{ base: "60px", md: "64px" }}
-                  color="blue.600"
-                  _hover={{
-                    borderColor: "blue.400",
-                    shadow: "0 12px 40px rgba(79, 156, 249, 0.2)"
-                  }}
-                  _focus={{
-                    borderColor: "blue.500",
-                    boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.1), 0 16px 40px rgba(79, 156, 249, 0.25)"
-                  }}
-                  placeholder="Enter your age"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                />
-              </Box>
-            )}
-          </VStack>
+          <Text fontSize="md" fontWeight="semibold" color={textColor} mb={3} textAlign="center">
+            Age Range
+          </Text>
+          <SimpleGrid columns={3} spacing={2} w="100%">
+            {ageRanges.map((range) => (
+              <Button
+                key={range.value}
+                variant={age === range.midpoint ? "solid" : "outline"}
+                colorScheme={age === range.midpoint ? "blue" : "gray"}
+                onClick={() => setAge(range.midpoint)}
+                h={{ base: "48px", md: "52px" }}
+                fontSize={{ base: "sm", md: "md" }}
+                fontWeight="bold"
+                bg={age === range.midpoint ?
+                  'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)' :
+                  'rgba(255, 255, 255, 0.9)'
+                }
+                backdropFilter="blur(12px)"
+                borderRadius="xl"
+                borderWidth="2px"
+                borderColor={age === range.midpoint ?
+                  "transparent" :
+                  "rgba(255, 255, 255, 0.4)"
+                }
+                color={age === range.midpoint ? "white" : textColor}
+                shadow={age === range.midpoint ?
+                  "0 4px 20px rgba(79, 156, 249, 0.4)" :
+                  "0 2px 8px rgba(31, 38, 135, 0.1)"
+                }
+                _hover={{
+                  transform: 'translateY(-1px)',
+                  shadow: age === range.midpoint ?
+                    "0 6px 24px rgba(79, 156, 249, 0.5)" :
+                    "0 4px 12px rgba(31, 38, 135, 0.15)",
+                  bg: age === range.midpoint ?
+                    'linear-gradient(135deg, #3182CE 0%, #553C9A 100%)' :
+                    'rgba(255, 255, 255, 0.95)',
+                  borderColor: age === range.midpoint ?
+                    "transparent" :
+                    "rgba(79, 156, 249, 0.3)"
+                }}
+                _active={{
+                  transform: 'translateY(0px)'
+                }}
+                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              >
+                {range.label}
+              </Button>
+            ))}
+          </SimpleGrid>
         </FormControl>
 
         <Divider opacity={0.3} />
 
-        {/* Weight Selection */}
+        {/* Weight Selection - 6 Boxes */}
         <FormControl>
-          <FormLabel color={textColor} fontSize="lg" fontWeight="bold" mb={6}>
-            <HStack spacing={3}>
-              <Icon as={PiScalesBold} color="green.500" boxSize={6} />
-              <Text>Weight (Optional)</Text>
-            </HStack>
-          </FormLabel>
+          <Text fontSize="md" fontWeight="semibold" color={textColor} mb={3} textAlign="center">
+            Weight Range (lbs)
+          </Text>
+          <SimpleGrid columns={3} spacing={2} w="100%">
+            {weightRanges.map((range) => (
+              <Button
+                key={range.value}
+                variant={weight === range.midpoint ? "solid" : "outline"}
+                colorScheme={weight === range.midpoint ? "green" : "gray"}
+                onClick={() => setWeight(range.midpoint)}
+                h={{ base: "48px", md: "52px" }}
+                fontSize={{ base: "sm", md: "md" }}
+                fontWeight="bold"
+                bg={weight === range.midpoint ?
+                  'linear-gradient(135deg, #48BB78 0%, #38A169 100%)' :
+                  'rgba(255, 255, 255, 0.9)'
+                }
+                backdropFilter="blur(12px)"
+                borderRadius="xl"
+                borderWidth="2px"
+                borderColor={weight === range.midpoint ?
+                  "transparent" :
+                  "rgba(255, 255, 255, 0.4)"
+                }
+                color={weight === range.midpoint ? "white" : textColor}
+                shadow={weight === range.midpoint ?
+                  "0 4px 20px rgba(72, 187, 120, 0.4)" :
+                  "0 2px 8px rgba(31, 38, 135, 0.1)"
+                }
+                _hover={{
+                  transform: 'translateY(-1px)',
+                  shadow: weight === range.midpoint ?
+                    "0 6px 24px rgba(72, 187, 120, 0.5)" :
+                    "0 4px 12px rgba(31, 38, 135, 0.15)",
+                  bg: weight === range.midpoint ?
+                    'linear-gradient(135deg, #38A169 0%, #2F855A 100%)' :
+                    'rgba(255, 255, 255, 0.95)',
+                  borderColor: weight === range.midpoint ?
+                    "transparent" :
+                    "rgba(72, 187, 120, 0.3)"
+                }}
+                _active={{
+                  transform: 'translateY(0px)'
+                }}
+                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              >
+                {range.label}
+              </Button>
+            ))}
+          </SimpleGrid>
+        </FormControl>
 
-          <VStack spacing={4}>
-            {/* Weight Range Selector */}
-            <Select
-              placeholder="Select your weight range"
-              value=""
-              onChange={(e) => handleWeightRangeSelect(e.target.value)}
-              size="lg"
-              bg="rgba(255, 255, 255, 0.95)"
-              backdropFilter="blur(16px)"
-              borderRadius="2xl"
-              borderWidth="2px"
-              borderColor="rgba(72, 187, 120, 0.2)"
-              shadow="0 8px 32px rgba(31, 38, 135, 0.1)"
-              fontSize={{ base: "md", md: "lg" }}
-              fontWeight="medium"
-              h={{ base: "60px", md: "64px" }}
-              _hover={{
-                borderColor: "green.300",
-                shadow: "0 12px 40px rgba(31, 38, 135, 0.15)",
-                bg: "rgba(255, 255, 255, 1)"
-              }}
-              _focus={{
-                borderColor: "green.500",
-                boxShadow: "0 0 0 3px rgba(72, 187, 120, 0.1), 0 16px 40px rgba(72, 187, 120, 0.2)"
-              }}
-            >
-              {weightRanges.map((range) => (
-                <option key={range.value} value={range.value}>
-                  {range.label}
-                </option>
-              ))}
-            </Select>
-
-            {/* Fine-tune Weight Input */}
-            {weight && (
-              <Box w="100%">
-                <Text fontSize="sm" color={subtextColor} mb={3} textAlign="center">
-                  Fine-tune your exact weight (lbs)
-                </Text>
-                <Input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 50 && value <= 500) {
-                      setWeight(value);
-                    }
-                  }}
-                  min={50}
-                  max={500}
-                  size="lg"
-                  textAlign="center"
-                  fontWeight="bold"
-                  fontSize={{ base: "xl", md: "2xl" }}
-                  bg="rgba(255, 255, 255, 0.95)"
-                  backdropFilter="blur(16px)"
-                  borderRadius="xl"
-                  borderWidth="2px"
-                  borderColor="green.300"
-                  shadow="0 8px 32px rgba(72, 187, 120, 0.15)"
-                  h={{ base: "60px", md: "64px" }}
-                  color="green.600"
-                  _hover={{
-                    borderColor: "green.400",
-                    shadow: "0 12px 40px rgba(72, 187, 120, 0.2)"
-                  }}
-                  _focus={{
-                    borderColor: "green.500",
-                    boxShadow: "0 0 0 3px rgba(72, 187, 120, 0.1), 0 16px 40px rgba(72, 187, 120, 0.25)"
-                  }}
-                  placeholder="Enter your weight"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                />
-              </Box>
-            )}
-
-            {/* Skip Weight Option */}
+        {/* Gender Selection - 3 Boxes */}
+        <FormControl>
+          <Text fontSize="md" fontWeight="semibold" color={textColor} mb={3} textAlign="center">
+            Gender (Optional)
+          </Text>
+          <SimpleGrid columns={3} spacing={2} w="100%">
             <Button
-              size="md"
-              variant="ghost"
-              colorScheme="gray"
-              onClick={() => setWeight(undefined)}
-              fontSize="sm"
-              fontWeight="medium"
-              bg="rgba(255, 255, 255, 0.7)"
+              variant={gender === 'male' ? "solid" : "outline"}
+              colorScheme={gender === 'male' ? "purple" : "gray"}
+              onClick={() => setGender(gender === 'male' ? '' : 'male')}
+              h={{ base: "48px", md: "52px" }}
+              fontSize={{ base: "sm", md: "md" }}
+              fontWeight="bold"
+              bg={gender === 'male' ?
+                'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)' :
+                'rgba(255, 255, 255, 0.9)'
+              }
               backdropFilter="blur(12px)"
               borderRadius="xl"
-              border="1px solid rgba(255, 255, 255, 0.3)"
+              borderWidth="2px"
+              borderColor={gender === 'male' ?
+                "transparent" :
+                "rgba(255, 255, 255, 0.4)"
+              }
+              color={gender === 'male' ? "white" : textColor}
+              shadow={gender === 'male' ?
+                "0 4px 20px rgba(139, 92, 246, 0.4)" :
+                "0 2px 8px rgba(31, 38, 135, 0.1)"
+              }
               _hover={{
-                bg: "rgba(255, 255, 255, 0.8)",
-                transform: "translateY(-1px)"
+                transform: 'translateY(-1px)',
+                shadow: gender === 'male' ?
+                  "0 6px 24px rgba(139, 92, 246, 0.5)" :
+                  "0 4px 12px rgba(31, 38, 135, 0.15)",
+                bg: gender === 'male' ?
+                  'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)' :
+                  'rgba(255, 255, 255, 0.95)',
+                borderColor: gender === 'male' ?
+                  "transparent" :
+                  "rgba(139, 92, 246, 0.3)"
               }}
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
+              _active={{
+                transform: 'translateY(0px)'
               }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             >
-              Skip weight (optional)
+              Male
             </Button>
-          </VStack>
-        </FormControl>
 
-        <Divider opacity={0.3} />
+            <Button
+              variant={gender === 'female' ? "solid" : "outline"}
+              colorScheme={gender === 'female' ? "purple" : "gray"}
+              onClick={() => setGender(gender === 'female' ? '' : 'female')}
+              h={{ base: "48px", md: "52px" }}
+              fontSize={{ base: "sm", md: "md" }}
+              fontWeight="bold"
+              bg={gender === 'female' ?
+                'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)' :
+                'rgba(255, 255, 255, 0.9)'
+              }
+              backdropFilter="blur(12px)"
+              borderRadius="xl"
+              borderWidth="2px"
+              borderColor={gender === 'female' ?
+                "transparent" :
+                "rgba(255, 255, 255, 0.4)"
+              }
+              color={gender === 'female' ? "white" : textColor}
+              shadow={gender === 'female' ?
+                "0 4px 20px rgba(139, 92, 246, 0.4)" :
+                "0 2px 8px rgba(31, 38, 135, 0.1)"
+              }
+              _hover={{
+                transform: 'translateY(-1px)',
+                shadow: gender === 'female' ?
+                  "0 6px 24px rgba(139, 92, 246, 0.5)" :
+                  "0 4px 12px rgba(31, 38, 135, 0.15)",
+                bg: gender === 'female' ?
+                  'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)' :
+                  'rgba(255, 255, 255, 0.95)',
+                borderColor: gender === 'female' ?
+                  "transparent" :
+                  "rgba(139, 92, 246, 0.3)"
+              }}
+              _active={{
+                transform: 'translateY(0px)'
+              }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            >
+              Female
+            </Button>
 
-        {/* Gender Selection */}
-        <FormControl>
-          <FormLabel color={textColor} fontSize="lg" fontWeight="bold" mb={6}>
-            <HStack spacing={3}>
-              <Icon as={FaUser} color="purple.500" boxSize={6} />
-              <Text>Gender (Optional)</Text>
-            </HStack>
-          </FormLabel>
-
-          <Select
-            placeholder="Select your gender"
-            value={gender}
-            onChange={(e) => setGender(e.target.value as typeof gender)}
-            size="lg"
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(16px)"
-            borderRadius="2xl"
-            borderWidth="2px"
-            borderColor="rgba(139, 92, 246, 0.2)"
-            shadow="0 8px 32px rgba(31, 38, 135, 0.1)"
-            fontSize={{ base: "md", md: "lg" }}
-            fontWeight="medium"
-            h={{ base: "60px", md: "64px" }}
-            _hover={{
-              borderColor: "purple.300",
-              shadow: "0 12px 40px rgba(31, 38, 135, 0.15)",
-              bg: "rgba(255, 255, 255, 1)"
-            }}
-            _focus={{
-              borderColor: "purple.500",
-              boxShadow: "0 0 0 3px rgba(139, 92, 246, 0.1), 0 16px 40px rgba(139, 92, 246, 0.2)"
-            }}
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="rather_not_say">Rather Not Say</option>
-          </Select>
+            <Button
+              variant={gender === 'rather_not_say' ? "solid" : "outline"}
+              colorScheme={gender === 'rather_not_say' ? "purple" : "gray"}
+              onClick={() => setGender(gender === 'rather_not_say' ? '' : 'rather_not_say')}
+              h={{ base: "48px", md: "52px" }}
+              fontSize={{ base: "xs", md: "sm" }}
+              fontWeight="bold"
+              bg={gender === 'rather_not_say' ?
+                'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)' :
+                'rgba(255, 255, 255, 0.9)'
+              }
+              backdropFilter="blur(12px)"
+              borderRadius="xl"
+              borderWidth="2px"
+              borderColor={gender === 'rather_not_say' ?
+                "transparent" :
+                "rgba(255, 255, 255, 0.4)"
+              }
+              color={gender === 'rather_not_say' ? "white" : textColor}
+              shadow={gender === 'rather_not_say' ?
+                "0 4px 20px rgba(139, 92, 246, 0.4)" :
+                "0 2px 8px rgba(31, 38, 135, 0.1)"
+              }
+              _hover={{
+                transform: 'translateY(-1px)',
+                shadow: gender === 'rather_not_say' ?
+                  "0 6px 24px rgba(139, 92, 246, 0.5)" :
+                  "0 4px 12px rgba(31, 38, 135, 0.15)",
+                bg: gender === 'rather_not_say' ?
+                  'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)' :
+                  'rgba(255, 255, 255, 0.95)',
+                borderColor: gender === 'rather_not_say' ?
+                  "transparent" :
+                  "rgba(139, 92, 246, 0.3)"
+              }}
+              _active={{
+                transform: 'translateY(0px)'
+              }}
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+            >
+              Skip
+            </Button>
+          </SimpleGrid>
         </FormControl>
       </VStack>
 
