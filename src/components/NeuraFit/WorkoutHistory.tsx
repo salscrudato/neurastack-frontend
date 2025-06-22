@@ -9,8 +9,6 @@ import {
     Badge,
     Box,
     Button,
-    Card,
-    CardBody,
     Divider,
     HStack,
     Icon,
@@ -22,29 +20,26 @@ import {
     ModalOverlay,
     Progress,
     SimpleGrid,
-    Spacer,
-    Stat,
-    StatHelpText,
-    StatLabel,
-    StatNumber,
     Text,
     useColorModeValue,
     useDisclosure,
+    useToast,
     VStack
 } from '@chakra-ui/react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     PiArrowLeftBold,
-    PiCalendarBold,
     PiChartLineBold,
     PiClockBold,
     PiMedalBold,
     PiScalesBold,
+    PiStarFill,
     PiTargetBold
 } from 'react-icons/pi';
+import { neuraStackClient } from '../../lib/neurastack-client';
 import type { WorkoutSessionSummary } from '../../lib/types';
-import { loadWorkoutSessionHistory } from '../../services/workoutSessionService';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface WorkoutHistoryProps {
   onBack: () => void;
@@ -63,32 +58,162 @@ interface WorkoutStats {
 }
 
 const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout }) => {
+  const { user } = useAuthStore();
+  const toast = useToast();
   const [workoutHistory, setWorkoutHistory] = useState<WorkoutSessionSummary[]>([]);
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutSessionSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const textColor = useColorModeValue('gray.800', 'white');
   const subtextColor = useColorModeValue('gray.600', 'gray.300');
-  const cardBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(26, 32, 44, 0.8)');
-  const glassBorder = useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)');
 
-  // Load workout history
+  // Load workout history from new API
   useEffect(() => {
     const loadHistory = async () => {
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
-        const history = await loadWorkoutSessionHistory(50);
-        setWorkoutHistory(history);
+        // setError(null);
+
+        // Add a small delay to ensure backend has processed any recent completions
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Call new workout history API with proper filtering parameters
+        const response = await neuraStackClient.getWorkoutHistory({
+          limit: 50,
+          userId: user.uid,
+          includeDetails: true,  // Include detailed workout information
+          includeIncomplete: false  // Only show completed workouts in history
+        });
+
+        if (response.status === 'success' && response.data) {
+          // Transform API response to WorkoutSessionSummary format
+          const transformedHistory: WorkoutSessionSummary[] = response.data.workouts
+            .filter((workout: any) => workout.completed) // Extra filter to ensure only completed workouts
+            .map((workout: any) => ({
+              id: workout.workoutId || workout.id,
+              workoutName: workout.type || workout.workoutType,
+              date: new Date(workout.date || workout.completedAt),
+              duration: workout.duration,
+              exercisesCompleted: workout.exercises?.filter((ex: any) => ex.completed).length || 0,
+              totalExercises: workout.exercises?.length || 0,
+              completionRate: workout.completionPercentage || (workout.exercises?.length > 0 ? (workout.exercises.filter((ex: any) => ex.completed).length / workout.exercises.length) * 100 : 0),
+              totalWeightLifted: 0, // Could be calculated from exercise data if needed
+              averageRPE: undefined,
+              overallRating: workout.rating,
+              workoutType: workout.type || workout.workoutType,
+              status: 'completed' as 'completed' | 'abandoned' | 'completed_early', // Only completed workouts now
+              personalRecordsAchieved: 0 // Could be enhanced based on exercise data
+            }));
+
+          setWorkoutHistory(transformedHistory);
+          // setError(null);
+        } else {
+          const errorMessage = response.message || 'Failed to load workout history';
+          console.warn('Failed to load workout history:', errorMessage);
+          // setError(errorMessage);
+          setWorkoutHistory([]);
+
+          toast({
+            title: 'Unable to Load History',
+            description: 'Your workout history could not be loaded. Please try again.',
+            status: 'warning',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
       } catch (error) {
-        console.error('Failed to load workout history:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+        console.error('Failed to load workout history:', errorMessage, error);
+        // setError(errorMessage);
+        setWorkoutHistory([]);
+
+        toast({
+          title: 'Connection Error',
+          description: 'Unable to connect to workout history service. Please check your connection and try again.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     loadHistory();
-  }, []);
+  }, [user?.uid, toast]);
+
+  // Retry function for failed loads (currently unused)
+  /*
+  const retryLoadHistory = useCallback(() => {
+    if (user?.uid) {
+      const loadHistory = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+
+          const response = await neuraStackClient.getWorkoutHistory({
+            limit: 50,
+            userId: user.uid,
+            includeDetails: true,  // Include detailed workout information
+            includeIncomplete: false  // Only show completed workouts in history
+          });
+
+          if (response.status === 'success' && response.data) {
+            const transformedHistory: WorkoutSessionSummary[] = response.data.workouts.map((workout: any) => ({
+              id: workout.workoutId || workout.id,
+              workoutName: workout.type || workout.workoutType,
+              date: new Date(workout.date || workout.completedAt),
+              duration: workout.duration,
+              exercisesCompleted: workout.exercises?.filter((ex: any) => ex.completed).length || 0,
+              totalExercises: workout.exercises?.length || 0,
+              completionRate: workout.completionPercentage || (workout.exercises?.length > 0 ? (workout.exercises.filter((ex: any) => ex.completed).length / workout.exercises.length) * 100 : 0),
+              totalWeightLifted: 0,
+              averageRPE: undefined,
+              overallRating: workout.rating,
+              workoutType: workout.type || workout.workoutType,
+              status: workout.completed ? 'completed' : 'abandoned' as 'completed' | 'abandoned' | 'completed_early',
+              personalRecordsAchieved: 0
+            }));
+
+            setWorkoutHistory(transformedHistory);
+            // setError(null);
+
+            toast({
+              title: 'History Loaded',
+              description: 'Your workout history has been successfully loaded.',
+              status: 'success',
+              duration: 3000,
+              isClosable: true,
+            });
+          } else {
+            throw new Error(response.message || 'Failed to load workout history');
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+          // setError(errorMessage);
+
+          toast({
+            title: 'Retry Failed',
+            description: 'Still unable to load workout history. Please try again later.',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      loadHistory();
+    }
+  }, [user?.uid, toast]);
+  */
 
   // Calculate workout statistics
   const workoutStats = useMemo((): WorkoutStats => {
@@ -151,21 +276,29 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
     onOpen();
   }, [onOpen]);
 
+  /*
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'green';
       case 'completed_early': return 'blue';
-      case 'abandoned': return 'red';
+      case 'abandoned':
+      case 'stopped':
+      case 'incomplete': return 'red';
+      case 'in_progress': return 'yellow';
       default: return 'gray';
     }
   };
+  */
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'completed': return 'Completed';
-      case 'completed_early': return 'Finished Early';
-      case 'abandoned': return 'Stopped';
-      default: return 'Unknown';
+      case 'completed': return 'COMPLETED';
+      case 'completed_early': return 'FINISHED EARLY';
+      case 'abandoned': return 'STOPPED';
+      case 'stopped': return 'STOPPED';
+      case 'incomplete': return 'INCOMPLETE';
+      case 'in_progress': return 'IN PROGRESS';
+      default: return status?.toUpperCase() || 'UNKNOWN';
     }
   };
 
@@ -183,245 +316,612 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
   return (
     <Box
       h="100%"
-      bgGradient="linear(135deg, #f7fafc 0%, #edf2f7 100%)"
+      bg="linear-gradient(135deg, #0F0F23 0%, #1A1A2E 50%, #16213E 100%)"
       overflow="auto"
       position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
     >
-      <VStack spacing={4} p={4} maxW="4xl" mx="auto" h="100%" justify="flex-start">
-        {/* Header */}
-        <VStack spacing={2} textAlign="center" w="100%" py={2}>
-          <HStack w="100%" justify="space-between" align="center">
+      <VStack spacing={{ base: 2, md: 3 }} p={{ base: 2, md: 3 }} maxW="5xl" mx="auto" h="100%" justify="flex-start">
+        {/* Futuristic Header */}
+        <Box
+          w="100%"
+          bg="rgba(255, 255, 255, 0.05)"
+          backdropFilter="blur(20px)"
+          borderRadius={{ base: "lg", md: "xl" }}
+          border="1px solid rgba(255, 255, 255, 0.1)"
+          p={{ base: 3, md: 4 }}
+          mb={{ base: 1, md: 2 }}
+        >
+          <HStack justify="space-between" align="center">
             <Button
               variant="ghost"
               size="sm"
               leftIcon={<Icon as={PiArrowLeftBold} />}
               onClick={onBack}
-              color="gray.600"
-              _hover={{ bg: "gray.100" }}
+              color="rgba(255, 255, 255, 0.8)"
+              bg="rgba(79, 156, 249, 0.1)"
+              borderRadius="lg"
+              _hover={{
+                bg: "rgba(79, 156, 249, 0.2)",
+                transform: "translateY(-1px)",
+                shadow: "0 4px 12px rgba(79, 156, 249, 0.3)"
+              }}
+              _active={{
+                transform: "translateY(0px)"
+              }}
+              transition="all 0.2s ease-in-out"
+              fontSize="sm"
+              fontWeight="medium"
             >
-              Back
+              Dashboard
             </Button>
-            <Spacer />
-          </HStack>
-          <Text fontSize="xl" fontWeight="bold" color="gray.700">
-            Workout History
-          </Text>
-          <Text fontSize="sm" color={subtextColor}>
-            Your fitness journey at a glance
-          </Text>
-        </VStack>
 
-        {/* Statistics Grid */}
-        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={3} w="100%">
-          <Card bg={cardBg} backdropFilter="blur(10px)" border="1px solid" borderColor={glassBorder} borderRadius="xl">
-            <CardBody p={3} textAlign="center">
+            <VStack spacing={0} textAlign="center">
+              <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color="white" letterSpacing="wide">
+                WORKOUT HISTORY
+              </Text>
+              <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                Neural Fitness Analytics
+              </Text>
+            </VStack>
+
+            <Box w="20" /> {/* Spacer for centering */}
+          </HStack>
+        </Box>
+
+        {/* Enhanced Stats Grid with Better Visual Hierarchy */}
+        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={{ base: 2, md: 4 }} w="100%">
+          <Box
+            bg="linear-gradient(135deg, rgba(79, 156, 249, 0.15) 0%, rgba(79, 156, 249, 0.05) 100%)"
+            backdropFilter="blur(20px)"
+            borderRadius={{ base: "xl", md: "2xl" }}
+            border="1px solid rgba(79, 156, 249, 0.3)"
+            p={{ base: 3, md: 5 }}
+            position="relative"
+            overflow="hidden"
+            _hover={{
+              bg: "linear-gradient(135deg, rgba(79, 156, 249, 0.25) 0%, rgba(79, 156, 249, 0.1) 100%)",
+              transform: "translateY(-3px)",
+              shadow: "0 12px 40px rgba(79, 156, 249, 0.4)"
+            }}
+            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+            cursor="pointer"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "2px",
+              bg: "linear-gradient(90deg, #4F9CF9, #6366F1)",
+              borderRadius: "2xl 2xl 0 0"
+            }}
+          >
+            <VStack spacing={{ base: 2, md: 3 }} align="center">
+              <Box
+                bg="rgba(79, 156, 249, 0.2)"
+                borderRadius={{ base: "lg", md: "xl" }}
+                p={{ base: 2, md: 3 }}
+                border="1px solid rgba(79, 156, 249, 0.3)"
+              >
+                <Icon as={PiTargetBold} boxSize={{ base: 4, md: 6 }} color="#4F9CF9" />
+              </Box>
               <VStack spacing={1}>
-                <Icon as={PiTargetBold} boxSize={5} color="blue.400" />
-                <Text fontSize="lg" fontWeight="bold" color="blue.500">
+                <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white" lineHeight="1">
                   {workoutStats.totalWorkouts}
                 </Text>
-                <Text fontSize="xs" color={subtextColor}>workouts</Text>
+                <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.8)" fontWeight="semibold" letterSpacing="wider">
+                  WORKOUTS
+                </Text>
               </VStack>
-            </CardBody>
-          </Card>
+            </VStack>
+          </Box>
 
-          <Card bg={cardBg} backdropFilter="blur(10px)" border="1px solid" borderColor={glassBorder} borderRadius="xl">
-            <CardBody p={3} textAlign="center">
+          <Box
+            bg="linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)"
+            backdropFilter="blur(20px)"
+            borderRadius={{ base: "xl", md: "2xl" }}
+            border="1px solid rgba(16, 185, 129, 0.3)"
+            p={{ base: 3, md: 5 }}
+            position="relative"
+            overflow="hidden"
+            _hover={{
+              bg: "linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)",
+              transform: "translateY(-3px)",
+              shadow: "0 12px 40px rgba(16, 185, 129, 0.4)"
+            }}
+            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+            cursor="pointer"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "2px",
+              bg: "linear-gradient(90deg, #10B981, #059669)",
+              borderRadius: "2xl 2xl 0 0"
+            }}
+          >
+            <VStack spacing={{ base: 2, md: 3 }} align="center">
+              <Box
+                bg="rgba(16, 185, 129, 0.2)"
+                borderRadius={{ base: "lg", md: "xl" }}
+                p={{ base: 2, md: 3 }}
+                border="1px solid rgba(16, 185, 129, 0.3)"
+              >
+                <Icon as={PiClockBold} boxSize={{ base: 4, md: 6 }} color="#10B981" />
+              </Box>
               <VStack spacing={1}>
-                <Icon as={PiClockBold} boxSize={5} color="green.400" />
-                <Text fontSize="lg" fontWeight="bold" color="green.500">
+                <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white" lineHeight="1">
                   {Math.round(workoutStats.totalTimeMinutes / 60)}h
                 </Text>
-                <Text fontSize="xs" color={subtextColor}>total time</Text>
-              </VStack>
-            </CardBody>
-          </Card>
-
-          <Card bg={cardBg} backdropFilter="blur(10px)" border="1px solid" borderColor={glassBorder} borderRadius="xl">
-            <CardBody p={3} textAlign="center">
-              <VStack spacing={1}>
-                <Icon as={PiScalesBold} boxSize={5} color="purple.400" />
-                <Text fontSize="lg" fontWeight="bold" color="purple.500">
-                  {Math.round(workoutStats.totalWeightLifted)}
+                <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.8)" fontWeight="semibold" letterSpacing="wider">
+                  TRAINED
                 </Text>
-                <Text fontSize="xs" color={subtextColor}>lbs lifted</Text>
               </VStack>
-            </CardBody>
-          </Card>
+            </VStack>
+          </Box>
 
-          <Card bg={cardBg} backdropFilter="blur(10px)" border="1px solid" borderColor={glassBorder} borderRadius="xl">
-            <CardBody p={3} textAlign="center">
+          <Box
+            bg="linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)"
+            backdropFilter="blur(20px)"
+            borderRadius={{ base: "xl", md: "2xl" }}
+            border="1px solid rgba(139, 92, 246, 0.3)"
+            p={{ base: 3, md: 5 }}
+            position="relative"
+            overflow="hidden"
+            _hover={{
+              bg: "linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.1) 100%)",
+              transform: "translateY(-3px)",
+              shadow: "0 12px 40px rgba(139, 92, 246, 0.4)"
+            }}
+            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+            cursor="pointer"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "2px",
+              bg: "linear-gradient(90deg, #8B5CF6, #7C3AED)",
+              borderRadius: "2xl 2xl 0 0"
+            }}
+          >
+            <VStack spacing={{ base: 2, md: 3 }} align="center">
+              <Box
+                bg="rgba(139, 92, 246, 0.2)"
+                borderRadius={{ base: "lg", md: "xl" }}
+                p={{ base: 2, md: 3 }}
+                border="1px solid rgba(139, 92, 246, 0.3)"
+              >
+                <Icon as={PiScalesBold} boxSize={{ base: 4, md: 6 }} color="#8B5CF6" />
+              </Box>
               <VStack spacing={1}>
-                <Icon as={PiMedalBold} boxSize={5} color="orange.400" />
-                <Text fontSize="lg" fontWeight="bold" color="orange.500">
-                  {workoutStats.personalRecords}
+                <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white" lineHeight="1">
+                  {Math.round(workoutStats.averageCompletionRate)}%
                 </Text>
-                <Text fontSize="xs" color={subtextColor}>PRs</Text>
+                <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.8)" fontWeight="semibold" letterSpacing="wider">
+                  AVG RATE
+                </Text>
               </VStack>
-            </CardBody>
-          </Card>
+            </VStack>
+          </Box>
+
+          <Box
+            bg="linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%)"
+            backdropFilter="blur(20px)"
+            borderRadius={{ base: "xl", md: "2xl" }}
+            border="1px solid rgba(245, 158, 11, 0.3)"
+            p={{ base: 3, md: 5 }}
+            position="relative"
+            overflow="hidden"
+            _hover={{
+              bg: "linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(245, 158, 11, 0.1) 100%)",
+              transform: "translateY(-3px)",
+              shadow: "0 12px 40px rgba(245, 158, 11, 0.4)"
+            }}
+            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+            cursor="pointer"
+            _before={{
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "2px",
+              bg: "linear-gradient(90deg, #F59E0B, #D97706)",
+              borderRadius: "2xl 2xl 0 0"
+            }}
+          >
+            <VStack spacing={{ base: 2, md: 3 }} align="center">
+              <Box
+                bg="rgba(245, 158, 11, 0.2)"
+                borderRadius={{ base: "lg", md: "xl" }}
+                p={{ base: 2, md: 3 }}
+                border="1px solid rgba(245, 158, 11, 0.3)"
+              >
+                <Icon as={PiMedalBold} boxSize={{ base: 4, md: 6 }} color="#F59E0B" />
+              </Box>
+              <VStack spacing={1}>
+                <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold" color="white" lineHeight="1">
+                  {workoutStats.averageRating.toFixed(1)}
+                </Text>
+                <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.8)" fontWeight="semibold" letterSpacing="wider">
+                  AVG RATING
+                </Text>
+              </VStack>
+            </VStack>
+          </Box>
         </SimpleGrid>
 
-        {/* Workout List */}
-        <VStack spacing={3} w="100%" align="stretch">
-          <Text fontSize="md" fontWeight="semibold" color={textColor}>
-            Recent Workouts
-          </Text>
-          
+        {/* Enhanced Workout History Section */}
+        <Box
+          bg="linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)"
+          backdropFilter="blur(20px)"
+          borderRadius="2xl"
+          border="1px solid rgba(255, 255, 255, 0.15)"
+          w="100%"
+          overflow="hidden"
+          shadow="0 8px 32px rgba(0, 0, 0, 0.3)"
+        >
+          {/* Enhanced Header with Action Button */}
+          <Box p={{ base: 3, md: 5 }} borderBottom="1px solid rgba(255, 255, 255, 0.1)">
+            <HStack justify="space-between" align="center">
+              <VStack align="start" spacing={1}>
+                <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color="white" letterSpacing="wide">
+                  RECENT SESSIONS
+                </Text>
+                <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                  {workoutHistory.length} workouts completed
+                </Text>
+              </VStack>
+              {workoutHistory.length > 0 && (
+                <Button
+                  size={{ base: "xs", md: "sm" }}
+                  variant="ghost"
+                  color="rgba(79, 156, 249, 0.9)"
+                  bg="rgba(79, 156, 249, 0.1)"
+                  border="1px solid rgba(79, 156, 249, 0.3)"
+                  borderRadius={{ base: "md", md: "lg" }}
+                  fontSize={{ base: "2xs", md: "xs" }}
+                  fontWeight="semibold"
+                  px={{ base: 2, md: 4 }}
+                  _hover={{
+                    bg: "rgba(79, 156, 249, 0.2)",
+                    transform: "translateY(-1px)",
+                    shadow: "0 4px 12px rgba(79, 156, 249, 0.3)"
+                  }}
+                  _active={{
+                    transform: "translateY(0px)"
+                  }}
+                  transition="all 0.2s ease-in-out"
+                  onClick={onStartNewWorkout}
+                >
+                  NEW WORKOUT
+                </Button>
+              )}
+            </HStack>
+          </Box>
+
           {workoutHistory.length === 0 ? (
-            <Card bg={cardBg} backdropFilter="blur(10px)" border="1px solid" borderColor={glassBorder} borderRadius="xl">
-              <CardBody p={6} textAlign="center">
-                <VStack spacing={4}>
-                  <Icon as={PiChartLineBold} boxSize={12} color="gray.400" />
-                  <Text fontSize="lg" fontWeight="semibold" color={textColor}>
-                    No workouts yet
+            <Box p={12} textAlign="center">
+              <VStack spacing={6}>
+                <Box
+                  bg="linear-gradient(135deg, rgba(79, 156, 249, 0.2) 0%, rgba(79, 156, 249, 0.05) 100%)"
+                  borderRadius="full"
+                  p={6}
+                  border="2px solid rgba(79, 156, 249, 0.3)"
+                  position="relative"
+                  _before={{
+                    content: '""',
+                    position: "absolute",
+                    inset: "-2px",
+                    borderRadius: "full",
+                    background: "linear-gradient(45deg, #4F9CF9, #6366F1, #8B5CF6)",
+                    zIndex: -1,
+                    opacity: 0.3
+                  }}
+                >
+                  <Icon as={PiChartLineBold} boxSize={12} color="#4F9CF9" />
+                </Box>
+                <VStack spacing={3}>
+                  <Text fontSize="xl" fontWeight="bold" color="white" letterSpacing="wide">
+                    START YOUR FITNESS JOURNEY
                   </Text>
-                  <Text fontSize="sm" color={subtextColor}>
-                    Complete your first workout to see it here
+                  <Text fontSize="md" color="rgba(255, 255, 255, 0.7)" maxW="300px" lineHeight="1.6">
+                    Complete your first workout to unlock detailed analytics and track your progress
                   </Text>
-                  <Button
-                    colorScheme="blue"
-                    onClick={onStartNewWorkout}
-                    leftIcon={<Icon as={PiTargetBold} />}
-                  >
-                    Start First Workout
-                  </Button>
                 </VStack>
-              </CardBody>
-            </Card>
+                <Button
+                  onClick={onStartNewWorkout}
+                  leftIcon={<Icon as={PiTargetBold} />}
+                  size="lg"
+                  borderRadius="xl"
+                  px={8}
+                  py={4}
+                  fontSize="md"
+                  fontWeight="bold"
+                  bg="linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)"
+                  color="white"
+                  border="1px solid rgba(79, 156, 249, 0.5)"
+                  _hover={{
+                    bg: "linear-gradient(135deg, #3182CE 0%, #553C9A 100%)",
+                    transform: 'translateY(-2px)',
+                    shadow: '0 8px 25px rgba(79, 156, 249, 0.5)'
+                  }}
+                  _active={{
+                    transform: 'translateY(0px)'
+                  }}
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                >
+                  START FIRST WORKOUT
+                </Button>
+              </VStack>
+            </Box>
           ) : (
-            workoutHistory.map((workout) => (
-              <Card
-                key={workout.id}
-                bg={cardBg}
-                backdropFilter="blur(10px)"
-                border="1px solid"
-                borderColor={glassBorder}
-                borderRadius="xl"
-                cursor="pointer"
-                onClick={() => handleWorkoutClick(workout)}
-                _hover={{
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-                }}
-                transition="all 0.3s ease"
-              >
-                <CardBody p={4}>
-                  <HStack justify="space-between" align="start">
-                    <VStack align="start" spacing={2} flex={1}>
-                      <HStack spacing={2}>
-                        <Text fontSize="md" fontWeight="semibold" color={textColor}>
+            <VStack spacing={{ base: 1, md: 2 }} align="stretch" p={{ base: 1, md: 2 }}>
+              {workoutHistory.map((workout) => (
+                <Box
+                  key={workout.id}
+                  bg="linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)"
+                  borderRadius={{ base: "lg", md: "xl" }}
+                  border="1px solid rgba(255, 255, 255, 0.1)"
+                  p={{ base: 3, md: 5 }}
+                  cursor="pointer"
+                  onClick={() => handleWorkoutClick(workout)}
+                  position="relative"
+                  overflow="hidden"
+                  _hover={{
+                    bg: "linear-gradient(135deg, rgba(79, 156, 249, 0.1) 0%, rgba(79, 156, 249, 0.02) 100%)",
+                    transform: "translateY(-2px)",
+                    shadow: "0 8px 25px rgba(79, 156, 249, 0.2)",
+                    borderColor: "rgba(79, 156, 249, 0.3)"
+                  }}
+                  transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                  _before={{
+                    content: '""',
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: "4px",
+                    bg: workout.status === 'completed' ?
+                      "linear-gradient(180deg, #10B981, #059669)" :
+                      workout.status === 'completed_early' ?
+                      "linear-gradient(180deg, #4F9CF9, #3182CE)" :
+                      "linear-gradient(180deg, #EF4444, #DC2626)",
+                    borderRadius: "0 4px 4px 0"
+                  }}
+                >
+                  <HStack spacing={{ base: 2, md: 4 }} align="center" w="100%">
+                    {/* Enhanced Date Display */}
+                    <VStack align="center" spacing={1} minW={{ base: "50px", md: "70px" }}>
+                      <Box
+                        bg="rgba(79, 156, 249, 0.1)"
+                        borderRadius={{ base: "md", md: "lg" }}
+                        p={{ base: 1.5, md: 2 }}
+                        border="1px solid rgba(79, 156, 249, 0.2)"
+                      >
+                        <VStack spacing={0}>
+                          <Text fontSize={{ base: "2xs", md: "xs" }} fontWeight="bold" color="#4F9CF9" letterSpacing="wide">
+                            {format(workout.date, 'MMM').toUpperCase()}
+                          </Text>
+                          <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color="white" lineHeight="1">
+                            {format(workout.date, 'd')}
+                          </Text>
+                        </VStack>
+                      </Box>
+                    </VStack>
+
+                    {/* Enhanced Workout Info */}
+                    <VStack align="start" spacing={{ base: 1, md: 2 }} flex={1}>
+                      <HStack spacing={{ base: 2, md: 3 }} align="center" w="100%">
+                        <Text fontSize={{ base: "sm", md: "md" }} fontWeight="bold" color="white" noOfLines={1} flex={1}>
                           {workout.workoutName}
                         </Text>
-                        <Badge colorScheme={getStatusColor(workout.status)} variant="subtle">
+                        <Badge
+                          bg={workout.status === 'completed' ?
+                            "linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1))" :
+                            workout.status === 'completed_early' ?
+                            "linear-gradient(135deg, rgba(79, 156, 249, 0.2), rgba(79, 156, 249, 0.1))" :
+                            "linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1))"}
+                          color={workout.status === 'completed' ? '#10B981' :
+                                 workout.status === 'completed_early' ? '#4F9CF9' : '#EF4444'}
+                          variant="subtle"
+                          borderRadius={{ base: "md", md: "lg" }}
+                          px={{ base: 2, md: 3 }}
+                          py={1}
+                          fontSize={{ base: "2xs", md: "xs" }}
+                          fontWeight="bold"
+                          border="1px solid"
+                          borderColor={workout.status === 'completed' ? 'rgba(16, 185, 129, 0.3)' :
+                                      workout.status === 'completed_early' ? 'rgba(79, 156, 249, 0.3)' : 'rgba(239, 68, 68, 0.3)'}
+                        >
                           {getStatusText(workout.status)}
                         </Badge>
                       </HStack>
-                      
-                      <HStack spacing={4} fontSize="sm" color={subtextColor}>
+
+                      <HStack spacing={{ base: 2, md: 4 }} fontSize={{ base: "xs", md: "sm" }} color="rgba(255, 255, 255, 0.7)" flexWrap="wrap">
                         <HStack spacing={1}>
-                          <Icon as={PiCalendarBold} boxSize={3} />
-                          <Text>{format(workout.date, 'MMM d, yyyy')}</Text>
+                          <Icon as={PiClockBold} boxSize={{ base: 3, md: 4 }} color="#4F9CF9" />
+                          <Text fontWeight="medium">{workout.duration} min</Text>
                         </HStack>
                         <HStack spacing={1}>
-                          <Icon as={PiClockBold} boxSize={3} />
-                          <Text>{workout.duration}min</Text>
+                          <Icon as={PiTargetBold} boxSize={{ base: 3, md: 4 }} color="#10B981" />
+                          <Text fontWeight="medium">{workout.exercisesCompleted}/{workout.totalExercises} exercises</Text>
                         </HStack>
-                        <HStack spacing={1}>
-                          <Icon as={PiTargetBold} boxSize={3} />
-                          <Text>{workout.exercisesCompleted}/{workout.totalExercises}</Text>
-                        </HStack>
+                        {workout.overallRating && (
+                          <HStack spacing={1}>
+                            <Icon as={PiStarFill} boxSize={{ base: 3, md: 4 }} color="#F59E0B" />
+                            <Text fontWeight="medium">{workout.overallRating}/5</Text>
+                          </HStack>
+                        )}
                       </HStack>
-                      
-                      <Progress
-                        value={workout.completionRate}
-                        size="sm"
-                        colorScheme="blue"
-                        borderRadius="full"
-                        w="100%"
-                      />
                     </VStack>
-                    
-                    <VStack spacing={1} align="end" minW="60px">
-                      {workout.overallRating && (
-                        <HStack spacing={1}>
-                          <Text fontSize="sm" fontWeight="bold" color="orange.500">
-                            {workout.overallRating.toFixed(1)}
+
+                    {/* Enhanced Progress Display */}
+                    <VStack align="center" spacing={2} minW={{ base: "60px", md: "90px" }}>
+                      <Box
+                        bg="rgba(79, 156, 249, 0.1)"
+                        borderRadius={{ base: "md", md: "lg" }}
+                        p={{ base: 2, md: 3 }}
+                        border="1px solid rgba(79, 156, 249, 0.2)"
+                        textAlign="center"
+                      >
+                        <VStack spacing={{ base: 1, md: 2 }}>
+                          <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color="white" lineHeight="1">
+                            {Math.round(workout.completionRate)}%
                           </Text>
-                          <Text fontSize="xs" color={subtextColor}>★</Text>
-                        </HStack>
-                      )}
-                      {workout.personalRecordsAchieved > 0 && (
-                        <Badge colorScheme="orange" variant="solid" fontSize="xs">
-                          {workout.personalRecordsAchieved} PR
-                        </Badge>
-                      )}
+                          <Progress
+                            value={workout.completionRate}
+                            size={{ base: "xs", md: "sm" }}
+                            colorScheme={workout.completionRate === 100 ? "green" : "blue"}
+                            borderRadius="full"
+                            bg="rgba(255, 255, 255, 0.1)"
+                            w={{ base: "35px", md: "50px" }}
+                            sx={{
+                              '& > div': {
+                                background: workout.completionRate === 100 ?
+                                  "linear-gradient(90deg, #10B981, #059669)" :
+                                  "linear-gradient(90deg, #4F9CF9, #3182CE)"
+                              }
+                            }}
+                          />
+                          <Text fontSize={{ base: "2xs", md: "xs" }} color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                            COMPLETE
+                          </Text>
+                        </VStack>
+                      </Box>
                     </VStack>
                   </HStack>
-                </CardBody>
-              </Card>
-            ))
+                </Box>
+              ))}
+            </VStack>
           )}
-        </VStack>
+        </Box>
       </VStack>
 
-      {/* Workout Detail Modal */}
+      {/* Futuristic Workout Detail Modal */}
       <Modal isOpen={isOpen} onClose={onClose} size="lg">
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" backdropFilter="blur(10px)" />
+        <ModalContent
+          bg="rgba(15, 15, 35, 0.95)"
+          backdropFilter="blur(20px)"
+          border="1px solid rgba(255, 255, 255, 0.1)"
+          borderRadius="xl"
+          color="white"
+        >
+          <ModalHeader
+            borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+            fontSize="lg"
+            fontWeight="bold"
+            letterSpacing="wide"
+          >
             {selectedWorkout?.workoutName}
           </ModalHeader>
-          <ModalCloseButton />
+          <ModalCloseButton color="rgba(255, 255, 255, 0.7)" />
           <ModalBody pb={6}>
             {selectedWorkout && (
               <VStack spacing={4} align="stretch">
                 <SimpleGrid columns={2} spacing={4}>
-                  <Stat>
-                    <StatLabel>Duration</StatLabel>
-                    <StatNumber>{selectedWorkout.duration} min</StatNumber>
-                    <StatHelpText>
-                      {formatDistanceToNow(selectedWorkout.date, { addSuffix: true })}
-                    </StatHelpText>
-                  </Stat>
-                  
-                  <Stat>
-                    <StatLabel>Completion</StatLabel>
-                    <StatNumber>{Math.round(selectedWorkout.completionRate)}%</StatNumber>
-                    <StatHelpText>
-                      {selectedWorkout.exercisesCompleted} of {selectedWorkout.totalExercises} exercises
-                    </StatHelpText>
-                  </Stat>
+                  <Box
+                    bg="rgba(79, 156, 249, 0.1)"
+                    borderRadius="lg"
+                    p={4}
+                    border="1px solid rgba(79, 156, 249, 0.2)"
+                  >
+                    <VStack spacing={1} align="start">
+                      <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                        DURATION
+                      </Text>
+                      <Text fontSize="xl" fontWeight="bold" color="white">
+                        {selectedWorkout.duration} min
+                      </Text>
+                      <Text fontSize="xs" color="rgba(255, 255, 255, 0.5)">
+                        {formatDistanceToNow(selectedWorkout.date, { addSuffix: true })}
+                      </Text>
+                    </VStack>
+                  </Box>
+
+                  <Box
+                    bg="rgba(16, 185, 129, 0.1)"
+                    borderRadius="lg"
+                    p={4}
+                    border="1px solid rgba(16, 185, 129, 0.2)"
+                  >
+                    <VStack spacing={1} align="start">
+                      <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                        COMPLETION
+                      </Text>
+                      <Text fontSize="xl" fontWeight="bold" color="white">
+                        {Math.round(selectedWorkout.completionRate)}%
+                      </Text>
+                      <Text fontSize="xs" color="rgba(255, 255, 255, 0.5)">
+                        {selectedWorkout.exercisesCompleted} of {selectedWorkout.totalExercises} exercises
+                      </Text>
+                    </VStack>
+                  </Box>
                 </SimpleGrid>
 
-                <Divider />
+                <Divider borderColor="rgba(255, 255, 255, 0.1)" />
 
                 <SimpleGrid columns={2} spacing={4}>
                   {selectedWorkout.totalWeightLifted && (
-                    <Stat>
-                      <StatLabel>Weight Lifted</StatLabel>
-                      <StatNumber>{Math.round(selectedWorkout.totalWeightLifted)} lbs</StatNumber>
-                    </Stat>
+                    <Box
+                      bg="rgba(139, 92, 246, 0.1)"
+                      borderRadius="lg"
+                      p={4}
+                      border="1px solid rgba(139, 92, 246, 0.2)"
+                    >
+                      <VStack spacing={1} align="start">
+                        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                          WEIGHT LIFTED
+                        </Text>
+                        <Text fontSize="xl" fontWeight="bold" color="white">
+                          {Math.round(selectedWorkout.totalWeightLifted)} lbs
+                        </Text>
+                      </VStack>
+                    </Box>
                   )}
-                  
+
                   {selectedWorkout.averageRPE && (
-                    <Stat>
-                      <StatLabel>Average RPE</StatLabel>
-                      <StatNumber>{selectedWorkout.averageRPE.toFixed(1)}/10</StatNumber>
-                    </Stat>
+                    <Box
+                      bg="rgba(245, 158, 11, 0.1)"
+                      borderRadius="lg"
+                      p={4}
+                      border="1px solid rgba(245, 158, 11, 0.2)"
+                    >
+                      <VStack spacing={1} align="start">
+                        <Text fontSize="xs" color="rgba(255, 255, 255, 0.6)" fontWeight="medium">
+                          AVERAGE RPE
+                        </Text>
+                        <Text fontSize="xl" fontWeight="bold" color="white">
+                          {selectedWorkout.averageRPE.toFixed(1)}/10
+                        </Text>
+                      </VStack>
+                    </Box>
                   )}
                 </SimpleGrid>
 
                 {selectedWorkout.personalRecordsAchieved > 0 && (
                   <>
-                    <Divider />
-                    <HStack justify="center">
-                      <Icon as={PiMedalBold} color="orange.500" boxSize={6} />
-                      <Text fontSize="lg" fontWeight="bold" color="orange.500">
-                        {selectedWorkout.personalRecordsAchieved} Personal Record{selectedWorkout.personalRecordsAchieved > 1 ? 's' : ''} Achieved!
-                      </Text>
-                    </HStack>
+                    <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                    <Box
+                      bg="rgba(245, 158, 11, 0.1)"
+                      borderRadius="lg"
+                      p={4}
+                      border="1px solid rgba(245, 158, 11, 0.2)"
+                      textAlign="center"
+                    >
+                      <HStack justify="center" spacing={2}>
+                        <Icon as={PiMedalBold} color="#F59E0B" boxSize={5} />
+                        <Text fontSize="md" fontWeight="bold" color="#F59E0B">
+                          {selectedWorkout.personalRecordsAchieved} PERSONAL RECORD{selectedWorkout.personalRecordsAchieved > 1 ? 'S' : ''} ACHIEVED
+                        </Text>
+                      </HStack>
+                    </Box>
                   </>
                 )}
               </VStack>

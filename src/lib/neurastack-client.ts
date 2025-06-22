@@ -28,7 +28,8 @@ import type {
     WorkoutCompleteRequest,
     WorkoutCompleteResponse,
     WorkoutGenerateRequest,
-    WorkoutGenerateResponse
+    WorkoutGenerateResponse,
+    WorkoutHistoryResponse
 } from './types';
 
 
@@ -98,9 +99,10 @@ export const NEURASTACK_ENDPOINTS = {
   // Enhanced ensemble endpoint (when backend is ready)
   ENHANCED_ENSEMBLE: '/api/enhanced-ensemble',
 
-  // New optimized workout endpoints (2-endpoint system) - Using actual backend endpoints
+  // New optimized workout endpoints (3-endpoint system) - Using enhanced API specification
   WORKOUT_GENERATE: '/workout/generate-workout',
-  WORKOUT_COMPLETE: '/workout/complete-workout',
+  WORKOUT_COMPLETE: '/workout/workout-completion',
+  WORKOUT_HISTORY: '/workout/workout-history',
 
   // Legacy workout endpoint (for backward compatibility)
   WORKOUT: '/workout',
@@ -848,8 +850,8 @@ export class NeuraStackClient {
         console.log('📍 COMPLETION REQUEST:');
         console.log(`  🆔 Workout ID: ${request.workoutId}`);
         console.log(`  ✅ Completed: ${request.completed}`);
-        console.log(`  ⭐ Rating: ${request.rating || 'Not provided'}`);
-        console.log(`  🎚️ Difficulty: ${request.difficulty || 'Not provided'}`);
+        console.log(`  ⭐ Rating: ${request.feedback?.rating || 'Not provided'}`);
+        console.log(`  🎚️ Difficulty: ${request.feedback?.difficulty || 'Not provided'}`);
         console.log(`  ⏱️ Actual Duration: ${request.actualDuration || 'Not provided'} minutes`);
         console.log('');
         console.log('🌐 REQUEST DETAILS:');
@@ -904,6 +906,123 @@ export class NeuraStackClient {
       console.log('  👤 User ID:', userId || 'anonymous');
       console.log('  🌐 Endpoint:', `${this.config.baseUrl}${NEURASTACK_ENDPOINTS.WORKOUT_COMPLETE}`);
       console.groupEnd();
+      throw error;
+    }
+  }
+
+  /**
+   * Get workout history for a user using the new optimized API endpoint
+   *
+   * Features:
+   * - Paginated workout history
+   * - Comprehensive workout data
+   * - Backend memory management
+   */
+  async getWorkoutHistory(
+    options: {
+      limit?: number;
+      userId?: string;
+      includeDetails?: boolean;
+      includeIncomplete?: boolean;
+      signal?: AbortSignal;
+      timeout?: number;
+    } = {}
+  ): Promise<WorkoutHistoryResponse> {
+    // Generate unique identifiers for request tracking
+    const timestamp = Date.now();
+    const randomPart1 = Math.random().toString(36).substring(2, 15);
+    const correlationId = `workout-history-${timestamp}-${randomPart1}`;
+
+    // Prepare headers
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    // Add user ID header if provided
+    const userId = options.userId || this.config.userId;
+    if (userId && userId.trim() !== '') {
+      headers['X-User-Id'] = userId;
+    }
+
+    // Add correlation ID header for request tracking
+    headers['X-Correlation-ID'] = correlationId;
+
+    // Prepare query parameters
+    const queryParams = new URLSearchParams();
+    if (options.limit !== undefined) {
+      queryParams.append('limit', options.limit.toString());
+    }
+
+    // Add filtering parameters to ensure we get completed workouts
+    if (options.includeDetails !== undefined) {
+      queryParams.append('includeDetails', options.includeDetails.toString());
+    }
+    if (options.includeIncomplete !== undefined) {
+      queryParams.append('includeIncomplete', options.includeIncomplete.toString());
+    }
+
+    const endpoint = `${NEURASTACK_ENDPOINTS.WORKOUT_HISTORY}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+    try {
+      // Development logging
+      if (import.meta.env.DEV) {
+        console.group('📚 NeuraStack Workout History API Request');
+        console.log('');
+        console.log('📍 HISTORY REQUEST:');
+        console.log(`  👤 User ID: ${userId || 'Not provided'}`);
+        console.log(`  📊 Limit: ${options.limit || 'Default (20)'}`);
+        console.log('');
+        console.log('🌐 REQUEST DETAILS:');
+        console.log('  📤 Endpoint:', `${this.config.baseUrl}${endpoint}`);
+        console.log('  📋 Headers:', headers);
+        console.log('  🔗 Correlation ID:', correlationId);
+        console.groupEnd();
+      }
+
+      const historyResponse = await this.makeRequest<WorkoutHistoryResponse>(
+        endpoint,
+        {
+          method: 'GET',
+          headers,
+          signal: options.signal,
+          timeout: options.timeout || 30000, // Shorter timeout for history
+          bustCache: false
+        }
+      );
+
+      // Success logging
+      if (import.meta.env.DEV) {
+        console.group('📖 Workout History Success');
+        console.log('');
+        console.log('✅ RESPONSE STATUS:', historyResponse.status);
+        console.log('💬 Message:', historyResponse.message || 'No message');
+        console.log('🔗 Correlation ID:', historyResponse.correlationId);
+        console.log('⏰ Timestamp:', historyResponse.timestamp);
+
+        if (historyResponse.data) {
+          console.log('📊 HISTORY DATA:');
+          console.log(`  🏋️ Total Workouts: ${historyResponse.data.stats?.totalWorkouts || 'N/A'}`);
+          console.log(`  📋 Workouts in Response: ${historyResponse.data.workouts.length}`);
+        }
+
+        console.groupEnd();
+      }
+
+      return historyResponse;
+    } catch (error) {
+      // Error logging
+      console.group('❌ Workout History Error');
+      console.log('');
+      console.log('🚫 ERROR DETAILS:');
+      console.log('  💥 Error:', error);
+      console.log('  🔗 Correlation ID:', correlationId);
+      console.log('  👤 User ID:', userId || 'anonymous');
+      console.log('');
+      console.log('📋 REQUEST CONTEXT:');
+      console.log('  🌐 Endpoint:', `${this.config.baseUrl}${endpoint}`);
+      console.log('  📊 Limit:', options.limit || 'Default');
+      console.groupEnd();
+
       throw error;
     }
   }

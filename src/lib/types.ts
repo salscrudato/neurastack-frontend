@@ -964,24 +964,51 @@ export interface WorkoutGenerateResponse {
   message?: string;
 }
 
-// Complete Workout Request Types
+// Complete Workout Request Types - Enhanced API Specification
 export interface WorkoutCompleteRequest {
   workoutId: string; // Required: from generate response
   completed: boolean; // Required: true/false
-  completionPercentage?: number; // Optional: 0-100
-  actualDuration?: number; // Optional: minutes
-  rating?: number; // Optional: 1-5
-  difficulty?: 'too_easy' | 'just_right' | 'too_hard'; // Optional
-  enjoyment?: number; // Optional: 1-5
-  energy?: string; // Optional: "low", "medium", "high"
-  notes?: string; // Optional: free-form feedback
-  exercises?: { // Optional: per-exercise feedback
+  completionPercentage?: number; // Optional: 0-100 (auto-calculated if not provided)
+  actualDuration?: number; // Optional: actual workout duration in minutes
+  startedAt?: string; // Optional: when workout was started (ISO string)
+  completedAt?: string; // Optional: when workout was finished (ISO string)
+  exercises: { // Required: detailed exercise completion data
     name: string;
-    completed: boolean;
-    actualSets?: number;
-    actualReps?: string;
-    notes?: string;
+    type?: string; // Optional: exercise type
+    muscleGroups?: string; // Optional: target muscle groups
+    completed: boolean; // Required: whether exercise was completed
+    difficulty?: 'too_easy' | 'just_right' | 'too_hard'; // Optional: exercise difficulty
+    notes?: string; // Optional: exercise-specific notes
+    sets: { // Required: detailed set tracking
+      setNumber?: number; // Optional: set number (API expects this)
+      reps: number; // Required: actual reps completed
+      weight: number; // Required: weight used (0 for bodyweight)
+      duration?: number; // Optional: duration for time-based exercises
+      distance?: number; // Optional: distance for cardio exercises
+      restTime?: string; // Optional: rest time after set
+      completed: boolean; // Required: whether set was completed
+      notes?: string; // Optional: set-specific notes
+      targetReps?: number; // Optional: target reps for comparison
+      targetWeight?: number; // Optional: target weight for comparison
+    }[];
+    totalReps?: number; // Optional: total reps across all sets (API expects this)
+    totalWeight?: number; // Optional: total weight across all sets (API expects this)
+    targetSets?: number; // Optional: planned number of sets
+    targetReps?: number; // Optional: planned reps per set
   }[];
+  feedback?: { // Optional: overall workout feedback
+    rating?: number; // Optional: 1-5 overall rating
+    difficulty?: 'too_easy' | 'just_right' | 'too_hard'; // Optional: overall difficulty perception
+    enjoyment?: number; // Optional: 1-5 enjoyment rating
+    energy?: number; // Optional: 1-5 energy level after workout
+    notes?: string; // Optional: general feedback notes
+    injuries?: string[]; // Optional: any injuries that occurred
+    environment?: { // Optional: workout environment details
+      location?: string;
+      temperature?: string;
+    };
+    wouldRecommend?: boolean; // Optional: would recommend this workout
+  };
 }
 
 export interface WorkoutCompleteResponse {
@@ -990,7 +1017,71 @@ export interface WorkoutCompleteResponse {
   data?: {
     workoutId: string;
     completed: boolean;
+    completionPercentage: number;
+    exercisesTracked: number;
+    completedExercises: number;
+    skippedExercises: number;
+    totalWeight?: number; // Total weight lifted across all exercises
+    totalReps?: number; // Total reps completed
+    actualDuration?: number; // Actual workout duration
     processed: boolean;
+    nextRecommendations?: { // AI-generated recommendations for next workout
+      restDays?: number;
+      focusAreas?: string[];
+      adjustments?: string[];
+      progressionSuggestions?: string[];
+    };
+  };
+  correlationId: string;
+  timestamp: string;
+}
+
+// Workout History API Types
+export interface WorkoutHistoryEntry {
+  workoutId: string; // API returns workoutId, not id
+  date: string; // API returns date field
+  status: string; // API includes status field
+  type: string; // API returns type, not workoutType
+  duration: number; // in minutes
+  difficulty: string;
+  completed: boolean;
+  completionPercentage?: number;
+  rating?: number; // 1-5
+  actualDuration?: number; // in minutes
+  exercises: {
+    name: string;
+    sets?: string; // API format
+    reps?: string; // API format
+    type?: string; // API includes type
+    completed?: boolean;
+    actualSets?: number;
+    actualReps?: string;
+    notes?: string;
+  }[];
+  notes?: string;
+  feedback?: {
+    difficulty?: 'too_easy' | 'just_right' | 'too_hard';
+    enjoyment?: number; // 1-5
+    energy?: string; // "low", "medium", "high"
+  };
+}
+
+export interface WorkoutHistoryResponse {
+  status: 'success' | 'error';
+  message?: string;
+  data?: {
+    workouts: WorkoutHistoryEntry[];
+    stats: {
+      totalWorkouts: number;
+      completedWorkouts: number;
+      completionRate: number;
+      averageRating: number;
+      averageDuration: number;
+      currentStreak: number;
+      longestStreak: number;
+      lastWorkout: string;
+      preferredWorkoutTypes: Record<string, number>;
+    };
   };
   correlationId: string;
   timestamp: string;
@@ -1101,8 +1192,8 @@ export type ApiFitnessGoal = typeof API_FITNESS_GOALS[number];
 export type ApiEquipmentType = typeof API_EQUIPMENT_TYPES[number];
 export type ApiInjuryType = typeof API_INJURY_TYPES[number];
 
-// Workout History Entry for tracking completed workouts
-export interface WorkoutHistoryEntry {
+// Legacy Workout History Entry for backward compatibility (deprecated)
+export interface LegacyWorkoutHistoryEntry {
   id: string;
   workoutType: string;
   duration: number;

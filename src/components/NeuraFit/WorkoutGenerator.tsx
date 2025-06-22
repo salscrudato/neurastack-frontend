@@ -79,6 +79,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const [completedExercises, setCompletedExercises] = useState<Set<number>>(new Set());
   const [showFeedback, setShowFeedback] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
+
+  // Weight tracking per set
+  const [currentSetIndex, setCurrentSetIndex] = useState(0);
+  const [setWeights, setSetWeights] = useState<{ [exerciseIndex: number]: (number | undefined)[] }>({});
+  const [currentReps, setCurrentReps] = useState<{ [exerciseIndex: number]: number[] }>({});
   const [showExerciseSwapper, setShowExerciseSwapper] = useState(false);
   const [exerciseToSwap, setExerciseToSwap] = useState<{ exercise: Exercise; index: number } | null>(null);
   const [showWorkoutModifier, setShowWorkoutModifier] = useState(false);
@@ -138,29 +143,123 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     }
   }, []);
 
-  // Confirmation for stopping workout
-  const handleStopWorkout = useCallback(() => {
-    if (window.confirm('Are you sure you want to stop this workout? Your progress will be lost.')) {
-      setIsWorkoutActive(false);
-      setIsResting(false);
-      setRestTimer(0);
-      setExerciseTimer(0);
-      setCurrentExerciseIndex(0);
-      setCompletedExercises(new Set());
-      setWorkoutStartTime(null);
+  // Finish workout function - moved before handleEarlyCompletion to fix hoisting issue
+  const finishWorkout = useCallback(async () => {
+    if (!currentWorkout || !workoutStartTime) return;
 
-      // Clear saved workout state
-      clearWorkoutState();
+    // const actualDurationMinutes = Math.floor((Date.now() - workoutStartTime.getTime()) / (1000 * 60));
 
-      toast({
-        title: 'Workout Stopped',
-        description: 'You can start a new workout anytime.',
-        status: 'info',
-        duration: 3000,
-        isClosable: true,
-      });
+    // const completedWorkout = {
+    //   ...currentWorkout,
+    //   completedAt: new Date(),
+    //   actualDuration: actualDurationMinutes,
+    //   completionRate: (completedExercises.size / currentWorkout.exercises.length) * 100
+    // };
+
+    // Backend automatically handles memory management - no manual storage needed
+    // The completion will be sent via the new completeWorkout API endpoint
+
+    setIsWorkoutActive(false);
+
+    // Clear saved workout state since workout is complete
+    clearWorkoutState();
+
+    // Show feedback form instead of immediately completing
+    setShowFeedback(true);
+
+    toast({
+      title: 'Workout Complete!',
+      description: `Great job! You completed ${completedExercises.size}/${currentWorkout.exercises.length} exercises.`,
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  }, [currentWorkout, workoutStartTime, completedExercises, clearWorkoutState, toast]);
+
+  // Handle early workout completion
+  const handleEarlyCompletion = useCallback(() => {
+    if (!currentWorkout || !workoutStartTime) return;
+
+    const completionRate = (completedExercises.size / currentWorkout.exercises.length) * 100;
+
+    if (completionRate < 25) {
+      // If less than 25% complete, offer to stop without saving
+      if (window.confirm('You\'ve completed less than 25% of the workout. Are you sure you want to stop? Your progress will not be saved.')) {
+        setIsWorkoutActive(false);
+        setIsResting(false);
+        setRestTimer(0);
+        setExerciseTimer(0);
+        setCurrentExerciseIndex(0);
+        setCompletedExercises(new Set());
+        setWorkoutStartTime(null);
+        clearWorkoutState();
+
+        toast({
+          title: 'Workout Stopped',
+          description: 'You can start a new workout anytime.',
+          status: 'info',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } else {
+      // If 25% or more complete, offer early completion with feedback
+      if (window.confirm(`You've completed ${Math.round(completionRate)}% of your workout. Would you like to finish early and save your progress?`)) {
+        // Trigger early completion with feedback
+        finishWorkout();
+
+        toast({
+          title: 'Workout Completed Early',
+          description: 'Great job! Your progress has been saved.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     }
-  }, [toast, clearWorkoutState]);
+  }, [currentWorkout, workoutStartTime, completedExercises, finishWorkout, clearWorkoutState, toast]);
+
+  // Weight tracking functions
+  const handleSetWeightChange = useCallback((exerciseIndex: number, setIndex: number, weight: number | undefined) => {
+    setSetWeights(prev => {
+      const exerciseWeights = prev[exerciseIndex] || [];
+      const newWeights = [...exerciseWeights];
+      newWeights[setIndex] = weight;
+      return {
+        ...prev,
+        [exerciseIndex]: newWeights
+      };
+    });
+  }, []);
+
+  const handleRepsChange = useCallback((exerciseIndex: number, setIndex: number, reps: number) => {
+    setCurrentReps(prev => {
+      const exerciseReps = prev[exerciseIndex] || [];
+      const newReps = [...exerciseReps];
+      newReps[setIndex] = reps;
+      return {
+        ...prev,
+        [exerciseIndex]: newReps
+      };
+    });
+  }, []);
+
+  // Initialize weight arrays when starting a workout
+  const initializeWeightTracking = useCallback(() => {
+    if (!currentWorkout) return;
+
+    const initialWeights: { [exerciseIndex: number]: (number | undefined)[] } = {};
+    const initialReps: { [exerciseIndex: number]: number[] } = {};
+
+    currentWorkout.exercises.forEach((exercise, exerciseIndex) => {
+      initialWeights[exerciseIndex] = new Array(exercise.sets).fill(undefined);
+      initialReps[exerciseIndex] = new Array(exercise.sets).fill(0);
+    });
+
+    setSetWeights(initialWeights);
+    setCurrentReps(initialReps);
+    setCurrentSetIndex(0);
+  }, [currentWorkout]);
 
   // Theme colors - hooks must be called at top level
   const bgColor = useColorModeValue('white', 'gray.800');
@@ -169,11 +268,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   const subtextColor = useColorModeValue('gray.600', 'gray.400');
   const activeColor = useColorModeValue('blue.500', 'blue.300');
   const completedColor = useColorModeValue('green.500', 'green.300');
-  const tipsBgColor = useColorModeValue('blue.50', 'blue.900');
-  const tipsTextColor = useColorModeValue('blue.700', 'blue.200');
+  // const tipsBgColor = useColorModeValue('blue.50', 'blue.900');
+  // const tipsTextColor = useColorModeValue('blue.700', 'blue.200');
   const instructionsBgColor = useColorModeValue('gray.50', 'gray.700');
-  const tipsBorderColor = useColorModeValue('blue.200', 'blue.600');
-  const tipsIconColor = useColorModeValue('blue.500', 'blue.400');
+  // const tipsBorderColor = useColorModeValue('blue.200', 'blue.600');
+  // const tipsIconColor = useColorModeValue('blue.500', 'blue.400');
 
   // Helper functions to convert codes to human-readable names
   const getGoalLabels = useCallback((goalCodes: string[]): string[] => {
@@ -836,6 +935,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     setCompletedExercises(new Set());
     setWorkoutStartTime(new Date());
 
+    // Initialize weight tracking
+    initializeWeightTracking();
+
     // Trigger haptic feedback for workout start
     triggerHaptic('success');
 
@@ -853,7 +955,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       duration: 2000,
       isClosable: true,
     });
-  }, [toast, triggerHaptic, isMobile, workoutConfig]);
+  }, [toast, triggerHaptic, isMobile, workoutConfig, initializeWeightTracking]);
 
   const completeExercise = () => {
     if (!currentWorkout) return;
@@ -871,6 +973,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       setRestTimer(currentExercise.restTime);
       setIsResting(true);
       setCurrentExerciseIndex(prev => prev + 1);
+      setCurrentSetIndex(0); // Reset set index for next exercise
       setExerciseTimer(0);
     } else {
       // Workout complete - stronger haptic feedback
@@ -879,43 +982,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     }
   };
 
-  const finishWorkout = useCallback(async () => {
-    if (!currentWorkout || !workoutStartTime) return;
-
-    // const actualDurationMinutes = Math.floor((Date.now() - workoutStartTime.getTime()) / (1000 * 60));
-
-    // const completedWorkout = {
-    //   ...currentWorkout,
-    //   completedAt: new Date(),
-    //   actualDuration: actualDurationMinutes,
-    //   completionRate: (completedExercises.size / currentWorkout.exercises.length) * 100
-    // };
-
-    // Backend automatically handles memory management - no manual storage needed
-    // The completion will be sent via the new completeWorkout API endpoint
-
-    setIsWorkoutActive(false);
-
-    // Clear saved workout state since workout is complete
-    clearWorkoutState();
-
-    // Show feedback form instead of immediately completing
-    setShowFeedback(true);
-
-    toast({
-      title: 'Workout Complete!',
-      description: `Great job! You completed ${completedExercises.size}/${currentWorkout.exercises.length} exercises.`,
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    });
-  }, [currentWorkout, workoutStartTime, completedExercises, user?.uid, toast]);
-
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+
 
   const handleFeedbackComplete = useCallback(() => {
     setShowFeedback(false);
@@ -1203,6 +1276,22 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   if (showFeedback && currentWorkout && workoutStartTime) {
     const actualDurationMinutes = Math.floor((Date.now() - workoutStartTime.getTime()) / (1000 * 60));
 
+    // Prepare exercise data for detailed API submission
+    const exerciseData: { [exerciseIndex: number]: { actualSets: number; actualReps: number[]; weights: (number | undefined)[]; notes?: string; } } = {};
+
+    completedExercises.forEach(exerciseIndex => {
+      const exercise = currentWorkout.exercises[exerciseIndex];
+      const weights = setWeights[exerciseIndex] || [];
+      const reps = currentReps[exerciseIndex] || [];
+
+      exerciseData[exerciseIndex] = {
+        actualSets: weights.length || exercise.sets,
+        actualReps: reps.length > 0 ? reps : Array(exercise.sets).fill(exercise.reps),
+        weights: weights,
+        notes: undefined // Could be enhanced to include exercise notes
+      };
+    });
+
     return (
       <WorkoutCompletion
         workout={currentWorkout}
@@ -1210,6 +1299,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         actualDuration={actualDurationMinutes}
         onComplete={handleFeedbackComplete}
         onSkip={handleSkipFeedback}
+        exerciseData={exerciseData}
       />
     );
   }
@@ -1824,15 +1914,113 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                   </Text>
                 </Box>
 
-                {/* Tips - Enhanced for mobile */}
-                {currentWorkout.exercises[currentExerciseIndex]?.tips && (
-                  <Box bg={tipsBgColor} p={{ base: 4, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor={tipsBorderColor}>
+                {/* Coaching Tips - Enhanced for mobile */}
+                {currentWorkout.coachingNotes && (
+                  <Box bg="blue.50" p={{ base: 4, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor="blue.200">
                     <HStack align="start" spacing={2}>
-                      <Icon as={PiLightningBold} color={tipsIconColor} mt={1} />
-                      <Text fontSize={{ base: "sm", md: "sm" }} color={tipsTextColor} fontWeight="medium" lineHeight="1.4">
-                        {currentWorkout.exercises[currentExerciseIndex]?.tips}
+                      <Icon as={PiLightningBold} color="blue.600" mt={1} />
+                      <Text fontSize={{ base: "sm", md: "sm" }} color="blue.700" fontWeight="medium" lineHeight="1.4">
+                        {currentWorkout.coachingNotes}
                       </Text>
                     </HStack>
+                  </Box>
+                )}
+
+                {/* Weight Tracking - Compact Design */}
+                {currentWorkout.exercises[currentExerciseIndex]?.sets > 0 && (
+                  <Box bg="gray.50" p={{ base: 3, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor="gray.200">
+                    <VStack spacing={3} align="stretch">
+                      <HStack justify="space-between" align="center">
+                        <Text fontSize="sm" fontWeight="semibold" color={textColor}>
+                          Set {currentSetIndex + 1} of {currentWorkout.exercises[currentExerciseIndex]?.sets}
+                        </Text>
+                        <Text fontSize="xs" color={subtextColor}>
+                          Track your progress
+                        </Text>
+                      </HStack>
+
+                      <HStack spacing={3} align="end">
+                        {/* Weight Input */}
+                        <Box flex={1}>
+                          <Text fontSize="xs" color={subtextColor} mb={1} fontWeight="medium">
+                            Weight (lbs)
+                          </Text>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={setWeights[currentExerciseIndex]?.[currentSetIndex] || ''}
+                            onChange={(e) => {
+                              const value = e.target.value ? parseFloat(e.target.value) : undefined;
+                              handleSetWeightChange(currentExerciseIndex, currentSetIndex, value);
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid #E2E8F0',
+                              fontSize: '14px',
+                              textAlign: 'center',
+                              backgroundColor: 'white'
+                            }}
+                          />
+                        </Box>
+
+                        {/* Reps Input */}
+                        <Box flex={1}>
+                          <Text fontSize="xs" color={subtextColor} mb={1} fontWeight="medium">
+                            Reps
+                          </Text>
+                          <input
+                            type="number"
+                            placeholder={currentWorkout.exercises[currentExerciseIndex]?.reps?.toString() || '0'}
+                            value={currentReps[currentExerciseIndex]?.[currentSetIndex] || ''}
+                            onChange={(e) => {
+                              const value = e.target.value ? parseInt(e.target.value) : 0;
+                              handleRepsChange(currentExerciseIndex, currentSetIndex, value);
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '8px',
+                              border: '1px solid #E2E8F0',
+                              fontSize: '14px',
+                              textAlign: 'center',
+                              backgroundColor: 'white'
+                            }}
+                          />
+                        </Box>
+
+                        {/* Next Set Button */}
+                        <Button
+                          size="sm"
+                          colorScheme="blue"
+                          variant="outline"
+                          onClick={() => {
+                            if (currentSetIndex < (currentWorkout.exercises[currentExerciseIndex]?.sets || 1) - 1) {
+                              setCurrentSetIndex(prev => prev + 1);
+                            }
+                          }}
+                          isDisabled={currentSetIndex >= (currentWorkout.exercises[currentExerciseIndex]?.sets || 1) - 1}
+                          minW="60px"
+                        >
+                          Next
+                        </Button>
+                      </HStack>
+
+                      {/* Set Progress Indicators */}
+                      <HStack spacing={2} justify="center">
+                        {Array.from({ length: currentWorkout.exercises[currentExerciseIndex]?.sets || 0 }, (_, i) => (
+                          <Box
+                            key={i}
+                            w={3}
+                            h={3}
+                            borderRadius="full"
+                            bg={i <= currentSetIndex ? "blue.500" : "gray.300"}
+                            transition="all 0.2s ease"
+                          />
+                        ))}
+                      </HStack>
+                    </VStack>
                   </Box>
                 )}
               </VStack>
@@ -1977,22 +2165,22 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             </Button>
 
             <Button
-              bg="red.50"
-              color="red.600"
-              borderColor="red.200"
+              bg="orange.50"
+              color="orange.600"
+              borderColor="orange.200"
               borderWidth="1px"
               variant="outline"
               size={{ base: "lg", md: "md" }}
               w="100%"
               leftIcon={<Icon as={PiStopBold} />}
-              onClick={handleStopWorkout}
+              onClick={handleEarlyCompletion}
               minH={{ base: "56px", md: "auto" }}
               fontSize={{ base: "md", md: "lg" }}
               borderRadius="xl"
               _hover={{
-                bg: 'red.100',
-                borderColor: 'red.300',
-                color: 'red.700',
+                bg: 'orange.100',
+                borderColor: 'orange.300',
+                color: 'orange.700',
                 transform: 'translateY(-1px)',
                 shadow: 'md'
               }}
@@ -2007,7 +2195,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 touchAction: 'manipulation'
               }}
             >
-              Stop Workout
+              Finish Early
             </Button>
           </VStack>
         )}
