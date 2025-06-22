@@ -1,4 +1,5 @@
 import {
+    Badge,
     Box,
     Button,
     Divider,
@@ -13,13 +14,16 @@ import {
     NumberInputStepper,
     SimpleGrid,
     Text,
+    Tooltip,
     useColorModeValue,
     useToast,
-    VStack
+    VStack,
+    Wrap,
+    WrapItem
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { FaUser, FaUserFriends, FaUserSlash } from 'react-icons/fa';
-import { PiCalendarBold, PiMinusBold, PiPlusBold, PiScalesBold } from 'react-icons/pi';
+import { PiArrowUpBold, PiCalendarBold, PiMinusBold, PiPlusBold, PiScalesBold, PiStarBold } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
@@ -31,8 +35,8 @@ interface PersonalInfoStepProps {
 
 // Age and weight range definitions
 const ageRanges = [
-  { label: 'Teen', range: '13-17', midpoint: 15, color: 'purple', icon: PiSparkle },
-  { label: 'Young Adult', range: '18-25', midpoint: 22, color: 'blue', icon: PiTrendUp },
+  { label: 'Teen', range: '13-17', midpoint: 15, color: 'purple', icon: PiStarBold },
+  { label: 'Young Adult', range: '18-25', midpoint: 22, color: 'blue', icon: PiArrowUpBold },
   { label: 'Adult', range: '26-35', midpoint: 30, color: 'green', icon: PiCalendarBold },
   { label: 'Middle Adult', range: '36-45', midpoint: 40, color: 'orange', icon: PiCalendarBold },
   { label: 'Mature Adult', range: '46-55', midpoint: 50, color: 'red', icon: PiCalendarBold },
@@ -41,8 +45,8 @@ const ageRanges = [
 ];
 
 const weightRanges = [
-  { label: 'Light', range: '90-125', midpoint: 108, color: 'cyan', icon: PiSparkle },
-  { label: 'Moderate Light', range: '126-150', midpoint: 138, color: 'blue', icon: PiTrendUp },
+  { label: 'Light', range: '90-125', midpoint: 108, color: 'cyan', icon: PiStarBold },
+  { label: 'Moderate Light', range: '126-150', midpoint: 138, color: 'blue', icon: PiArrowUpBold },
   { label: 'Moderate', range: '151-175', midpoint: 163, color: 'green', icon: PiScalesBold },
   { label: 'Moderate Heavy', range: '176-200', midpoint: 188, color: 'orange', icon: PiScalesBold },
   { label: 'Heavy', range: '201-225', midpoint: 213, color: 'red', icon: PiScalesBold },
