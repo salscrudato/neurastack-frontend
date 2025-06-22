@@ -1705,23 +1705,25 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       )}
 
       <Box
+        position="relative"
         minH="100vh"
         overflow={{ base: "auto", md: "auto" }}
         overflowX="hidden"
         style={{ WebkitOverflowScrolling: 'touch' }}
         className={`neurafit-scroll-container ${isWorkoutActive ? 'neurafit-workout-active' : ''} neurafit-no-zoom`}
-        // Enhanced mobile support - remove height constraints that cut off content
+        // Enhanced mobile support with proper bottom padding for fixed buttons
         sx={{
           '@media (max-width: 768px)': {
-            // Allow full height scrolling on mobile
             minHeight: 'calc(100vh - 56px)',
+            paddingBottom: '180px', // Space for fixed buttons
           },
           '@media (min-width: 769px)': {
             minHeight: 'calc(100vh - 64px)',
+            paddingBottom: '140px', // Space for fixed buttons
           }
         }}
       >
-      <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch" w="100%" maxW="4xl" mx="auto" className="neurafit-workout-container" pb={{ base: 32, md: 16 }}>
+      <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch" w="100%" maxW="4xl" mx="auto" className="neurafit-workout-container">
       {/* Workout Header */}
       <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }} mx={{ base: 1, md: 0 }}>
         <CardBody p={{ base: 3, md: 4, lg: 6 }}>
@@ -2096,17 +2098,24 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         </VStack>
       )}
 
-      {/* Action Buttons - Always visible with proper spacing */}
+      {/* Action Buttons - Fixed to bottom of screen */}
       <Box
-        position="sticky"
+        position="fixed"
         bottom={0}
+        left={0}
+        right={0}
         bg="white"
         borderTop="1px solid"
         borderColor="gray.200"
         p={{ base: 4, md: 4 }}
-        mt={{ base: 6, md: 8 }}
-        zIndex={10}
+        zIndex={1000}
         boxShadow="0 -4px 6px -1px rgba(0, 0, 0, 0.1)"
+        // Ensure proper safe area handling on mobile
+        sx={{
+          '@media (max-width: 768px)': {
+            paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+          }
+        }}
       >
         <VStack spacing={{ base: 3, md: 4 }} w="100%" maxW="4xl" mx="auto">
         {!isWorkoutActive ? (
