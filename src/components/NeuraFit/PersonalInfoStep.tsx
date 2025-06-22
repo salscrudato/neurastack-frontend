@@ -14,7 +14,7 @@ import {
     VStack
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
-import { FaUser, FaUserFriends, FaUserSlash } from 'react-icons/fa';
+import { FaUser } from 'react-icons/fa';
 import { PiCalendarBold, PiScalesBold } from 'react-icons/pi';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
@@ -61,10 +61,6 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
   // Theme colors
   const textColor = useColorModeValue('gray.800', 'white');
   const subtextColor = useColorModeValue('gray.600', 'gray.400');
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
-  const hoverBorderColor = useColorModeValue('gray.300', 'gray.500');
 
   // Validation function
   const validateForm = useCallback(() => {
@@ -378,115 +374,45 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
           </VStack>
         </FormControl>
 
-        <Divider />
+        <Divider opacity={0.3} />
 
-        {/* Gender - Enhanced with Glass Morphism */}
+        {/* Gender Selection */}
         <FormControl>
-          <FormLabel color={textColor} fontSize="md" fontWeight="semibold" mb={4}>
-            Gender (Optional)
+          <FormLabel color={textColor} fontSize="lg" fontWeight="bold" mb={6}>
+            <HStack spacing={3}>
+              <Icon as={FaUser} color="purple.500" boxSize={6} />
+              <Text>Gender (Optional)</Text>
+            </HStack>
           </FormLabel>
-          <SimpleGrid columns={3} spacing={{ base: 3, md: 4 }} w="100%">
-            {/* Male */}
-            <Button
-              variant={gender === 'male' ? 'solid' : 'outline'}
-              colorScheme={gender === 'male' ? 'blue' : 'gray'}
-              onClick={() => setGender(gender === 'male' ? '' : 'male')}
-              h={{ base: "72px", md: "68px" }}
-              flexDirection="column"
-              bg={gender === 'male' ? 'blue.500' : 'rgba(255, 255, 255, 0.8)'}
-              backdropFilter="blur(12px)"
-              borderColor={gender === 'male' ? 'blue.500' : 'rgba(255, 255, 255, 0.3)'}
-              borderWidth="2px"
-              color={gender === 'male' ? 'white' : textColor}
-              shadow={gender === 'male' ? "0 8px 32px rgba(79, 156, 249, 0.3)" : "0 8px 32px rgba(31, 38, 135, 0.15)"}
-              _hover={{
-                bg: gender === 'male' ? 'blue.600' : 'rgba(255, 255, 255, 0.95)',
-                borderColor: gender === 'male' ? 'blue.600' : 'rgba(79, 156, 249, 0.4)',
-                shadow: gender === 'male' ? "0 12px 40px rgba(79, 156, 249, 0.4)" : "0 12px 40px rgba(31, 38, 135, 0.2)",
-                transform: 'translateY(-2px)'
-              }}
-              _active={{
-                transform: 'translateY(0px)',
-                shadow: gender === 'male' ? "0 4px 16px rgba(79, 156, 249, 0.3)" : "0 4px 16px rgba(31, 38, 135, 0.15)"
-              }}
-              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
-            >
-              <Icon as={FaUser} boxSize={{ base: 6, md: 5 }} mb={2} />
-              <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="semibold">Male</Text>
-            </Button>
 
-            {/* Female */}
-            <Button
-              variant={gender === 'female' ? 'solid' : 'outline'}
-              colorScheme={gender === 'female' ? 'pink' : 'gray'}
-              onClick={() => setGender(gender === 'female' ? '' : 'female')}
-              h={{ base: "72px", md: "68px" }}
-              flexDirection="column"
-              bg={gender === 'female' ? 'pink.500' : 'rgba(255, 255, 255, 0.8)'}
-              backdropFilter="blur(12px)"
-              borderColor={gender === 'female' ? 'pink.500' : 'rgba(255, 255, 255, 0.3)'}
-              borderWidth="2px"
-              color={gender === 'female' ? 'white' : textColor}
-              shadow={gender === 'female' ? "0 8px 32px rgba(236, 72, 153, 0.3)" : "0 8px 32px rgba(31, 38, 135, 0.15)"}
-              _hover={{
-                bg: gender === 'female' ? 'pink.600' : 'rgba(255, 255, 255, 0.95)',
-                borderColor: gender === 'female' ? 'pink.600' : 'rgba(236, 72, 153, 0.4)',
-                shadow: gender === 'female' ? "0 12px 40px rgba(236, 72, 153, 0.4)" : "0 12px 40px rgba(31, 38, 135, 0.2)",
-                transform: 'translateY(-2px)'
-              }}
-              _active={{
-                transform: 'translateY(0px)',
-                shadow: gender === 'female' ? "0 4px 16px rgba(236, 72, 153, 0.3)" : "0 4px 16px rgba(31, 38, 135, 0.15)"
-              }}
-              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
-            >
-              <Icon as={FaUserFriends} boxSize={{ base: 6, md: 5 }} mb={2} />
-              <Text fontSize={{ base: "sm", md: "xs" }} fontWeight="semibold">Female</Text>
-            </Button>
-
-            {/* Rather Not Say */}
-            <Button
-              variant={gender === 'rather_not_say' ? 'solid' : 'outline'}
-              colorScheme={gender === 'rather_not_say' ? 'purple' : 'gray'}
-              onClick={() => setGender(gender === 'rather_not_say' ? '' : 'rather_not_say')}
-              h={{ base: "72px", md: "68px" }}
-              flexDirection="column"
-              bg={gender === 'rather_not_say' ? 'purple.500' : 'rgba(255, 255, 255, 0.8)'}
-              backdropFilter="blur(12px)"
-              borderColor={gender === 'rather_not_say' ? 'purple.500' : 'rgba(255, 255, 255, 0.3)'}
-              borderWidth="2px"
-              color={gender === 'rather_not_say' ? 'white' : textColor}
-              shadow={gender === 'rather_not_say' ? "0 8px 32px rgba(139, 92, 246, 0.3)" : "0 8px 32px rgba(31, 38, 135, 0.15)"}
-              _hover={{
-                bg: gender === 'rather_not_say' ? 'purple.600' : 'rgba(255, 255, 255, 0.95)',
-                borderColor: gender === 'rather_not_say' ? 'purple.600' : 'rgba(139, 92, 246, 0.4)',
-                shadow: gender === 'rather_not_say' ? "0 12px 40px rgba(139, 92, 246, 0.4)" : "0 12px 40px rgba(31, 38, 135, 0.2)",
-                transform: 'translateY(-2px)'
-              }}
-              _active={{
-                transform: 'translateY(0px)',
-                shadow: gender === 'rather_not_say' ? "0 4px 16px rgba(139, 92, 246, 0.3)" : "0 4px 16px rgba(31, 38, 135, 0.15)"
-              }}
-              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
-            >
-              <Icon as={FaUserSlash} boxSize={{ base: 6, md: 5 }} mb={2} />
-              <Text fontSize={{ base: "xs", md: "2xs" }} fontWeight="semibold" textAlign="center" lineHeight="1.2">
-                Rather Not Say
-              </Text>
-            </Button>
-          </SimpleGrid>
+          <Select
+            placeholder="Select your gender"
+            value={gender}
+            onChange={(e) => setGender(e.target.value as typeof gender)}
+            size="lg"
+            bg="rgba(255, 255, 255, 0.95)"
+            backdropFilter="blur(16px)"
+            borderRadius="2xl"
+            borderWidth="2px"
+            borderColor="rgba(139, 92, 246, 0.2)"
+            shadow="0 8px 32px rgba(31, 38, 135, 0.1)"
+            fontSize={{ base: "md", md: "lg" }}
+            fontWeight="medium"
+            h={{ base: "60px", md: "64px" }}
+            _hover={{
+              borderColor: "purple.300",
+              shadow: "0 12px 40px rgba(31, 38, 135, 0.15)",
+              bg: "rgba(255, 255, 255, 1)"
+            }}
+            _focus={{
+              borderColor: "purple.500",
+              boxShadow: "0 0 0 3px rgba(139, 92, 246, 0.1), 0 16px 40px rgba(139, 92, 246, 0.2)"
+            }}
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="rather_not_say">Rather Not Say</option>
+          </Select>
         </FormControl>
       </VStack>
 
