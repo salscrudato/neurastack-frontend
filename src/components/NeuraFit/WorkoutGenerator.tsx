@@ -471,9 +471,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         workoutType: humanReadableWorkoutType
       };
 
-      // Only include additionalInformation if there's actual content
+      // Only include otherInformation if there's actual content
       if (additionalInfo.trim()) {
-        workoutAPIRequest.additionalInformation = additionalInfo;
+        workoutAPIRequest.otherInformation = additionalInfo;
       }
 
       // Skip validation for new flexible API - backend handles all validation
@@ -496,8 +496,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log(`  👤 Gender: ${workoutAPIRequest.gender}`);
       console.log(`  📅 Days/Week: ${workoutAPIRequest.daysPerWeek}`);
       console.log('');
-      console.log('📝 ADDITIONAL INFORMATION:');
-      console.log(`  ${workoutAPIRequest.additionalInformation || 'None provided'}`);
+      console.log('📝 OTHER INFORMATION:');
+      console.log(`  ${workoutAPIRequest.otherInformation || 'None provided'}`);
       console.log('');
       console.log('📤 FULL REQUEST PAYLOAD:');
       console.log(JSON.stringify(workoutAPIRequest, null, 2));
@@ -527,10 +527,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           duration: workout.duration,
           difficulty: workout.difficulty,
           warmupExercises: workout.warmup?.length || 0,
-          mainExercises: workout.exercises?.length || 0,
+          mainExercises: workout.mainWorkout?.exercises?.length || 0,
           cooldownExercises: workout.cooldown?.length || 0,
-          hasProfessionalNotes: !!workout.progressionNotes,
-          estimatedCalories: workout.calorieEstimate,
+          structure: workout.mainWorkout?.structure || 'N/A',
           coachingTips: workout.coachingTips?.length || 0
         });
       }
@@ -549,12 +548,12 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           throw new Error('Invalid workout data received from API');
         }
 
-        // Validate new flexible workout format
-        if (!workout.exercises || !Array.isArray(workout.exercises)) {
-          throw new Error('Invalid workout data - no exercises found');
+        // Validate new API workout format
+        if (!workout.mainWorkout || !workout.mainWorkout.exercises || !Array.isArray(workout.mainWorkout.exercises)) {
+          throw new Error('Invalid workout data - no main workout exercises found');
         }
 
-        if (workout.exercises.length === 0) {
+        if (workout.mainWorkout.exercises.length === 0) {
           throw new Error('Invalid workout data - empty exercise list');
         }
 
@@ -765,8 +764,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     // Transform main exercises from new API format
     const exercises: Exercise[] = [];
 
-    if (apiWorkout.exercises && Array.isArray(apiWorkout.exercises)) {
-      apiWorkout.exercises.forEach((exercise: any) => {
+    if (apiWorkout.mainWorkout?.exercises && Array.isArray(apiWorkout.mainWorkout.exercises)) {
+      apiWorkout.mainWorkout.exercises.forEach((exercise: any) => {
         const restTime = exercise.rest ? parseInt(exercise.rest.replace(/\D/g, '')) : 60;
         exercises.push({
           name: exercise.name,
@@ -775,11 +774,11 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           duration: 0,
           restTime: restTime,
           instructions: exercise.instructions || '',
-          tips: exercise.modifications || '',
+          tips: exercise.instructions || '', // Use instructions as tips since modifications field may not exist
           targetMuscles: exercise.targetMuscles || [],
-          equipment: ['bodyweight'], // Default equipment
-          category: 'compound',
-          modifications: exercise.modifications ? [exercise.modifications] : []
+          equipment: apiWorkout.equipment || ['bodyweight'], // Use workout equipment
+          category: exercise.category || 'compound',
+          modifications: exercise.instructions ? [exercise.instructions] : []
         });
       });
     }
@@ -788,12 +787,6 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     const coachingNotes = [];
     if (apiWorkout.coachingTips && Array.isArray(apiWorkout.coachingTips)) {
       coachingNotes.push(...apiWorkout.coachingTips);
-    }
-    if (apiWorkout.progressionNotes) {
-      coachingNotes.push(apiWorkout.progressionNotes);
-    }
-    if (apiWorkout.safetyNotes) {
-      coachingNotes.push(apiWorkout.safetyNotes);
     }
 
     const finalCoachingNotes = coachingNotes.length > 0
@@ -819,8 +812,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       coolDown: {
         duration: 5, // Default cooldown duration
         exercises: apiWorkout.cooldown?.map((c: any) => c.name || 'Cool-down stretch') || []
-      },
-      estimatedCalories: apiWorkout.calorieEstimate
+      }
     };
   }, [profile, workoutTypes]);
 
@@ -1058,9 +1050,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         workoutType: humanReadableModificationWorkoutType
       };
 
-      // Only include additionalInformation if there's actual content
+      // Only include otherInformation if there's actual content
       if (modificationInfo.trim()) {
-        workoutAPIRequest.additionalInformation = modificationInfo;
+        workoutAPIRequest.otherInformation = modificationInfo;
       }
 
       // Modification request logging for new API format
@@ -1087,18 +1079,19 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       console.log('✅ Response Status:', response.status);
       console.log('🔗 Correlation ID:', response.correlationId);
       if (response.data?.workout) {
-        // Handle both new and legacy API formats for logging
+        // Handle new API format for logging
         const workout = response.data.workout;
-        const exerciseCount = workout.exercises?.length || 0;
+        const exerciseCount = workout.mainWorkout?.exercises?.length || 0;
 
         console.log('🏋️ Modified Workout Details:', {
           type: workout.type,
           duration: workout.duration,
           exerciseCount,
           difficulty: workout.difficulty,
-          hasExercises: !!workout.exercises,
+          hasMainWorkout: !!workout.mainWorkout,
           hasWarmup: !!workout.warmup,
-          hasCooldown: !!workout.cooldown
+          hasCooldown: !!workout.cooldown,
+          structure: workout.mainWorkout?.structure || 'N/A'
         });
       }
       console.groupEnd();

@@ -9,7 +9,7 @@
  * - Workout completion flow
  */
 
-import { WorkoutGenerateRequest, WorkoutCompleteRequest } from '../src/lib/types';
+import { WorkoutGenerateRequest } from '../src/lib/types';
 
 const API_BASE_URL = 'https://neurastack-backend-638289111765.us-central1.run.app';
 
@@ -100,7 +100,7 @@ async function testAdvancedWorkoutGeneration(): Promise<TestResult> {
       otherInformation: 'I compete in powerlifting and need to focus on progressive overload. I prefer compound movements and can handle high intensity.'
     };
 
-    const response = await fetch(`${API_BASE_URL}/workout/generate-workout`, {
+    const response = await fetch(`${API_BASE_URL}/api/workout/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ async function testNaturalLanguageInputs(): Promise<TestResult> {
       otherInformation: 'I am new to working out and want something that will help me build confidence while being safe and effective'
     };
 
-    const response = await fetch(`${API_BASE_URL}/workout/generate-workout`, {
+    const response = await fetch(`${API_BASE_URL}/api/workout/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

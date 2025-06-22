@@ -852,20 +852,20 @@ export interface WorkoutUserMetadata {
 }
 
 export interface WorkoutGenerateRequest {
-  // Required fields per new flexible API specification
-  age: number; // Required: 13-100
-  fitnessLevel: string; // Required: any string (e.g., "beginner", "intermediate", "expert")
+  // Required fields per API documentation
+  age: number; // Required: If a range is selected, send the middle value
+  fitnessLevel: string; // Required: "beginner", "intermediate", "advanced"
+  equipment: string[]; // Required: ["Dumbbells", "Resistance Bands", etc.]
+  goals: string[]; // Required: ["strength", "weight loss", etc.]
 
-  // Optional fields - flexible format
-  gender?: string; // Optional: any string
-  weight?: number; // Optional: number in kg/lbs
-  goals?: string | string[]; // Flexible: string or array
-  equipment?: string | string[]; // Flexible: string or array
-  injuries?: string | string[]; // Flexible: string or array
+  // Optional fields
+  gender?: string; // Optional: "male", "female"
+  weight?: number; // Optional: lbs
+  injuries?: string[]; // Optional: ["lower_back", "knee", etc.]
   timeAvailable?: number; // Optional: minutes (10-120)
   daysPerWeek?: number; // Optional: 1-7
-  workoutType?: string; // Optional: any string
-  additionalInformation?: string; // Optional: free-form text for additional context
+  workoutType?: string; // Optional: free-form text like "Push Day - (Sub Text Description)"
+  otherInformation?: string; // Optional: free-form additional context entered by the user
 }
 
 // Enhanced Workout Response Types (Updated to match latest API spec)
@@ -906,36 +906,34 @@ export interface PersonalizationMetadata {
 export interface WorkoutGenerateResponse {
   status: 'success' | 'error';
   data?: {
-    workoutId: string;
     workout: {
       type: string;
       duration: number; // minutes
       difficulty: string;
       equipment: string[];
-      targetMuscles: string[];
-      calorieEstimate: number;
-      exercises: {
-        name: string;
-        sets: number;
-        reps: string;
-        rest: string;
-        instructions: string;
-        modifications: string;
-        targetMuscles: string[];
-      }[];
       warmup: {
         name: string;
         duration: string;
         instructions: string;
       }[];
+      mainWorkout: {
+        structure: string;
+        exercises: {
+          name: string;
+          category: string;
+          sets: number;
+          reps: string;
+          rest: string;
+          instructions: string;
+          targetMuscles: string[];
+        }[];
+      };
       cooldown: {
         name: string;
         duration: string;
         instructions: string;
       }[];
       coachingTips: string[];
-      progressionNotes: string;
-      safetyNotes: string;
     };
     metadata: {
       model: string;
@@ -943,8 +941,22 @@ export interface WorkoutGenerateResponse {
       timestamp: string;
       correlationId: string;
       userId: string;
-      approach: string;
-      promptCraftingModel: string;
+      debug: {
+        requestFormat: string;
+        isEnhancedFormat: boolean;
+        parsedWorkoutType: string;
+        professionalStandards: {
+          certificationLevel: string;
+          programmingApproach: string;
+          qualityScore: number;
+        };
+        workoutStructureValidation: {
+          hasWarmup: boolean;
+          hasMainWorkout: boolean;
+          hasCooldown: boolean;
+          exerciseCount: number;
+        };
+      };
     };
   };
   correlationId: string;
@@ -954,12 +966,22 @@ export interface WorkoutGenerateResponse {
 
 // Complete Workout Request Types
 export interface WorkoutCompleteRequest {
-  workoutId: string;
-  completed: boolean;
-  rating?: number; // 1-5 stars
-  difficulty?: 'too_easy' | 'just_right' | 'too_hard';
-  notes?: string;
-  actualDuration?: number; // minutes
+  workoutId: string; // Required: from generate response
+  completed: boolean; // Required: true/false
+  completionPercentage?: number; // Optional: 0-100
+  actualDuration?: number; // Optional: minutes
+  rating?: number; // Optional: 1-5
+  difficulty?: 'too_easy' | 'just_right' | 'too_hard'; // Optional
+  enjoyment?: number; // Optional: 1-5
+  energy?: string; // Optional: "low", "medium", "high"
+  notes?: string; // Optional: free-form feedback
+  exercises?: { // Optional: per-exercise feedback
+    name: string;
+    completed: boolean;
+    actualSets?: number;
+    actualReps?: string;
+    notes?: string;
+  }[];
 }
 
 export interface WorkoutCompleteResponse {

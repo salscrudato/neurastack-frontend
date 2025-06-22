@@ -98,7 +98,7 @@ export const NEURASTACK_ENDPOINTS = {
   // Enhanced ensemble endpoint (when backend is ready)
   ENHANCED_ENSEMBLE: '/api/enhanced-ensemble',
 
-  // New optimized workout endpoints (2-endpoint system)
+  // New optimized workout endpoints (2-endpoint system) - Using actual backend endpoints
   WORKOUT_GENERATE: '/workout/generate-workout',
   WORKOUT_COMPLETE: '/workout/complete-workout',
 
@@ -666,19 +666,19 @@ export class NeuraStackClient {
     const randomPart2 = Math.random().toString(36).substring(2, 15);
     const correlationId = `workout-gen-${timestamp}-${randomPart1}-${randomPart2}`;
 
-    // Prepare the request according to new flexible API specification
+    // Prepare the request according to new API specification
     const apiRequest: WorkoutGenerateRequest = {
       age: request.age,
       fitnessLevel: request.fitnessLevel,
+      equipment: request.equipment,
+      goals: request.goals,
       gender: request.gender,
       weight: request.weight,
-      goals: request.goals,
-      equipment: request.equipment,
       injuries: request.injuries,
       timeAvailable: request.timeAvailable,
       daysPerWeek: request.daysPerWeek,
       workoutType: request.workoutType,
-      additionalInformation: request.additionalInformation
+      otherInformation: request.otherInformation
     };
 
     // Prepare headers according to new API documentation
@@ -751,22 +751,25 @@ export class NeuraStackClient {
           console.log(`  📋 Type: %c${workout.type}%c`, 'color: #00ff00; font-weight: bold;', 'color: inherit;');
           console.log(`  ⏱️ Duration: ${workout.duration} minutes`);
           console.log(`  🎯 Difficulty: ${workout.difficulty}`);
-          console.log(`  🔥 Estimated Calories: ${workout.calorieEstimate || 'N/A'}`);
-          console.log(`  🎯 Target Muscles: ${workout.targetMuscles?.join(', ') || 'N/A'}`);
+          console.log(`  🏋️ Equipment: ${workout.equipment?.join(', ') || 'N/A'}`);
           console.log(`  💡 Coaching Tips: ${workout.coachingTips?.length || 0} tips`);
 
           // Workout phases (new structure)
           console.log('');
           console.log('📋 WORKOUT STRUCTURE:');
           console.log(`  🔥 Warmup: ${workout.warmup?.length || 0} exercises`);
-          console.log(`  💪 Main Exercises: ${workout.exercises?.length || 0} exercises`);
+          console.log(`  💪 Main Exercises: ${workout.mainWorkout?.exercises?.length || 0} exercises`);
           console.log(`  🧘 Cooldown: ${workout.cooldown?.length || 0} exercises`);
+          console.log(`  🏗️ Structure: ${workout.mainWorkout?.structure || 'N/A'}`);
 
-          if (workout.progressionNotes) {
-            console.log(`  📈 Progression Notes: ${workout.progressionNotes}`);
-          }
-          if (workout.safetyNotes) {
-            console.log(`  🛡️ Safety Notes: ${workout.safetyNotes}`);
+          // Quality metrics from debug metadata
+          if (workoutResponse.data?.metadata?.debug) {
+            const debug = workoutResponse.data.metadata.debug;
+            console.log('');
+            console.log('📊 QUALITY METRICS:');
+            console.log(`  🎯 Quality Score: ${debug.professionalStandards?.qualityScore || 'N/A'}`);
+            console.log(`  🏆 Certification Level: ${debug.professionalStandards?.certificationLevel || 'N/A'}`);
+            console.log(`  ✅ Structure Valid: ${debug.workoutStructureValidation?.hasWarmup && debug.workoutStructureValidation?.hasMainWorkout && debug.workoutStructureValidation?.hasCooldown ? 'Yes' : 'No'}`);
           }
         }
 
@@ -776,8 +779,7 @@ export class NeuraStackClient {
         console.log(`  🏢 Provider: ${workoutResponse.data?.metadata?.provider || 'Unknown'}`);
         console.log(`  👤 User ID: ${workoutResponse.data?.metadata?.userId || 'Unknown'}`);
         console.log(`  ⏰ Timestamp: ${workoutResponse.data?.metadata?.timestamp || 'Unknown'}`);
-        console.log(`  🔧 Approach: ${workoutResponse.data?.metadata?.approach || 'Unknown'}`);
-        console.log(`  🧠 Prompt Crafting Model: ${workoutResponse.data?.metadata?.promptCraftingModel || 'Unknown'}`);
+        console.log(`  🔗 Correlation ID: ${workoutResponse.data?.metadata?.correlationId || 'Unknown'}`);
 
         console.groupEnd();
       }
