@@ -650,8 +650,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         // CRITICAL DEBUG: Log workout ID from backend response
         console.group('🆔 WORKOUT ID FLOW - Generation Response');
         console.log('📥 Backend Response Workout Object:', JSON.stringify(workout, null, 2));
-        console.log('🔑 Workout ID from Backend (workout object):', workout.id || workout.workoutId || 'NOT PROVIDED');
-        console.log('🔑 Workout ID from Backend (response.data.workoutId):', response.data.workoutId || 'NOT PROVIDED');
+        console.log('🔑 Workout ID from Backend (workout object):', workout.id || 'NOT PROVIDED');
+        console.log('🔑 Workout ID from Backend (response.data.workout.id):', workout.id || 'NOT PROVIDED');
         console.log('📋 Available Fields in Workout:', Object.keys(workout));
         console.log('📋 Available Fields in Response.data:', Object.keys(response.data));
         console.groupEnd();
@@ -666,8 +666,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         }
 
         // Transform the flexible API response to our internal WorkoutPlan format
-        // CRITICAL FIX: Pass the workout ID from response.data.workoutId
-        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, selectedWorkoutType, response.data.workoutId);
+        // CRITICAL FIX: Pass the workout ID from workout.id
+        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, selectedWorkoutType, workout.id);
 
         // CRITICAL DEBUG: Log the final workout plan ID
         console.group('🆔 WORKOUT ID FLOW - After Transformation');
@@ -1213,8 +1213,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         const workout = response.data.workout;
 
         // Use new flexible API transformation
-        // CRITICAL FIX: Pass the workout ID from response.data.workoutId for modifications too
-        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, modifications.workoutType || selectedWorkoutType, response.data.workoutId);
+        // CRITICAL FIX: Pass the workout ID from workout.id for modifications too
+        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, modifications.workoutType || selectedWorkoutType, workout.id);
 
         const enhancedWorkout: WorkoutPlan = {
           ...workoutPlan,

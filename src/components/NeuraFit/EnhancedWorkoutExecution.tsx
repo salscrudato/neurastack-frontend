@@ -899,6 +899,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         )}
 
       </VStack>
+      </Box>
 
       {/* Control buttons - Fixed to bottom */}
       <Box
