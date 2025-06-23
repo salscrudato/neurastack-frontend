@@ -1792,6 +1792,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       <VStack
         spacing={{ base: 4, md: 4, lg: 6 }}
         p={{ base: 4, md: 4, lg: 6 }}
+        pb={{ base: 8, md: 6, lg: 6 }} // Extra bottom padding for mobile scrolling
         align="stretch"
         w="100%"
         maxW="4xl"
@@ -2038,23 +2039,23 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                   </Box>
                 )}
 
-                {/* Weight Tracking - Compact Design */}
+                {/* Weight Tracking - Enhanced Mobile Design */}
                 {currentWorkout.exercises[currentExerciseIndex]?.sets > 0 && (
-                  <Box bg="gray.50" p={{ base: 3, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor="gray.200">
-                    <VStack spacing={3} align="stretch">
+                  <Box bg="gray.50" p={{ base: 4, md: 3 }} borderRadius="xl" borderWidth="1px" borderColor="gray.200" mb={{ base: 4, md: 2 }}>
+                    <VStack spacing={{ base: 4, md: 3 }} align="stretch">
                       <HStack justify="space-between" align="center">
-                        <Text fontSize="sm" fontWeight="semibold" color={textColor}>
+                        <Text fontSize={{ base: "md", md: "sm" }} fontWeight="semibold" color={textColor}>
                           Set {currentSetIndex + 1} of {currentWorkout.exercises[currentExerciseIndex]?.sets}
                         </Text>
-                        <Text fontSize="xs" color={subtextColor}>
+                        <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor}>
                           Track your progress
                         </Text>
                       </HStack>
 
-                      <HStack spacing={3} align="end">
+                      <HStack spacing={{ base: 4, md: 3 }} align="end">
                         {/* Weight Input */}
                         <Box flex={1}>
-                          <Text fontSize="xs" color={subtextColor} mb={1} fontWeight="medium">
+                          <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} mb={{ base: 2, md: 1 }} fontWeight="medium">
                             Weight (lbs)
                           </Text>
                           <input
@@ -2067,19 +2068,22 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                             }}
                             style={{
                               width: '100%',
-                              padding: '8px 12px',
-                              borderRadius: '8px',
-                              border: '1px solid #E2E8F0',
-                              fontSize: '14px',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: '2px solid #E2E8F0',
+                              fontSize: '16px', // Prevent zoom on iOS
                               textAlign: 'center',
-                              backgroundColor: 'white'
+                              backgroundColor: 'white',
+                              minHeight: '48px', // Better touch target
+                              WebkitTapHighlightColor: 'transparent',
+                              touchAction: 'manipulation'
                             }}
                           />
                         </Box>
 
                         {/* Reps Input */}
                         <Box flex={1}>
-                          <Text fontSize="xs" color={subtextColor} mb={1} fontWeight="medium">
+                          <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} mb={{ base: 2, md: 1 }} fontWeight="medium">
                             Reps
                           </Text>
                           <input
@@ -2092,19 +2096,22 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                             }}
                             style={{
                               width: '100%',
-                              padding: '8px 12px',
-                              borderRadius: '8px',
-                              border: '1px solid #E2E8F0',
-                              fontSize: '14px',
+                              padding: '12px 16px',
+                              borderRadius: '12px',
+                              border: '2px solid #E2E8F0',
+                              fontSize: '16px', // Prevent zoom on iOS
                               textAlign: 'center',
-                              backgroundColor: 'white'
+                              backgroundColor: 'white',
+                              minHeight: '48px', // Better touch target
+                              WebkitTapHighlightColor: 'transparent',
+                              touchAction: 'manipulation'
                             }}
                           />
                         </Box>
 
                         {/* Next Set Button */}
                         <Button
-                          size="sm"
+                          size={{ base: "md", md: "sm" }}
                           colorScheme="blue"
                           variant="outline"
                           onClick={() => {
@@ -2113,7 +2120,14 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                             }
                           }}
                           isDisabled={currentSetIndex >= (currentWorkout.exercises[currentExerciseIndex]?.sets || 1) - 1}
-                          minW="60px"
+                          minW={{ base: "80px", md: "60px" }}
+                          minH={{ base: "48px", md: "auto" }}
+                          fontSize={{ base: "md", md: "sm" }}
+                          borderRadius="xl"
+                          style={{
+                            WebkitTapHighlightColor: 'transparent',
+                            touchAction: 'manipulation'
+                          }}
                         >
                           Next
                         </Button>

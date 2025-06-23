@@ -560,21 +560,21 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         h="100%"
         overflowY="auto"
         overflowX="hidden"
-        p={{ base: 3, md: 4 }}
+        p={{ base: 4, md: 4 }}
         sx={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          // Prevent scrolling below fixed controls
-          paddingBottom: { base: '160px', md: '140px' }, // Space for fixed controls
+          // Prevent scrolling below fixed controls - increased for mobile
+          paddingBottom: { base: '200px', md: '160px' }, // More space for fixed controls on mobile
         }}
       >
       <VStack
-        spacing={{ base: 3, md: 4 }}
+        spacing={{ base: 4, md: 4 }}
         maxW="md"
         mx="auto"
         w="100%"
-        h="100%"
-        pb={{ base: 4, md: 6 }}
+        align="stretch"
+        pb={{ base: 6, md: 6 }}
       >
         {/* Header with progress */}
         <Card
@@ -786,15 +786,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               )}
 
               {/* Exercise instructions */}
-              <Box bg={useColorModeValue('blue.50', 'blue.900')} p={4} borderRadius="lg">
-                <VStack spacing={2} align="start">
+              <Box bg={useColorModeValue('blue.50', 'blue.900')} p={{ base: 4, md: 4 }} borderRadius="lg">
+                <VStack spacing={{ base: 3, md: 2 }} align="start">
                   <HStack>
-                    <Icon as={PiTargetBold} color={useColorModeValue('blue.600', 'blue.300')} />
-                    <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')}>
+                    <Icon as={PiTargetBold} color={useColorModeValue('blue.600', 'blue.300')} boxSize={{ base: 4, md: 4 }} />
+                    <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')}>
                       Instructions
                     </Text>
                   </HStack>
-                  <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')}>
+                  <Text fontSize={{ base: "md", md: "sm" }} color={useColorModeValue('blue.700', 'blue.200')} lineHeight="1.5">
                     {currentExercise.instructions}
                   </Text>
                 </VStack>
@@ -802,15 +802,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
               {/* Tips */}
               {currentExercise.tips && (
-                <Box bg={useColorModeValue('green.50', 'green.900')} p={4} borderRadius="lg">
-                  <VStack spacing={2} align="start">
+                <Box bg={useColorModeValue('green.50', 'green.900')} p={{ base: 4, md: 4 }} borderRadius="lg">
+                  <VStack spacing={{ base: 3, md: 2 }} align="start">
                     <HStack>
-                      <Text fontSize="sm">💡</Text>
-                      <Text fontSize="sm" fontWeight="bold" color={useColorModeValue('green.700', 'green.200')}>
+                      <Text fontSize={{ base: "md", md: "sm" }}>💡</Text>
+                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('green.700', 'green.200')}>
                         Pro Tip
                       </Text>
                     </HStack>
-                    <Text fontSize="sm" color={useColorModeValue('green.700', 'green.200')}>
+                    <Text fontSize={{ base: "md", md: "sm" }} color={useColorModeValue('green.700', 'green.200')} lineHeight="1.5">
                       {currentExercise.tips}
                     </Text>
                   </VStack>
@@ -835,8 +835,9 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
             }}
             transition="all 0.3s ease"
+            mb={{ base: 4, md: 2 }} // Extra margin for mobile scrolling
           >
-            <CardBody p={6}>
+            <CardBody p={{ base: 6, md: 6 }}>
               <VStack spacing={4}>
                 <HStack spacing={2} align="center" w="100%" justify="center">
                   <Icon as={PiTargetBold} color="blue.500" boxSize={5} />
