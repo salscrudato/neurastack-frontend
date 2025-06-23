@@ -108,21 +108,39 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
           // Transform API response to WorkoutSessionSummary format
           const transformedHistory: WorkoutSessionSummary[] = response.data.workouts
             .filter((workout: any) => workout.completed) // Extra filter to ensure only completed workouts
-            .map((workout: any) => ({
-              id: workout.workoutId || workout.id,
-              workoutName: workout.type || workout.workoutType,
-              date: new Date(workout.date || workout.completedAt),
-              duration: workout.duration,
-              exercisesCompleted: workout.exercises?.filter((ex: any) => ex.completed).length || 0,
-              totalExercises: workout.exercises?.length || 0,
-              completionRate: workout.completionPercentage || (workout.exercises?.length > 0 ? (workout.exercises.filter((ex: any) => ex.completed).length / workout.exercises.length) * 100 : 0),
-              totalWeightLifted: 0, // Could be calculated from exercise data if needed
-              averageRPE: undefined,
-              overallRating: workout.rating,
-              workoutType: workout.type || workout.workoutType,
-              status: 'completed' as 'completed' | 'abandoned' | 'completed_early', // Only completed workouts now
-              personalRecordsAchieved: 0 // Could be enhanced based on exercise data
-            }));
+            .map((workout: any) => {
+              // Safe date parsing with fallback
+              const dateValue = workout.date || workout.completedAt;
+              let workoutDate: Date;
+
+              try {
+                workoutDate = new Date(dateValue);
+                // Check if the date is valid
+                if (isNaN(workoutDate.getTime())) {
+                  console.warn('Invalid date value:', dateValue, 'for workout:', workout.workoutId);
+                  workoutDate = new Date(); // Fallback to current date
+                }
+              } catch (error) {
+                console.warn('Error parsing date:', dateValue, 'for workout:', workout.workoutId, error);
+                workoutDate = new Date(); // Fallback to current date
+              }
+
+              return {
+                id: workout.workoutId || workout.id,
+                workoutName: workout.type || workout.workoutType,
+                date: workoutDate,
+                duration: workout.duration,
+                exercisesCompleted: workout.exercises?.filter((ex: any) => ex.completed).length || 0,
+                totalExercises: workout.exercises?.length || 0,
+                completionRate: workout.completionPercentage || (workout.exercises?.length > 0 ? (workout.exercises.filter((ex: any) => ex.completed).length / workout.exercises.length) * 100 : 0),
+                totalWeightLifted: 0, // Could be calculated from exercise data if needed
+                averageRPE: undefined,
+                overallRating: workout.rating,
+                workoutType: workout.type || workout.workoutType,
+                status: 'completed' as 'completed' | 'abandoned' | 'completed_early', // Only completed workouts now
+                personalRecordsAchieved: 0 // Could be enhanced based on exercise data
+              };
+            });
 
           setWorkoutHistory(transformedHistory);
           // setError(null);
@@ -731,10 +749,24 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
                       >
                         <VStack spacing={0}>
                           <Text fontSize={{ base: "2xs", md: "xs" }} fontWeight="bold" color="#4F9CF9" letterSpacing="wide">
-                            {format(workout.date, 'MMM').toUpperCase()}
+                            {(() => {
+                              try {
+                                return format(workout.date, 'MMM').toUpperCase();
+                              } catch (error) {
+                                console.warn('Error formatting date:', workout.date, error);
+                                return 'JAN';
+                              }
+                            })()}
                           </Text>
                           <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color="white" lineHeight="1">
-                            {format(workout.date, 'd')}
+                            {(() => {
+                              try {
+                                return format(workout.date, 'd');
+                              } catch (error) {
+                                console.warn('Error formatting date:', workout.date, error);
+                                return '1';
+                              }
+                            })()}
                           </Text>
                         </VStack>
                       </Box>
@@ -865,7 +897,14 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
                         {selectedWorkout.duration} min
                       </Text>
                       <Text fontSize="xs" color="rgba(255, 255, 255, 0.5)">
-                        {formatDistanceToNow(selectedWorkout.date, { addSuffix: true })}
+                        {(() => {
+                          try {
+                            return formatDistanceToNow(selectedWorkout.date, { addSuffix: true });
+                          } catch (error) {
+                            console.warn('Error formatting distance to now:', selectedWorkout.date, error);
+                            return 'Recently';
+                          }
+                        })()}
                       </Text>
                     </VStack>
                   </Box>
