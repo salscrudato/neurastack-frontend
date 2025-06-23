@@ -651,7 +651,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         console.group('🆔 WORKOUT ID FLOW - Generation Response');
         console.log('📥 Backend Response Workout Object:', JSON.stringify(workout, null, 2));
         console.log('🔑 Workout ID from Backend (response.data.workoutId):', response.data.workoutId || 'NOT PROVIDED');
-        console.log('🔑 Workout ID from Backend (workout object):', workout.id || 'NOT PROVIDED');
+        console.log('🔑 Workout ID from Backend (workout object):', 'NOT PROVIDED - ID is at top level');
         console.log('📋 Available Fields in Workout:', Object.keys(workout));
         console.log('📋 Available Fields in Response.data:', Object.keys(response.data));
         console.groupEnd();

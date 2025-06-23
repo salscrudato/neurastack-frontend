@@ -906,8 +906,8 @@ export interface PersonalizationMetadata {
 export interface WorkoutGenerateResponse {
   status: 'success' | 'error';
   data?: {
+    workoutId: string; // CRITICAL: Backend-provided workout ID for completion tracking (at top level)
     workout: {
-      id: string; // CRITICAL: Backend-provided workout ID for completion tracking
       type: string;
       duration: number; // minutes
       difficulty: string;
