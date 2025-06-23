@@ -907,6 +907,7 @@ export interface WorkoutGenerateResponse {
   status: 'success' | 'error';
   data?: {
     workout: {
+      id: string; // CRITICAL: Backend-provided workout ID for completion tracking
       type: string;
       duration: number; // minutes
       difficulty: string;

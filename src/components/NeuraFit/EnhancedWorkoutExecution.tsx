@@ -526,30 +526,48 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
   return (
     <Box
-      h="100%"
+      position="relative"
       bg={useColorModeValue('gray.50', 'gray.900')}
-      p={{ base: 3, md: 4 }}
-      overflowY="auto"
-      overflowX="hidden"
-      // Enhanced mobile support with proper header spacing
       sx={{
-        WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain',
+        // Use dynamic viewport height for better mobile support
+        height: ['100dvh', '100vh'],
+        minHeight: ['100dvh', '100vh'],
+        '@supports (-webkit-touch-callout: none)': {
+          height: '-webkit-fill-available',
+          minHeight: '-webkit-fill-available',
+        },
+        // Account for fixed header
         '@media (max-width: 768px)': {
-          // Full viewport height minus fixed header
-          height: 'calc(100vh - 56px)',
-          minHeight: 'calc(100vh - 56px)',
-          maxHeight: 'calc(100vh - 56px)',
-          paddingX: 3,
-          paddingY: 2,
+          height: 'calc(100dvh - 56px)',
+          minHeight: 'calc(100dvh - 56px)',
+          '@supports (-webkit-touch-callout: none)': {
+            height: 'calc(-webkit-fill-available - 56px)',
+            minHeight: 'calc(-webkit-fill-available - 56px)',
+          }
         },
         '@media (min-width: 769px)': {
-          height: 'calc(100vh - 64px)',
-          minHeight: 'calc(100vh - 64px)',
-          maxHeight: 'calc(100vh - 64px)',
+          height: 'calc(100dvh - 64px)',
+          minHeight: 'calc(100dvh - 64px)',
+          '@supports (-webkit-touch-callout: none)': {
+            height: 'calc(-webkit-fill-available - 64px)',
+            minHeight: 'calc(-webkit-fill-available - 64px)',
+          }
         }
       }}
     >
+      {/* Scrollable Content Area */}
+      <Box
+        h="100%"
+        overflowY="auto"
+        overflowX="hidden"
+        p={{ base: 3, md: 4 }}
+        sx={{
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          // Prevent scrolling below fixed controls
+          paddingBottom: { base: '160px', md: '140px' }, // Space for fixed controls
+        }}
+      >
       <VStack
         spacing={{ base: 3, md: 4 }}
         maxW="md"
@@ -880,38 +898,58 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
           </Card>
         )}
 
-        {/* Control buttons */}
-        <VStack spacing={{ base: 5, md: 4 }} w="100%">
+      </VStack>
+
+      {/* Control buttons - Fixed to bottom */}
+      <Box
+        position="fixed"
+        bottom={0}
+        left={0}
+        right={0}
+        bg="white"
+        borderTop="1px solid"
+        borderColor="gray.200"
+        p={{ base: 4, md: 4 }}
+        zIndex={1000}
+        boxShadow="0 -4px 6px -1px rgba(0, 0, 0, 0.1)"
+        className="neurafit-fixed-controls"
+        sx={{
+          '@media (max-width: 768px)': {
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          }
+        }}
+      >
+        <VStack spacing={{ base: 4, md: 4 }} w="100%" maxW="md" mx="auto">
           {!isActive ? (
             <Button
               colorScheme="blue"
               size="lg"
               w="100%"
-              leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 7, md: 6 }} />}
+              leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 6, md: 5 }} />}
               onClick={startWorkout}
-              py={{ base: 8, md: 8 }}
-              fontSize={{ base: "xl", md: "lg" }}
+              py={{ base: 6, md: 6 }}
+              fontSize={{ base: "lg", md: "lg" }}
               fontWeight="bold"
               borderRadius="xl"
-              h={{ base: "64px", md: "56px" }}
+              h={{ base: "56px", md: "48px" }}
               _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
               transition="all 0.2s ease"
             >
               Start Workout
             </Button>
           ) : (
-            <VStack spacing={{ base: 4, md: 3 }} w="100%">
-              <HStack spacing={{ base: 4, md: 3 }} w="100%">
+            <VStack spacing={{ base: 3, md: 3 }} w="100%">
+              <HStack spacing={{ base: 3, md: 3 }} w="100%">
                 <Button
                   colorScheme={isPaused ? "green" : "orange"}
                   size="lg"
                   flex={1}
-                  leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={{ base: 6, md: 5 }} />}
+                  leftIcon={<Icon as={isPaused ? PiPlayBold : PiPauseBold} boxSize={{ base: 5, md: 4 }} />}
                   onClick={togglePause}
-                  py={{ base: 6, md: 6 }}
+                  py={{ base: 4, md: 4 }}
                   borderRadius="xl"
-                  h={{ base: "56px", md: "48px" }}
-                  fontSize={{ base: "lg", md: "md" }}
+                  h={{ base: "48px", md: "44px" }}
+                  fontSize={{ base: "md", md: "sm" }}
                   _hover={{ transform: 'translateY(-1px)' }}
                   transition="all 0.2s ease"
                 >
@@ -923,12 +961,12 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                     colorScheme="green"
                     size="lg"
                     flex={1}
-                    leftIcon={<Icon as={PiCheckBold} boxSize={{ base: 6, md: 5 }} />}
+                    leftIcon={<Icon as={PiCheckBold} boxSize={{ base: 5, md: 4 }} />}
                     onClick={completeSet}
-                    py={{ base: 6, md: 6 }}
+                    py={{ base: 4, md: 4 }}
                     borderRadius="xl"
-                    h={{ base: "56px", md: "48px" }}
-                    fontSize={{ base: "lg", md: "md" }}
+                    h={{ base: "48px", md: "44px" }}
+                    fontSize={{ base: "md", md: "sm" }}
                     _hover={{ transform: 'translateY(-1px)' }}
                     transition="all 0.2s ease"
                   >
@@ -938,26 +976,26 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               </HStack>
 
               {/* Quick action buttons */}
-              <HStack spacing={{ base: 3, md: 2 }} w="100%" justify="center">
+              <HStack spacing={{ base: 2, md: 2 }} w="100%" justify="center">
                 <Button
                   variant="ghost"
-                  size={{ base: "md", md: "sm" }}
-                  leftIcon={<Icon as={PiTargetBold} boxSize={{ base: 5, md: 4 }} />}
+                  size={{ base: "sm", md: "sm" }}
+                  leftIcon={<Icon as={PiTargetBold} boxSize={{ base: 4, md: 4 }} />}
                   onClick={speakMotivation}
                   isDisabled={!isVoiceEnabled}
-                  fontSize={{ base: "md", md: "sm" }}
-                  h={{ base: "44px", md: "36px" }}
+                  fontSize={{ base: "sm", md: "sm" }}
+                  h={{ base: "40px", md: "36px" }}
                 >
                   Motivate
                 </Button>
                 <Button
                   variant="ghost"
-                  size={{ base: "md", md: "sm" }}
-                  leftIcon={<Icon as={PiTimerBold} boxSize={{ base: 5, md: 4 }} />}
+                  size={{ base: "sm", md: "sm" }}
+                  leftIcon={<Icon as={PiTimerBold} boxSize={{ base: 4, md: 4 }} />}
                   onClick={() => setRestTimer(30)}
                   isDisabled={!isResting}
-                  fontSize={{ base: "md", md: "sm" }}
-                  h={{ base: "44px", md: "36px" }}
+                  fontSize={{ base: "sm", md: "sm" }}
+                  h={{ base: "40px", md: "36px" }}
                 >
                   +30s Rest
                 </Button>
@@ -965,15 +1003,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
             </VStack>
           )}
 
-          <HStack spacing={{ base: 4, md: 3 }} w="100%">
+          <HStack spacing={{ base: 3, md: 3 }} w="100%">
             <Button
               variant="outline"
-              size={{ base: "lg", md: "md" }}
+              size={{ base: "md", md: "md" }}
               flex={1}
-              leftIcon={<Icon as={PiSkipForwardBold} boxSize={{ base: 5, md: 4 }} />}
+              leftIcon={<Icon as={PiSkipForwardBold} boxSize={{ base: 4, md: 4 }} />}
               onClick={skipExercise}
-              h={{ base: "52px", md: "44px" }}
-              fontSize={{ base: "lg", md: "md" }}
+              h={{ base: "44px", md: "40px" }}
+              fontSize={{ base: "md", md: "sm" }}
             >
               Skip Exercise
             </Button>
@@ -981,18 +1019,18 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
             <Button
               variant="outline"
               colorScheme="red"
-              size={{ base: "lg", md: "md" }}
+              size={{ base: "md", md: "md" }}
               flex={1}
-              leftIcon={<Icon as={PiStopBold} boxSize={{ base: 5, md: 4 }} />}
+              leftIcon={<Icon as={PiStopBold} boxSize={{ base: 4, md: 4 }} />}
               onClick={() => setShowExitConfirmation(true)}
-              h={{ base: "52px", md: "44px" }}
-              fontSize={{ base: "lg", md: "md" }}
+              h={{ base: "44px", md: "40px" }}
+              fontSize={{ base: "md", md: "sm" }}
             >
               Exit Workout
             </Button>
           </HStack>
         </VStack>
-      </VStack>
+      </Box>
 
       {/* Performance Modal */}
       <Modal isOpen={showPerformanceModal} onClose={() => setShowPerformanceModal(false)} size="lg">

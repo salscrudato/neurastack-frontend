@@ -253,6 +253,12 @@ export function Header() {
     <Flex
       as="header"
       role="banner"
+      position="sticky"
+      top={0}
+      zIndex={1100}
+      bg="white"
+      borderBottom="1px solid"
+      borderColor="gray.100"
       px={headerConfig.padding}
       py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
       gap={{ xs: 2, sm: 2.5, md: 3, lg: 3.5, xl: 4 }}

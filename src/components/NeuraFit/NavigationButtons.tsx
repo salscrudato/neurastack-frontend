@@ -34,6 +34,7 @@ const NavigationButtons = memo(function NavigationButtons({
           variant="outline"
           onClick={onBack}
           size="lg"
+          minH={{ base: "48px", md: "44px" }}
           borderRadius="xl"
           borderColor="gray.300"
           color="gray.700"
@@ -50,6 +51,10 @@ const NavigationButtons = memo(function NavigationButtons({
             transform: "scale(0.98)"
           }}
           transition="all 150ms ease"
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
+          }}
         >
           {backLabel}
         </Button>
@@ -60,6 +65,7 @@ const NavigationButtons = memo(function NavigationButtons({
       <Button
         onClick={onNext}
         size="lg"
+        minH={{ base: "48px", md: "44px" }}
         borderRadius="xl"
         bg="blue.500"
         color="white"
@@ -82,6 +88,10 @@ const NavigationButtons = memo(function NavigationButtons({
           transform: "scale(0.98)"
         }}
         transition="all 150ms ease"
+        style={{
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation'
+        }}
       >
         {nextLabel}
       </Button>

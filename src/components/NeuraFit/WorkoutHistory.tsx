@@ -91,6 +91,19 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
           includeIncomplete: false  // Only show completed workouts in history
         });
 
+        // CRITICAL DEBUG: Log workout history response
+        console.group('🆔 WORKOUT ID FLOW - History Response');
+        console.log('📥 History Response:', JSON.stringify(response, null, 2));
+        if (response.data?.workouts) {
+          console.log('📊 Workout IDs in History:', response.data.workouts.map(w => ({
+            id: w.workoutId,
+            type: w.type,
+            completed: w.completed,
+            date: w.date
+          })));
+        }
+        console.groupEnd();
+
         if (response.status === 'success' && response.data) {
           // Transform API response to WorkoutSessionSummary format
           const transformedHistory: WorkoutSessionSummary[] = response.data.workouts
@@ -320,8 +333,20 @@ const WorkoutHistory = memo<WorkoutHistoryProps>(({ onBack, onStartNewWorkout })
       overflow="auto"
       position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
+      sx={{
+        '@media (max-width: 768px)': {
+          height: 'calc(100vh - 56px)',
+          minHeight: 'calc(100vh - 56px)',
+          maxHeight: 'calc(100vh - 56px)',
+        },
+        '@media (min-width: 769px)': {
+          height: 'calc(100vh - 64px)',
+          minHeight: 'calc(100vh - 64px)',
+          maxHeight: 'calc(100vh - 64px)',
+        }
+      }}
     >
-      <VStack spacing={{ base: 2, md: 3 }} p={{ base: 2, md: 3 }} maxW="5xl" mx="auto" h="100%" justify="flex-start">
+      <VStack spacing={{ base: 3, md: 4 }} p={{ base: 3, md: 4 }} maxW="5xl" mx="auto" h="100%" justify="flex-start" pb={{ base: 6, md: 8 }}>
         {/* Futuristic Header */}
         <Box
           w="100%"

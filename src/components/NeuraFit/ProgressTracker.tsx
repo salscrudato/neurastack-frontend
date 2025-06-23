@@ -205,8 +205,20 @@ export default function ProgressTracker({ onBack, onStartNewWorkout }: ProgressT
       overflow={{ base: "auto", md: "auto" }}
       position="relative"
       style={{ WebkitOverflowScrolling: 'touch' }}
+      sx={{
+        '@media (max-width: 768px)': {
+          height: 'calc(100vh - 56px)',
+          minHeight: 'calc(100vh - 56px)',
+          maxHeight: 'calc(100vh - 56px)',
+        },
+        '@media (min-width: 769px)': {
+          height: 'calc(100vh - 64px)',
+          minHeight: 'calc(100vh - 64px)',
+          maxHeight: 'calc(100vh - 64px)',
+        }
+      }}
     >
-      <VStack spacing={{ base: 4, md: 5 }} p={{ base: 3, md: 4 }} maxW="4xl" mx="auto" h="100%" justify="flex-start">
+      <VStack spacing={{ base: 4, md: 5 }} p={{ base: 4, md: 5 }} maxW="4xl" mx="auto" h="100%" justify="flex-start" pb={{ base: 6, md: 8 }}>
         {/* Compact Header with Back Button */}
         <VStack spacing={2} textAlign="center" w="100%" py={{ base: 2, md: 3 }}>
           <HStack w="100%" justify="space-between" align="center">

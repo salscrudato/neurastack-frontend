@@ -647,6 +647,15 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           throw new Error('Invalid workout data received from API');
         }
 
+        // CRITICAL DEBUG: Log workout ID from backend response
+        console.group('🆔 WORKOUT ID FLOW - Generation Response');
+        console.log('📥 Backend Response Workout Object:', JSON.stringify(workout, null, 2));
+        console.log('🔑 Workout ID from Backend (workout object):', workout.id || workout.workoutId || 'NOT PROVIDED');
+        console.log('🔑 Workout ID from Backend (response.data.workoutId):', response.data.workoutId || 'NOT PROVIDED');
+        console.log('📋 Available Fields in Workout:', Object.keys(workout));
+        console.log('📋 Available Fields in Response.data:', Object.keys(response.data));
+        console.groupEnd();
+
         // Validate new API workout format
         if (!workout.mainWorkout || !workout.mainWorkout.exercises || !Array.isArray(workout.mainWorkout.exercises)) {
           throw new Error('Invalid workout data - no main workout exercises found');
@@ -657,7 +666,19 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         }
 
         // Transform the flexible API response to our internal WorkoutPlan format
-        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, selectedWorkoutType);
+        // CRITICAL FIX: Pass the workout ID from response.data.workoutId
+        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, selectedWorkoutType, response.data.workoutId);
+
+        // CRITICAL DEBUG: Log the final workout plan ID
+        console.group('🆔 WORKOUT ID FLOW - After Transformation');
+        console.log('🎯 Final Workout Plan ID:', workoutPlan.id);
+        console.log('📊 Workout Plan Object:', {
+          id: workoutPlan.id,
+          name: workoutPlan.name,
+          duration: workoutPlan.duration,
+          exerciseCount: workoutPlan.exercises.length
+        });
+        console.groupEnd();
 
         // Enhanced workout with backend personalization data
         const enhancedWorkout: WorkoutPlan = {
@@ -855,9 +876,29 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
   // Legacy transformation function - removed to fix syntax error
 
   // Transform new flexible API workout response to internal WorkoutPlan format
-  const transformFlexibleAPIWorkoutToPlan = useCallback((apiWorkout: any, requestedType: string): WorkoutPlan => {
-    // Generate unique workout ID
-    const uniqueId = `workout-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+  const transformFlexibleAPIWorkoutToPlan = useCallback((apiWorkout: any, requestedType: string, backendWorkoutId?: string): WorkoutPlan => {
+    // CRITICAL FIX: Use backend-provided workout ID instead of generating frontend ID
+    // The backend provides the workout ID at response.data.workoutId, not in the workout object itself
+    const workoutId = backendWorkoutId || apiWorkout.id || apiWorkout.workoutId;
+
+    if (!workoutId) {
+      console.error('❌ CRITICAL: Backend did not provide workout ID!', {
+        apiWorkout: JSON.stringify(apiWorkout, null, 2),
+        availableFields: Object.keys(apiWorkout)
+      });
+      // Fallback ID generation only if backend doesn't provide one
+      const fallbackId = `workout-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      console.warn('🔄 Using fallback workout ID:', fallbackId);
+    }
+
+    const finalWorkoutId = workoutId || `workout-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+
+    // Log the workout ID for debugging
+    console.log('🆔 Workout ID Assignment:', {
+      backendProvidedId: workoutId,
+      finalId: finalWorkoutId,
+      source: workoutId ? 'backend' : 'frontend-fallback'
+    });
 
     // Transform main exercises from new API format
     const exercises: Exercise[] = [];
@@ -892,7 +933,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       : 'Focus on proper form and listen to your body';
 
     return {
-      id: uniqueId,
+      id: finalWorkoutId,
       name: `${apiWorkout.type?.charAt(0).toUpperCase()}${apiWorkout.type?.slice(1).replace('_', ' ')} Workout` ||
             `AI Generated ${workoutTypes.find(t => t.value === requestedType)?.label || 'Mixed'} Workout`,
       duration: apiWorkout.duration || profile.availableTime,
@@ -1172,7 +1213,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         const workout = response.data.workout;
 
         // Use new flexible API transformation
-        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, modifications.workoutType || selectedWorkoutType);
+        // CRITICAL FIX: Pass the workout ID from response.data.workoutId for modifications too
+        const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, modifications.workoutType || selectedWorkoutType, response.data.workoutId);
 
         const enhancedWorkout: WorkoutPlan = {
           ...workoutPlan,
@@ -1547,8 +1589,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 onChange={(e) => setAdditionalInstructions(e.target.value)}
                 placeholder="e.g., Focus on form over speed, avoid jumping exercises, include more core work, prefer unilateral exercises..."
                 size="lg"
-                minH={{ base: "110px", sm: "105px", md: "100px" }}
-                maxH={{ base: "150px", md: "140px" }}
+                minH={{ base: "120px", sm: "110px", md: "100px" }}
+                maxH={{ base: "160px", md: "140px" }}
                 resize="vertical"
                 borderRadius="xl"
                 borderWidth="2px"
@@ -1566,11 +1608,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                 color={textColor}
                 maxLength={500}
                 px={{ base: 4, md: 3 }}
-                py={{ base: 3, md: 3 }}
-                // Enhanced mobile touch targets
+                py={{ base: 4, md: 3 }}
+                // Enhanced mobile touch targets and iOS optimization
                 style={{
+                  fontSize: '16px', // Prevent zoom on iOS
                   WebkitTapHighlightColor: 'transparent',
-                  touchAction: 'manipulation'
+                  touchAction: 'manipulation',
+                  WebkitOverflowScrolling: 'touch'
                 }}
               />
 
@@ -1706,39 +1750,91 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
       <Box
         position="relative"
-        minH="100vh"
-        overflow={{ base: "auto", md: "auto" }}
-        overflowX="hidden"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-        className={`neurafit-scroll-container ${isWorkoutActive ? 'neurafit-workout-active' : ''} neurafit-no-zoom`}
-        // Enhanced mobile support with proper bottom padding for fixed buttons
         sx={{
+          // Use dynamic viewport height for better mobile support
+          height: ['100dvh', '100vh'],
+          minHeight: ['100dvh', '100vh'],
+          '@supports (-webkit-touch-callout: none)': {
+            height: '-webkit-fill-available',
+            minHeight: '-webkit-fill-available',
+          },
+          // Account for fixed header
           '@media (max-width: 768px)': {
-            minHeight: 'calc(100vh - 56px)',
-            paddingBottom: '180px', // Space for fixed buttons
+            height: 'calc(100dvh - 56px)',
+            minHeight: 'calc(100dvh - 56px)',
+            '@supports (-webkit-touch-callout: none)': {
+              height: 'calc(-webkit-fill-available - 56px)',
+              minHeight: 'calc(-webkit-fill-available - 56px)',
+            }
           },
           '@media (min-width: 769px)': {
-            minHeight: 'calc(100vh - 64px)',
-            paddingBottom: '140px', // Space for fixed buttons
+            height: 'calc(100dvh - 64px)',
+            minHeight: 'calc(100dvh - 64px)',
+            '@supports (-webkit-touch-callout: none)': {
+              height: 'calc(-webkit-fill-available - 64px)',
+              minHeight: 'calc(-webkit-fill-available - 64px)',
+            }
           }
         }}
       >
-      <VStack spacing={{ base: 3, md: 4, lg: 6 }} p={{ base: 3, md: 4, lg: 6 }} align="stretch" w="100%" maxW="4xl" mx="auto" className="neurafit-workout-container">
+        {/* Scrollable Content Area */}
+        <Box
+          h="100%"
+          overflow={{ base: "auto", md: "auto" }}
+          overflowX="hidden"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+          className={`neurafit-scroll-container ${isWorkoutActive ? 'neurafit-workout-active' : ''} neurafit-no-zoom neurafit-performance-optimized`}
+          sx={{
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+          }}
+        >
+      <VStack
+        spacing={{ base: 4, md: 4, lg: 6 }}
+        p={{ base: 4, md: 4, lg: 6 }}
+        align="stretch"
+        w="100%"
+        maxW="4xl"
+        mx="auto"
+        className="neurafit-workout-container"
+      >
       {/* Workout Header */}
-      <Card bg={bgColor} borderColor={borderColor} shadow={{ base: "lg", md: "md" }} mx={{ base: 1, md: 0 }}>
-        <CardBody p={{ base: 3, md: 4, lg: 6 }}>
-          <VStack spacing={{ base: 3, md: 4 }} align="stretch">
-            <HStack justify="space-between" align="start" flexWrap={{ base: "wrap", md: "nowrap" }}>
-              <VStack align="start" spacing={1} flex={1}>
-                <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" color={textColor} lineHeight="1.2">
+      <Card
+        bg={bgColor}
+        borderColor={borderColor}
+        shadow={{ base: "xl", md: "md" }}
+        mx={{ base: 0, md: 0 }}
+        borderRadius={{ base: "xl", md: "lg" }}
+      >
+        <CardBody p={{ base: 5, md: 4, lg: 6 }}>
+          <VStack spacing={{ base: 4, md: 4 }} align="stretch">
+            <HStack justify="space-between" align="start" flexWrap={{ base: "wrap", md: "nowrap" }} spacing={{ base: 3, md: 2 }}>
+              <VStack align="start" spacing={{ base: 2, md: 1 }} flex={1}>
+                <Text
+                  fontSize={{ base: "xl", md: "xl", lg: "2xl" }}
+                  fontWeight="bold"
+                  color={textColor}
+                  lineHeight="1.2"
+                  letterSpacing={{ base: "0.5px", md: "normal" }}
+                >
                   {currentWorkout.name}
                 </Text>
-                <HStack spacing={{ base: 2, md: 4 }} flexWrap="wrap">
-                  <Badge colorScheme="blue" fontSize={{ base: "xs", md: "sm" }} px={2} py={1}>
+                <HStack spacing={{ base: 4, md: 4 }} flexWrap="wrap">
+                  <Badge
+                    colorScheme="blue"
+                    fontSize={{ base: "sm", md: "sm" }}
+                    px={{ base: 3, md: 2 }}
+                    py={{ base: 1, md: 1 }}
+                    borderRadius="lg"
+                    fontWeight="semibold"
+                  >
                     {currentWorkout.difficulty}
                   </Badge>
-                  <Text fontSize={{ base: "sm", md: "md" }} color={subtextColor} fontWeight="medium">
+                  <Text fontSize={{ base: "md", md: "md" }} color={subtextColor} fontWeight="semibold">
                     {currentWorkout.duration} min
+                  </Text>
+                  <Text fontSize={{ base: "md", md: "md" }} color={subtextColor} fontWeight="semibold">
+                    {currentWorkout.exercises.length} exercises
                   </Text>
                 </HStack>
               </VStack>
@@ -1757,11 +1853,28 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
                 {!isWorkoutActive && (
                   <Button
-                    size="sm"
+                    size={{ base: "md", md: "sm" }}
                     variant="outline"
                     colorScheme="blue"
-                    leftIcon={<Icon as={PiGearBold} />}
+                    leftIcon={<Icon as={PiGearBold} boxSize={{ base: 4, md: 3 }} />}
                     onClick={handleModifyWorkout}
+                    minH={{ base: "44px", md: "auto" }}
+                    minW={{ base: "90px", md: "auto" }}
+                    fontSize={{ base: "md", md: "sm" }}
+                    fontWeight="semibold"
+                    px={{ base: 4, md: 3 }}
+                    borderRadius={{ base: "lg", md: "md" }}
+                    style={{
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation'
+                    }}
+                    _hover={{
+                      bg: "blue.50",
+                      transform: "scale(1.02)"
+                    }}
+                    _active={{
+                      transform: "scale(0.98)"
+                    }}
                   >
                     Modify
                   </Button>
@@ -2030,37 +2143,50 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
       {/* Exercise List - Enhanced for mobile */}
       {!isWorkoutActive && (
-        <VStack spacing={{ base: 3, md: 4 }} align="stretch" flex={1} overflowY="auto" className="neurafit-exercise-list" px={{ base: 1, md: 0 }}>
+        <VStack spacing={{ base: 4, md: 4 }} align="stretch" flex={1} className="neurafit-exercise-list">
           {currentWorkout.exercises.map((exercise, index) => (
             <Card
               key={index}
               bg={bgColor}
               borderColor={borderColor}
               opacity={completedExercises.has(index) ? 0.7 : 1}
-              shadow={{ base: "md", md: "sm" }}
+              shadow={{ base: "lg", md: "sm" }}
               borderWidth="1px"
+              borderRadius={{ base: "xl", md: "lg" }}
               _hover={{
-                shadow: "lg",
-                transform: "translateY(-1px)"
+                shadow: "xl",
+                transform: "translateY(-2px)"
               }}
               transition="all 0.2s ease-in-out"
             >
-              <CardBody p={{ base: 4, md: 3 }}>
-                <VStack spacing={{ base: 3, md: 2 }} align="stretch">
+              <CardBody p={{ base: 5, md: 3 }}>
+                <VStack spacing={{ base: 4, md: 2 }} align="stretch">
                   {/* Exercise Header */}
-                  <HStack justify="space-between" align="start">
-                    <VStack align="start" spacing={1} flex={1}>
-                      <HStack spacing={2} align="center">
-                        <Text fontWeight="bold" color={textColor} fontSize={{ base: "md", md: "sm" }} lineHeight="1.2">
+                  <HStack justify="space-between" align="start" spacing={{ base: 3, md: 2 }}>
+                    <VStack align="start" spacing={{ base: 2, md: 1 }} flex={1}>
+                      <HStack spacing={2} align="center" flexWrap="wrap">
+                        <Text
+                          fontWeight="bold"
+                          color={textColor}
+                          fontSize={{ base: "lg", md: "sm" }}
+                          lineHeight="1.2"
+                          flex={1}
+                        >
                           {exercise.name}
                         </Text>
                         {completedExercises.has(index) && (
-                          <Icon as={PiCheckBold} color={completedColor} boxSize={{ base: 5, md: 4 }} />
+                          <Icon as={PiCheckBold} color={completedColor} boxSize={{ base: 6, md: 4 }} />
                         )}
                       </HStack>
 
                       {/* Exercise Stats */}
-                      <HStack spacing={{ base: 3, md: 4 }} fontSize={{ base: "sm", md: "xs" }} color={subtextColor} fontWeight="medium">
+                      <HStack
+                        spacing={{ base: 4, md: 4 }}
+                        fontSize={{ base: "md", md: "xs" }}
+                        color={subtextColor}
+                        fontWeight="semibold"
+                        flexWrap="wrap"
+                      >
                         {exercise.sets > 0 && <Text>{exercise.sets} sets</Text>}
                         {exercise.reps > 0 && <Text>{exercise.reps} reps</Text>}
                         {exercise.duration > 0 && <Text>{exercise.duration}s</Text>}
@@ -2069,18 +2195,29 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
 
                     {/* Swap Exercise Button - Enhanced for mobile */}
                     <Button
-                      size={{ base: "sm", md: "xs" }}
+                      size={{ base: "md", md: "xs" }}
                       variant="ghost"
                       colorScheme="blue"
-                      leftIcon={<Icon as={PiSwapBold} />}
+                      leftIcon={<Icon as={PiSwapBold} boxSize={{ base: 4, md: 3 }} />}
                       onClick={() => handleSwapExercise(index)}
                       isDisabled={isWorkoutActive}
-                      minH={{ base: "40px", md: "auto" }}
-                      fontSize={{ base: "sm", md: "xs" }}
+                      minH={{ base: "48px", md: "auto" }}
+                      minW={{ base: "80px", md: "auto" }}
+                      fontSize={{ base: "md", md: "xs" }}
+                      fontWeight="semibold"
+                      px={{ base: 4, md: 2 }}
+                      borderRadius={{ base: "lg", md: "md" }}
                       // Enhanced touch targets for mobile
                       style={{
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation'
+                      }}
+                      _hover={{
+                        bg: "blue.50",
+                        transform: "scale(1.02)"
+                      }}
+                      _active={{
+                        transform: "scale(0.98)"
                       }}
                     >
                       Swap
@@ -2088,7 +2225,13 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                   </HStack>
 
                   {/* Exercise Instructions */}
-                  <Text fontSize={{ base: "sm", md: "xs" }} color={subtextColor} noOfLines={{ base: 3, md: 2 }} lineHeight="1.4">
+                  <Text
+                    fontSize={{ base: "md", md: "xs" }}
+                    color={subtextColor}
+                    noOfLines={{ base: 4, md: 2 }}
+                    lineHeight={{ base: "1.5", md: "1.4" }}
+                    mt={{ base: 1, md: 0 }}
+                  >
                     {exercise.instructions}
                   </Text>
                 </VStack>
@@ -2098,26 +2241,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         </VStack>
       )}
 
-      {/* Action Buttons - Fixed to bottom of screen */}
-      <Box
-        position="fixed"
-        bottom={0}
-        left={0}
-        right={0}
-        bg="white"
-        borderTop="1px solid"
-        borderColor="gray.200"
-        p={{ base: 4, md: 4 }}
-        zIndex={1000}
-        boxShadow="0 -4px 6px -1px rgba(0, 0, 0, 0.1)"
-        // Ensure proper safe area handling on mobile
-        sx={{
-          '@media (max-width: 768px)': {
-            paddingBottom: 'env(safe-area-inset-bottom, 16px)',
-          }
-        }}
-      >
-        <VStack spacing={{ base: 3, md: 4 }} w="100%" maxW="4xl" mx="auto">
+      {/* Action Buttons - Part of vertical stack */}
+      <VStack spacing={{ base: 4, md: 4 }} w="100%" align="stretch" pt={{ base: 2, md: 4 }}>
         {!isWorkoutActive ? (
           <Button
             colorScheme="blue"
@@ -2125,8 +2250,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             w="100%"
             leftIcon={<Icon as={PiPlayBold} />}
             onClick={startWorkout}
-            py={{ base: 5, md: 6 }}
-            minH={{ base: "64px", md: "auto" }}
+            py={{ base: 6, md: 6 }}
+            minH={{ base: "56px", md: "48px" }}
             fontSize={{ base: "lg", md: "xl" }}
             fontWeight="bold"
             borderRadius="xl"
@@ -2157,8 +2282,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
               leftIcon={<Icon as={PiCheckBold} />}
               onClick={completeExercise}
               isDisabled={isResting}
-              py={{ base: 5, md: 6 }}
-              minH={{ base: "64px", md: "auto" }}
+              py={{ base: 6, md: 6 }}
+              minH={{ base: "56px", md: "48px" }}
               fontSize={{ base: "lg", md: "xl" }}
               fontWeight="bold"
               borderRadius="xl"
@@ -2191,7 +2316,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
               w="100%"
               leftIcon={<Icon as={PiStopBold} />}
               onClick={handleEarlyCompletion}
-              minH={{ base: "56px", md: "auto" }}
+              minH={{ base: "48px", md: "44px" }}
               fontSize={{ base: "md", md: "lg" }}
               borderRadius="xl"
               _hover={{
@@ -2290,9 +2415,9 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
             </Button>
           </VStack>
         )}
-        </VStack>
-      </Box>
       </VStack>
+      </VStack>
+      </Box>
     </Box>
     </>
   );

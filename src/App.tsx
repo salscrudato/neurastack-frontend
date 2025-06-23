@@ -10,6 +10,7 @@ import UpdateNotification from "./components/UpdateNotification";
 import { useAnalytics } from "./hooks/useAnalytics";
 import { useFitnessSync } from "./hooks/useFitnessSync";
 import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
+import "./styles/mobile-optimizations.css";
 import "./styles/mobile-scrolling.css";
 import "./styles/modern-enhancements.css";
 

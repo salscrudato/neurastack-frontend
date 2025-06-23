@@ -145,6 +145,17 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
         };
       });
 
+      // CRITICAL DEBUG: Log workout ID being used for completion
+      console.group('🆔 WORKOUT ID FLOW - Completion Request');
+      console.log('🎯 Workout ID for Completion:', workout.id);
+      console.log('📊 Workout Object:', {
+        id: workout.id,
+        name: workout.name,
+        duration: workout.duration,
+        exerciseCount: workout.exercises.length
+      });
+      console.groupEnd();
+
       // Send completion data to enhanced API endpoint
       const response = await neuraStackClient.completeWorkout({
         workoutId: workout.id,
@@ -248,10 +259,18 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
           p={{ base: 4, md: 6 }}
           maxW={{ base: "100%", sm: "md" }}
           mx="auto"
-          minH={{ base: "100vh", md: "auto" }}
+          minH={{ base: "calc(100vh - 56px)", md: "auto" }}
           display="flex"
           flexDirection="column"
-          justifyContent={{ base: "center", md: "flex-start" }}
+          justifyContent={{ base: "flex-start", md: "flex-start" }}
+          pt={{ base: 4, md: 6 }}
+          pb={{ base: 6, md: 8 }}
+          sx={{
+            '@media (max-width: 768px)': {
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
+            }
+          }}
         >
           <VStack spacing={6} align="stretch">
             {/* Modern Header with Progress */}
@@ -301,6 +320,7 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                         onClick={() => setCompleted(true)}
                         size="lg"
                         flex={1}
+                        minH={{ base: "48px", md: "44px" }}
                         borderRadius="xl"
                         bg={completed ? 'green.500' : 'transparent'}
                         borderWidth="2px"
@@ -308,6 +328,10 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                         _hover={{
                           transform: 'translateY(-1px)',
                           shadow: 'md'
+                        }}
+                        style={{
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation'
                         }}
                       >
                         Completed
@@ -319,6 +343,7 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                         onClick={() => setCompleted(false)}
                         size="lg"
                         flex={1}
+                        minH={{ base: "48px", md: "44px" }}
                         borderRadius="xl"
                         bg={!completed ? 'orange.500' : 'transparent'}
                         borderWidth="2px"
@@ -326,6 +351,10 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                         _hover={{
                           transform: 'translateY(-1px)',
                           shadow: 'md'
+                        }}
+                        style={{
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation'
                         }}
                       >
                         Partial
@@ -386,6 +415,7 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                       borderRadius="lg"
                       borderWidth="2px"
                       borderColor="gray.200"
+                      minH={{ base: "80px", md: "auto" }}
                       _focus={{
                         borderColor: "blue.400",
                         boxShadow: "0 0 0 1px var(--chakra-colors-blue-400)"
@@ -395,6 +425,12 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                       }}
                       bg="white"
                       fontSize="sm"
+                      style={{
+                        fontSize: '16px', // Prevent zoom on iOS
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                        WebkitOverflowScrolling: 'touch'
+                      }}
                     />
                   </VStack>
                 </VStack>
@@ -410,6 +446,7 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                 loadingText="Saving Progress..."
                 size="lg"
                 w="100%"
+                minH={{ base: "56px", md: "48px" }}
                 borderRadius="xl"
                 py={6}
                 fontSize="lg"
@@ -426,6 +463,10 @@ const WorkoutCompletion = memo(function WorkoutCompletion({
                 }}
                 transition="all 0.2s ease-in-out"
                 shadow="lg"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 Save & Continue
               </Button>

@@ -140,6 +140,11 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
               as="button"
               onClick={() => onEditSpecificSetting?.(0)}
               cursor="pointer"
+              minH={{ base: "48px", md: "auto" }}
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
               transition="all 0.3s ease"
               _hover={{
                 transform: "translateY(-2px)",
@@ -395,10 +400,11 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
             size="lg"
             w="100%"
             maxW="450px"
-            h={{ base: "68px", md: "65px" }}
-            leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 7, md: 6 }} />}
+            h={{ base: "56px", md: "56px" }}
+            minH={{ base: "56px", md: "48px" }}
+            leftIcon={<Icon as={PiPlayBold} boxSize={{ base: 6, md: 5 }} />}
             onClick={onStartWorkout}
-            fontSize={{ base: "xl", md: "xl" }}
+            fontSize={{ base: "lg", md: "lg" }}
             fontWeight="bold"
             borderRadius="2xl"
             bgGradient="linear(135deg, blue.400 0%, purple.500 100%)"
@@ -414,6 +420,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
               transform: "translateY(-1px)"
             }}
             transition="all 0.3s ease"
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
           >
             Generate AI Workout
           </Button>
@@ -426,10 +436,11 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
               size={{ base: "lg", md: "md" }}
               w="100%"
               maxW="450px"
-              h={{ base: "56px", md: "50px" }}
-              leftIcon={<Icon as={PiTrophyBold} boxSize={{ base: 6, md: 5 }} />}
+              h={{ base: "48px", md: "44px" }}
+              minH={{ base: "48px", md: "44px" }}
+              leftIcon={<Icon as={PiTrophyBold} boxSize={{ base: 5, md: 4 }} />}
               onClick={onViewProgress}
-              fontSize={{ base: "lg", md: "md" }}
+              fontSize={{ base: "md", md: "md" }}
               fontWeight="medium"
               borderRadius="xl"
               _hover={{
@@ -437,6 +448,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 transform: "translateY(-1px)",
               }}
               transition="all 0.2s ease"
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
             >
               View Progress & Analytics
             </Button>
@@ -448,10 +463,11 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                 size={{ base: "lg", md: "md" }}
                 w="100%"
                 maxW="450px"
-                h={{ base: "56px", md: "50px" }}
-                leftIcon={<Icon as={PiClockBold} boxSize={{ base: 6, md: 5 }} />}
+                h={{ base: "48px", md: "44px" }}
+                minH={{ base: "48px", md: "44px" }}
+                leftIcon={<Icon as={PiClockBold} boxSize={{ base: 5, md: 4 }} />}
                 onClick={onViewHistory}
-                fontSize={{ base: "lg", md: "md" }}
+                fontSize={{ base: "md", md: "md" }}
                 fontWeight="medium"
                 borderRadius="xl"
                 _hover={{
@@ -459,6 +475,10 @@ export default function Dashboard({ onStartWorkout, onViewProgress, onViewHistor
                   transform: "translateY(-1px)",
                 }}
                 transition="all 0.2s ease"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 Workout History
               </Button>

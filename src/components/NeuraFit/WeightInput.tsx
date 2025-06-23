@@ -174,12 +174,17 @@ export const WeightInput = memo<WeightInputProps>(({
           bg={isNA ? useColorModeValue('orange.50', 'orange.900') : bgColor}
           borderColor={isNA ? 'orange.200' : (isFocused ? focusBorderColor : borderColor)}
           borderRadius="xl"
+          minH={{ base: "48px", md: "auto" }}
           _hover={{
             borderColor: isNA ? 'orange.300' : focusBorderColor,
           }}
           _focus={{
             borderColor: isNA ? 'orange.300' : focusBorderColor,
             boxShadow: `0 0 0 1px ${isNA ? 'orange.300' : focusBorderColor}`,
+          }}
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation'
           }}
         >
           <NumberInputField
@@ -189,7 +194,13 @@ export const WeightInput = memo<WeightInputProps>(({
             textAlign="center"
             fontWeight="semibold"
             fontSize={size === 'lg' ? 'lg' : 'md'}
+            minH={{ base: "44px", md: "auto" }}
             color={isNA ? useColorModeValue('orange.600', 'orange.300') : undefined}
+            style={{
+              fontSize: '16px', // Prevent zoom on iOS
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation'
+            }}
           />
           <InputRightAddon
             bg={buttonBg}
