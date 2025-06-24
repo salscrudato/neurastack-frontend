@@ -2,14 +2,11 @@ import { Box, Flex } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import AddToHomeButton from "./components/AddToHomeScreen";
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PrivacyConsent from "./components/PrivacyConsent";
 import UpdateNotification from "./components/UpdateNotification";
-import { useAnalytics } from "./hooks/useAnalytics";
 import { useFitnessSync } from "./hooks/useFitnessSync";
-import { usePerformanceLogger } from "./hooks/usePerformanceMonitor";
 import "./styles/optimized-styles.css";
 
 // Single transition variant for all pages
@@ -109,13 +106,10 @@ const Fallback = () => (
 );
 
 export default function App() {
-  usePerformanceLogger();
   useFitnessSync();
-  useAnalytics();
 
   return (
     <PageContentWrapper>
-      <AddToHomeButton />
       <UpdateNotification />
       <PrivacyConsent />
       <Suspense fallback={<Fallback />}>

@@ -46,7 +46,6 @@ import PersonalizationInsights from './PersonalizationInsights';
 import PersonalizationStatusCard from './PersonalizationStatusCard';
 
 // Import constants for code-to-label conversion
-import equipmentOptions from '../../constants/equipmentOptions';
 import { FITNESS_GOALS } from '../../constants/fitnessGoals';
 
 const MotionBox = motion(Box);
@@ -283,11 +282,29 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     }).filter(Boolean);
   }, []);
 
-  const getEquipmentLabels = useCallback((equipmentCodes: string[]): string[] => {
-    if (!equipmentCodes || equipmentCodes.length === 0) return [];
-    return equipmentCodes.map(code => {
-      const equipment = equipmentOptions.find(e => e.code === code);
-      return equipment ? equipment.label : code;
+  // Convert equipment codes to labels (handles both legacy codes and new labels)
+  const getEquipmentLabels = useCallback((equipment: string[]): string[] => {
+    if (!equipment || equipment.length === 0) return [];
+
+    // Mapping from legacy codes to new labels
+    const codeToLabelMap: Record<string, string> = {
+      'BW': 'Body Weight',
+      'DB': 'Dumbbells',
+      'BB': 'Barbell',
+      'KB': 'Kettlebells',
+      'RB': 'Resistance Bands',
+      'TM': 'Treadmill',
+      'BK': 'Exercise Bike',
+      'YM': 'Yoga Mat'
+    };
+
+    return equipment.map(item => {
+      // If it's a legacy code, convert it to label
+      if (codeToLabelMap[item]) {
+        return codeToLabelMap[item];
+      }
+      // If it's already a label, return as-is
+      return item;
     }).filter(Boolean);
   }, []);
 
@@ -613,29 +630,15 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         timeout: 60000 // 60s timeout for workout generation
       });
 
-      // Response logging for optimized API
-      console.group('🎯 Workout Generation Response (Optimized API)');
-      console.log('📥 Full Response:', JSON.stringify(response, null, 2));
-      console.log('✅ Response Status:', response.status);
-      console.log('🔗 Correlation ID:', response.correlationId);
-      console.log('⏱️ Generation Time:', performance.now() - startTime, 'ms');
-      if (response.data?.workout) {
-        const workout = response.data.workout;
-        console.log('🏋️ Workout Details:', {
-          type: workout.type,
-          duration: workout.duration,
-          difficulty: workout.difficulty,
-          warmupExercises: workout.warmup?.length || 0,
-          mainExercises: workout.mainWorkout?.exercises?.length || 0,
-          cooldownExercises: workout.cooldown?.length || 0,
-          structure: workout.mainWorkout?.structure || 'N/A',
-          coachingTips: workout.coachingTips?.length || 0
-        });
-      }
-      if (response.data?.metadata) {
-        console.log('📊 Response Metadata:', response.data.metadata);
-      }
-      console.groupEnd();
+      // Simplified response logging
+      console.log('🎯 Workout Generated:', {
+        status: response.status,
+        correlationId: response.correlationId,
+        generationTime: `${Math.round(performance.now() - startTime)}ms`,
+        workoutType: response.data?.workout?.type,
+        duration: response.data?.workout?.duration,
+        exerciseCount: response.data?.workout?.mainWorkout?.exercises?.length || 0
+      });
 
       // If we get here, the service is working - update status to healthy
       setServiceStatus('healthy');
@@ -647,14 +650,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
           throw new Error('Invalid workout data received from API');
         }
 
-        // CRITICAL DEBUG: Log workout ID from backend response
-        console.group('🆔 WORKOUT ID FLOW - Generation Response');
-        console.log('📥 Backend Response Workout Object:', JSON.stringify(workout, null, 2));
-        console.log('🔑 Workout ID from Backend (response.data.workoutId):', response.data.workoutId || 'NOT PROVIDED');
-        console.log('🔑 Workout ID from Backend (workout object):', 'NOT PROVIDED - ID is at top level');
-        console.log('📋 Available Fields in Workout:', Object.keys(workout));
-        console.log('📋 Available Fields in Response.data:', Object.keys(response.data));
-        console.groupEnd();
+        // Log workout ID for debugging
+        console.log('🆔 Workout ID from Backend:', response.data.workoutId || 'NOT PROVIDED');
 
         // Validate new API workout format
         if (!workout.mainWorkout || !workout.mainWorkout.exercises || !Array.isArray(workout.mainWorkout.exercises)) {
@@ -669,16 +666,8 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         // CRITICAL FIX: Pass the workout ID from response.data.workoutId (correct location)
         const workoutPlan = transformFlexibleAPIWorkoutToPlan(workout, selectedWorkoutType, response.data.workoutId);
 
-        // CRITICAL DEBUG: Log the final workout plan ID
-        console.group('🆔 WORKOUT ID FLOW - After Transformation');
+        // Log final workout plan ID
         console.log('🎯 Final Workout Plan ID:', workoutPlan.id);
-        console.log('📊 Workout Plan Object:', {
-          id: workoutPlan.id,
-          name: workoutPlan.name,
-          duration: workoutPlan.duration,
-          exerciseCount: workoutPlan.exercises.length
-        });
-        console.groupEnd();
 
         // Enhanced workout with backend personalization data
         const enhancedWorkout: WorkoutPlan = {

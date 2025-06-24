@@ -30,10 +30,16 @@ export const VALID_WEIGHT_CATEGORIES = [
 ] as const;
 export type ValidWeightCategory = typeof VALID_WEIGHT_CATEGORIES[number];
 
-export const VALID_EQUIPMENT_CODES = [
+export const VALID_EQUIPMENT_LABELS = [
+  'Body Weight', 'Dumbbells', 'Barbell', 'Kettlebells', 'Resistance Bands', 'Treadmill', 'Exercise Bike', 'Yoga Mat'
+] as const;
+export type ValidEquipmentLabel = typeof VALID_EQUIPMENT_LABELS[number];
+
+// Legacy equipment codes for backward compatibility
+export const LEGACY_EQUIPMENT_CODES = [
   'BW', 'DB', 'BB', 'KB', 'RB', 'TM', 'BK', 'YM'
 ] as const;
-export type ValidEquipmentCode = typeof VALID_EQUIPMENT_CODES[number];
+export type LegacyEquipmentCode = typeof LEGACY_EQUIPMENT_CODES[number];
 
 export const VALID_GOAL_CODES = ['LW', 'BM', 'IC', 'GF', 'AP'] as const;
 export type ValidGoalCode = typeof VALID_GOAL_CODES[number];
@@ -61,8 +67,17 @@ export const isValidWeightCategory = (category: string): category is ValidWeight
   return VALID_WEIGHT_CATEGORIES.includes(category as ValidWeightCategory);
 };
 
-export const isValidEquipmentCode = (code: string): code is ValidEquipmentCode => {
-  return VALID_EQUIPMENT_CODES.includes(code as ValidEquipmentCode);
+export const isValidEquipmentLabel = (label: string): label is ValidEquipmentLabel => {
+  return VALID_EQUIPMENT_LABELS.includes(label as ValidEquipmentLabel);
+};
+
+export const isLegacyEquipmentCode = (code: string): code is LegacyEquipmentCode => {
+  return LEGACY_EQUIPMENT_CODES.includes(code as LegacyEquipmentCode);
+};
+
+// Combined validation for both new labels and legacy codes
+export const isValidEquipment = (equipment: string): boolean => {
+  return isValidEquipmentLabel(equipment) || isLegacyEquipmentCode(equipment);
 };
 
 export const isValidGoalCode = (code: string): code is ValidGoalCode => {
@@ -104,9 +119,9 @@ export const validateFitnessProfile = (profile: Partial<FitnessProfile>): Valida
   if (!profile.equipment || profile.equipment.length === 0) {
     errors.push('At least one equipment option is required');
   } else {
-    const invalidEquipment = profile.equipment.filter(eq => !isValidEquipmentCode(eq));
+    const invalidEquipment = profile.equipment.filter(eq => !isValidEquipment(eq));
     if (invalidEquipment.length > 0) {
-      errors.push(`Invalid equipment codes: ${invalidEquipment.join(', ')}`);
+      errors.push(`Invalid equipment: ${invalidEquipment.join(', ')}`);
     }
   }
 

@@ -1,75 +1,57 @@
 import {
   PiBarbell,
-  PiPersonBold,
-  PiTargetBold,
+  PiBicycleBold,
   PiCircleBold,
-  PiBicycleBold
+  PiPersonBold,
+  PiTargetBold
 } from 'react-icons/pi';
 
 export interface EquipmentOption {
-  code: string;
   label: string;
   icon: any;
   color: string;
-  description?: string;
 }
 
 const equipmentOptions: EquipmentOption[] = [
   {
-    code: 'BW',
     label: 'Body Weight',
     icon: PiPersonBold,
-    color: 'gray',
-    description: 'Bodyweight exercises only'
+    color: 'gray'
   },
   {
-    code: 'DB',
     label: 'Dumbbells',
     icon: PiBarbell,
-    color: 'blue',
-    description: 'Adjustable or fixed weight dumbbells'
+    color: 'blue'
   },
   {
-    code: 'BB',
     label: 'Barbell',
     icon: PiBarbell,
-    color: 'orange',
-    description: 'Olympic or standard barbell with plates'
+    color: 'orange'
   },
   {
-    code: 'KB',
     label: 'Kettlebells',
     icon: PiCircleBold,
-    color: 'red',
-    description: 'Various weight kettlebells'
+    color: 'red'
   },
   {
-    code: 'RB',
     label: 'Resistance Bands',
     icon: PiTargetBold,
-    color: 'green',
-    description: 'Loop bands, tube bands, or resistance bands'
+    color: 'green'
   },
   {
-    code: 'TM',
     label: 'Treadmill',
     icon: PiPersonBold,
-    color: 'purple',
-    description: 'Motorized or manual treadmill'
+    color: 'purple'
   },
   {
-    code: 'BK',
     label: 'Exercise Bike',
     icon: PiBicycleBold,
-    color: 'pink',
-    description: 'Stationary or spin bike'
+    color: 'pink'
   },
   {
-    code: 'YM',
     label: 'Yoga Mat',
     icon: PiTargetBold,
-    color: 'cyan',
-    description: 'Yoga mat for floor exercises'
+    color: 'cyan'
   }
 ];
 

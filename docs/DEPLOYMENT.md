@@ -7,6 +7,7 @@ This guide covers deploying the neurastack-frontend application with the integra
 ## Pre-Deployment Checklist
 
 ### 1. API Keys & Environment Variables
+
 - [ ] Skyscanner API key obtained and tested
 - [ ] OpenTable API credentials configured
 - [ ] Affiliate IDs set up for commission tracking
@@ -14,12 +15,14 @@ This guide covers deploying the neurastack-frontend application with the integra
 - [ ] Backend API URL configured
 
 ### 2. Performance Optimization
+
 - [ ] Bundle size analysis completed
 - [ ] Image optimization implemented
 - [ ] Service worker configured for offline support
 - [ ] CDN configuration for static assets
 
 ### 3. Testing
+
 - [ ] All travel search flows tested
 - [ ] Mobile responsiveness verified
 - [ ] Booking affiliate links validated
@@ -31,6 +34,7 @@ This guide covers deploying the neurastack-frontend application with the integra
 ### Option 1: Vercel (Recommended)
 
 #### Why Vercel?
+
 - Excellent React/Vite support
 - Global CDN with edge functions
 - Automatic HTTPS and custom domains
@@ -40,12 +44,14 @@ This guide covers deploying the neurastack-frontend application with the integra
 #### Setup Steps
 
 1. **Install Vercel CLI**
+
 ```bash
 npm install -g vercel
 ```
 
 2. **Configure Environment Variables**
-Create `vercel.json`:
+   Create `vercel.json`:
+
 ```json
 {
   "env": {
@@ -65,6 +71,7 @@ Create `vercel.json`:
 ```
 
 3. **Add Environment Secrets**
+
 ```bash
 vercel env add VITE_SKYSCANNER_API_KEY
 vercel env add VITE_OPENTABLE_API_KEY
@@ -72,11 +79,13 @@ vercel env add VITE_AFFILIATE_ID
 ```
 
 4. **Deploy**
+
 ```bash
 vercel --prod
 ```
 
 #### Custom Domain Setup
+
 ```bash
 vercel domains add neuraplanner.com
 vercel domains add www.neuraplanner.com
@@ -87,7 +96,8 @@ vercel domains add www.neuraplanner.com
 #### Setup Steps
 
 1. **Build Configuration**
-Create `netlify.toml`:
+   Create `netlify.toml`:
+
 ```toml
 [build]
   publish = "dist"
@@ -108,13 +118,15 @@ Create `netlify.toml`:
 ```
 
 2. **Environment Variables**
-Set in Netlify dashboard:
+   Set in Netlify dashboard:
+
 - `VITE_SKYSCANNER_API_KEY`
 - `VITE_OPENTABLE_API_KEY`
 - `VITE_AFFILIATE_ID`
 - `VITE_BACKEND_URL`
 
 3. **Deploy**
+
 ```bash
 npm run build
 netlify deploy --prod --dir=dist
@@ -125,17 +137,20 @@ netlify deploy --prod --dir=dist
 #### Setup Steps
 
 1. **Install Firebase CLI**
+
 ```bash
 npm install -g firebase-tools
 firebase login
 ```
 
 2. **Initialize Firebase**
+
 ```bash
 firebase init hosting
 ```
 
 3. **Configure `firebase.json`**
+
 ```json
 {
   "hosting": {
@@ -163,6 +178,7 @@ firebase init hosting
 ```
 
 4. **Deploy**
+
 ```bash
 npm run build
 firebase deploy
@@ -173,6 +189,7 @@ firebase deploy
 ### 1. Environment Variables
 
 #### Required Variables
+
 ```bash
 # Travel API Keys
 VITE_SKYSCANNER_API_KEY=your_production_key
@@ -188,6 +205,7 @@ VITE_SENTRY_DSN=your_sentry_dsn
 ```
 
 #### Optional Variables
+
 ```bash
 # Feature Flags
 VITE_ENABLE_MOCK_DATA=false
@@ -202,50 +220,35 @@ VITE_API_TIMEOUT=30000
 ### 2. Build Optimization
 
 #### Vite Configuration
+
 Update `vite.config.ts`:
+
 ```typescript
 export default defineConfig({
-  plugins: [react(), VitePWA({
-    registerType: 'autoUpdate',
-    workbox: {
-      globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/api\.skyscanner\.net\/.*/i,
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'skyscanner-api-cache',
-            expiration: {
-              maxEntries: 100,
-              maxAgeSeconds: 60 * 60 * 24 // 24 hours
-            }
-          }
-        }
-      ]
-    }
-  })],
+  plugins: [react()],
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          chakra: ['@chakra-ui/react'],
-          travel: ['./src/lib/travelApi', './src/store/useTravelStore']
-        }
-      }
+          vendor: ["react", "react-dom"],
+          chakra: ["@chakra-ui/react"],
+          travel: ["./src/lib/travelApi", "./src/store/useTravelStore"],
+        },
+      },
     },
-    chunkSizeWarningLimit: 1000
-  }
+    chunkSizeWarningLimit: 1000,
+  },
 });
 ```
 
 ### 3. Performance Monitoring
 
 #### Analytics Setup
+
 ```typescript
 // src/lib/analytics.ts
-import { initializeApp } from 'firebase/app';
-import { getAnalytics, logEvent } from 'firebase/analytics';
+import { initializeApp } from "firebase/app";
+import { getAnalytics, logEvent } from "firebase/analytics";
 
 const firebaseConfig = {
   // Your config
@@ -255,17 +258,17 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
 export const trackTravelSearch = (searchType: string, destination: string) => {
-  logEvent(analytics, 'travel_search', {
+  logEvent(analytics, "travel_search", {
     search_type: searchType,
-    destination: destination
+    destination: destination,
   });
 };
 
 export const trackBookingClick = (type: string, price: number) => {
-  logEvent(analytics, 'booking_click', {
+  logEvent(analytics, "booking_click", {
     booking_type: type,
     value: price,
-    currency: 'USD'
+    currency: "USD",
   });
 };
 ```
@@ -275,10 +278,12 @@ export const trackBookingClick = (type: string, price: number) => {
 ### Custom Domain Setup
 
 1. **Purchase Domain**
+
    - Recommended: `neuraplanner.com`
    - Alternative: `neuraplanner.app`
 
 2. **DNS Configuration**
+
 ```
 Type    Name    Value
 A       @       76.76.19.61 (Vercel)
@@ -292,35 +297,36 @@ CNAME   www     neuraplanner.com
 ## Monitoring & Maintenance
 
 ### 1. Performance Monitoring
+
 - **Core Web Vitals**: LCP < 2.5s, FID < 100ms, CLS < 0.1
 - **Bundle Size**: < 500KB gzipped
 - **API Response Times**: < 2s average
 
 ### 2. Error Monitoring
+
 ```typescript
 // src/lib/monitoring.ts
-import * as Sentry from '@sentry/react';
+import * as Sentry from "@sentry/react";
 
 Sentry.init({
   dsn: process.env.VITE_SENTRY_DSN,
   environment: process.env.NODE_ENV,
-  integrations: [
-    new Sentry.BrowserTracing(),
-  ],
+  integrations: [new Sentry.BrowserTracing()],
   tracesSampleRate: 1.0,
 });
 ```
 
 ### 3. Health Checks
+
 ```typescript
 // src/lib/healthCheck.ts
 export const performHealthCheck = async () => {
   const checks = {
     api: await checkBackendAPI(),
     skyscanner: await checkSkyscannerAPI(),
-    opentable: await checkOpenTableAPI()
+    opentable: await checkOpenTableAPI(),
   };
-  
+
   return checks;
 };
 ```
@@ -328,21 +334,26 @@ export const performHealthCheck = async () => {
 ## Security Considerations
 
 ### 1. API Key Security
+
 - Never expose API keys in client-side code
 - Use environment variables for all sensitive data
 - Implement rate limiting on backend
 - Monitor API usage for anomalies
 
 ### 2. Content Security Policy
+
 ```html
-<meta http-equiv="Content-Security-Policy" 
-      content="default-src 'self'; 
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; 
                script-src 'self' 'unsafe-inline' https://www.googletagmanager.com;
                connect-src 'self' https://api.skyscanner.net https://platform.otrestaurants.com;
-               img-src 'self' data: https:;">
+               img-src 'self' data: https:;"
+/>
 ```
 
 ### 3. HTTPS Enforcement
+
 - Force HTTPS redirects
 - HSTS headers
 - Secure cookie settings
@@ -350,6 +361,7 @@ export const performHealthCheck = async () => {
 ## Launch Checklist
 
 ### Pre-Launch
+
 - [ ] All API integrations tested in production
 - [ ] Performance benchmarks met
 - [ ] Mobile optimization verified
@@ -358,6 +370,7 @@ export const performHealthCheck = async () => {
 - [ ] Error monitoring configured
 
 ### Launch Day
+
 - [ ] DNS propagation verified
 - [ ] SSL certificate active
 - [ ] All affiliate links working
@@ -365,6 +378,7 @@ export const performHealthCheck = async () => {
 - [ ] Support channels ready
 
 ### Post-Launch
+
 - [ ] Performance monitoring active
 - [ ] User feedback collection
 - [ ] Conversion rate tracking
@@ -374,6 +388,7 @@ export const performHealthCheck = async () => {
 ## Rollback Plan
 
 ### Emergency Rollback
+
 ```bash
 # Vercel
 vercel rollback [deployment-url]
@@ -386,6 +401,7 @@ firebase hosting:clone [source-site-id]:[source-version] [target-site-id]
 ```
 
 ### Monitoring Triggers
+
 - Error rate > 5%
 - Response time > 5s
 - Conversion rate drop > 20%

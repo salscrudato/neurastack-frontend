@@ -1,16 +1,15 @@
 import {
-  isValidWorkoutType,
-  isValidFitnessLevel,
-  isValidGender,
-  isValidAgeCategory,
-  isValidWeightCategory,
-  isValidEquipmentCode,
-  isValidGoalCode,
-  validateFitnessProfile,
-  validateWorkoutPlan,
-  validateExercise,
-  sanitizeUserInput,
-  validateWorkoutTypeSelection
+    isValidAgeCategory,
+    isValidEquipmentLabel,
+    isValidFitnessLevel,
+    isValidGender,
+    isValidGoalCode,
+    isValidWorkoutType,
+    sanitizeUserInput,
+    validateExercise,
+    validateFitnessProfile,
+    validateWorkoutPlan,
+    validateWorkoutTypeSelection
 } from '../typeValidation';
 
 describe('Type Validation Utilities', () => {
@@ -48,11 +47,27 @@ describe('Type Validation Utilities', () => {
       expect(isValidAgeCategory('INVALID')).toBe(false);
     });
 
-    test('isValidEquipmentCode should validate equipment codes correctly', () => {
-      expect(isValidEquipmentCode('BW')).toBe(true);
-      expect(isValidEquipmentCode('DB')).toBe(true);
-      expect(isValidEquipmentCode('BB')).toBe(true);
-      expect(isValidEquipmentCode('INVALID')).toBe(false);
+    test('isValidEquipmentLabel should validate equipment labels correctly', () => {
+      expect(isValidEquipmentLabel('Body Weight')).toBe(true);
+      expect(isValidEquipmentLabel('Dumbbells')).toBe(true);
+      expect(isValidEquipmentLabel('Barbell')).toBe(true);
+      expect(isValidEquipmentLabel('INVALID')).toBe(false);
+    });
+
+    test('should validate legacy equipment codes for backward compatibility', () => {
+      const profileWithLegacyCodes = {
+        fitnessLevel: 'intermediate' as const,
+        goals: ['LW', 'BM'] as const,
+        equipment: ['BW', 'DB', 'BB'] as const, // Legacy codes
+        availableTime: 30,
+        gender: 'male' as const,
+        ageCategory: 'ADULT' as const,
+        weightCategory: 'MODERATE' as const
+      };
+
+      const result = validateFitnessProfile(profileWithLegacyCodes);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
     });
 
     test('isValidGoalCode should validate goal codes correctly', () => {
@@ -68,11 +83,11 @@ describe('Type Validation Utilities', () => {
       const validProfile = {
         fitnessLevel: 'intermediate' as const,
         goals: ['LW', 'BM'] as const,
-        equipment: ['BW', 'DB'] as const,
+        equipment: ['Body Weight', 'Dumbbells'] as const,
         availableTime: 30,
         gender: 'male' as const,
         ageCategory: 'ADULT' as const,
-        weightCategory: 'MEDIUM' as const
+        weightCategory: 'MODERATE' as const
       };
 
       const result = validateFitnessProfile(validProfile);
@@ -107,7 +122,7 @@ describe('Type Validation Utilities', () => {
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Invalid fitness level: expert');
       expect(result.errors).toContain('Invalid goal codes: INVALID');
-      expect(result.errors).toContain('Invalid equipment codes: INVALID');
+      expect(result.errors).toContain('Invalid equipment: INVALID');
       expect(result.errors).toContain('Invalid gender: other');
       expect(result.errors).toContain('Invalid age category: INVALID');
     });
@@ -116,7 +131,7 @@ describe('Type Validation Utilities', () => {
       const edgeCaseProfile = {
         fitnessLevel: 'advanced' as const,
         goals: ['LW'] as const,
-        equipment: ['BW'] as const,
+        equipment: ['Body Weight'] as const,
         availableTime: 5, // Very short
         injuries: ['knee pain'] // Has injuries
       };

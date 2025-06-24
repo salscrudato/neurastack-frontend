@@ -30,29 +30,26 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
   // State to track last changed equipment for aria-live announcement
   const [lastChanged, setLastChanged] = useState<string | null>(null);
 
-  // Handle toggling equipment selection with exclusive logic for "Body Weight"
-  const handleEquipmentToggle = (equipmentCode: string) => {
+  // Handle toggling equipment selection - allows multiple selections including Body Weight
+  const handleEquipmentToggle = (equipmentLabel: string) => {
     const currentEquipment = profile.equipment || [];
-    const isSelected = currentEquipment.includes(equipmentCode);
+    const isSelected = currentEquipment.includes(equipmentLabel);
 
     let newEquipment: string[];
     if (isSelected) {
-      newEquipment = currentEquipment.filter(eq => eq !== equipmentCode);
+      // Remove the equipment if it's currently selected
+      newEquipment = currentEquipment.filter(eq => eq !== equipmentLabel);
     } else {
-      if (equipmentCode === 'BW') {
-        newEquipment = ['BW'];
-      } else {
-        newEquipment = currentEquipment.filter(eq => eq !== 'BW');
-        newEquipment = [...newEquipment, equipmentCode];
-      }
+      // Add the equipment to the current selection
+      newEquipment = [...currentEquipment, equipmentLabel];
     }
     updateProfile({ equipment: newEquipment });
-    setLastChanged(equipmentOptions.find((opt: EquipmentOption) => opt.code === equipmentCode)?.label || null);
+    setLastChanged(equipmentLabel);
   };
 
-  // Check if equipment is selected by code
-  const isEquipmentSelected = (equipmentCode: string) => {
-    return profile.equipment?.includes(equipmentCode) || false;
+  // Check if equipment is selected by label
+  const isEquipmentSelected = (equipmentLabel: string) => {
+    return profile.equipment?.includes(equipmentLabel) || false;
   };
 
   // Equipment validation is optional for this step
@@ -113,19 +110,19 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
           aria-describedby="equipment-selection-status"
         >
           {equipmentOptions.map((equipment: EquipmentOption) => {
-            const isSelected = isEquipmentSelected(equipment.code);
-            const labelId = `${labelIdPrefix}${equipment.code}`;
+            const isSelected = isEquipmentSelected(equipment.label);
+            const labelId = `${labelIdPrefix}${equipment.label.replace(/\s+/g, '-')}`;
 
             return (
               <Button
-                key={equipment.code}
+                key={equipment.label}
                 w="100%"
                 h={{ base: "85px", md: "95px" }}
                 bg={isSelected ? `${equipment.color}.100` : cardBg}
                 border="2px solid"
                 borderColor={isSelected ? `${equipment.color}.500` : borderColor}
                 borderRadius="xl"
-                onClick={() => handleEquipmentToggle(equipment.code)}
+                onClick={() => handleEquipmentToggle(equipment.label)}
                 _hover={{
                   bg: isSelected
                     ? `${equipment.color}.200`
@@ -143,7 +140,7 @@ export default function EquipmentStep({ onNext, onPrev, isEditingFromDashboard =
                 role="checkbox"
                 aria-checked={isSelected}
                 aria-labelledby={labelId}
-                data-cy={`equipment-card-${equipment.code}`}
+                data-cy={`equipment-card-${equipment.label.replace(/\s+/g, '-')}`}
                 display="flex"
                 alignItems="center"
                 justifyContent="center"

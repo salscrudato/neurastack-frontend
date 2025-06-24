@@ -144,22 +144,13 @@ export const useChatStore = create<ChatState>()((set, get) => ({
               throw new Error('Empty response received');
             }
 
-            // Track analytics for successful chat interaction
-            try {
-              import('../services/analyticsService').then(({ trackChatInteraction }) => {
-                // Extract model names from modelsUsed object
-                const modelNames = Object.keys(response.modelsUsed || {});
-
-                trackChatInteraction({
-                  messageLength: text.length,
-                  responseTime,
-                  modelsUsed: modelNames.length > 0 ? modelNames : ['unknown'],
-                  sessionId,
-                  messageType: 'text'
-                });
+            // Analytics removed - using simple logging only
+            if (import.meta.env.DEV) {
+              console.log('Chat interaction completed:', {
+                messageLength: text.length,
+                responseTime: `${responseTime}ms`,
+                modelsUsed: Object.keys(response.modelsUsed || {}).length
               });
-            } catch (analyticsError) {
-              console.warn('Analytics tracking failed:', analyticsError);
             }
 
             // Log the processed response for debugging

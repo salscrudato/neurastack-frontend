@@ -8,7 +8,6 @@
 import {
     Box,
     Button,
-    Divider,
     FormControl,
     FormLabel,
     HStack,
@@ -36,10 +35,7 @@ const MotionBox = motion(Box);
 // ============================================================================
 
 export interface ConsentPreferences {
-  analytics: boolean;
-  performance: boolean;
-  functional: boolean;
-  marketing: boolean;
+  functional: boolean; // Only essential cookies needed
 }
 
 export interface PrivacyConsentProps {
@@ -53,10 +49,7 @@ export interface PrivacyConsentProps {
 export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps) {
   const [showBanner, setShowBanner] = useState(false);
   const [preferences, setPreferences] = useState<ConsentPreferences>({
-    analytics: false,
-    performance: true, // Essential for app functionality
-    functional: true,  // Essential for app functionality
-    marketing: false
+    functional: true // Only essential cookies
   });
 
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -86,10 +79,7 @@ export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps)
 
   const handleAcceptAll = () => {
     const allAccepted: ConsentPreferences = {
-      analytics: true,
-      performance: true,
-      functional: true,
-      marketing: true
+      functional: true
     };
     
     saveConsent(allAccepted);
@@ -98,10 +88,7 @@ export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps)
 
   const handleAcceptEssential = () => {
     const essentialOnly: ConsentPreferences = {
-      analytics: false,
-      performance: true,
-      functional: true,
-      marketing: false
+      functional: true
     };
     
     saveConsent(essentialOnly);
@@ -129,17 +116,7 @@ export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps)
     }
   };
 
-  const handlePreferenceChange = (key: keyof ConsentPreferences, value: boolean) => {
-    // Prevent disabling essential cookies
-    if ((key === 'performance' || key === 'functional') && !value) {
-      return;
-    }
-    
-    setPreferences(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
+  // Function removed since we only have essential cookies
 
   if (!showBanner) {
     return null;
@@ -166,12 +143,11 @@ export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps)
         >
           <VStack spacing={4} align="stretch" maxW="6xl" mx="auto">
             <Text color={textColor} fontSize="sm" lineHeight="1.5">
-              We use cookies and similar technologies to enhance your experience, analyze usage, 
-              and provide personalized content. By clicking "Accept All", you consent to our use 
-              of cookies for analytics and marketing purposes.{' '}
-              <Link 
-                color="blue.500" 
-                href="/privacy" 
+              NeuraStack uses only essential cookies required for app functionality, authentication, and security.
+              We do not use analytics or marketing cookies.{' '}
+              <Link
+                color="blue.500"
+                href="/privacy"
                 textDecoration="underline"
                 _hover={{ color: 'blue.600' }}
               >
@@ -221,62 +197,25 @@ export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps)
           <ModalBody>
             <VStack spacing={6} align="stretch">
               <Text fontSize="sm" color={textColor}>
-                Customize your privacy settings. Essential cookies are required for the app to function properly.
+                NeuraStack only uses essential cookies required for app functionality, authentication, and security.
+                No analytics or marketing cookies are used.
               </Text>
 
-              <VStack spacing={4} align="stretch">
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <Box flex="1" mr={4}>
-                    <FormLabel mb={1} fontSize="sm" fontWeight="semibold">
-                      Essential Cookies
-                    </FormLabel>
-                    <Text fontSize="xs" color={textColor}>
-                      Required for basic app functionality, authentication, and security.
-                    </Text>
-                  </Box>
-                  <Switch 
-                    isChecked={preferences.functional && preferences.performance}
-                    isDisabled={true}
-                    colorScheme="blue"
-                  />
-                </FormControl>
-
-                <Divider />
-
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <Box flex="1" mr={4}>
-                    <FormLabel mb={1} fontSize="sm" fontWeight="semibold">
-                      Analytics Cookies
-                    </FormLabel>
-                    <Text fontSize="xs" color={textColor}>
-                      Help us understand how you use the app to improve your experience.
-                    </Text>
-                  </Box>
-                  <Switch 
-                    isChecked={preferences.analytics}
-                    onChange={(e) => handlePreferenceChange('analytics', e.target.checked)}
-                    colorScheme="blue"
-                  />
-                </FormControl>
-
-                <Divider />
-
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <Box flex="1" mr={4}>
-                    <FormLabel mb={1} fontSize="sm" fontWeight="semibold">
-                      Marketing Cookies
-                    </FormLabel>
-                    <Text fontSize="xs" color={textColor}>
-                      Used to show you relevant content and advertisements.
-                    </Text>
-                  </Box>
-                  <Switch 
-                    isChecked={preferences.marketing}
-                    onChange={(e) => handlePreferenceChange('marketing', e.target.checked)}
-                    colorScheme="blue"
-                  />
-                </FormControl>
-              </VStack>
+              <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                <Box flex="1" mr={4}>
+                  <FormLabel mb={1} fontSize="sm" fontWeight="semibold">
+                    Essential Cookies
+                  </FormLabel>
+                  <Text fontSize="xs" color={textColor}>
+                    Required for basic app functionality, authentication, and security.
+                  </Text>
+                </Box>
+                <Switch
+                  isChecked={preferences.functional}
+                  isDisabled={true}
+                  colorScheme="blue"
+                />
+              </FormControl>
             </VStack>
           </ModalBody>
 
@@ -301,18 +240,10 @@ export default function PrivacyConsent({ onConsentChange }: PrivacyConsentProps)
 // ============================================================================
 
 /**
- * Check if user has consented to analytics
+ * Check if user has consented (always true since we only use essential cookies)
  */
 export function hasAnalyticsConsent(): boolean {
-  try {
-    const consentData = localStorage.getItem('privacy_consent');
-    if (!consentData) return false;
-    
-    const preferences = JSON.parse(consentData) as ConsentPreferences;
-    return preferences.analytics;
-  } catch {
-    return false;
-  }
+  return false; // No analytics tracking
 }
 
 /**

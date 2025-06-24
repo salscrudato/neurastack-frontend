@@ -24,14 +24,13 @@ import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
     PiChatCircleBold, PiClockCounterClockwiseBold,
-    PiGearBold,
     PiHeartBold,
     PiListBold,
     PiSignOutBold, PiUserCircleBold,
     PiUserLight
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ADMIN_CONFIG, hasAdminAccess } from '../config/admin';
+
 import { auth } from '../firebase';
 import { useReducedMotion } from '../hooks/useAccessibility';
 import { useAuthStore } from '../store/useAuthStore';
@@ -82,7 +81,7 @@ export function Header() {
 
   // Navigation menu items configuration
   const navigationItems = useMemo(() => {
-    const baseItems = [
+    return [
       {
         label: 'Chat',
         path: '/chat',
@@ -102,19 +101,7 @@ export function Header() {
         disabled: false
       }
     ];
-
-    // Add admin link only for authorized admin user
-    if (hasAdminAccess(user)) {
-      baseItems.push({
-        label: ADMIN_CONFIG.navigation.label,
-        path: ADMIN_CONFIG.navigation.path,
-        icon: PiGearBold,
-        disabled: false
-      });
-    }
-
-    return baseItems;
-  }, [user]);
+  }, []);
 
   // Get current page info for accessibility
   const currentPageInfo = useMemo(() => {

@@ -43,8 +43,29 @@ import {
     PiTrendDownBold,
     PiTrendUpBold,
 } from 'react-icons/pi';
-import { generateWorkoutInsights, type WorkoutInsights } from '../../services/workoutAnalyticsService';
 import { useAuthStore } from '../../store/useAuthStore';
+// Analytics service removed - using mock data for insights
+type WorkoutInsights = {
+  progressTrends: any;
+  preferences: any;
+  patterns: any;
+  recommendations: any;
+};
+
+const generateWorkoutInsights = (): WorkoutInsights => ({
+  progressTrends: {
+    completionRatesTrend: [85, 90, 88, 92, 95]
+  },
+  preferences: {
+    preferredWorkoutTypes: ['Strength Training', 'HIIT', 'Cardio'],
+    preferredMuscleGroups: ['chest', 'legs', 'back', 'shoulders', 'arms']
+  },
+  patterns: {
+    bestPerformanceDays: ['Monday', 'Wednesday', 'Friday'],
+    bestPerformanceTimes: ['Morning', 'Evening']
+  },
+  recommendations: []
+});
 
 const MotionBox = motion(Box);
 
@@ -97,7 +118,7 @@ const WorkoutInsightsComponent = memo(function WorkoutInsightsComponent({ onClos
 
     const { progressTrends } = insights;
     const latestCompletion = progressTrends.completionRatesTrend[0] || 0;
-    const avgCompletion = progressTrends.completionRatesTrend.reduce((sum, rate) => sum + rate, 0) / progressTrends.completionRatesTrend.length;
+    const avgCompletion = progressTrends.completionRatesTrend.reduce((sum: number, rate: number) => sum + rate, 0) / progressTrends.completionRatesTrend.length;
     const isImproving = latestCompletion > avgCompletion;
 
     return (
@@ -168,7 +189,7 @@ const WorkoutInsightsComponent = memo(function WorkoutInsightsComponent({ onClos
                 Preferred Workout Types
               </Text>
               <HStack spacing={2} flexWrap="wrap">
-                {preferences.preferredWorkoutTypes.map((type, index) => (
+                {preferences.preferredWorkoutTypes.map((type: string, index: number) => (
                   <Badge key={index} colorScheme="blue" variant="subtle">
                     {type}
                   </Badge>
@@ -183,7 +204,7 @@ const WorkoutInsightsComponent = memo(function WorkoutInsightsComponent({ onClos
                 Focus Areas
               </Text>
               <HStack spacing={2} flexWrap="wrap">
-                {preferences.preferredMuscleGroups.slice(0, 5).map((muscle, index) => (
+                {preferences.preferredMuscleGroups.slice(0, 5).map((muscle: string, index: number) => (
                   <Badge key={index} colorScheme="green" variant="subtle">
                     {muscle}
                   </Badge>
@@ -233,7 +254,7 @@ const WorkoutInsightsComponent = memo(function WorkoutInsightsComponent({ onClos
                 Best Performance Days
               </Text>
               <HStack spacing={2}>
-                {patterns.bestPerformanceDays.map((day, index) => (
+                {patterns.bestPerformanceDays.map((day: string, index: number) => (
                   <Badge key={index} colorScheme="purple" variant="solid">
                     {day}
                   </Badge>
@@ -248,7 +269,7 @@ const WorkoutInsightsComponent = memo(function WorkoutInsightsComponent({ onClos
                 Best Performance Times
               </Text>
               <HStack spacing={2}>
-                {patterns.bestPerformanceTimes.map((time, index) => (
+                {patterns.bestPerformanceTimes.map((time: string, index: number) => (
                   <Badge key={index} colorScheme="cyan" variant="solid">
                     {time.replace('_', ' ')}
                   </Badge>

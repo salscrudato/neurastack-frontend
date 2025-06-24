@@ -13,7 +13,6 @@ import { ChatPage } from './pages/ChatPage';
 import { SplashPage } from './pages/SplashPage';
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
-const AdminPage = React.lazy(() => import('./pages/AdminPage'));
 
 // Create router with Chat and History routes
 const router = createBrowserRouter([
@@ -43,14 +42,6 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
             <NeuraFitPage />
-          </Suspense>
-        )
-      },
-      {
-        path: 'admin',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading Admin Dashboard..." />}>
-            <AdminPage />
           </Suspense>
         )
       },

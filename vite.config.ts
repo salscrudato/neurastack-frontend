@@ -10,8 +10,7 @@ import svgr from 'vite-plugin-svgr';
 // Import Node.js path module to resolve file paths cleanly
 import path from 'node:path';
 
-// Import the PWA plugin to enable Progressive Web App features
-import { VitePWA } from "vite-plugin-pwa";
+
 
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -48,80 +47,7 @@ export default defineConfig({
       gzipSize: true,
       brotliSize: true,
     }),
-    VitePWA({
-      registerType: "prompt", // Show update prompt instead of auto-update
-      includeAssets: [
-        // Static assets to include in the service worker cache
-        "favicon.svg",
-        "icons/neurastack-192.png",
-        "icons/neurastack-512.png"
-      ],
-      manifest: {
-        // Web app manifest to define how the app behaves when installed
-        name: "neurastack",
-        short_name: "neurastack",
-        description: "AI-powered chat assistant by neurastack",
-        theme_color: "#4F9CF9",
-        background_color: "#ffffff",
-        display: "standalone", // App runs in its own window without browser UI
-        start_url: "/",         // Start page when the app is launched
-        icons: [
-          // App icons used for PWA installation
-          { src: "icons/neurastack-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icons/neurastack-512.png", sizes: "512x512", type: "image/png" }
-        ]
-      },
-      devOptions: {
-        enabled: false, // Disable PWA plugin during development to prevent service worker issues
-        type: "module"
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        cleanupOutdatedCaches: true,
-        skipWaiting: false, // Don't auto-skip waiting - let user control updates
-        clientsClaim: false, // Don't auto-claim clients - let user control updates
-        // More aggressive caching strategy for faster updates
-        runtimeCaching: [
-          {
-            // Cache API responses with network-first strategy
-            urlPattern: /^https:\/\/(api\.|.*\.run\.app)/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
-              },
-              networkTimeoutSeconds: 30 // Increased from 3 to 30 seconds for AI API calls
-            }
-          },
-          {
-            // Cache fonts with cache-first strategy
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days (reduced from 365)
-              }
-            }
-          },
-          {
-            // Cache images with cache-first strategy
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-              }
-            }
-          }
-        ]
-      }
-    })
+
   ],
 
   // Simplified aliases - only include what's actively used

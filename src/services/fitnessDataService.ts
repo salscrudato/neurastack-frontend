@@ -349,95 +349,49 @@ export function trackFitnessLevelSelection(
       performance.mark('fitness_level_selected');
     }
 
-    // Import analytics service dynamically to avoid circular dependencies
-    import('../services/analyticsService').then(({ trackEvent }) => {
-      trackEvent('fitness_level_selected', {
-        fitness_level: level,
-        level_code: code,
-        completion_time_ms: completionTime,
-        user_id: auth.currentUser?.uid
+    // Analytics removed - using simple logging only
+    if (import.meta.env.DEV) {
+      console.log('Fitness level selected:', {
+        fitnessLevel: level,
+        levelCode: code,
+        completionTime: completionTime ? `${completionTime}ms` : 'N/A'
       });
-    }).catch(error => {
-      console.warn('Analytics service import failed:', error);
-    });
+    }
   } catch (error) {
     console.warn('Analytics tracking failed:', error);
   }
 }
 
 /**
- * Track goal selection/deselection with analytics
+ * Track goal selection/deselection (simplified logging only)
  */
 export function trackGoalSelection(
   goalCode: string,
   isSelected: boolean,
   completionTime?: number
 ): void {
-  try {
-    // Log to console for development
-    console.log('Analytics: goal_selection', {
+  // Simple development logging only
+  if (import.meta.env.DEV) {
+    console.log('Goal selection:', {
       goalCode,
       isSelected,
-      completionTime,
-      timestamp: Date.now(),
-      userId: auth.currentUser?.uid
+      completionTime: completionTime ? `${completionTime}ms` : 'N/A'
     });
-
-    // Performance tracking
-    if (typeof performance !== 'undefined' && performance.mark) {
-      performance.mark(`goal_${isSelected ? 'selected' : 'deselected'}`);
-    }
-
-    // Import analytics service dynamically to avoid circular dependencies
-    import('../services/analyticsService').then(({ trackEvent }) => {
-      trackEvent('goal_selection', {
-        goal_code: goalCode,
-        is_selected: isSelected,
-        completion_time_ms: completionTime,
-        user_id: auth.currentUser?.uid
-      });
-    }).catch(error => {
-      console.warn('Analytics service import failed:', error);
-    });
-  } catch (error) {
-    console.warn('Goal selection analytics tracking failed:', error);
   }
 }
 
 /**
- * Track goal step completion with analytics
+ * Track goal step completion (simplified logging only)
  */
 export function trackGoalStepCompletion(
   selectedGoals: string[],
   completionTime?: number
 ): void {
-  try {
-    // Log to console for development
-    console.log('Analytics: goal_step_completed', {
-      selectedGoals,
+  // Simple development logging only
+  if (import.meta.env.DEV) {
+    console.log('Goal step completed:', {
       goalCount: selectedGoals.length,
-      completionTime,
-      timestamp: Date.now(),
-      userId: auth.currentUser?.uid
+      completionTime: completionTime ? `${completionTime}ms` : 'N/A'
     });
-
-    // Performance tracking
-    if (typeof performance !== 'undefined' && performance.mark) {
-      performance.mark('goal_step_completed');
-    }
-
-    // Import analytics service dynamically to avoid circular dependencies
-    import('../services/analyticsService').then(({ trackEvent }) => {
-      trackEvent('goal_step_completed', {
-        selected_goals: selectedGoals,
-        goal_count: selectedGoals.length,
-        completion_time_ms: completionTime,
-        user_id: auth.currentUser?.uid
-      });
-    }).catch(error => {
-      console.warn('Analytics service import failed:', error);
-    });
-  } catch (error) {
-    console.warn('Goal step completion analytics tracking failed:', error);
   }
 }

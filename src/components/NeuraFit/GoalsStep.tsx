@@ -103,17 +103,13 @@ export default function GoalsStep({ onNext, onBack, isEditingFromDashboard = fal
     // Legacy analytics
     trackGoalSelection(goalCode, !isSelected, completionTime);
 
-    // New analytics system
-    try {
-      import('../../services/analyticsService').then(({ trackFitnessInteraction }) => {
-        trackFitnessInteraction({
-          action: 'goal_selected',
-          goals: newGoals,
-          fitnessLevel: currentProfile.fitnessLevel
-        });
+    // Analytics removed - using simple logging only
+    if (import.meta.env.DEV) {
+      console.log('Goal selection:', {
+        action: 'goal_selected',
+        goalCount: newGoals.length,
+        fitnessLevel: currentProfile.fitnessLevel
       });
-    } catch (error) {
-      console.warn('New analytics tracking failed:', error);
     }
 
     console.log(`Goal ${goalCode} toggled locally in ${completionTime}ms`);

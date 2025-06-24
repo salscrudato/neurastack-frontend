@@ -411,13 +411,6 @@ const ensembleResponse = {
 - **Vendor Health Tracking**: Individual AI provider health and performance
 - **Resource Monitoring**: Memory, CPU, and connection tracking
 
-#### **🔧 Admin Dashboard**
-
-- **Comprehensive Monitoring**: System health, metrics, and tier management
-- **Cost Analysis Tools**: Real-time cost estimation and optimization tips
-- **Performance Analytics**: Detailed insights into API usage and performance
-- **User-Friendly Interface**: Professional, modern design with mobile optimization
-
 ---
 
 ## 6. Revenue Model Implementation
@@ -494,31 +487,6 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 - **App-like Experience**: Standalone display mode
 
 ### Service Worker Configuration
-
-```javascript
-// vite.config.ts - PWA setup
-VitePWA({
-  registerType: "prompt",
-  manifest: {
-    name: "neurastack",
-    short_name: "neurastack",
-    description: "AI-powered chat assistant by neurastack",
-    theme_color: "#ffffff",
-    background_color: "#ffffff",
-    display: "standalone",
-  },
-  workbox: {
-    globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-    cleanupOutdatedCaches: true,
-  },
-});
-```
-
-### Install Prompt
-
-- **Smart Timing**: Shows install prompt after user engagement
-- **Cross-Platform**: Works on iOS, Android, and desktop
-- **Dismissible**: Respects user choice and doesn't re-prompt immediately
 
 ---
 
@@ -761,12 +729,6 @@ npm run dev
 - Verify network connectivity
 - Check browser console for API errors
 - Ensure your local backend is running on port 8080 if developing locally
-
-**Q: PWA install prompt not showing**
-
-- Ensure HTTPS (or localhost)
-- Check service worker registration
-- Verify manifest.json is accessible
 
 ### Performance Issues
 
