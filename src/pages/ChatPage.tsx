@@ -1,8 +1,8 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  Text,
+    Box,
+    Flex,
+    IconButton,
+    Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -49,21 +49,41 @@ export function ChatPage() {
   const heroTextColor = "#475569";
   const heroSubTextColor = "#64748B";
 
-  // Enhanced responsive configuration
+  // Enhanced responsive configuration with ChatGPT-style desktop centering
   const chatConfig = useMemo(() => ({
     container: {
-      padding: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 },
-      gap: { xs: 2, sm: 3, md: 4, lg: 5, xl: 6 }
+      // Mobile: full width with padding
+      // Desktop: centered container with max width - optimized for modern chat UX
+      padding: {
+        base: 3,    // Mobile: 12px padding
+        sm: 4,      // Small: 16px padding
+        md: 0,      // Desktop: no padding (handled by centered container)
+        lg: 0,      // Large: no padding
+        xl: 0       // XL: no padding
+      },
+      gap: { base: 3, sm: 4, md: 5, lg: 6, xl: 7 }, // Increased desktop spacing
+      // Desktop container constraints - wider for better readability
+      maxWidth: {
+        base: "100%",
+        md: "800px",   // Increased from 768px
+        lg: "900px",   // Increased for large screens
+        xl: "1000px"   // Increased for XL screens
+      },
+      centerPadding: {
+        md: 8,    // Increased from 6
+        lg: 12,   // Increased from 8
+        xl: 16    // Increased from 12
+      }
     },
     hero: {
-      fontSize: { xs: "lg", sm: "xl", md: "2xl", lg: "3xl", xl: "4xl" },
-      subFontSize: { xs: "md", sm: "lg", md: "xl", lg: "2xl", xl: "3xl" },
-      padding: { xs: 4, sm: 5, md: 6, lg: 8, xl: 10 }
+      fontSize: { base: "xl", sm: "2xl", md: "3xl", lg: "4xl", xl: "4xl" }, // Larger desktop text
+      subFontSize: { base: "md", sm: "lg", md: "xl", lg: "2xl", xl: "2xl" }, // Larger desktop subtext
+      padding: { base: 4, sm: 6, md: 12, lg: 16, xl: 20 } // More generous desktop padding
     },
     scrollButton: {
-      size: { xs: "sm", sm: "md", md: "md", lg: "lg" },
-      bottom: { xs: "100px", sm: "110px", md: "120px", lg: "130px", xl: "140px" },
-      right: { xs: "16px", sm: "20px", md: "24px", lg: "28px", xl: "32px" }
+      size: { base: "sm", sm: "md", md: "md", lg: "lg" },
+      bottom: { base: "100px", sm: "110px", md: "140px", lg: "150px", xl: "160px" }, // Adjusted for new input height
+      right: { base: "16px", sm: "20px", md: "32px", lg: "40px", xl: "48px" } // More spacing from edge
     }
   }), []);
 
@@ -185,11 +205,13 @@ export function ChatPage() {
           maxHeight: 'calc(100vh - 56px)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         },
-        // Desktop viewport support
+        // Desktop viewport support with improved spacing
         '@media (min-width: 769px)': {
           height: 'calc(100vh - 64px)',
           minHeight: 'calc(100vh - 64px)',
           maxHeight: 'calc(100vh - 64px)',
+          // Add subtle background pattern for desktop
+          background: 'linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%)',
         },
         '@supports (-webkit-touch-callout: none)': {
           '@media (max-width: 768px)': {
@@ -208,54 +230,63 @@ export function ChatPage() {
       {/* Offline indicator */}
       <OfflineIndicator />
 
-      {/* Enhanced hero prompt */}
+      {/* Enhanced hero prompt with centered container */}
       {msgs.length === 0 && (
         <Flex
           flex={1}
           align="center"
           justify="center"
-          px={chatConfig.hero.padding}
-          py={{ xs: 4, sm: 6, md: 8, lg: 12 }} // Better mobile vertical spacing
+          w="100%"
           role="main"
           aria-label="Welcome message"
         >
-          <Box textAlign="center" maxW={{ xs: "sm", sm: "md", md: "lg", lg: "xl" }}>
-            <Text
-              fontSize={chatConfig.hero.fontSize}
-              lineHeight="short"
-              fontWeight="semibold"
-              color={heroTextColor}
-              mb={{ xs: 2, sm: 2, md: 3, lg: 4 }}
-              // Enhanced accessibility
-              as="h1"
-              role="heading"
-              aria-level={1}
-            >
-              What do you want to know?
-            </Text>
-            <Text
-              fontSize={chatConfig.hero.subFontSize}
-              color={heroSubTextColor}
-              fontWeight="normal"
-              opacity={0.8}
-              lineHeight="relaxed"
-              // Enhanced accessibility
-              as="p"
-              role="text"
-            >
-              Our team is happy to assist you...
-            </Text>
+          <Box
+            w="100%"
+            maxW={chatConfig.container.maxWidth}
+            px={chatConfig.container.centerPadding}
+            py={chatConfig.hero.padding}
+          >
+            <Box textAlign="center" maxW={{ base: "sm", sm: "md", md: "2xl", lg: "3xl" }} mx="auto">
+              <Text
+                fontSize={chatConfig.hero.fontSize}
+                lineHeight={{ base: "short", md: "shorter" }}
+                fontWeight={{ base: "semibold", md: "bold" }}
+                color={heroTextColor}
+                mb={{ base: 2, sm: 2, md: 4, lg: 6 }}
+                // Enhanced accessibility
+                as="h1"
+                role="heading"
+                aria-level={1}
+                // Better desktop typography
+                letterSpacing={{ base: "normal", md: "-0.025em" }}
+              >
+                What do you want to know?
+              </Text>
+              <Text
+                fontSize={chatConfig.hero.subFontSize}
+                color={heroSubTextColor}
+                fontWeight={{ base: "normal", md: "medium" }}
+                opacity={{ base: 0.8, md: 0.7 }}
+                lineHeight={{ base: "relaxed", md: "normal" }}
+                // Enhanced accessibility
+                as="p"
+                role="text"
+                // Better desktop spacing
+                maxW={{ base: "full", md: "2xl" }}
+                mx="auto"
+              >
+                Our team is happy to assist you...
+              </Text>
+            </Box>
           </Box>
         </Flex>
       )}
 
-      {/* Enhanced messages container */}
+      {/* Enhanced messages container with centered layout */}
       <Box
         ref={messagesContainerRef}
         flex="1"
         w="100%"
-        px={chatConfig.container.padding}
-        py={{ xs: 2, sm: 3, md: 2, lg: 2.5, xl: 3 }}
         bg={containerBg}
         // Enhanced scrolling performance with mobile optimization
         overflowY="auto"
@@ -270,9 +301,13 @@ export function ChatPage() {
             // Ensure messages container doesn't exceed viewport
             maxHeight: 'calc(100vh - 56px - 120px)', // viewport - header - input area
           },
-          // Desktop support
+          // Desktop support with centered container and enhanced spacing
           '@media (min-width: 769px)': {
-            maxHeight: 'calc(100vh - 64px - 140px)', // viewport - header - input area
+            maxHeight: 'calc(100vh - 64px - 160px)', // viewport - header - input area (adjusted for larger input)
+            display: 'flex',
+            justifyContent: 'center',
+            paddingY: 6, // Increased vertical padding
+            paddingX: 4, // Add horizontal padding for better edge spacing
           }
         }}
         // Enhanced accessibility
@@ -281,53 +316,67 @@ export function ChatPage() {
         aria-live="polite"
         aria-atomic="false"
       >
-        <Flex
-          direction="column"
-          align="stretch"
-          gap={chatConfig.container.gap}
-          // Enhanced performance
-          sx={{
-            willChange: 'transform',
-            backfaceVisibility: 'hidden',
+        {/* Centered container for desktop, full width for mobile */}
+        <Box
+          w="100%"
+          maxW={chatConfig.container.maxWidth}
+          px={{
+            base: chatConfig.container.padding.base,
+            sm: chatConfig.container.padding.sm,
+            md: chatConfig.container.centerPadding.md,
+            lg: chatConfig.container.centerPadding.lg,
+            xl: chatConfig.container.centerPadding.xl
           }}
         >
-          {msgs.map((m, index) => {
-            // Check if this is the first assistant message
-            const isFirstAssistantMessage = m.role === 'assistant' &&
-              msgs.slice(0, index).every(prevMsg => prevMsg.role !== 'assistant');
+          <Flex
+            direction="column"
+            align="stretch"
+            gap={chatConfig.container.gap}
+            // Enhanced performance
+            sx={{
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+            }}
+          >
+            {msgs.map((m, index) => {
+              // Check if this is the first assistant message
+              const isFirstAssistantMessage = m.role === 'assistant' &&
+                msgs.slice(0, index).every(prevMsg => prevMsg.role !== 'assistant');
 
-            return (
-              <Box
-                key={m.id}
-                id={`message-${m.id}`}
-                px={{ xs: 0.5, sm: 1, md: 0 }}
-                // Enhanced accessibility
-                role="article"
-                aria-label={`Message ${index + 1} from ${m.role}`}
-              >
-                <ChatMessage
-                  message={m}
-                  isFirstAssistantMessage={isFirstAssistantMessage}
-                  isHighlighted={false}
-                />
+              return (
+                <Box
+                  key={m.id}
+                  id={`message-${m.id}`}
+                  px={{ base: 0.5, sm: 1, md: 0 }}
+                  py={{ base: 0, md: 1 }} // Add subtle vertical spacing on desktop
+                  // Enhanced accessibility
+                  role="article"
+                  aria-label={`Message ${index + 1} from ${m.role}`}
+                >
+                  <ChatMessage
+                    message={m}
+                    isFirstAssistantMessage={isFirstAssistantMessage}
+                    isHighlighted={false}
+                  />
+                </Box>
+              );
+            })}
+
+            {/* Loading indicator */}
+            {isLoading && (
+              <Box px={4} py={2}>
+                <Loader variant="team" />
               </Box>
-            );
-          })}
+            )}
 
-          {/* Loading indicator */}
-          {isLoading && (
-            <Box px={4} py={2}>
-              <Loader variant="team" />
-            </Box>
-          )}
+            {/* Save Session Button - appears after messages */}
+            {msgs.length > 0 && !isLoading && (
+              <SaveSessionButton />
+            )}
 
-          {/* Save Session Button - appears after messages */}
-          {msgs.length > 0 && !isLoading && (
-            <SaveSessionButton />
-          )}
-
-          <div ref={bottomRef} />
-        </Flex>
+            <div ref={bottomRef} />
+          </Flex>
+        </Box>
       </Box>
 
       {/* Enhanced Scroll to bottom button */}

@@ -186,11 +186,11 @@ export const ChatMessage = memo<ChatMessageProps>(({
       <Box
         bg={bubbleBg}
         color={bubbleText}
-        px={{ base: 3, md: 4 }}
-        py={{ base: 2, md: 2.5 }}
+        px={{ base: 3, md: 5, lg: 6 }} // Increased desktop padding
+        py={{ base: 2, md: 3, lg: 3.5 }} // Increased desktop padding
         borderRadius="2xl"
-        maxW={{ base: "95%", sm: "90%", md: "85%" }}
-        minW={{ base: "40%", sm: "45%" }}
+        maxW={{ base: "95%", sm: "90%", md: "80%", lg: "75%" }} // Slightly narrower for better readability
+        minW={{ base: "40%", sm: "45%", md: "50%" }} // Increased minimum width for desktop
         position="relative"
         boxShadow={isUser ? shadowUser : shadowAi}
         border={isUser ? "none" : "1px solid"}
@@ -199,8 +199,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
         _hover={{
           transform: "translateY(-1px)",
           boxShadow: isUser
-            ? "0 6px 16px rgba(79, 156, 249, 0.3)"
-            : "0 3px 10px rgba(0, 0, 0, 0.06)",
+            ? "0 8px 24px rgba(79, 156, 249, 0.25)" // Enhanced user message shadow
+            : "0 6px 20px rgba(0, 0, 0, 0.08)", // Enhanced AI message shadow
         }}
         // Enhanced touch targets for mobile
         sx={{
@@ -218,7 +218,12 @@ export const ChatMessage = memo<ChatMessageProps>(({
               {processedContent || 'An error occurred'}
             </Text>
           ) : isUser ? (
-            <Text fontSize={fontSizes.content} lineHeight="1.5" fontWeight="400">
+            <Text
+              fontSize={fontSizes.content}
+              lineHeight={{ base: "1.5", md: "1.6" }} // Better desktop line height
+              fontWeight="400"
+              letterSpacing={{ base: "normal", md: "0.01em" }} // Subtle desktop letter spacing
+            >
               {displayText}
             </Text>
           ) : (

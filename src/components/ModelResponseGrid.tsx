@@ -25,6 +25,7 @@ import {
     PiXCircleBold
 } from 'react-icons/pi';
 import type { ModelResponseData } from '../hooks/useModelResponses';
+import { formatModelName } from '../hooks/useModelResponses';
 
 // ============================================================================
 // Component Props
@@ -116,7 +117,7 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
               textAlign="left"
               letterSpacing="-0.025em"
             >
-              {model.provider?.toUpperCase() || 'AI MODEL'}
+              {formatModelName(model.model, model.role, model.provider)}
             </Text>
 
             <Icon

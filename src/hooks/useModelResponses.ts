@@ -34,8 +34,8 @@ export interface ModelResponseData {
   responseTime?: number;     // Processing time in milliseconds
   characterCount?: number;   // Response character count
 
-  // Quality analysis
-  quality?: {
+  // Quality analysis - support both number and object formats
+  quality?: number | {
     wordCount: number;
     sentenceCount: number;
     averageWordsPerSentence: number;
@@ -45,13 +45,7 @@ export interface ModelResponseData {
   };
 
   // Model reliability and metadata
-  metadata?: {
-    confidenceLevel: string;
-    modelReliability: number; // 0-1 reliability score
-    processingTime: number;
-    tokenCount: number;
-    complexity: string;
-  };
+  metadata?: any; // Flexible metadata object
 }
 
 export interface EnsembleOverviewData {
@@ -118,13 +112,60 @@ export interface UseModelResponsesResult {
 // ============================================================================
 
 export const MODEL_DISPLAY_INFO = {
-  'openai:gpt-4': {
+  // OpenAI Models
+  'gpt-4o': {
+    name: 'GPT-4o',
+    provider: 'OpenAI',
+    color: 'green'
+  },
+  'gpt-4o-mini': {
+    name: 'GPT-4o Mini',
+    provider: 'OpenAI',
+    color: 'green'
+  },
+  'gpt-4': {
     name: 'GPT-4',
     provider: 'OpenAI',
     color: 'green'
   },
-  'openai:gpt-3.5-turbo': {
-    name: 'GPT-3.5',
+  'gpt-3.5-turbo': {
+    name: 'GPT-3.5 Turbo',
+    provider: 'OpenAI',
+    color: 'green'
+  },
+
+  // Google Models
+  'gemini-1.5-flash': {
+    name: 'Gemini 1.5 Flash',
+    provider: 'Google',
+    color: 'blue'
+  },
+  'gemini-1.5-pro': {
+    name: 'Gemini 1.5 Pro',
+    provider: 'Google',
+    color: 'blue'
+  },
+
+  // Claude Models
+  'claude-3-haiku-20240307': {
+    name: 'Claude 3 Haiku',
+    provider: 'Anthropic',
+    color: 'orange'
+  },
+  'claude-3-sonnet': {
+    name: 'Claude 3 Sonnet',
+    provider: 'Anthropic',
+    color: 'orange'
+  },
+  'claude-3-opus': {
+    name: 'Claude 3 Opus',
+    provider: 'Anthropic',
+    color: 'orange'
+  },
+
+  // Legacy format support (with provider prefix)
+  'openai:gpt-4': {
+    name: 'GPT-4',
     provider: 'OpenAI',
     color: 'green'
   },
@@ -155,26 +196,35 @@ export function useModelResponses(
   const [selectedModel, setSelectedModel] = useState<ModelResponseData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Transform API data into display-ready format using new individual responses
+  // Transform API data into display-ready format using new ensemble API response
   const availableModels = useMemo((): ModelResponseData[] => {
     const models: ModelResponseData[] = [];
 
-    // Process individual responses format with enhanced metadata
+    // Process roles array from new ensemble API format
     if (individualResponses && individualResponses.length > 0) {
       individualResponses.forEach(response => {
+        // Map API response status to our internal status
+        const status = response.status === 'fulfilled' ? 'success' : 'failed';
+
         models.push({
           model: response.model,
-          answer: response.answer,
+          answer: response.content || response.answer || '', // Support both new 'content' and legacy 'answer' fields with fallback
           role: response.role,
           provider: response.provider,
-          status: response.status || 'success',
-          wordCount: response.wordCount,
+          status: status,
+          errorReason: response.status === 'rejected' ? response.reason : undefined,
 
-          // Extract enhanced metadata from API response
-          confidence: typeof response.confidence === 'number'
-            ? { score: response.confidence, level: 'unknown', factors: [] }
-            : response.confidence,
+          // Map confidence from API response structure with proper fallbacks
+          confidence: response.confidence ? {
+            score: response.confidence.score || 0,
+            level: response.confidence.level || 'medium',
+            factors: response.confidence.factors || []
+          } : undefined,
+
           responseTime: response.responseTime,
+          tokenCount: response.tokenCount,
+          executionTime: response.responseTime, // Map responseTime to executionTime for compatibility
+          wordCount: response.wordCount,
           characterCount: response.characterCount,
           quality: response.quality,
           metadata: response.metadata
@@ -279,19 +329,22 @@ export function getModelDisplayInfo(modelKey: string) {
 }
 
 /**
- * Format model name for display using provider-model format
+ * Format model name for display without provider (just model name)
  */
-export function formatModelName(modelKey: string, _role?: string, provider?: string): string {
-  // Always use PROVIDER - MODEL format when provider info is available
-  if (provider && modelKey) {
-    const providerName = provider.toUpperCase();
-    const modelName = modelKey.toUpperCase();
-    return `${providerName} - ${modelName}`;
+export function formatModelName(modelKey: string, _role?: string, _provider?: string): string {
+  // Get display info for consistent formatting
+  const info = getModelDisplayInfo(modelKey);
+
+  // Extract clean model name from modelKey (remove provider prefix)
+  if (modelKey.includes(':')) {
+    const cleanModelName = modelKey.split(':')[1]
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize each word
+    return cleanModelName;
   }
 
-  // Fallback for cases without provider info
-  const info = getModelDisplayInfo(modelKey);
-  return `${info.provider?.toUpperCase() || 'UNKNOWN'} - ${modelKey.toUpperCase()}`;
+  // Use display name if available, otherwise format the model key
+  return info.name || modelKey.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
 

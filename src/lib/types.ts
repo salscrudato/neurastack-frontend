@@ -54,28 +54,30 @@ export interface NeuraStackHeaders {
   [key: string]: string | undefined;
 }
 
-/** Per‑model answer as returned by the backend */
+/** Per‑model answer as returned by the backend - Updated for new ensemble API */
 export interface SubAnswer {
-  model: string;          // Full model key like "openai:gpt-4"
-  answer: string;         // The model's native response
-  role?: string;          // Role in ensemble mode (e.g., "Evidence Analyst")
+  model: string;          // Full model key like "gpt-4o-mini", "gemini-1.5-flash"
+  content: string;        // The model's native response (API uses 'content' field)
+  role?: string;          // Role in ensemble mode (e.g., "gpt4o", "gemini", "claude")
   provider?: string;      // Provider name (e.g., "openai", "gemini", "claude")
-  status?: 'success' | 'failed'; // Response status
+  status?: 'fulfilled' | 'rejected'; // Response status from new API
+  reason?: string;        // Rejection reason if status is 'rejected'
   wordCount?: number;     // Word count of the response
 
   // Enhanced metadata from API response for customer-centric insights
   confidence?: {
     score: number;           // 0-1 confidence score
     level: string;           // "low", "medium", "high"
-    factors: string[];       // Specific confidence reasoning
-  } | number;              // Allow both object and number for backward compatibility
+    factors?: string[];      // Specific confidence reasoning
+  };
 
   // Performance metrics
   responseTime?: number;     // Processing time in milliseconds
   characterCount?: number;   // Response character count
+  tokenCount?: number;       // Token count for the response
 
   // Quality analysis
-  quality?: {
+  quality?: number | {       // Can be simple number or detailed object
     wordCount: number;
     sentenceCount: number;
     averageWordsPerSentence: number;
@@ -85,15 +87,10 @@ export interface SubAnswer {
   };
 
   // Model reliability and metadata
-  metadata?: {
-    confidenceLevel: string;
-    modelReliability: number; // 0-1 reliability score
-    processingTime: number;
-    tokenCount: number;
-    complexity: string;
-  };
+  metadata?: any;            // Flexible metadata object from API
 
-  // Enhanced ensemble data for model cards
+  // Legacy fields for backward compatibility
+  answer?: string;           // Fallback to content field
   overallConfidence?: number;     // Overall confidence score (0-1)
   synthesisStrategy?: string;     // Strategy used (e.g., "consensus")
   votingResults?: Array<{         // Voting results from ensemble

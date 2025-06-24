@@ -53,8 +53,14 @@ export default function ChatInput() {
     padding: { xs: 3, sm: 3.5, md: 4, lg: 4.5, xl: 5 },
     // More rounded edges for modern, elegant design
     borderRadius: { xs: "3xl", sm: "3xl", md: "4xl", lg: "4xl", xl: "4xl" },
-    // Smaller circular send button
-    sendButton: { xs: "32px", sm: "34px", md: "36px", lg: "38px", xl: "40px" }
+    // Optimized circular send button sizes for mobile and desktop
+    sendButton: {
+      base: "36px",  // Mobile: reduced from too large
+      sm: "38px",    // Small mobile: slightly larger
+      md: "42px",    // Desktop: increased for better click target
+      lg: "44px",    // Large desktop: better visibility
+      xl: "46px"     // XL desktop: optimal size
+    }
   }), []);
 
   // Enhanced animation configuration with performance optimization
@@ -285,8 +291,6 @@ export default function ChatInput() {
     <Box
       ref={containerRef}
       w="full"
-      px={inputConfig.padding}
-      py={{ xs: 2, sm: 2.5, md: 3.5, lg: 4, xl: 4.5 }}
       bg={colorSystem.page.bg}
       borderTopWidth="1px"
       borderColor={colorSystem.page.borderTop}
@@ -313,30 +317,55 @@ export default function ChatInput() {
           // Prevent input from taking too much space
           maxHeight: '120px',
         },
-        // Desktop optimization
+        // Desktop optimization with centered container and enhanced styling
         '@media (min-width: 769px)': {
-          maxHeight: '140px',
+          maxHeight: '160px', // Increased for better desktop experience
+          display: 'flex',
+          justifyContent: 'center',
+          paddingY: 6, // Increased vertical padding
+          paddingX: 4, // Add horizontal padding
+          // Subtle desktop-specific styling
+          borderTop: '1px solid rgba(226, 232, 240, 0.6)',
+          background: 'linear-gradient(180deg, rgba(248, 250, 252, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%)',
+          backdropFilter: 'blur(12px)',
         }
       }}
     >
-      <ScaleFade in={true} initialScale={0.95}>
-        <InputGroup
-          w="full"
-          bg="transparent"
-          borderWidth="0"
-          borderColor="transparent"
-          borderRadius={inputConfig.borderRadius}
-          px={inputConfig.padding}
-          py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
-          alignItems="center"
-          transition={animationConfig.transition}
-          boxShadow="none"
-          // Enhanced accessibility
-          role="group"
-          aria-label="Message input area"
-          aria-expanded={isFocused}
-          aria-busy={busy}
-        >
+      {/* Centered container for desktop, full width for mobile */}
+      <Box
+        w="100%"
+        maxW={{
+          base: "100%",
+          md: "800px",   // Increased to match chat container
+          lg: "900px",   // Increased for large screens
+          xl: "1000px"   // Increased for XL screens
+        }}
+        px={{
+          base: 3,
+          sm: 3.5,
+          md: 8,    // Increased from 6
+          lg: 12,   // Increased from 8
+          xl: 16    // Increased from 12
+        }}
+      >
+        <ScaleFade in={true} initialScale={0.95}>
+          <InputGroup
+            w="full"
+            bg="transparent"
+            borderWidth="0"
+            borderColor="transparent"
+            borderRadius={inputConfig.borderRadius}
+            px={{ base: 3, sm: 3.5, md: 0 }}
+            py={{ base: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
+            alignItems="center"
+            transition={animationConfig.transition}
+            boxShadow="none"
+            // Enhanced accessibility
+            role="group"
+            aria-label="Message input area"
+            aria-expanded={isFocused}
+            aria-busy={busy}
+          >
           <Textarea
             ref={textareaRef}
             flex={1}
@@ -367,15 +396,15 @@ export default function ChatInput() {
             autoComplete="off"
             autoCorrect="on"
             spellCheck="true"
-            // Add border and styling directly to textarea
+            // Enhanced border and styling for desktop/mobile
             borderWidth="1px"
             borderColor={isFocused ? "#3b82f6" : "rgba(203, 213, 225, 0.8)"}
             borderRadius={inputConfig.borderRadius}
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(8px)"
+            bg="rgba(255, 255, 255, 0.98)" // Slightly more opaque for better readability
+            backdropFilter="blur(12px)" // Increased blur for better glass effect
             boxShadow={isFocused
-              ? "0 0 0 1px #3b82f6, 0 16px 40px rgba(59, 130, 246, 0.15)"
-              : "0 2px 8px rgba(0, 0, 0, 0.04)"
+              ? "0 0 0 1px #3b82f6, 0 20px 50px rgba(59, 130, 246, 0.12)" // Enhanced desktop shadow
+              : "0 4px 16px rgba(0, 0, 0, 0.06)" // Better default shadow
             }
             _placeholder={{
               color: colorSystem.text.placeholder,
@@ -387,13 +416,13 @@ export default function ChatInput() {
             _focus={{
               outline: "none",
               borderColor: "#3b82f6",
-              boxShadow: "0 0 0 1px #3b82f6, 0 16px 40px rgba(59, 130, 246, 0.15)",
+              boxShadow: "0 0 0 1px #3b82f6, 0 20px 50px rgba(59, 130, 246, 0.12)", // Enhanced focus shadow
               transform: animationConfig.focusTransform,
             }}
             _hover={{
               borderColor: colorSystem.text.hover,
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.06)",
-              transform: prefersReducedMotion ? 'none' : 'translateY(-1px)',
+              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)", // Enhanced hover shadow
+              transform: prefersReducedMotion ? 'none' : 'translateY(-2px)', // Slightly more lift
             }}
             _disabled={{
               opacity: 0.6,
@@ -426,7 +455,7 @@ export default function ChatInput() {
               },
             }}
             color={colorSystem.text.primary}
-            pr={{ base: "4rem", md: "5rem" }}
+            pr={{ base: "4rem", sm: "4.5rem", md: "5rem", lg: "5.5rem" }} // Adjusted for new button sizes
             pl={{ base: "1rem", md: "1.5rem" }}
             py={{ base: "1rem", md: "1.25rem" }}
             fontSize={inputConfig.fontSize}
@@ -435,10 +464,10 @@ export default function ChatInput() {
           />
 
           <InputRightElement
-            width={{ base: "3.5rem", md: "4.5rem" }}
+            width={{ base: "3.5rem", sm: "4rem", md: "4.5rem", lg: "5rem" }} // Adjusted for new button sizes
             top="50%"
             transform="translateY(-50%)"
-            pr={{ base: 1, md: 1.5 }}
+            pr={{ base: 1, sm: 1, md: 1.5, lg: 2 }} // Adjusted padding
             display="flex"
             alignItems="center"
             justifyContent="flex-end"
@@ -450,7 +479,7 @@ export default function ChatInput() {
               <IconButton
                 aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
                 aria-disabled={busy || !txt.trim()}
-                icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 16 : 20) : (isMobile ? 14 : 18)} />}
+                icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 18 : 22) : (isMobile ? 16 : 20)} />}
                 onClick={handleSend}
                 isLoading={busy}
                 size="sm"
@@ -507,40 +536,41 @@ export default function ChatInput() {
               />
             </HStack>
           </InputRightElement>
-        </InputGroup>
-      </ScaleFade>
+          </InputGroup>
+        </ScaleFade>
 
-      {/* Enhanced Input Hints and Status */}
-      <Fade in={isFocused || txt.trim().length > 0}>
-        <VStack spacing={1} mt={2} id="input-hints">
-          {/* Send Instructions */}
-          {txt.trim() && (
-            <HStack spacing={3} justify="center" w="full">
+        {/* Enhanced Input Hints and Status */}
+        <Fade in={isFocused || txt.trim().length > 0}>
+          <VStack spacing={1} mt={2} id="input-hints">
+            {/* Send Instructions */}
+            {txt.trim() && (
+              <HStack spacing={3} justify="center" w="full">
+                <Text
+                  fontSize={{ base: "2xs", md: "xs" }}
+                  color={colorSystem.text.hint}
+                  opacity={0.8}
+                  fontWeight="500"
+                >
+                  {isMobile ? "⏎ Send" : "⏎ Send • ⇧⏎ New line"}
+                </Text>
+              </HStack>
+            )}
+
+            {/* Desktop Shortcuts Hint */}
+            {!isMobile && isFocused && !txt.trim() && (
               <Text
-                fontSize={{ base: "2xs", md: "xs" }}
+                fontSize="2xs"
                 color={colorSystem.text.hint}
-                opacity={0.8}
-                fontWeight="500"
+                opacity={0.6}
+                textAlign="center"
+                fontWeight="400"
               >
-                {isMobile ? "⏎ Send" : "⏎ Send • ⇧⏎ New line"}
+                Tip: Use Ctrl+K to focus input • Esc to clear
               </Text>
-            </HStack>
-          )}
-
-          {/* Desktop Shortcuts Hint */}
-          {!isMobile && isFocused && !txt.trim() && (
-            <Text
-              fontSize="2xs"
-              color={colorSystem.text.hint}
-              opacity={0.6}
-              textAlign="center"
-              fontWeight="400"
-            >
-              Tip: Use Ctrl+K to focus input • Esc to clear
-            </Text>
-          )}
-        </VStack>
-      </Fade>
+            )}
+          </VStack>
+        </Fade>
+      </Box>
     </Box>
   );
 }

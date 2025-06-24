@@ -1072,10 +1072,12 @@ export class NeuraStackClient {
 
       return {
         model: role.model,
-        answer: role.content,
+        content: role.content, // Primary field for new API
+        answer: role.content,  // Legacy field for backward compatibility
         role: role.role, // Keep the original role for reference
         provider: this.extractProviderFromModel(role.model), // Extract provider from model name
-        status: role.status === 'fulfilled' ? 'success' : 'failed', // Map API status to SubAnswer format
+        status: role.status === 'fulfilled' ? 'fulfilled' : 'rejected', // Use new API status format
+        reason: role.status === 'rejected' ? 'Model failed to respond' : undefined,
         wordCount: role.content ? role.content.split(' ').length : 0,
 
         // Enhanced metadata from API response for customer-centric insights

@@ -29,6 +29,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ModelResponseData } from '../hooks/useModelResponses';
+import { formatModelName } from '../hooks/useModelResponses';
 
 // ============================================================================
 // Component Props
@@ -183,7 +184,7 @@ export function IndividualModelModal({
         >
           <VStack align="start" spacing={2}>
             <Text fontSize="lg" fontWeight="bold" color={textColor}>
-              {modelData.model}
+              {formatModelName(modelData.model, modelData.role, modelData.provider)}
             </Text>
             {modelData.confidence && (
               <Badge
