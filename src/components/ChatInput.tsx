@@ -341,11 +341,11 @@ export default function ChatInput() {
           xl: "1000px"   // Increased for XL screens
         }}
         px={{
-          base: 3,
-          sm: 3.5,
-          md: 8,    // Increased from 6
-          lg: 12,   // Increased from 8
-          xl: 16    // Increased from 12
+          base: 1,    // Reduced from 3 for wider input on mobile
+          sm: 2,      // Reduced from 3.5 for wider input on small screens
+          md: 8,      // Increased from 6
+          lg: 12,     // Increased from 8
+          xl: 16      // Increased from 12
         }}
       >
         <ScaleFade in={true} initialScale={0.95}>

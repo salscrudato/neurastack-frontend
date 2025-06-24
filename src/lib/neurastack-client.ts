@@ -1075,16 +1075,16 @@ export class NeuraStackClient {
         content: role.content, // Primary field for new API
         answer: role.content,  // Legacy field for backward compatibility
         role: role.role, // Keep the original role for reference
-        provider: this.extractProviderFromModel(role.model), // Extract provider from model name
+        provider: role.provider || this.extractProviderFromModel(role.model), // Use API provider or extract from model name
         status: role.status === 'fulfilled' ? 'fulfilled' : 'rejected', // Use new API status format
         reason: role.status === 'rejected' ? 'Model failed to respond' : undefined,
         wordCount: role.content ? role.content.split(' ').length : 0,
 
         // Enhanced metadata from API response for customer-centric insights
         confidence: role.confidence ? {
-          score: role.confidence,
-          level: role.confidence > 0.8 ? 'high' : role.confidence > 0.5 ? 'medium' : 'low',
-          factors: ['AI model confidence score']
+          score: role.confidence.score || role.confidence,
+          level: role.confidence.level || (role.confidence.score > 0.8 ? 'high' : role.confidence.score > 0.5 ? 'medium' : 'low'),
+          factors: role.confidence.factors || ['AI model confidence score']
         } : undefined,
         responseTime: role.responseTime,
         characterCount: role.characterCount,

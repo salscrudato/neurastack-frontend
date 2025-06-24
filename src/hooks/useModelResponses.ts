@@ -210,7 +210,7 @@ export function useModelResponses(
           model: response.model,
           answer: response.content || response.answer || '', // Support both new 'content' and legacy 'answer' fields with fallback
           role: response.role,
-          provider: response.provider,
+          provider: response.provider || extractProviderFromModel(response.model),
           status: status,
           errorReason: response.status === 'rejected' ? response.reason : undefined,
 
@@ -326,6 +326,17 @@ export function getModelDisplayInfo(modelKey: string) {
     provider: modelKey.split(':')[0] || 'Unknown',
     color: 'gray'
   };
+}
+
+/**
+ * Extract provider name from model string
+ */
+function extractProviderFromModel(model: string): string {
+  if (model.includes('gpt') || model.includes('openai')) return 'OPENAI';
+  if (model.includes('gemini') || model.includes('google')) return 'GOOGLE';
+  if (model.includes('claude') || model.includes('anthropic')) return 'ANTHROPIC';
+  if (model.includes('grok') || model.includes('xai')) return 'XAI';
+  return 'AI';
 }
 
 /**

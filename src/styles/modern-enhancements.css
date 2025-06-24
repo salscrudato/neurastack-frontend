@@ -256,9 +256,9 @@
     gap: 0.5rem;
   }
 
-  /* Mobile-optimized chat messages */
+  /* Mobile-optimized chat messages - wider for better content display */
   .mobile-chat-message {
-    max-width: 95% !important;
+    max-width: 98% !important;
     font-size: 14px !important;
     line-height: 1.6 !important;
   }

@@ -55,8 +55,8 @@ export function ChatPage() {
       // Mobile: full width with padding
       // Desktop: centered container with max width - optimized for modern chat UX
       padding: {
-        base: 3,    // Mobile: 12px padding
-        sm: 4,      // Small: 16px padding
+        base: 1,    // Mobile: 4px padding (reduced for wider content)
+        sm: 2,      // Small: 8px padding (reduced for wider content)
         md: 0,      // Desktop: no padding (handled by centered container)
         lg: 0,      // Large: no padding
         xl: 0       // XL: no padding
@@ -294,9 +294,9 @@ export function ChatPage() {
         sx={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          // Enhanced mobile support with proper spacing
+          // Enhanced mobile support with wider content area
           '@media (max-width: 768px)': {
-            paddingX: 3,
+            paddingX: 1, // Reduced from 3 for wider content
             paddingY: 2,
             // Ensure messages container doesn't exceed viewport
             maxHeight: 'calc(100vh - 56px - 120px)', // viewport - header - input area
@@ -347,7 +347,7 @@ export function ChatPage() {
                 <Box
                   key={m.id}
                   id={`message-${m.id}`}
-                  px={{ base: 0.5, sm: 1, md: 0 }}
+                  px={{ base: 0, sm: 0.5, md: 0 }} // Reduced mobile padding for wider content
                   py={{ base: 0, md: 1 }} // Add subtle vertical spacing on desktop
                   // Enhanced accessibility
                   role="article"

@@ -117,7 +117,7 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
               textAlign="left"
               letterSpacing="-0.025em"
             >
-              {formatModelName(model.model, model.role, model.provider)}
+              {model.provider?.toUpperCase() || 'AI'} - {formatModelName(model.model, model.role, model.provider)}
             </Text>
 
             <Icon

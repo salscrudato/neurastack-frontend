@@ -189,7 +189,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
         px={{ base: 3, md: 5, lg: 6 }} // Increased desktop padding
         py={{ base: 2, md: 3, lg: 3.5 }} // Increased desktop padding
         borderRadius="2xl"
-        maxW={{ base: "95%", sm: "90%", md: "80%", lg: "75%" }} // Slightly narrower for better readability
+        maxW={{ base: "98%", sm: "95%", md: "80%", lg: "75%" }} // Wider on mobile for better content display
         minW={{ base: "40%", sm: "45%", md: "50%" }} // Increased minimum width for desktop
         position="relative"
         boxShadow={isUser ? shadowUser : shadowAi}
@@ -209,6 +209,81 @@ export const ChatMessage = memo<ChatMessageProps>(({
           }
         }}
       >
+        {/* Enhanced AI Response Header with Confidence Metrics */}
+        {!isUser && !isError && !isLoading && message.metadata?.metadata && (
+          <Box mb={3}>
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              justify="space-between"
+              align={{ base: "start", sm: "center" }}
+              gap={2}
+              p={3}
+              bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
+              borderRadius="lg"
+              border="1px solid #E2E8F0"
+            >
+              {/* Provider Information */}
+              <HStack spacing={2}>
+                <Text
+                  fontSize={{ base: "sm", md: "md" }}
+                  fontWeight="600"
+                  color="#1E293B"
+                  letterSpacing="-0.025em"
+                >
+                  {message.metadata.metadata.synthesis?.provider?.toUpperCase() || 'AI ENSEMBLE'}
+                </Text>
+                {message.metadata.metadata.synthesis?.model && (
+                  <Text
+                    fontSize={{ base: "xs", md: "sm" }}
+                    color="#64748B"
+                    fontWeight="500"
+                  >
+                    {message.metadata.metadata.synthesis.model.toUpperCase()}
+                  </Text>
+                )}
+              </HStack>
+
+              {/* Confidence Metrics */}
+              <HStack spacing={4} fontSize={{ base: "xs", md: "sm" }}>
+                {message.metadata.metadata.confidenceAnalysis?.overallConfidence && (
+                  <HStack spacing={1}>
+                    <Text color="#64748B" fontWeight="500">Confidence:</Text>
+                    <Text
+                      color={
+                        message.metadata.metadata.confidenceAnalysis.overallConfidence > 0.8
+                          ? "#059669"
+                          : message.metadata.metadata.confidenceAnalysis.overallConfidence > 0.6
+                          ? "#D97706"
+                          : "#DC2626"
+                      }
+                      fontWeight="600"
+                    >
+                      {Math.round(message.metadata.metadata.confidenceAnalysis.overallConfidence * 100)}%
+                    </Text>
+                  </HStack>
+                )}
+                {message.metadata.metadata.confidenceAnalysis?.responseConsistency && (
+                  <HStack spacing={1}>
+                    <Text color="#64748B" fontWeight="500">Consistency:</Text>
+                    <Text
+                      color={
+                        message.metadata.metadata.confidenceAnalysis.responseConsistency > 0.8
+                          ? "#059669"
+                          : message.metadata.metadata.confidenceAnalysis.responseConsistency > 0.6
+                          ? "#D97706"
+                          : "#DC2626"
+                      }
+                      fontWeight="600"
+                    >
+                      {Math.round(message.metadata.metadata.confidenceAnalysis.responseConsistency * 100)}%
+                    </Text>
+                  </HStack>
+                )}
+              </HStack>
+            </Flex>
+          </Box>
+        )}
+
         {/* Message Content */}
         <Box>
           {isLoading ? (
@@ -240,50 +315,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
           )}
         </Box>
 
-        {/* Ensemble Overview Section */}
-        {!isUser && !isError && !isLoading && ensembleOverview && (
-          <Box mt={6}>
-            <Box
-              bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
-              borderRadius="xl"
-              border="1px solid #E2E8F0"
-              p={4}
-              w="100%"
-            >
-              <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={3}>
-                🎯 Ensemble Performance
-              </Text>
-              <HStack spacing={4} justify="space-between">
-                <VStack spacing={0} align="center">
-                  <Text fontSize="lg" fontWeight="700" color="#1E293B">
-                    {Math.round((ensembleOverview.successfulRoles / ensembleOverview.totalRoles) * 100)}%
-                  </Text>
-                  <Text fontSize="xs" color="#64748B" fontWeight="600">
-                    SUCCESS
-                  </Text>
-                </VStack>
-                <VStack spacing={0} align="center">
-                  <Text fontSize="lg" fontWeight="700" color="#1E293B">
-                    {ensembleOverview.processingTimeMs < 1000 ? `${ensembleOverview.processingTimeMs}ms` : `${(ensembleOverview.processingTimeMs / 1000).toFixed(1)}s`}
-                  </Text>
-                  <Text fontSize="xs" color="#64748B" fontWeight="600">
-                    TIME
-                  </Text>
-                </VStack>
-                {ensembleOverview.confidenceAnalysis?.overallConfidence && (
-                  <VStack spacing={0} align="center">
-                    <Text fontSize="lg" fontWeight="700" color="#1E293B">
-                      {Math.round(ensembleOverview.confidenceAnalysis.overallConfidence * 100)}%
-                    </Text>
-                    <Text fontSize="xs" color="#64748B" fontWeight="600">
-                      CONFIDENCE
-                    </Text>
-                  </VStack>
-                )}
-              </HStack>
-            </Box>
-          </Box>
-        )}
+
 
         {/* Enhanced Individual Model Responses Section */}
         {!isUser && !isError && !isLoading && hasIndividualResponses && (
