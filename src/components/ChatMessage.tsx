@@ -125,8 +125,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
     isModalOpen,
     openModelModal,
     closeModal,
-    getAvailableModels,
-    ensembleOverview
+    getAvailableModels
   } = useModelResponses(
     message.metadata?.individualResponses,
     message.metadata?.modelsUsed,

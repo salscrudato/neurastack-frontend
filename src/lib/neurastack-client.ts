@@ -1081,11 +1081,15 @@ export class NeuraStackClient {
         wordCount: role.content ? role.content.split(' ').length : 0,
 
         // Enhanced metadata from API response for customer-centric insights
-        confidence: role.confidence ? {
-          score: role.confidence.score || role.confidence,
-          level: role.confidence.level || (role.confidence.score > 0.8 ? 'high' : role.confidence.score > 0.5 ? 'medium' : 'low'),
-          factors: role.confidence.factors || ['AI model confidence score']
-        } : undefined,
+        confidence: role.confidence ? (() => {
+          const conf = role.confidence as any;
+          const score = conf.score || conf;
+          return {
+            score: typeof score === 'number' ? score : 0,
+            level: conf.level || (score > 0.8 ? 'high' : score > 0.5 ? 'medium' : 'low'),
+            factors: conf.factors || ['AI model confidence score']
+          };
+        })() : undefined,
         responseTime: role.responseTime,
         characterCount: role.characterCount,
         quality: role.quality ? {
