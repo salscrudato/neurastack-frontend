@@ -1,6 +1,9 @@
 import { Button, HStack } from '@chakra-ui/react';
 import { memo } from 'react';
 
+// Import optimized NeuraFit styles
+import '../../styles/neurafit-components.css';
+
 interface NavigationButtonsProps {
   onBack?: () => void;
   onNext: () => void;
@@ -31,30 +34,9 @@ const NavigationButtons = memo(function NavigationButtons({
     >
       {onBack ? (
         <Button
-          variant="outline"
           onClick={onBack}
+          className="neurafit-nav-button back"
           size="lg"
-          minH={{ base: "48px", md: "44px" }}
-          borderRadius="xl"
-          borderColor="gray.300"
-          color="gray.700"
-          flex={1}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          textAlign="center"
-          _hover={{
-            borderColor: "gray.400",
-            bg: "gray.50"
-          }}
-          _active={{
-            transform: "scale(0.98)"
-          }}
-          transition="all 150ms ease"
-          style={{
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation'
-          }}
         >
           {backLabel}
         </Button>
@@ -64,34 +46,10 @@ const NavigationButtons = memo(function NavigationButtons({
 
       <Button
         onClick={onNext}
+        className="neurafit-nav-button next"
         size="lg"
-        minH={{ base: "48px", md: "44px" }}
-        borderRadius="xl"
-        bg="blue.500"
-        color="white"
-        flex={1}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        textAlign="center"
         isDisabled={!canProceed}
         isLoading={isLoading}
-        _hover={{
-          bg: "blue.600"
-        }}
-        _disabled={{
-          bg: "gray.300",
-          color: "gray.500",
-          cursor: "not-allowed"
-        }}
-        _active={{
-          transform: "scale(0.98)"
-        }}
-        transition="all 150ms ease"
-        style={{
-          WebkitTapHighlightColor: 'transparent',
-          touchAction: 'manipulation'
-        }}
       >
         {nextLabel}
       </Button>
