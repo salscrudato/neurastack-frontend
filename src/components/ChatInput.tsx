@@ -428,28 +428,14 @@ export default function ChatInput() {
             autoComplete="off"
             autoCorrect="on"
             spellCheck="true"
-            // Enhanced border and styling for desktop/mobile
-            borderWidth="1px"
-            borderColor={isFocused ? "#3b82f6" : "rgba(203, 213, 225, 0.8)"}
-            borderRadius={inputConfig.borderRadius}
-            bg="rgba(255, 255, 255, 0.98)" // Slightly more opaque for better readability
-            backdropFilter="blur(12px)" // Increased blur for better glass effect
-            boxShadow={isFocused
-              ? "0 0 0 1px #3b82f6, 0 20px 50px rgba(59, 130, 246, 0.12)" // Enhanced desktop shadow
-              : "0 4px 16px rgba(0, 0, 0, 0.06)" // Better default shadow
-            }
+            // Use CSS classes for styling
+            className={`chat-input-container ${isFocused ? 'chat-input-focused' : ''}`}
             _placeholder={{
               color: colorSystem.text.placeholder,
               transition: animationConfig.transition,
               fontSize: inputConfig.fontSize,
               opacity: isFocused ? 0.5 : 0.7,
               transform: isFocused ? 'translateY(-1px)' : 'none'
-            }}
-            _focus={{
-              outline: "none",
-              borderColor: "#3b82f6",
-              boxShadow: "0 0 0 1px #3b82f6, 0 20px 50px rgba(59, 130, 246, 0.12)", // Enhanced focus shadow
-              transform: animationConfig.focusTransform,
             }}
             _hover={{
               borderColor: colorSystem.text.hover,
@@ -507,7 +493,7 @@ export default function ChatInput() {
           >
             <HStack spacing={{ base: 1, md: 1.5 }} align="center" w="100%" justify="flex-end">
 
-              {/* Smaller Circular Dark Grey Send Button */}
+              {/* Enhanced Send Button with CSS classes */}
               <IconButton
                 aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
                 aria-disabled={busy || !txt.trim()}
@@ -515,20 +501,10 @@ export default function ChatInput() {
                 onClick={handleSend}
                 isLoading={busy}
                 size="sm"
-                w={inputConfig.sendButton}
-                h={inputConfig.sendButton}
-                minW={inputConfig.sendButton}
-                minH={inputConfig.sendButton}
+                className={`chat-send-button chat-send-button-small ${txt.trim() ? 'chat-send-button-ready' : ''}`}
                 bg={colorSystem.button.bg}
                 color={colorSystem.button.color}
                 border={colorSystem.button.border}
-                transition={animationConfig.transition}
-                _hover={{
-                  bg: colorSystem.button.hover.bg,
-                  borderColor: colorSystem.button.hover.border,
-                  transform: animationConfig.scale,
-                  boxShadow: txt.trim() ? "0 4px 12px rgba(55, 65, 81, 0.3)" : "0 2px 8px rgba(0, 0, 0, 0.1)"
-                }}
                 _focus={{
                   boxShadow: txt.trim()
                     ? "0 0 0 2px rgba(55, 65, 81, 0.3)"

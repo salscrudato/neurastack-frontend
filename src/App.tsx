@@ -9,6 +9,7 @@ import UpdateNotification from "./components/UpdateNotification";
 import { useFitnessSync } from "./hooks/useFitnessSync";
 import "./styles/global.css";
 import "./styles/utilities.css";
+import "./styles/neurafit-components.css";
 
 // Single transition variant for all pages
 const pageVariants = {

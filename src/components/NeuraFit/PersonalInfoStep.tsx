@@ -13,6 +13,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { useFitnessStore } from '../../store/useFitnessStore';
 import NavigationButtons from './NavigationButtons';
 
+// Import the new NeuraFit component styles
+import '../../styles/neurafit-components.css';
+
 interface PersonalInfoStepProps {
   onNext: () => void;
   onBack: () => void;
@@ -51,7 +54,7 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showValidation, setShowValidation] = useState(false);
 
-  // Theme colors
+  // Theme colors - optimized for light mode only as per user preferences
   const textColor = useColorModeValue('gray.800', 'white');
 
   // Validation function
@@ -151,251 +154,77 @@ export default function PersonalInfoStep({ onNext, onBack, isEditingFromDashboar
 
       {/* Mobile-Optimized Form */}
       <VStack spacing={{ base: 5, md: 6 }} align="stretch" flex="1 1 auto" px={{ base: 1, md: 2 }}>
-        {/* Age Selection - 6 Boxes */}
+        {/* Age Selection - 6 Boxes with optimized styling */}
         <FormControl isRequired>
-          <Text fontSize="md" fontWeight="semibold" color={textColor} mb={3} textAlign="center">
+          <Text className="neurafit-form-title">
             Age Range
           </Text>
-          <SimpleGrid columns={3} spacing={2} w="100%">
+          <div className="neurafit-selection-grid">
             {ageRanges.map((range) => (
               <Button
                 key={range.value}
-                variant={age === range.midpoint ? "solid" : "outline"}
-                colorScheme={age === range.midpoint ? "blue" : "gray"}
+                variant={age === range.midpoint ? "neurafit-primary" : "neurafit-outline"}
                 onClick={() => setAge(range.midpoint)}
-                h={{ base: "48px", md: "52px" }}
-                fontSize={{ base: "sm", md: "md" }}
-                fontWeight="bold"
-                bg={age === range.midpoint ?
-                  'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)' :
-                  'rgba(255, 255, 255, 0.9)'
-                }
-                backdropFilter="blur(12px)"
-                borderRadius="xl"
-                borderWidth="2px"
-                borderColor={age === range.midpoint ?
-                  "transparent" :
-                  "rgba(255, 255, 255, 0.4)"
-                }
-                color={age === range.midpoint ? "white" : textColor}
-                shadow={age === range.midpoint ?
-                  "0 4px 20px rgba(79, 156, 249, 0.4)" :
-                  "0 2px 8px rgba(31, 38, 135, 0.1)"
-                }
-                _hover={{
-                  transform: 'translateY(-1px)',
-                  shadow: age === range.midpoint ?
-                    "0 6px 24px rgba(79, 156, 249, 0.5)" :
-                    "0 4px 12px rgba(31, 38, 135, 0.15)",
-                  bg: age === range.midpoint ?
-                    'linear-gradient(135deg, #3182CE 0%, #553C9A 100%)' :
-                    'rgba(255, 255, 255, 0.95)',
-                  borderColor: age === range.midpoint ?
-                    "transparent" :
-                    "rgba(79, 156, 249, 0.3)"
-                }}
-                _active={{
-                  transform: 'translateY(0px)'
-                }}
-                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                className={`neurafit-selection-button ${age === range.midpoint ? 'selected age' : ''}`}
               >
                 {range.label}
               </Button>
             ))}
-          </SimpleGrid>
+          </div>
         </FormControl>
 
         <Divider opacity={0.3} />
 
-        {/* Weight Selection - 6 Boxes */}
+        {/* Weight Selection - 6 Boxes with optimized styling */}
         <FormControl>
-          <Text fontSize="md" fontWeight="semibold" color={textColor} mb={3} textAlign="center">
+          <Text className="neurafit-form-title">
             Weight Range (lbs)
           </Text>
-          <SimpleGrid columns={3} spacing={2} w="100%">
+          <div className="neurafit-selection-grid">
             {weightRanges.map((range) => (
               <Button
                 key={range.value}
-                variant={weight === range.midpoint ? "solid" : "outline"}
-                colorScheme={weight === range.midpoint ? "green" : "gray"}
+                variant={weight === range.midpoint ? "neurafit-success" : "neurafit-outline"}
                 onClick={() => setWeight(range.midpoint)}
-                h={{ base: "48px", md: "52px" }}
-                fontSize={{ base: "sm", md: "md" }}
-                fontWeight="bold"
-                bg={weight === range.midpoint ?
-                  'linear-gradient(135deg, #48BB78 0%, #38A169 100%)' :
-                  'rgba(255, 255, 255, 0.9)'
-                }
-                backdropFilter="blur(12px)"
-                borderRadius="xl"
-                borderWidth="2px"
-                borderColor={weight === range.midpoint ?
-                  "transparent" :
-                  "rgba(255, 255, 255, 0.4)"
-                }
-                color={weight === range.midpoint ? "white" : textColor}
-                shadow={weight === range.midpoint ?
-                  "0 4px 20px rgba(72, 187, 120, 0.4)" :
-                  "0 2px 8px rgba(31, 38, 135, 0.1)"
-                }
-                _hover={{
-                  transform: 'translateY(-1px)',
-                  shadow: weight === range.midpoint ?
-                    "0 6px 24px rgba(72, 187, 120, 0.5)" :
-                    "0 4px 12px rgba(31, 38, 135, 0.15)",
-                  bg: weight === range.midpoint ?
-                    'linear-gradient(135deg, #38A169 0%, #2F855A 100%)' :
-                    'rgba(255, 255, 255, 0.95)',
-                  borderColor: weight === range.midpoint ?
-                    "transparent" :
-                    "rgba(72, 187, 120, 0.3)"
-                }}
-                _active={{
-                  transform: 'translateY(0px)'
-                }}
-                transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                className={`neurafit-selection-button ${weight === range.midpoint ? 'selected weight' : ''}`}
               >
                 {range.label}
               </Button>
             ))}
-          </SimpleGrid>
+          </div>
         </FormControl>
 
-        {/* Gender Selection - 3 Boxes */}
+        {/* Gender Selection - 3 Boxes with optimized styling */}
         <FormControl>
-          <Text fontSize="md" fontWeight="semibold" color={textColor} mb={3} textAlign="center">
+          <Text className="neurafit-form-title">
             Gender (Optional)
           </Text>
-          <SimpleGrid columns={3} spacing={2} w="100%">
+          <div className="neurafit-selection-grid">
             <Button
-              variant={gender === 'male' ? "solid" : "outline"}
-              colorScheme={gender === 'male' ? "purple" : "gray"}
+              variant={gender === 'male' ? "neurafit-purple" : "neurafit-outline"}
               onClick={() => setGender(gender === 'male' ? '' : 'male')}
-              h={{ base: "48px", md: "52px" }}
-              fontSize={{ base: "sm", md: "md" }}
-              fontWeight="bold"
-              bg={gender === 'male' ?
-                'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)' :
-                'rgba(255, 255, 255, 0.9)'
-              }
-              backdropFilter="blur(12px)"
-              borderRadius="xl"
-              borderWidth="2px"
-              borderColor={gender === 'male' ?
-                "transparent" :
-                "rgba(255, 255, 255, 0.4)"
-              }
-              color={gender === 'male' ? "white" : textColor}
-              shadow={gender === 'male' ?
-                "0 4px 20px rgba(139, 92, 246, 0.4)" :
-                "0 2px 8px rgba(31, 38, 135, 0.1)"
-              }
-              _hover={{
-                transform: 'translateY(-1px)',
-                shadow: gender === 'male' ?
-                  "0 6px 24px rgba(139, 92, 246, 0.5)" :
-                  "0 4px 12px rgba(31, 38, 135, 0.15)",
-                bg: gender === 'male' ?
-                  'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)' :
-                  'rgba(255, 255, 255, 0.95)',
-                borderColor: gender === 'male' ?
-                  "transparent" :
-                  "rgba(139, 92, 246, 0.3)"
-              }}
-              _active={{
-                transform: 'translateY(0px)'
-              }}
-              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              className={`neurafit-selection-button ${gender === 'male' ? 'selected gender' : ''}`}
             >
               Male
             </Button>
 
             <Button
-              variant={gender === 'female' ? "solid" : "outline"}
-              colorScheme={gender === 'female' ? "purple" : "gray"}
+              variant={gender === 'female' ? "neurafit-purple" : "neurafit-outline"}
               onClick={() => setGender(gender === 'female' ? '' : 'female')}
-              h={{ base: "48px", md: "52px" }}
-              fontSize={{ base: "sm", md: "md" }}
-              fontWeight="bold"
-              bg={gender === 'female' ?
-                'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)' :
-                'rgba(255, 255, 255, 0.9)'
-              }
-              backdropFilter="blur(12px)"
-              borderRadius="xl"
-              borderWidth="2px"
-              borderColor={gender === 'female' ?
-                "transparent" :
-                "rgba(255, 255, 255, 0.4)"
-              }
-              color={gender === 'female' ? "white" : textColor}
-              shadow={gender === 'female' ?
-                "0 4px 20px rgba(139, 92, 246, 0.4)" :
-                "0 2px 8px rgba(31, 38, 135, 0.1)"
-              }
-              _hover={{
-                transform: 'translateY(-1px)',
-                shadow: gender === 'female' ?
-                  "0 6px 24px rgba(139, 92, 246, 0.5)" :
-                  "0 4px 12px rgba(31, 38, 135, 0.15)",
-                bg: gender === 'female' ?
-                  'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)' :
-                  'rgba(255, 255, 255, 0.95)',
-                borderColor: gender === 'female' ?
-                  "transparent" :
-                  "rgba(139, 92, 246, 0.3)"
-              }}
-              _active={{
-                transform: 'translateY(0px)'
-              }}
-              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              className={`neurafit-selection-button ${gender === 'female' ? 'selected gender' : ''}`}
             >
               Female
             </Button>
 
             <Button
-              variant={gender === 'rather_not_say' ? "solid" : "outline"}
-              colorScheme={gender === 'rather_not_say' ? "purple" : "gray"}
+              variant={gender === 'rather_not_say' ? "neurafit-purple" : "neurafit-outline"}
               onClick={() => setGender(gender === 'rather_not_say' ? '' : 'rather_not_say')}
-              h={{ base: "48px", md: "52px" }}
+              className={`neurafit-selection-button ${gender === 'rather_not_say' ? 'selected gender' : ''}`}
               fontSize={{ base: "xs", md: "sm" }}
-              fontWeight="bold"
-              bg={gender === 'rather_not_say' ?
-                'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)' :
-                'rgba(255, 255, 255, 0.9)'
-              }
-              backdropFilter="blur(12px)"
-              borderRadius="xl"
-              borderWidth="2px"
-              borderColor={gender === 'rather_not_say' ?
-                "transparent" :
-                "rgba(255, 255, 255, 0.4)"
-              }
-              color={gender === 'rather_not_say' ? "white" : textColor}
-              shadow={gender === 'rather_not_say' ?
-                "0 4px 20px rgba(139, 92, 246, 0.4)" :
-                "0 2px 8px rgba(31, 38, 135, 0.1)"
-              }
-              _hover={{
-                transform: 'translateY(-1px)',
-                shadow: gender === 'rather_not_say' ?
-                  "0 6px 24px rgba(139, 92, 246, 0.5)" :
-                  "0 4px 12px rgba(31, 38, 135, 0.15)",
-                bg: gender === 'rather_not_say' ?
-                  'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)' :
-                  'rgba(255, 255, 255, 0.95)',
-                borderColor: gender === 'rather_not_say' ?
-                  "transparent" :
-                  "rgba(139, 92, 246, 0.3)"
-              }}
-              _active={{
-                transform: 'translateY(0px)'
-              }}
-              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
             >
               Skip
             </Button>
-          </SimpleGrid>
+          </div>
         </FormControl>
       </VStack>
 

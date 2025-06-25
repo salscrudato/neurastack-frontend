@@ -1,0 +1,302 @@
+/* ===================================================================
+   NEURAFIT COMPONENT STYLES
+   Extracted inline styles for better maintainability and performance
+   =================================================================== */
+
+/* ===================================================================
+   NEURAFIT BUTTON VARIANTS
+   Standardized button styles used across NeuraFit components
+   =================================================================== */
+
+/* Primary Selection Button (Age, Weight, Gender) */
+.neurafit-selection-button {
+  height: 48px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  border-width: 2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* Performance optimizations */
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.neurafit-selection-button:not(.selected) {
+  background: var(--color-surface-glass-strong);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-neurafit-card);
+}
+
+.neurafit-selection-button.selected {
+  color: var(--color-text-inverse);
+  border-color: transparent;
+}
+
+.neurafit-selection-button.selected.age {
+  background: var(--gradient-neurafit-primary);
+  box-shadow: var(--shadow-neurafit-button);
+}
+
+.neurafit-selection-button.selected.weight {
+  background: var(--gradient-neurafit-success);
+  box-shadow: var(--shadow-neurafit-success);
+}
+
+.neurafit-selection-button.selected.gender {
+  background: var(--gradient-neurafit-purple);
+  box-shadow: var(--shadow-neurafit-active);
+}
+
+.neurafit-selection-button:hover {
+  transform: translateY(-1px);
+}
+
+.neurafit-selection-button:not(.selected):hover {
+  background: var(--color-surface-glass-strong);
+  box-shadow: var(--shadow-neurafit-hover);
+}
+
+.neurafit-selection-button.selected:hover {
+  box-shadow: var(--shadow-neurafit-active);
+}
+
+.neurafit-selection-button.selected.age:hover {
+  background: linear-gradient(135deg, #3B82F6 0%, #5B21B6 100%);
+}
+
+.neurafit-selection-button.selected.weight:hover {
+  background: linear-gradient(135deg, #38A169 0%, #2F855A 100%);
+}
+
+.neurafit-selection-button.selected.gender:hover {
+  background: linear-gradient(135deg, #805AD5 0%, #6B46C1 100%);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.neurafit-selection-button:active {
+  transform: translateY(0px);
+}
+
+/* ===================================================================
+   NEURAFIT CARD VARIANTS
+   Glass effect cards with consistent styling
+   =================================================================== */
+
+.neurafit-glass-card {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.neurafit-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.neurafit-dashboard-card {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.neurafit-dashboard-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ===================================================================
+   NEURAFIT FORM LAYOUTS
+   Optimized form layouts for mobile-first design
+   =================================================================== */
+
+.neurafit-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.25rem;
+  flex: 1 1 auto;
+}
+
+.neurafit-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.neurafit-form-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.neurafit-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* ===================================================================
+   NEURAFIT NAVIGATION
+   Consistent navigation button styling
+   =================================================================== */
+
+.neurafit-nav-button {
+  min-height: 48px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex: 1;
+  transition: all 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.neurafit-nav-button.back {
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+.neurafit-nav-button.back:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-secondary);
+}
+
+.neurafit-nav-button.next {
+  background: var(--color-info);
+  color: var(--color-text-inverse);
+  border: none;
+}
+
+.neurafit-nav-button.next:hover {
+  background: #2563EB;
+}
+
+.neurafit-nav-button.next:disabled {
+  background: var(--color-border-strong);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.neurafit-nav-button:active {
+  transform: scale(0.98);
+}
+
+/* ===================================================================
+   NEURAFIT WORKOUT COMPONENTS
+   Specialized styling for workout execution
+   =================================================================== */
+
+.neurafit-workout-card {
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 1rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.neurafit-workout-card.completed {
+  border-color: var(--color-success);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.neurafit-workout-card.active {
+  border-color: var(--color-info);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.neurafit-exercise-button {
+  min-height: 72px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  border-width: 2px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease-in-out;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.neurafit-exercise-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  background: rgba(59, 130, 246, 0.05);
+  border-color: var(--color-info);
+}
+
+.neurafit-exercise-button:active {
+  transform: translateY(0px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ===================================================================
+   RESPONSIVE OPTIMIZATIONS
+   Mobile-first responsive enhancements
+   =================================================================== */
+
+@media (min-width: 768px) {
+  .neurafit-selection-button {
+    height: 52px;
+    font-size: 1rem;
+  }
+  
+  .neurafit-nav-button {
+    min-height: 44px;
+  }
+  
+  .neurafit-form-container {
+    gap: 1.5rem;
+    padding: 0.5rem;
+  }
+  
+  .neurafit-exercise-button {
+    min-height: 60px;
+    font-size: 1.25rem;
+  }
+}
+
+/* ===================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   Enhanced focus states and reduced motion support
+   =================================================================== */
+
+.neurafit-selection-button:focus,
+.neurafit-nav-button:focus,
+.neurafit-exercise-button:focus {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neurafit-selection-button,
+  .neurafit-nav-button,
+  .neurafit-exercise-button,
+  .neurafit-glass-card,
+  .neurafit-dashboard-card,
+  .neurafit-workout-card {
+    transition: none;
+  }
+  
+  .neurafit-selection-button:hover,
+  .neurafit-exercise-button:hover,
+  .neurafit-glass-card:hover,
+  .neurafit-dashboard-card:hover {
+    transform: none;
+  }
+}

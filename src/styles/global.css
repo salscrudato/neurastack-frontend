@@ -1,51 +1,64 @@
 /* ===================================================================
    NEURASTACK GLOBAL STYLES
-   Consolidated styling system for modern, accessible, mobile-first design
+   Enhanced styling system for modern, accessible, mobile-first design
+   Optimized for performance and maintainability
    =================================================================== */
 
 /* ===================================================================
    CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   Enhanced with NeuraFit-specific tokens and performance optimizations
    =================================================================== */
 :root {
-  /* Typography */
+  /* Typography System */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   --font-variant-numeric: oldstyle-nums;
-  
-  /* Color Palette */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Enhanced Color Palette */
   --color-bg-primary: #FAFBFC;
   --color-surface-primary: #FFFFFF;
   --color-surface-secondary: #F8FAFC;
   --color-surface-tertiary: #F1F5F9;
   --color-surface-glass: rgba(255, 255, 255, 0.8);
-  
-  /* Brand Colors */
+  --color-surface-glass-strong: rgba(255, 255, 255, 0.95);
+
+  /* Enhanced Brand Colors */
   --color-brand-primary: #4F9CF9;
   --color-brand-secondary: #8B5CF6;
   --color-brand-accent: #06B6D4;
   --gradient-primary: linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%);
   --gradient-secondary: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
   --gradient-accent: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-  
+
+  /* NeuraFit Specific Gradients */
+  --gradient-neurafit-primary: linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%);
+  --gradient-neurafit-success: linear-gradient(135deg, #48BB78 0%, #38A169 100%);
+  --gradient-neurafit-purple: linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%);
+  --gradient-neurafit-blue: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+
   /* Text Colors */
   --color-text-primary: #0F172A;
   --color-text-secondary: #475569;
   --color-text-tertiary: #64748B;
   --color-text-muted: #94A3B8;
   --color-text-inverse: #FFFFFF;
-  
+
   /* Border Colors */
   --color-border-light: #F1F5F9;
   --color-border-medium: #E2E8F0;
   --color-border-strong: #CBD5E1;
-  
-  /* Semantic Colors */
+
+  /* Enhanced Semantic Colors */
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
   --color-info: #3B82F6;
-  
-  /* Shadows */
+
+  /* Enhanced Shadow System */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -55,6 +68,13 @@
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   --shadow-glow: 0 0 20px rgba(79, 156, 249, 0.3);
   --shadow-user-bubble: 0 4px 12px rgba(79, 156, 249, 0.25);
+
+  /* NeuraFit Specific Shadows */
+  --shadow-neurafit-card: 0 2px 8px rgba(31, 38, 135, 0.1);
+  --shadow-neurafit-hover: 0 4px 12px rgba(31, 38, 135, 0.15);
+  --shadow-neurafit-active: 0 6px 24px rgba(139, 92, 246, 0.5);
+  --shadow-neurafit-button: 0 4px 20px rgba(79, 156, 249, 0.4);
+  --shadow-neurafit-success: 0 4px 20px rgba(72, 187, 120, 0.4);
   
   /* Spacing Scale (4px grid) */
   --space-xs: 0.25rem;   /* 4px */

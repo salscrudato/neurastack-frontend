@@ -1,11 +1,12 @@
 /**
  * Enhanced Component Style Overrides
  * Consolidated component styling patterns extracted from inline styles
+ * Optimized for NeuraFit and chat components with performance focus
  */
 
 import { defineStyleConfig } from '@chakra-ui/styled-system';
 
-// Common responsive patterns
+// Enhanced responsive patterns with NeuraFit optimizations
 const responsivePatterns = {
   mobileFirst: {
     base: { fontSize: 'sm', p: 3 },
@@ -18,6 +19,15 @@ const responsivePatterns = {
   spacing: {
     base: { gap: 3, p: 3 },
     md: { gap: 4, p: 4 },
+  },
+  // NeuraFit specific patterns
+  neuraFitSelection: {
+    base: { h: '48px', fontSize: 'sm', fontWeight: 'bold' },
+    md: { h: '52px', fontSize: 'md' },
+  },
+  neuraFitCard: {
+    base: { p: 4, borderRadius: 'xl' },
+    md: { p: 6, borderRadius: '2xl' },
   }
 };
 
@@ -84,20 +94,90 @@ export const Button = defineStyleConfig({
         boxShadow: '0 8px 32px rgba(31, 38, 135, 0.2)',
       },
     },
-    // NeuraFit specific variants
+    // Enhanced NeuraFit specific variants
     'neurafit-primary': {
-      ...responsivePatterns.touchTargets,
+      ...responsivePatterns.neuraFitSelection,
       bg: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
       color: 'white',
       borderRadius: 'xl',
-      fontWeight: '600',
-      transition: 'all 0.2s ease',
+      borderWidth: '2px',
+      borderColor: 'transparent',
+      backdropFilter: 'blur(12px)',
+      boxShadow: '0 4px 20px rgba(79, 156, 249, 0.4)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      WebkitTapHighlightColor: 'transparent',
+      touchAction: 'manipulation',
       _hover: {
         transform: 'translateY(-1px)',
-        boxShadow: '0 8px 20px rgba(79, 156, 249, 0.3)',
+        bg: 'linear-gradient(135deg, #3B82F6 0%, #5B21B6 100%)',
+        boxShadow: '0 6px 24px rgba(79, 156, 249, 0.5)',
       },
       _active: {
-        transform: 'scale(0.98)',
+        transform: 'translateY(0px)',
+      },
+    },
+    'neurafit-success': {
+      ...responsivePatterns.neuraFitSelection,
+      bg: 'linear-gradient(135deg, #48BB78 0%, #38A169 100%)',
+      color: 'white',
+      borderRadius: 'xl',
+      borderWidth: '2px',
+      borderColor: 'transparent',
+      backdropFilter: 'blur(12px)',
+      boxShadow: '0 4px 20px rgba(72, 187, 120, 0.4)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      WebkitTapHighlightColor: 'transparent',
+      touchAction: 'manipulation',
+      _hover: {
+        transform: 'translateY(-1px)',
+        bg: 'linear-gradient(135deg, #38A169 0%, #2F855A 100%)',
+        boxShadow: '0 6px 24px rgba(72, 187, 120, 0.5)',
+      },
+      _active: {
+        transform: 'translateY(0px)',
+      },
+    },
+    'neurafit-purple': {
+      ...responsivePatterns.neuraFitSelection,
+      bg: 'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)',
+      color: 'white',
+      borderRadius: 'xl',
+      borderWidth: '2px',
+      borderColor: 'transparent',
+      backdropFilter: 'blur(12px)',
+      boxShadow: '0 4px 20px rgba(139, 92, 246, 0.4)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      WebkitTapHighlightColor: 'transparent',
+      touchAction: 'manipulation',
+      _hover: {
+        transform: 'translateY(-1px)',
+        bg: 'linear-gradient(135deg, #805AD5 0%, #6B46C1 100%)',
+        boxShadow: '0 6px 24px rgba(139, 92, 246, 0.5)',
+        borderColor: 'rgba(139, 92, 246, 0.3)',
+      },
+      _active: {
+        transform: 'translateY(0px)',
+      },
+    },
+    'neurafit-outline': {
+      ...responsivePatterns.neuraFitSelection,
+      bg: 'rgba(255, 255, 255, 0.95)',
+      color: 'gray.800',
+      borderRadius: 'xl',
+      borderWidth: '2px',
+      borderColor: 'rgba(255, 255, 255, 0.4)',
+      backdropFilter: 'blur(12px)',
+      boxShadow: '0 2px 8px rgba(31, 38, 135, 0.1)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      WebkitTapHighlightColor: 'transparent',
+      touchAction: 'manipulation',
+      _hover: {
+        transform: 'translateY(-1px)',
+        bg: 'rgba(255, 255, 255, 0.95)',
+        boxShadow: '0 4px 12px rgba(31, 38, 135, 0.15)',
+      },
+      _active: {
+        transform: 'translateY(0px)',
       },
     },
     'neurafit-secondary': {
@@ -203,7 +283,7 @@ export const Input = defineStyleConfig({
   },
 });
 
-// Enhanced Card component
+// Enhanced Card component with NeuraFit optimizations
 export const Card = defineStyleConfig({
   baseStyle: {
     container: {
@@ -221,14 +301,78 @@ export const Card = defineStyleConfig({
         bg: 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(10px)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderRadius: 'xl',
+        transition: 'all 0.3s ease',
+        _hover: {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)',
+        },
       },
     },
     'neurafit': {
       container: {
-        borderRadius: '2xl',
+        ...responsivePatterns.neuraFitCard,
         bg: 'white',
         border: '1px solid',
         borderColor: 'gray.200',
+        transition: 'all 0.2s ease',
+      },
+    },
+    'neurafit-glass': {
+      container: {
+        ...responsivePatterns.neuraFitCard,
+        bg: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        transition: 'all 0.3s ease',
+        _hover: {
+          transform: 'translateY(-2px)',
+          boxShadow: '0 15px 30px rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
+    'neurafit-dashboard': {
+      container: {
+        ...responsivePatterns.neuraFitCard,
+        bg: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        _hover: {
+          transform: 'translateY(-1px)',
+          boxShadow: 'md',
+        },
+      },
+    },
+    'neurafit-workout': {
+      container: {
+        bg: 'white',
+        border: '1px solid',
+        borderColor: 'gray.200',
+        borderRadius: 'xl',
+        p: 4,
+        transition: 'all 0.2s ease',
+      },
+    },
+    'neurafit-workout-completed': {
+      container: {
+        bg: 'rgba(16, 185, 129, 0.05)',
+        border: '1px solid',
+        borderColor: 'green.500',
+        borderRadius: 'xl',
+        p: 4,
+        transition: 'all 0.2s ease',
+      },
+    },
+    'neurafit-workout-active': {
+      container: {
+        bg: 'rgba(59, 130, 246, 0.05)',
+        border: '1px solid',
+        borderColor: 'blue.500',
+        borderRadius: 'xl',
+        p: 4,
+        transition: 'all 0.2s ease',
       },
     },
   },
