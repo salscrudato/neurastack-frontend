@@ -25,7 +25,6 @@ import {
     PiXCircleBold
 } from 'react-icons/pi';
 import type { ModelResponseData } from '../hooks/useModelResponses';
-import { formatModelName } from '../hooks/useModelResponses';
 
 // ============================================================================
 // Component Props
@@ -85,45 +84,53 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
         onClick={onClick}
         variant="outline"
         size={compact ? "sm" : "md"}
-        h={compact ? "auto" : "72px"}
+        h={compact ? "auto" : "56px"}
         w="100%"
         bg={cardBg}
         borderColor={borderColor}
         borderWidth="1px"
-        boxShadow={`0 2px 8px ${shadowColor}`}
+        boxShadow={`0 1px 4px ${shadowColor}`}
         _hover={{
           bg: cardHoverBg,
-          transform: "translateY(-3px)",
-          boxShadow: `0 8px 25px ${hoverShadowColor}`,
+          transform: "translateY(-2px)",
+          boxShadow: `0 4px 12px ${hoverShadowColor}`,
           borderColor: "#4F9CF9"
         }}
         _active={{
           transform: "translateY(-1px)",
-          boxShadow: `0 4px 12px ${hoverShadowColor}`
+          boxShadow: `0 2px 6px ${hoverShadowColor}`
+        }}
+        _focus={{
+          outline: "none",
+          boxShadow: "none"
         }}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         isDisabled={isFailed}
         cursor={isFailed ? "not-allowed" : "pointer"}
-        p={compact ? 3 : 4}
-        borderRadius="xl"
+        p={compact ? 2 : 3}
+        borderRadius="lg"
       >
-        <VStack spacing={compact ? 2 : 3} w="100%" align="stretch">
+        <VStack spacing={compact ? 1.5 : 2} w="100%" align="stretch">
           <HStack justify="space-between" w="100%" align="center">
             <Text
-              fontSize={compact ? "sm" : "md"}
+              fontSize={compact ? "xs" : "sm"}
               fontWeight="600"
               color={textColor}
               noOfLines={1}
               textAlign="left"
               letterSpacing="-0.025em"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              flex="1"
             >
-              {model.provider?.toUpperCase() || 'AI'} - {formatModelName(model.model, model.role, model.provider)}
+              {model.provider?.toUpperCase() || 'AI'}
             </Text>
 
             <Icon
               as={StatusIcon}
               color={`${statusColor}.500`}
-              boxSize={compact ? 4 : 5}
+              boxSize={compact ? 3 : 4}
             />
           </HStack>
 
@@ -195,7 +202,7 @@ export function ModelResponseGrid({
       {/* Enhanced Grid with better spacing */}
       <SimpleGrid
         columns={columns}
-        spacing={compact ? 3 : 4}
+        spacing={compact ? 2 : 3}
         w="100%"
       >
         {visibleModels.map((model) => (

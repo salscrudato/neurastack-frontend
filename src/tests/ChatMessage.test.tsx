@@ -2,9 +2,9 @@
  * Test file for ChatMessage component with ensemble response display
  */
 
-import { render, screen } from '@testing-library/react';
 import { ChakraProvider } from '@chakra-ui/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import ChatMessage from '../components/ChatMessage';
 import type { Message } from '../store/useChatStore';
 
@@ -119,11 +119,11 @@ describe('ChatMessage Ensemble Response Display', () => {
 
   it('displays individual model responses', () => {
     renderWithChakra(<ChatMessage message={mockEnsembleMessage} />);
-    
-    // Should show model cards with provider-model format
-    expect(screen.getByText(/OPENAI - GPT 4O Mini/i)).toBeInTheDocument();
-    expect(screen.getByText(/GEMINI - Gemini 2.0 Flash/i)).toBeInTheDocument();
-    expect(screen.getByText(/CLAUDE - Claude 3 5 Haiku Latest/i)).toBeInTheDocument();
+
+    // Should show model cards with provider names only (in all caps)
+    expect(screen.getByText(/OPENAI/i)).toBeInTheDocument();
+    expect(screen.getByText(/GEMINI/i)).toBeInTheDocument();
+    expect(screen.getByText(/CLAUDE/i)).toBeInTheDocument();
   });
 
   it('handles user messages without ensemble data', () => {

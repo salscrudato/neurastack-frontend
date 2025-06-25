@@ -131,8 +131,8 @@ export const componentStyles = {
       borderRadius: 'xl',
       transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
       _focus: {
-        boxShadow: '0 0 0 3px rgba(79, 156, 249, 0.3)',
         outline: 'none',
+        boxShadow: 'none',
       },
       _disabled: {
         opacity: 0.6,
@@ -223,10 +223,8 @@ export const componentStyles = {
         backdropFilter: 'blur(8px)',
         transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
         _focus: {
-          borderColor: '#4F9CF9',
-          boxShadow: '0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15)',
-          bg: 'rgba(255, 255, 255, 0.98)',
-          transform: 'translateY(-1px)',
+          outline: 'none',
+          boxShadow: 'none',
         },
         _hover: {
           borderColor: '#94A3B8',
@@ -246,9 +244,8 @@ export const componentStyles = {
           border: '1px solid rgba(255, 255, 255, 0.3)',
           borderRadius: '3xl',
           _focus: {
-            bg: 'rgba(255, 255, 255, 0.98)',
-            borderColor: '#4F9CF9',
-            boxShadow: '0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15)',
+            outline: 'none',
+            boxShadow: 'none',
           },
         },
       },
@@ -264,10 +261,8 @@ export const componentStyles = {
       backdropFilter: 'blur(8px)',
       transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
       _focus: {
-        borderColor: '#4F9CF9',
-        boxShadow: '0 0 0 1px #4F9CF9, 0 16px 40px rgba(79, 156, 249, 0.15)',
-        bg: 'rgba(255, 255, 255, 0.98)',
-        transform: 'translateY(-1px)',
+        outline: 'none',
+        boxShadow: 'none',
       },
       _hover: {
         borderColor: '#94A3B8',

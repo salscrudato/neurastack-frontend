@@ -632,8 +632,7 @@
   .chakra-button:focus,
   .chakra-input:focus,
   .chakra-textarea:focus {
-    outline: 2px solid var(--color-info);
-    outline-offset: 2px;
+    outline: none;
   }
 
   .js-focus-visible .chakra-button:focus:not(.focus-visible),

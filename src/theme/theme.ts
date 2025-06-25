@@ -153,9 +153,7 @@ const theme = extendTheme(
         },
         // Enhanced focus styles
         "*:focus": {
-          outline: "2px solid",
-          outlineColor: modernColors.brand.primary,
-          outlineOffset: "2px",
+          outline: "none",
         },
       },
     },

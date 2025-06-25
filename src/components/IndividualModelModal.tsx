@@ -184,7 +184,7 @@ export function IndividualModelModal({
         >
           <VStack align="start" spacing={2}>
             <Text fontSize="lg" fontWeight="bold" color={textColor}>
-              {formatModelName(modelData.model, modelData.role, modelData.provider)}
+              {formatModelName(modelData.model, modelData.role, modelData.provider).toUpperCase()}
             </Text>
             {modelData.confidence && (
               <Badge

@@ -316,6 +316,9 @@ export function Header() {
         top="50%"
         transform="translate(-50%, -50%)"
         zIndex={1}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
       >
         <Tooltip
           label={brandLabel}
@@ -338,13 +341,16 @@ export function Header() {
             transition={animationConfig.transition}
             borderRadius="lg"
             p={1}
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
             _hover={{
               transform: prefersReducedMotion ? 'none' : "scale(1.05)",
               opacity: 0.8
             }}
             _focus={{
-              outline: "2px solid #4F9CF9",
-              outlineOffset: "2px"
+              outline: "none",
+              boxShadow: "none"
             }}
             _active={{
               transform: prefersReducedMotion ? 'none' : "scale(0.98)"
