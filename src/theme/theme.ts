@@ -151,9 +151,19 @@ const theme = extendTheme(
         "*, *::before, *::after": {
           borderColor: modernColors.border.light,
         },
-        // Enhanced focus styles
+        // Enhanced focus styles - remove all focus outlines
         "*:focus": {
-          outline: "none",
+          outline: "none !important",
+          boxShadow: "none !important",
+        },
+        "*:focus-visible": {
+          outline: "none !important",
+          boxShadow: "none !important",
+        },
+        // Remove blue highlight on tap for mobile
+        "*": {
+          WebkitTapHighlightColor: "transparent !important",
+          WebkitTouchCallout: "none !important",
         },
       },
     },

@@ -247,11 +247,12 @@ export function Header() {
       borderBottom="1px solid"
       borderColor="gray.100"
       px={headerConfig.padding}
-      py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
+      py={0}
       gap={{ xs: 2, sm: 2.5, md: 3, lg: 3.5, xl: 4 }}
       align="center"
+      justify="center"
       w="100%"
-      minH={headerConfig.height}
+      h={headerConfig.height}
       // Enhanced touch interactions
       sx={{
         touchAction: 'manipulation',
