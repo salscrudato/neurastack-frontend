@@ -1,21 +1,70 @@
 /**
- * Performance Optimization Utilities
- * 
+ * Enhanced Performance Optimization Utilities
+ *
  * Collection of utilities to optimize app performance, reduce bundle size,
  * and improve user experience across the NeuraStack application.
  */
+
+import React from 'react';
 
 // ============================================================================
 // Lazy Loading Utilities
 // ============================================================================
 
 /**
- * Create a lazy-loaded component with better error handling
+ * Create a lazy-loaded component with better error handling and preloading
  */
 export function createLazyComponent<T extends React.ComponentType<any>>(
-  importFn: () => Promise<{ default: T }>
+  importFn: () => Promise<{ default: T }>,
+  options: {
+    preload?: boolean;
+    fallback?: React.ComponentType;
+    retryCount?: number;
+  } = {}
 ) {
-  return React.lazy(importFn);
+  const { preload = false, retryCount = 3 } = options;
+
+  // Enhanced import function with retry logic
+  const enhancedImportFn = async (): Promise<{ default: T }> => {
+    let lastError: Error;
+
+    for (let i = 0; i < retryCount; i++) {
+      try {
+        return await importFn();
+      } catch (error) {
+        lastError = error as Error;
+        if (i < retryCount - 1) {
+          // Wait before retry with exponential backoff
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+        }
+      }
+    }
+
+    throw lastError!;
+  };
+
+  const LazyComponent = React.lazy(enhancedImportFn);
+
+  // Preload if requested
+  if (preload && typeof window !== 'undefined') {
+    // Preload after a short delay to not block initial render
+    setTimeout(() => {
+      importFn().catch(() => {
+        // Silently fail preload attempts
+      });
+    }, 100);
+  }
+
+  return LazyComponent;
+}
+
+/**
+ * Preload a lazy component
+ */
+export function preloadComponent<T extends React.ComponentType<any>>(
+  importFn: () => Promise<{ default: T }>
+): Promise<{ default: T }> {
+  return importFn();
 }
 
 // ============================================================================
@@ -213,54 +262,108 @@ export function createImageLoader(src: string, _options: {
 // React Optimization Hooks
 // ============================================================================
 
-import React from 'react';
-
 /**
- * Optimized useCallback with dependency comparison
+ * Optimized useCallback with dependency comparison and stability tracking
  */
 export function useOptimizedCallback<T extends (...args: any[]) => any>(
   callback: T,
-  deps: React.DependencyList
+  deps: React.DependencyList,
+  options: {
+    debugName?: string;
+    trackStability?: boolean;
+  } = {}
 ): T {
-  const memoizedCallback = React.useCallback(callback, deps);
-  return memoizedCallback;
+  const { debugName, trackStability = false } = options;
+
+  // Track callback stability in development
+  const stabilityRef = React.useRef({ count: 0, lastDeps: deps });
+
+  if (trackStability && import.meta.env.DEV) {
+    const depsChanged = !deps.every((dep, i) =>
+      Object.is(dep, stabilityRef.current.lastDeps[i])
+    );
+
+    if (depsChanged) {
+      stabilityRef.current.count++;
+      stabilityRef.current.lastDeps = deps;
+
+      if (stabilityRef.current.count > 10) {
+        console.warn(
+          `useOptimizedCallback${debugName ? ` (${debugName})` : ''} has been recreated ${stabilityRef.current.count} times. Consider optimizing dependencies.`
+        );
+      }
+    }
+  }
+
+  return React.useCallback(callback, deps);
 }
 
 /**
- * Optimized useMemo with shallow comparison
+ * Optimized useMemo with shallow comparison and performance tracking
  */
 export function useOptimizedMemo<T>(
   factory: () => T,
-  deps: React.DependencyList
+  deps: React.DependencyList,
+  options: {
+    debugName?: string;
+    trackPerformance?: boolean;
+  } = {}
 ): T {
-  return React.useMemo(factory, deps);
+  const { debugName, trackPerformance = false } = options;
+
+  return React.useMemo(() => {
+    if (trackPerformance && import.meta.env.DEV) {
+      const start = performance.now();
+      const result = factory();
+      const end = performance.now();
+
+      if (end - start > 16) { // More than one frame
+        console.warn(
+          `useOptimizedMemo${debugName ? ` (${debugName})` : ''} took ${(end - start).toFixed(2)}ms to compute`
+        );
+      }
+
+      return result;
+    }
+
+    return factory();
+  }, deps);
 }
 
 /**
- * Use intersection observer for lazy loading
+ * Enhanced intersection observer hook for lazy loading
  */
 export function useIntersectionObserver(
-  elementRef: React.RefObject<Element>,
-  options: IntersectionObserverInit = {}
+  options: IntersectionObserverInit & {
+    freezeOnceVisible?: boolean;
+    rootMargin?: string;
+  } = {}
 ) {
-  const [isIntersecting, setIsIntersecting] = React.useState(false);
-  
+  const { freezeOnceVisible = false, ...observerOptions } = options;
+  const [entry, setEntry] = React.useState<IntersectionObserverEntry>();
+  const [node, setNode] = React.useState<Element | null>(null);
+  const frozen = entry?.isIntersecting && freezeOnceVisible;
+
   React.useEffect(() => {
-    const element = elementRef.current;
-    if (!element) return;
-    
+    if (!node || frozen) return;
+
     const observer = new IntersectionObserver(
-      ([entry]) => setIsIntersecting(entry.isIntersecting),
-      options
+      ([entry]) => setEntry(entry),
+      {
+        rootMargin: '50px', // Start loading 50px before element is visible
+        ...observerOptions,
+      }
     );
-    
-    observer.observe(element);
-    
+
+    observer.observe(node);
+
     return () => observer.disconnect();
-  }, [elementRef, options]);
-  
-  return isIntersecting;
+  }, [node, frozen, observerOptions]);
+
+  return [setNode, entry] as const;
 }
+
+
 
 // ============================================================================
 // Export All Utilities

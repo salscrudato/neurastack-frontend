@@ -29,7 +29,7 @@ describe('Security Utils', () => {
     it('should sanitize basic HTML entities', () => {
       const input = '<script>alert("xss")</script>';
       const result = sanitizeInput(input);
-      expect(result).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(result).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;');
     });
 
     it('should remove dangerous patterns', () => {

@@ -10,10 +10,11 @@ import svgr from 'vite-plugin-svgr';
 // Import Node.js path module to resolve file paths cleanly
 import path from 'node:path';
 
-
-
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
+
+// Import compression plugin for better production builds
+import { compression } from 'vite-plugin-compression2';
 
 // Generate version information for cache busting
 const generateVersionInfo = () => {
@@ -38,17 +39,41 @@ export default defineConfig({
   },
   // Plugins extend Vite's functionality
   plugins: [
-    react(), // Enables React Fast Refresh and JSX transformation
-    svgr(),  // Enables usage of SVGs as React components via import
+    react({
+      // Optimize JSX runtime
+      jsxRuntime: 'automatic',
+      // Enable babel plugins for better optimization
+      babel: {
+        plugins: process.env.NODE_ENV === 'production' ? [
+          ['transform-remove-console', { exclude: ['error', 'warn'] }]
+        ] : []
+      }
+    }),
+    svgr({
+      // Optimize SVG imports
+      svgrOptions: {
+        icon: true,
+        dimensions: false,
+      },
+    }),
+    // Compression for production builds
+    process.env.NODE_ENV === 'production' && compression({
+      algorithms: ['gzip'],
+      exclude: [/\.(br)$/, /\.(gz)$/],
+    }),
+    process.env.NODE_ENV === 'production' && compression({
+      algorithms: ['brotliCompress'],
+      exclude: [/\.(br)$/, /\.(gz)$/],
+    }),
     // Bundle analyzer for performance optimization (only in production)
     process.env.NODE_ENV === 'production' && visualizer({
       filename: 'dist/stats.html',
       open: false, // Don't auto-open in CI/CD
       gzipSize: true,
       brotliSize: true,
+      template: 'treemap', // Better visualization
     }),
-
-  ],
+  ].filter(Boolean),
 
   // Simplified aliases - only include what's actively used
   resolve: {
@@ -79,47 +104,82 @@ export default defineConfig({
   // Build optimizations
   build: {
     // Target modern browsers for smaller bundles
-    target: 'esnext',
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
 
-    // Enable minification
+    // Enable minification with better settings
     minify: 'esbuild',
 
-    // Generate source maps for debugging
-    sourcemap: false,
+    // Optimize CSS minification
+    cssMinify: true,
+
+    // Generate source maps only in development
+    sourcemap: process.env.NODE_ENV === 'development',
 
     // Optimize chunk splitting for better caching and loading
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React chunk (most stable) - include framer-motion here to ensure React context availability
-          vendor: ['react', 'react-dom', 'framer-motion'],
+        // Optimize chunk naming for better caching
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
 
-          // UI library chunk
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'styled-components'],
+        manualChunks: (id) => {
+          // Vendor chunk for stable dependencies
+          if (id.includes('node_modules')) {
+            // React ecosystem
+            if (id.includes('react') || id.includes('framer-motion')) {
+              return 'vendor';
+            }
+            // UI libraries
+            if (id.includes('@chakra-ui') || id.includes('@emotion') || id.includes('styled-components')) {
+              return 'ui';
+            }
+            // Firebase
+            if (id.includes('firebase')) {
+              return 'firebase';
+            }
+            // Icons
+            if (id.includes('react-icons')) {
+              return 'icons';
+            }
+            // Markdown
+            if (id.includes('react-markdown') || id.includes('remark')) {
+              return 'markdown';
+            }
+            // Router
+            if (id.includes('react-router')) {
+              return 'router';
+            }
+            // Date utilities
+            if (id.includes('date-fns')) {
+              return 'utils';
+            }
+            // Other vendor libraries
+            return 'vendor-misc';
+          }
 
-          // State management and utilities
-          state: ['zustand'],
-
-          // Firebase services
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-
-          // Icons (separate for better caching)
-          icons: ['react-icons/pi'],
-
-          // Markdown rendering (used in chat)
-          markdown: ['react-markdown', 'remark-gfm'],
-
-          // Router (separate for better caching)
-          router: ['react-router-dom'],
+          // App chunks
+          if (id.includes('/src/components/NeuraFit/')) {
+            return 'neurafit';
+          }
+          if (id.includes('/src/store/')) {
+            return 'state';
+          }
         },
       },
+
+      // External dependencies (if any CDN usage)
+      external: [],
     },
 
     // Chunk size warning limit
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 800,
 
     // Optimize CSS
     cssCodeSplit: true,
+
+    // Optimize asset handling
+    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
   },
 
   // Enhanced dependency optimization for better performance

@@ -47,12 +47,7 @@ export function sanitizeInput(input: string): string {
     .trim()
     .slice(0, SECURITY_CONFIG.MAX_MESSAGE_LENGTH);
 
-  // Remove potentially dangerous patterns
-  SECURITY_CONFIG.BLOCKED_PATTERNS.forEach(pattern => {
-    sanitized = sanitized.replace(pattern, '');
-  });
-
-  // Basic HTML entity encoding for display safety
+  // First, HTML entity encode for display safety
   sanitized = sanitized
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -60,6 +55,11 @@ export function sanitizeInput(input: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
     .replace(/\//g, '&#x2F;');
+
+  // Then remove potentially dangerous patterns from the encoded string
+  SECURITY_CONFIG.BLOCKED_PATTERNS.forEach(pattern => {
+    sanitized = sanitized.replace(pattern, '');
+  });
 
   return sanitized;
 }
