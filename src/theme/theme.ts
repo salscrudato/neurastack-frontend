@@ -1,9 +1,10 @@
 import {
-  extendTheme,
-  type ThemeConfig,
-  type Theme,
+    extendTheme,
+    type Theme,
+    type ThemeConfig,
 } from "@chakra-ui/react";
-import { designSystemTheme, componentStyles } from './designSystem';
+import { components as enhancedComponents } from './components';
+import { componentStyles, designSystemTheme } from './designSystem';
 
 /*─────────────────────────────────────────────*/
 /* Modern Light-Only Color Palette             */
@@ -169,9 +170,83 @@ const theme = extendTheme(
       glass: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
       glow: "0 0 20px rgba(79, 156, 249, 0.3)",
     },
-    // Merge with design system components
+    // Enhanced component styles with extracted patterns
     components: {
       ...componentStyles,
+      ...enhancedComponents,
+
+      // Enhanced Box component for common layout patterns
+      Box: {
+        variants: {
+          'page-container': {
+            w: "100%",
+            minH: "100%",
+            bg: modernColors.bg,
+            position: "relative",
+            overflowX: "hidden",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
+          },
+          'fixed-header': {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            w: "100%",
+            bg: "white",
+            borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            flexShrink: 0,
+          },
+          'chat-container': {
+            w: "full",
+            bg: modernColors.bg,
+            borderTopWidth: "1px",
+            borderColor: modernColors.border.medium,
+            position: "sticky",
+            bottom: 0,
+            zIndex: 100,
+            flexShrink: 0,
+          }
+        }
+      },
+
+      // Enhanced Flex component for common flex patterns
+      Flex: {
+        variants: {
+          'page-wrapper': {
+            direction: "column",
+            h: "100vh",
+            w: "100%",
+            overflowX: "hidden",
+            position: "relative",
+            minHeight: ['100vh', '100dvh'],
+            overflow: 'hidden',
+          },
+          'center': {
+            align: "center",
+            justify: "center",
+          },
+          'between': {
+            align: "center",
+            justify: "space-between",
+          }
+        }
+      },
+
+      // Enhanced Progress component
+      Progress: {
+        baseStyle: {
+          track: {
+            bg: modernColors.surface.tertiary,
+          },
+          filledTrack: {
+            background: modernColors.brand.gradient.primary,
+          }
+        }
+      }
     },
   },
   designSystemTheme

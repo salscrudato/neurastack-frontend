@@ -34,6 +34,7 @@ export function ChatPage() {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [, setFocusedMessageIndex] = useState(-1);
   const prefersReducedMotion = useReducedMotion();
   // const { alerts, clearAlerts } = usePerformanceAlerts(); // Disabled to improve performance
 
@@ -133,6 +134,60 @@ export function ChatPage() {
       clearTimeout(timeoutId);
     };
   }, [handleScroll]);
+
+  // Keyboard navigation for accessibility
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle navigation when not in input fields
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowUp':
+          event.preventDefault();
+          setFocusedMessageIndex(prev => {
+            const newIndex = Math.max(0, prev - 1);
+            const messageElement = document.getElementById(`message-${msgs[newIndex]?.id}`);
+            messageElement?.focus();
+            return newIndex;
+          });
+          break;
+
+        case 'ArrowDown':
+          event.preventDefault();
+          setFocusedMessageIndex(prev => {
+            const newIndex = Math.min(msgs.length - 1, prev + 1);
+            const messageElement = document.getElementById(`message-${msgs[newIndex]?.id}`);
+            messageElement?.focus();
+            return newIndex;
+          });
+          break;
+
+        case 'Home':
+          if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            setFocusedMessageIndex(0);
+            const messageElement = document.getElementById(`message-${msgs[0]?.id}`);
+            messageElement?.focus();
+          }
+          break;
+
+        case 'End':
+          if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            const lastIndex = msgs.length - 1;
+            setFocusedMessageIndex(lastIndex);
+            const messageElement = document.getElementById(`message-${msgs[lastIndex]?.id}`);
+            messageElement?.focus();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [msgs]);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({
@@ -351,7 +406,14 @@ export function ChatPage() {
                   py={{ base: 0, md: 1 }} // Add subtle vertical spacing on desktop
                   // Enhanced accessibility
                   role="article"
-                  aria-label={`Message ${index + 1} from ${m.role}`}
+                  aria-label={`Message ${index + 1} from ${m.role === 'user' ? 'you' : 'AI assistant'}`}
+                  aria-describedby={`message-content-${m.id}`}
+                  tabIndex={0}
+                  _focus={{
+                    outline: '2px solid',
+                    outlineColor: 'blue.500',
+                    outlineOffset: '2px',
+                  }}
                 >
                   <ChatMessage
                     message={m}

@@ -261,20 +261,20 @@ export const ChatMessage = memo<ChatMessageProps>(({
                     </Text>
                   </HStack>
                 )}
-                {message.metadata.metadata.confidenceAnalysis?.responseConsistency && (
+                {message.metadata.metadata.confidenceAnalysis?.modelAgreement && (
                   <HStack spacing={1}>
-                    <Text color="#64748B" fontWeight="500">Consistency:</Text>
+                    <Text color="#64748B" fontWeight="500">Agreement:</Text>
                     <Text
                       color={
-                        message.metadata.metadata.confidenceAnalysis.responseConsistency > 0.8
+                        message.metadata.metadata.confidenceAnalysis.modelAgreement > 0.8
                           ? "#059669"
-                          : message.metadata.metadata.confidenceAnalysis.responseConsistency > 0.6
+                          : message.metadata.metadata.confidenceAnalysis.modelAgreement > 0.6
                           ? "#D97706"
                           : "#DC2626"
                       }
                       fontWeight="600"
                     >
-                      {Math.round(message.metadata.metadata.confidenceAnalysis.responseConsistency * 100)}%
+                      {Math.round(message.metadata.metadata.confidenceAnalysis.modelAgreement * 100)}%
                     </Text>
                   </HStack>
                 )}

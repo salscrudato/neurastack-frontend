@@ -1,18 +1,18 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
-import {
-  Box,
-  Button,
-  Text,
-  VStack,
-  useColorModeValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  Code,
-  Collapse,
-} from '@chakra-ui/react';
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import {
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Box,
+    Button,
+    Code,
+    Collapse,
+    Text,
+    VStack,
+    useColorModeValue
+} from '@chakra-ui/react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -50,9 +50,32 @@ class ErrorBoundary extends Component<Props, State> {
       errorInfo,
     });
 
+    // Enhanced error logging for production
+    const errorDetails = {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      timestamp: Date.now(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+    };
+
+    // Log security event for potential security-related errors
+    if (error.message.includes('script') || error.message.includes('eval') || error.message.includes('unsafe')) {
+      // Import dynamically to avoid bundling issues
+      import('../utils/securityUtils').then(({ logSecurityEvent }) => {
+        logSecurityEvent({
+          action: 'potential_security_error',
+          severity: 'high',
+          details: errorDetails
+        });
+      });
+    }
+
     // Log to external service in production
-    if (process.env.NODE_ENV === 'production') {
-      // Example: logErrorToService(error, errorInfo);
+    if (import.meta.env.PROD) {
+      // In production, this would send to error tracking service
+      console.error('Production Error:', errorDetails);
     }
   }
 
@@ -131,10 +154,15 @@ function ErrorFallback({
           <AlertTitle mt={4} mb={1} fontSize="lg">
             Oops! Something went wrong
           </AlertTitle>
-          <AlertDescription maxWidth="sm" mb={6}>
+          <AlertDescription maxWidth="sm" mb={4}>
             We encountered an unexpected error. Don't worry, your data is safe.
             You can try refreshing the page or contact support if the problem persists.
           </AlertDescription>
+
+          {/* Production-ready error ID for support */}
+          <Text fontSize="xs" color="gray.500" mb={6}>
+            Error ID: {Date.now().toString(36)}-{Math.random().toString(36).substr(2, 5)}
+          </Text>
 
           <VStack spacing={4} w="full">
             <Button

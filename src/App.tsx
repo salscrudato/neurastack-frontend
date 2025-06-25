@@ -7,7 +7,8 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import PrivacyConsent from "./components/PrivacyConsent";
 import UpdateNotification from "./components/UpdateNotification";
 import { useFitnessSync } from "./hooks/useFitnessSync";
-import "./styles/optimized-styles.css";
+import "./styles/global.css";
+import "./styles/utilities.css";
 
 // Single transition variant for all pages
 const pageVariants = {

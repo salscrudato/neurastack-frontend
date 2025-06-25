@@ -18,6 +18,7 @@ import { useChatStore } from "../store/useChatStore";
 
 import { createErrorToast } from "../utils/errorHandler";
 import { debounce } from "../utils/performanceOptimizer";
+import { logSecurityEvent, validateInput } from "../utils/securityUtils";
 
 /**
  * Enhanced ChatInput with advanced mobile/desktop optimization
@@ -99,10 +100,20 @@ export default function ChatInput() {
 
   const MAX_CHARS = 10000; // Increased limit - let backend control token restrictions
 
-  // Performance-optimized text analysis
+  // Performance-optimized text analysis with security validation
   const debouncedTextAnalysis = useMemo(
     () => debounce((text: string) => {
       setCharCount(text.length);
+
+      // Real-time security validation (non-blocking)
+      const validation = validateInput(text);
+      if (!validation.isValid && text.length > 100) { // Only validate longer inputs
+        logSecurityEvent({
+          action: 'suspicious_input_detected',
+          severity: 'low',
+          details: { reason: validation.reason, inputLength: text.length }
+        });
+      }
     }, 100),
     []
   );
@@ -149,15 +160,36 @@ export default function ChatInput() {
     setIsFocused(false);
   }, []);
 
-  // Enhanced send handler with haptic feedback and validation
+  // Enhanced send handler with security validation and haptic feedback
   const handleSend = useCallback(async () => {
     if (busy || !txt.trim()) return;
 
-    // Enhanced validation with user-friendly feedback
-    if (txt.trim().length > MAX_CHARS) {
+    const trimmedText = txt.trim();
+
+    // Security validation
+    const validation = validateInput(trimmedText);
+    if (!validation.isValid) {
+      logSecurityEvent({
+        action: 'input_validation_failed',
+        severity: 'medium',
+        details: { reason: validation.reason, inputLength: trimmedText.length }
+      });
+
+      toast({
+        title: "Invalid Input",
+        description: validation.reason || "Please check your message and try again.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Length validation with user-friendly feedback
+    if (trimmedText.length > MAX_CHARS) {
       toast({
         title: "Message too long",
-        description: `Please keep your message under ${MAX_CHARS.toLocaleString()} characters. Current: ${txt.length.toLocaleString()}`,
+        description: `Please keep your message under ${MAX_CHARS.toLocaleString()} characters. Current: ${trimmedText.length.toLocaleString()}`,
         status: "warning",
         duration: 4000,
         isClosable: true,

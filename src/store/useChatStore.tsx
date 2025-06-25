@@ -3,10 +3,31 @@ import { create } from 'zustand';
 import { auth } from '../firebase';
 import { neuraStackClient } from '../lib/neurastack-client';
 
+// Production-ready constants
+const PERFORMANCE_CONFIG = {
+  MAX_MESSAGES: 100,
+  MAX_RETRIES: 3,
+  RETRY_DELAY_BASE: 1000,
+  MEMORY_CLEANUP_INTERVAL: 5 * 60 * 1000, // 5 minutes
+  MESSAGE_BATCH_SIZE: 20,
+  DEBOUNCE_DELAY: 300,
+  MAX_MESSAGE_LENGTH: 10000,
+  RATE_LIMIT_WINDOW: 60 * 1000, // 1 minute
+  RATE_LIMIT_MAX_REQUESTS: 30,
+} as const;
+
+/**
+ * Represents a chat message with comprehensive metadata
+ * @interface Message
+ */
 export interface Message {
+  /** Unique identifier for the message */
   id: string;
+  /** Role of the message sender */
   role: 'user' | 'assistant' | 'error';
+  /** The message content */
   text: string;
+  /** Timestamp when the message was created */
   timestamp: number;
   metadata?: {
     models?: string[];
@@ -29,32 +50,95 @@ export interface Message {
   };
 }
 
+/**
+ * Production-ready chat state interface with comprehensive features
+ * @interface ChatState
+ */
 interface ChatState {
+  /** Array of chat messages */
   messages: Message[];
+  /** Loading state for UI feedback */
   isLoading: boolean;
+  /** Current retry count for failed requests */
   retryCount: number;
+  /** Unique session identifier for backend correlation */
   sessionId: string;
+
   // Memory management properties
+  /** Maximum number of messages to keep in memory */
   maxMessages: number;
+  /** Current memory usage in bytes (estimated) */
   memoryUsage: number;
+  /** Timestamp of last memory cleanup */
   lastCleanup: number;
+
+  // Production-ready state
+  /** Current error message, if any */
+  error: string | null;
+  /** Online/offline status */
+  isOnline: boolean;
+  rateLimitInfo: {
+    requestCount: number;
+    windowStart: number;
+    isLimited: boolean;
+  };
+  // Performance metrics
+  performanceMetrics: {
+    averageResponseTime: number;
+    totalRequests: number;
+    failureRate: number;
+  };
+  // Core Methods
+  /** Send a message to the AI with production-ready validation and error handling */
   sendMessage: (text: string) => Promise<void>;
+  /** Clear all messages and start a new session */
   clearMessages: () => void;
+  /** Delete a specific message by ID */
   deleteMessage: (id: string) => void;
+  /** Retry a failed message */
   retryMessage: (messageId: string) => Promise<void>;
+  /** Initialize a new chat session */
   initializeSession: () => void;
   // Memory management methods
   pruneOldMessages: () => void;
   getMemoryStats: () => { messageCount: number; estimatedSize: number; oldestMessage: number };
   optimizeMemory: () => void;
+  // Production methods
+  clearError: () => void;
+  updateOnlineStatus: (isOnline: boolean) => void;
+  checkRateLimit: () => boolean;
+  updatePerformanceMetrics: (responseTime: number, success: boolean) => void;
 }
 
-const MAX_RETRIES = 2; // Reduced from 3
-const MAX_MESSAGES = 100; // Maximum messages to keep in memory
-const CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+// Use centralized performance config
 const MESSAGE_SIZE_ESTIMATE = 1000; // Average bytes per message
 
+// Production-ready utility functions
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Sanitize user input to prevent XSS and other security issues
+ */
+const sanitizeInput = (input: string): string => {
+  if (!input || typeof input !== 'string') return '';
+
+  return input
+    .trim()
+    .slice(0, PERFORMANCE_CONFIG.MAX_MESSAGE_LENGTH)
+    .replace(/[<>]/g, '') // Basic XSS prevention
+    .replace(/javascript:/gi, '') // Prevent javascript: URLs
+    .replace(/data:/gi, ''); // Prevent data: URLs
+};
+
+/**
+ * Calculate exponential backoff delay
+ */
+const calculateBackoffDelay = (attempt: number): number => {
+  return Math.min(
+    PERFORMANCE_CONFIG.RETRY_DELAY_BASE * Math.pow(2, attempt),
+    10000 // Max 10 seconds
+  );
+};
 
 /**
  * Estimate memory usage of messages
@@ -79,19 +163,52 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   isLoading: false,
   retryCount: 0,
   sessionId: crypto.randomUUID(),
-  maxMessages: MAX_MESSAGES,
+  maxMessages: PERFORMANCE_CONFIG.MAX_MESSAGES,
   memoryUsage: 0,
   lastCleanup: Date.now(),
+  // Production-ready state
+  error: null,
+  isOnline: navigator.onLine,
+  rateLimitInfo: {
+    requestCount: 0,
+    windowStart: Date.now(),
+    isLimited: false,
+  },
+  performanceMetrics: {
+    averageResponseTime: 0,
+    totalRequests: 0,
+    failureRate: 0,
+  },
 
       sendMessage: async (text: string) => {
         const startTime = Date.now();
 
-        // Add user message
+        // Production-ready input validation and sanitization
+        const sanitizedText = sanitizeInput(text);
+        if (!sanitizedText) {
+          set({ error: 'Please enter a valid message' });
+          return;
+        }
+
+        // Rate limiting check
+        if (!get().checkRateLimit()) {
+          set({ error: 'Too many requests. Please wait a moment before sending another message.' });
+          return;
+        }
+
+        // Clear any previous errors
+        set({ error: null });
+
+        // Add user message with enhanced metadata
         const userMsg: Message = {
           id: nanoid(),
           role: 'user',
-          text,
-          timestamp: Date.now()
+          text: sanitizedText,
+          timestamp: Date.now(),
+          metadata: {
+            sessionId: get().sessionId,
+            sanitized: text !== sanitizedText,
+          }
         };
 
         set(state => {
@@ -113,7 +230,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
         let retryCount = 0;
 
-        while (retryCount <= MAX_RETRIES) {
+        while (retryCount <= PERFORMANCE_CONFIG.MAX_RETRIES) {
           try {
             const { sessionId } = get();
 
@@ -125,7 +242,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             });
 
             // Use the enhanced default-ensemble API with production features
-            const response = await neuraStackClient.queryAI(text, {
+            const response = await neuraStackClient.queryAI(sanitizedText, {
               useEnsemble: true,
               temperature: 0.7,
               sessionId // Ensure session context is passed
@@ -144,12 +261,29 @@ export const useChatStore = create<ChatState>()((set, get) => ({
               throw new Error('Empty response received');
             }
 
-            // Analytics removed - using simple logging only
+            // Update performance metrics
+            get().updatePerformanceMetrics(responseTime, true);
+
+            // Track monitoring metrics
+            try {
+              const { productionMonitoringService } = await import('../services/productionMonitoringService');
+              productionMonitoringService.trackPerformance('chat_response_time', responseTime);
+              productionMonitoringService.incrementChatCounter('messagesReceived');
+              productionMonitoringService.trackUserInteraction('message_sent', 'chat', {
+                messageLength: sanitizedText.length,
+                retryCount
+              });
+            } catch (error) {
+              // Silently fail monitoring
+            }
+
+            // Production logging (minimal in production)
             if (import.meta.env.DEV) {
               console.log('Chat interaction completed:', {
-                messageLength: text.length,
+                messageLength: sanitizedText.length,
                 responseTime: `${responseTime}ms`,
-                modelsUsed: Object.keys(response.modelsUsed || {}).length
+                modelsUsed: Object.keys(response.modelsUsed || {}).length,
+                retryCount
               });
             }
 
@@ -198,7 +332,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
               // Check if we need to prune messages
               const shouldPrune = newMessages.length > state.maxMessages ||
-                                 Date.now() - state.lastCleanup > CLEANUP_INTERVAL;
+                                 Date.now() - state.lastCleanup > PERFORMANCE_CONFIG.MEMORY_CLEANUP_INTERVAL;
 
               if (shouldPrune) {
                 const prunedMessages = newMessages.slice(-state.maxMessages);
@@ -227,9 +361,29 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             retryCount++;
             set(() => ({ retryCount }));
 
+            // Update performance metrics for failure
+            get().updatePerformanceMetrics(Date.now() - startTime, false);
+
+            // Track error in monitoring
+            try {
+              const { productionMonitoringService } = await import('../services/productionMonitoringService');
+              productionMonitoringService.trackError({
+                message: error instanceof Error ? error.message : 'Chat request failed',
+                component: 'chat_store',
+                severity: retryCount > PERFORMANCE_CONFIG.MAX_RETRIES ? 'high' : 'medium',
+                metadata: {
+                  retryCount,
+                  statusCode: error?.statusCode,
+                  correlationId: error?.correlationId
+                }
+              });
+            } catch (monitoringError) {
+              // Silently fail monitoring
+            }
+
             // Enhanced error logging with correlation ID per API spec
-            if (process.env.NODE_ENV === 'development') {
-              console.warn(`❌ Chat request failed (attempt ${retryCount}/${MAX_RETRIES}):`, error instanceof Error ? error.message : 'Unknown error');
+            if (import.meta.env.DEV) {
+              console.warn(`❌ Chat request failed (attempt ${retryCount}/${PERFORMANCE_CONFIG.MAX_RETRIES}):`, error instanceof Error ? error.message : 'Unknown error');
               if (error?.correlationId) {
                 console.warn(`🔗 Correlation ID: ${error.correlationId}`);
               }
@@ -241,7 +395,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
                                error?.statusCode === 429 ||
                                error?.statusCode === 408;
 
-            if (retryCount > MAX_RETRIES || !isRetryable) {
+            if (retryCount > PERFORMANCE_CONFIG.MAX_RETRIES || !isRetryable) {
               // Final failure - show elegant error message
               const errorMessage = error instanceof Error
                 ? error.message
@@ -265,9 +419,10 @@ export const useChatStore = create<ChatState>()((set, get) => ({
                 retryCount: 0
               }));
             } else {
-              // Exponential backoff for retryable errors
-              const delay = Math.pow(2, retryCount - 1) * 1000;
-              await sleep(delay);
+              // Enhanced exponential backoff with jitter
+              const delay = calculateBackoffDelay(retryCount - 1);
+              const jitter = Math.random() * 0.1 * delay; // Add up to 10% jitter
+              await sleep(delay + jitter);
             }
           }
         }
@@ -391,5 +546,85 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         if (import.meta.env.DEV) {
           console.log(`🧠 Memory optimized: ${state.memoryUsage} → ${newMemoryUsage} bytes`);
         }
+      },
+
+      // Production-ready methods
+      clearError: () => set({ error: null }),
+
+      updateOnlineStatus: (isOnline: boolean) => set({ isOnline }),
+
+      checkRateLimit: () => {
+        const state = get();
+        const now = Date.now();
+
+        // Reset window if expired
+        if (now - state.rateLimitInfo.windowStart > PERFORMANCE_CONFIG.RATE_LIMIT_WINDOW) {
+          set({
+            rateLimitInfo: {
+              requestCount: 1,
+              windowStart: now,
+              isLimited: false,
+            }
+          });
+          return true;
+        }
+
+        // Check if limit exceeded
+        if (state.rateLimitInfo.requestCount >= PERFORMANCE_CONFIG.RATE_LIMIT_MAX_REQUESTS) {
+          set({
+            rateLimitInfo: {
+              ...state.rateLimitInfo,
+              isLimited: true,
+            }
+          });
+          return false;
+        }
+
+        // Increment counter
+        set({
+          rateLimitInfo: {
+            ...state.rateLimitInfo,
+            requestCount: state.rateLimitInfo.requestCount + 1,
+          }
+        });
+        return true;
+      },
+
+      updatePerformanceMetrics: (responseTime: number, success: boolean) => {
+        const state = get();
+        const totalRequests = state.performanceMetrics.totalRequests + 1;
+        const failures = success ? 0 : 1;
+        const totalFailures = (state.performanceMetrics.failureRate * state.performanceMetrics.totalRequests) + failures;
+
+        set({
+          performanceMetrics: {
+            averageResponseTime: success
+              ? (state.performanceMetrics.averageResponseTime * state.performanceMetrics.totalRequests + responseTime) / totalRequests
+              : state.performanceMetrics.averageResponseTime,
+            totalRequests,
+            failureRate: totalFailures / totalRequests,
+          }
+        });
       }
     }));
+
+// Production-ready event listeners for online/offline status
+if (typeof window !== 'undefined') {
+  const updateOnlineStatus = () => {
+    useChatStore.getState().updateOnlineStatus(navigator.onLine);
+  };
+
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+
+  // Cleanup function for SSR compatibility
+  if (typeof window.addEventListener === 'function') {
+    const cleanup = () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+
+    // Store cleanup function for potential use
+    (window as any).__chatStoreCleanup = cleanup;
+  }
+}
