@@ -12,7 +12,7 @@ import theme from './theme/theme';
 import { ChatPage } from './pages/ChatPage';
 import { SplashPage } from './pages/SplashPage';
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
-const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
+// const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
 
 // Create router with Chat and History routes
 const router = createBrowserRouter([
@@ -37,14 +37,14 @@ const router = createBrowserRouter([
           </Suspense>
         )
       },
-      {
-        path: 'neurafit',
-        element: (
-          <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
-            <NeuraFitPage />
-          </Suspense>
-        )
-      },
+      // {
+      //   path: 'neurafit',
+      //   element: (
+      //     <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
+      //       <NeuraFitPage />
+      //     </Suspense>
+      //   )
+      // },
     ]
   }
 ], {

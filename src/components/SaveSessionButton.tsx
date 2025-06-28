@@ -15,7 +15,6 @@ import {
     Box,
     Button,
     HStack,
-    Text,
     useDisclosure,
     useToast
 } from '@chakra-ui/react';
@@ -114,10 +113,10 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
         w="100%"
         display="flex"
         justifyContent="center"
-        py={6}
+        py={2}
         px={4}
       >
-        <HStack spacing={4}>
+        <HStack spacing={3}>
           <Button
             leftIcon={isSaved ? <PiCheckBold size={14} /> : <PiFloppyDiskBold size={14} />}
             onClick={handleSave}
@@ -125,46 +124,34 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             loadingText="Saving..."
             variant="solid"
             size="sm"
-            borderRadius="xl"
+            borderRadius="lg"
             fontWeight="600"
-            px={6}
-            py={3}
+            px={4}
+            py={2}
             h="auto"
-            minH="40px"
+            minH="36px"
             fontSize="sm"
-            bg={isSaved ? "linear-gradient(135deg, #10B981 0%, #059669 100%)" : "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)"}
+            bg={isSaved ? "#10B981" : "#4F9CF9"}
             color="white"
             border="none"
-            boxShadow={isSaved
-              ? "0 4px 12px rgba(16, 185, 129, 0.25), 0 2px 4px rgba(16, 185, 129, 0.1)"
-              : "0 4px 12px rgba(79, 156, 249, 0.25), 0 2px 4px rgba(79, 156, 249, 0.1)"
-            }
             _hover={{
-              transform: "translateY(-2px)",
-              boxShadow: isSaved
-                ? "0 8px 20px rgba(16, 185, 129, 0.35), 0 4px 8px rgba(16, 185, 129, 0.15)"
-                : "0 8px 20px rgba(79, 156, 249, 0.35), 0 4px 8px rgba(79, 156, 249, 0.15)",
+              bg: isSaved ? "#059669" : "#3B82F6",
             }}
             _active={{
-              transform: "translateY(-1px)",
+              bg: isSaved ? "#047857" : "#2563EB",
             }}
             _focus={{
               outline: "none",
-              boxShadow: isSaved
-                ? "0 0 0 3px rgba(16, 185, 129, 0.2), 0 8px 20px rgba(16, 185, 129, 0.35)"
-                : "0 0 0 3px rgba(79, 156, 249, 0.2), 0 8px 20px rgba(79, 156, 249, 0.35)",
+              boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.5)",
             }}
-            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+            transition="all 150ms ease"
             disabled={isSaving || isSaved}
             _disabled={{
-              opacity: 0.7,
-              transform: "none",
+              opacity: 0.6,
               cursor: "not-allowed"
             }}
           >
-            <Text fontSize="sm" fontWeight="600" letterSpacing="0.025em">
-              {isSaved ? 'Saved!' : 'Save Session'}
-            </Text>
+            {isSaved ? 'Saved!' : 'Save Session'}
           </Button>
 
           <Button
@@ -172,42 +159,39 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             onClick={onOpen}
             variant="outline"
             size="sm"
-            borderRadius="xl"
+            borderRadius="lg"
             fontWeight="600"
-            px={6}
-            py={3}
+            px={4}
+            py={2}
             h="auto"
-            minH="40px"
+            minH="36px"
             fontSize="sm"
-            bg="rgba(255, 255, 255, 0.8)"
+            bg="white"
             color="#DC2626"
             border="1px solid"
-            borderColor="rgba(220, 38, 38, 0.2)"
-            backdropFilter="blur(8px)"
+            borderColor="#DC2626"
             _hover={{
-              bg: "rgba(254, 242, 242, 0.9)",
-              borderColor: "rgba(220, 38, 38, 0.3)",
-              transform: "translateY(-2px)",
-              boxShadow: "0 8px 20px rgba(220, 38, 38, 0.15), 0 4px 8px rgba(220, 38, 38, 0.1)",
+              bg: "#FEF2F2",
+              borderColor: "#B91C1C",
+              color: "#B91C1C"
             }}
             _active={{
-              transform: "translateY(-1px)",
+              bg: "#FEE2E2",
+              borderColor: "#991B1B",
+              color: "#991B1B"
             }}
             _focus={{
               outline: "none",
-              boxShadow: "0 0 0 3px rgba(220, 38, 38, 0.2), 0 8px 20px rgba(220, 38, 38, 0.15)",
+              boxShadow: "0 0 0 2px rgba(220, 38, 38, 0.5)",
             }}
-            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+            transition="all 150ms ease"
             disabled={isSaving}
             _disabled={{
-              opacity: 0.5,
-              transform: "none",
+              opacity: 0.4,
               cursor: "not-allowed"
             }}
           >
-            <Text fontSize="sm" fontWeight="600" letterSpacing="0.025em">
-              Clear Session
-            </Text>
+            Clear Session
           </Button>
         </HStack>
       </Box>

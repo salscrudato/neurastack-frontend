@@ -118,12 +118,10 @@ export default function HistoryPage() {
   };
 
   return (
-    <Flex
-      direction="column"
+    <Box
       w="100%"
       minH="100%"
       bg={bgColor}
-      p={{ base: 4, md: 6 }}
       // Enhanced mobile scrolling support
       sx={{
         overflowY: 'auto',
@@ -134,12 +132,38 @@ export default function HistoryPage() {
         '@media (max-width: 768px)': {
           minHeight: ['100vh', '100dvh'],
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          padding: '16px', // 4 * 4px
+        },
+        // Desktop centered layout
+        '@media (min-width: 769px)': {
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          paddingY: '24px', // 6 * 4px
+          paddingX: '16px', // 4 * 4px
         },
         '@supports (-webkit-touch-callout: none)': {
           minHeight: '-webkit-fill-available',
         }
       }}
     >
+      {/* Centered container for desktop, full width for mobile */}
+      <Flex
+        direction="column"
+        w="100%"
+        maxW={{
+          base: "100%",
+          md: "800px",   // Match ChatPage width
+          lg: "900px",   // Match ChatPage width
+          xl: "1000px"   // Match ChatPage width
+        }}
+        px={{
+          base: 0,      // No additional padding on mobile (handled by parent)
+          md: 8,        // Match ChatPage padding
+          lg: 12,       // Match ChatPage padding
+          xl: 16        // Match ChatPage padding
+        }}
+      >
       {/* Header */}
       <VStack spacing={4} align="stretch" mb={6}>
         <HStack justify="space-between" align="center">
@@ -295,6 +319,7 @@ export default function HistoryPage() {
           </VStack>
         )}
       </Box>
+      </Flex>
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -317,6 +342,6 @@ export default function HistoryPage() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </Flex>
+    </Box>
   );
 }

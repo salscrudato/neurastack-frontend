@@ -1,191 +1,144 @@
 import {
     Box,
     Flex,
-    HStack,
     Skeleton,
     SkeletonText,
     Spinner,
     Text,
-    useColorModeValue,
+    useColorModeValue
 } from '@chakra-ui/react';
 import { memo, useEffect, useState } from 'react';
-import FuturisticLoader from './FuturisticLoader';
 
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic';
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
   lines?: number; // For skeleton variant
 }
 
-const LoadingDots = memo(({ size = 'md' }: { size?: string }) => {
-  const dotSize = size === 'sm' ? '5px' : size === 'lg' ? '10px' : '7px';
-  const glowColor = useColorModeValue('rgba(79, 156, 249, 0.25)', 'rgba(96, 165, 250, 0.4)');
-  const [dotPhase, setDotPhase] = useState(0);
+// Modern AI Ensemble Loader - Clean, minimal, futuristic
+const ModernEnsembleLoader = memo(({ size = 'md' }: { size?: string }) => {
+  const [phase, setPhase] = useState(0);
+  const [, setConfidence] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDotPhase(prev => (prev + 1) % 6);
+    const phaseInterval = setInterval(() => {
+      setPhase(prev => (prev + 1) % 4);
+    }, 1200);
+
+    const confidenceInterval = setInterval(() => {
+      setConfidence(prev => Math.min(prev + Math.random() * 15, 95));
     }, 800);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(phaseInterval);
+      clearInterval(confidenceInterval);
+    };
   }, []);
 
-  return (
-    <Flex align="center" gap={4} position="relative" py={3}>
-      {/* Quantum field background */}
-      <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        transform="translate(-50%, -50%)"
-        w="120px"
-        h="32px"
-        bg={`conic-gradient(from ${dotPhase * 60}deg,
-          ${glowColor} 0deg,
-          rgba(139, 92, 246, 0.3) 120deg,
-          rgba(99, 102, 241, 0.25) 240deg,
-          ${glowColor} 360deg
-        )`}
-        borderRadius="full"
-        filter="blur(16px)"
-        animation="quantumFieldBreathe 2.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite"
-        sx={{
-          '@keyframes quantumFieldBreathe': {
-            '0%, 100%': {
-              opacity: 0.3,
-              transform: 'translate(-50%, -50%) scale(0.8) rotate(0deg)',
-              filter: 'blur(16px) saturate(0.8)'
-            },
-            '33%': {
-              opacity: 0.7,
-              transform: 'translate(-50%, -50%) scale(1.2) rotate(120deg)',
-              filter: 'blur(20px) saturate(1.2)'
-            },
-            '66%': {
-              opacity: 0.9,
-              transform: 'translate(-50%, -50%) scale(1.4) rotate(240deg)',
-              filter: 'blur(24px) saturate(1.4)'
-            }
-          }
-        }}
-      />
+  const containerSize = size === 'sm' ? '48px' : size === 'lg' ? '72px' : '60px';
+  const nodeSize = size === 'sm' ? '8px' : size === 'lg' ? '12px' : '10px';
 
-      {/* Secondary field layer */}
+  return (
+    <Box position="relative" w={containerSize} h={containerSize}>
+      {/* Central AI Core */}
       <Box
         position="absolute"
         top="50%"
         left="50%"
         transform="translate(-50%, -50%)"
-        w="80px"
+        w="20px"
         h="20px"
-        bg="radial-gradient(ellipse, rgba(79, 156, 249, 0.2) 0%, rgba(139, 92, 246, 0.1) 50%, transparent 80%)"
-        borderRadius="full"
-        filter="blur(8px)"
-        animation="secondaryField 3.2s ease-in-out infinite 0.5s"
+        bg="linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)"
+        borderRadius="50%"
+        animation="coreGlow 2s ease-in-out infinite"
         sx={{
-          '@keyframes secondaryField': {
+          '@keyframes coreGlow': {
             '0%, 100%': {
-              opacity: 0.4,
-              transform: 'translate(-50%, -50%) scale(0.9)',
-              filter: 'blur(8px)'
+              opacity: 0.8,
+              transform: 'translate(-50%, -50%) scale(1)',
+              boxShadow: '0 0 20px rgba(79, 156, 249, 0.4)'
             },
             '50%': {
-              opacity: 0.8,
-              transform: 'translate(-50%, -50%) scale(1.3)',
-              filter: 'blur(12px)'
+              opacity: 1,
+              transform: 'translate(-50%, -50%) scale(1.1)',
+              boxShadow: '0 0 30px rgba(79, 156, 249, 0.6)'
             }
           }
         }}
       />
 
-      {/* Enhanced animated dots with sophisticated styling */}
-      {[0, 1, 2].map((i) => (
-        <Box
-          key={i}
-          w={dotSize}
-          h={dotSize}
-          bg="linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 50%, #6366F1 100%)"
-          borderRadius="full"
-          position="relative"
-          animation={`sophisticatedPulse 2.4s ease-in-out ${i * 0.3}s infinite both`}
-          filter="blur(0.5px)"
-          sx={{
-            '@keyframes sophisticatedPulse': {
-              '0%, 70%, 100%': {
-                transform: 'scale(0.4) translateY(0px)',
-                opacity: 0.5,
-                boxShadow: '0 0 0 0 rgba(79, 156, 249, 0.8)',
-                filter: 'blur(0.5px)'
-              },
-              '35%': {
-                transform: 'scale(1.2) translateY(-2px)',
-                opacity: 1,
-                boxShadow: '0 4px 20px 8px rgba(79, 156, 249, 0.4)',
-                filter: 'blur(0px)'
-              }
-            },
-            '@keyframes innerShimmer': {
-              '0%, 100%': { opacity: 0.3 },
-              '50%': { opacity: 0.8 }
-            },
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              w: '60%',
-              h: '60%',
-              bg: 'radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%)',
-              borderRadius: 'full',
-              opacity: 0.4,
-              animation: `innerShimmer 2.4s ease-in-out ${i * 0.3}s infinite both`,
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              w: '120%',
-              h: '120%',
-              bg: 'radial-gradient(circle, rgba(79, 156, 249, 0.2) 0%, transparent 50%)',
-              borderRadius: 'full',
-              opacity: 0.6,
-              animation: `outerGlow 2.4s ease-in-out ${i * 0.3}s infinite both`,
-            }
-          }}
-        />
-      ))}
+      {/* AI Model Nodes */}
+      {[0, 1, 2, 3, 4].map((i) => {
+        const angle = (i * 72) + (phase * 18); // 72 degrees apart, rotating
+        const radius = size === 'sm' ? 18 : size === 'lg' ? 28 : 24;
+        const x = Math.cos((angle * Math.PI) / 180) * radius;
+        const y = Math.sin((angle * Math.PI) / 180) * radius;
 
-      {/* Connecting energy lines */}
+        return (
+          <Box
+            key={i}
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform={`translate(-50%, -50%) translate(${x}px, ${y}px)`}
+            w={nodeSize}
+            h={nodeSize}
+            bg={`linear-gradient(135deg,
+              ${i === phase ? '#4F9CF9' : '#94A3B8'} 0%,
+              ${i === phase ? '#8B5CF6' : '#CBD5E1'} 100%
+            )`}
+            borderRadius="50%"
+            opacity={i === phase ? 1 : 0.6}
+            animation={i === phase ? 'activeNode 1.2s ease-in-out infinite' : 'none'}
+            transition="all 0.3s ease"
+            sx={{
+              '@keyframes activeNode': {
+                '0%, 100%': {
+                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1)`,
+                  boxShadow: '0 0 8px rgba(79, 156, 249, 0.3)'
+                },
+                '50%': {
+                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1.3)`,
+                  boxShadow: '0 0 15px rgba(79, 156, 249, 0.6)'
+                }
+              }
+            }}
+          />
+        );
+      })}
+
+      {/* Connection Lines */}
       <Box
         position="absolute"
         top="50%"
         left="50%"
         transform="translate(-50%, -50%)"
-        w="calc(100% - 16px)"
-        h="1px"
-        bg="linear-gradient(90deg, transparent 0%, rgba(79, 156, 249, 0.3) 20%, rgba(139, 92, 246, 0.4) 50%, rgba(79, 156, 249, 0.3) 80%, transparent 100%)"
-        animation="energyFlow 2.4s ease-in-out infinite"
+        w="100%"
+        h="100%"
+        borderRadius="50%"
+        border="1px solid"
+        borderColor="rgba(79, 156, 249, 0.2)"
+        animation="connectionPulse 3s ease-in-out infinite"
         sx={{
-          '@keyframes energyFlow': {
-            '0%, 100%': { opacity: 0.2, transform: 'translate(-50%, -50%) scaleX(0.5)' },
-            '50%': { opacity: 0.8, transform: 'translate(-50%, -50%) scaleX(1)' }
-          },
-          '@keyframes outerGlow': {
-            '0%, 70%, 100%': { opacity: 0.2, transform: 'translate(-50%, -50%) scale(0.8)' },
-            '35%': { opacity: 0.6, transform: 'translate(-50%, -50%) scale(1.2)' }
+          '@keyframes connectionPulse': {
+            '0%, 100%': {
+              borderColor: 'rgba(79, 156, 249, 0.2)',
+              transform: 'translate(-50%, -50%) scale(1)'
+            },
+            '50%': {
+              borderColor: 'rgba(79, 156, 249, 0.4)',
+              transform: 'translate(-50%, -50%) scale(1.05)'
+            }
           }
         }}
       />
-    </Flex>
+    </Box>
   );
 });
 
-LoadingDots.displayName = 'LoadingDots';
+ModernEnsembleLoader.displayName = 'ModernEnsembleLoader';
 
 const WaveAnimation = memo(({ size = 'md' }: { size?: string }) => {
   const waveHeight = size === 'sm' ? '1.8px' : size === 'lg' ? '3px' : '2.4px';
@@ -883,6 +836,169 @@ const FloatingParticles = memo(() => {
 
 FloatingParticles.displayName = 'FloatingParticles';
 
+// Ultra-Modern Neural Network Loader
+const FuturisticLoader = memo(({ size = 'md' }: {
+  size?: string;
+  message?: string;
+  variant?: string;
+}) => {
+  const [neuralPhase, setNeuralPhase] = useState(0);
+  const [synapseActivity, setSynapseActivity] = useState(0);
+
+  useEffect(() => {
+    const phaseInterval = setInterval(() => {
+      setNeuralPhase(prev => (prev + 1) % 6);
+    }, 1000);
+
+    const synapseInterval = setInterval(() => {
+      setSynapseActivity(prev => (prev + 1) % 8);
+    }, 400);
+
+    return () => {
+      clearInterval(phaseInterval);
+      clearInterval(synapseInterval);
+    };
+  }, []);
+
+  const containerSize = size === 'sm' ? '56px' : size === 'lg' ? '80px' : '68px';
+  const nodeSize = size === 'sm' ? '6px' : size === 'lg' ? '10px' : '8px';
+
+  return (
+    <Box position="relative" w={containerSize} h={containerSize}>
+      {/* Central Neural Core */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        w="16px"
+        h="16px"
+        bg="linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)"
+        borderRadius="50%"
+        animation="neuralCore 2.5s ease-in-out infinite"
+        sx={{
+          '@keyframes neuralCore': {
+            '0%, 100%': {
+              opacity: 0.9,
+              transform: 'translate(-50%, -50%) scale(1)',
+              boxShadow: '0 0 16px rgba(79, 156, 249, 0.4)'
+            },
+            '50%': {
+              opacity: 1,
+              transform: 'translate(-50%, -50%) scale(1.2)',
+              boxShadow: '0 0 24px rgba(79, 156, 249, 0.7)'
+            }
+          }
+        }}
+      />
+
+      {/* Neural Network Nodes */}
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const angle = (i * 60) + (neuralPhase * 10);
+        const radius = size === 'sm' ? 22 : size === 'lg' ? 32 : 28;
+        const x = Math.cos((angle * Math.PI) / 180) * radius;
+        const y = Math.sin((angle * Math.PI) / 180) * radius;
+        const isActive = (i + synapseActivity) % 6 < 2;
+
+        return (
+          <Box
+            key={i}
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform={`translate(-50%, -50%) translate(${x}px, ${y}px)`}
+            w={nodeSize}
+            h={nodeSize}
+            bg={isActive ? 'linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)' : '#E2E8F0'}
+            borderRadius="50%"
+            opacity={isActive ? 1 : 0.4}
+            transition="all 0.4s ease"
+            animation={isActive ? 'synapsefire 0.8s ease-in-out infinite' : 'none'}
+            sx={{
+              '@keyframes synapsefire': {
+                '0%, 100%': {
+                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1)`,
+                  boxShadow: '0 0 6px rgba(79, 156, 249, 0.3)'
+                },
+                '50%': {
+                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px) scale(1.4)`,
+                  boxShadow: '0 0 12px rgba(79, 156, 249, 0.6)'
+                }
+              }
+            }}
+          />
+        );
+      })}
+
+      {/* Neural Pathways */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        w="100%"
+        h="100%"
+        borderRadius="50%"
+        border="1px solid"
+        borderColor="rgba(79, 156, 249, 0.15)"
+        animation="neuralNetwork 4s linear infinite"
+        sx={{
+          '@keyframes neuralNetwork': {
+            '0%': {
+              borderColor: 'rgba(79, 156, 249, 0.15)',
+              transform: 'translate(-50%, -50%) rotate(0deg) scale(1)'
+            },
+            '25%': {
+              borderColor: 'rgba(139, 92, 246, 0.25)',
+              transform: 'translate(-50%, -50%) rotate(90deg) scale(1.02)'
+            },
+            '50%': {
+              borderColor: 'rgba(99, 102, 241, 0.3)',
+              transform: 'translate(-50%, -50%) rotate(180deg) scale(1)'
+            },
+            '75%': {
+              borderColor: 'rgba(139, 92, 246, 0.25)',
+              transform: 'translate(-50%, -50%) rotate(270deg) scale(1.02)'
+            },
+            '100%': {
+              borderColor: 'rgba(79, 156, 249, 0.15)',
+              transform: 'translate(-50%, -50%) rotate(360deg) scale(1)'
+            }
+          }
+        }}
+      />
+
+      {/* Outer Neural Field */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        w="120%"
+        h="120%"
+        borderRadius="50%"
+        border="1px solid"
+        borderColor="rgba(79, 156, 249, 0.08)"
+        animation="outerField 6s linear infinite reverse"
+        sx={{
+          '@keyframes outerField': {
+            '0%': {
+              borderColor: 'rgba(79, 156, 249, 0.08)',
+              transform: 'translate(-50%, -50%) rotate(0deg)'
+            },
+            '100%': {
+              borderColor: 'rgba(139, 92, 246, 0.12)',
+              transform: 'translate(-50%, -50%) rotate(360deg)'
+            }
+          }
+        }}
+      />
+    </Box>
+  );
+});
+
+FuturisticLoader.displayName = 'FuturisticLoader';
+
 const SkeletonLoader = memo(({ lines = 3 }: { lines?: number }) => (
   <Box w="100%" maxW="400px">
     <Skeleton height="20px" mb={3} />
@@ -892,100 +1008,98 @@ const SkeletonLoader = memo(({ lines = 3 }: { lines?: number }) => (
 
 SkeletonLoader.displayName = 'SkeletonLoader';
 
-// Clean, innovative chat loading text component
-const AlternatingText = memo(({ baseMessage }: { baseMessage?: string }) => {
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const textColor = '#64748B';
+// Modern AI Ensemble Status Component
+const AIEnsembleStatus = memo(({ baseMessage }: { baseMessage?: string }) => {
+  const [currentPhase, setCurrentPhase] = useState(0);
+  const [confidence, setConfidence] = useState(0);
+  const [votingProgress, setVotingProgress] = useState(0);
 
-  const messages = [
-    'thinking...',
-    'analyzing your request...',
-    'processing context...',
-    'generating response...',
-    'synthesizing insights...',
-    'crafting answer...',
-    'finalizing thoughts...',
-    'almost ready...'
+  const ensemblePhases = [
+    { message: 'Initializing AI ensemble...', stage: 'init' },
+    { message: 'Models analyzing query...', stage: 'analysis' },
+    { message: 'Generating candidate responses...', stage: 'generation' },
+    { message: 'Cross-model validation...', stage: 'validation' },
+    { message: 'Confidence scoring...', stage: 'scoring' },
+    { message: 'Ensemble voting in progress...', stage: 'voting' },
+    { message: 'Optimizing final response...', stage: 'optimization' },
+    { message: 'Response ready...', stage: 'complete' }
   ];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentMessageIndex((prev) => (prev + 1) % messages.length);
-    }, 1800); // Faster, more responsive timing
+    const phaseInterval = setInterval(() => {
+      setCurrentPhase((prev) => (prev + 1) % ensemblePhases.length);
+    }, 1600);
 
-    return () => clearInterval(interval);
-  }, [messages.length]);
+    const confidenceInterval = setInterval(() => {
+      setConfidence(prev => Math.min(prev + Math.random() * 12, 94));
+    }, 900);
 
-  // Use base message if provided, otherwise use alternating messages
-  const displayMessage = baseMessage || messages[currentMessageIndex];
+    const votingInterval = setInterval(() => {
+      setVotingProgress(prev => (prev + Math.random() * 8) % 100);
+    }, 700);
+
+    return () => {
+      clearInterval(phaseInterval);
+      clearInterval(confidenceInterval);
+      clearInterval(votingInterval);
+    };
+  }, [ensemblePhases.length]);
+
+  const currentEnsemblePhase = ensemblePhases[currentPhase];
+  const displayMessage = baseMessage || currentEnsemblePhase.message;
 
   return (
-    <Box position="relative" textAlign="center" py={3}>
+    <Box position="relative" textAlign="center" py={4} maxW="300px" mx="auto">
+      {/* Main Status Text */}
       <Text
         fontSize="sm"
-        color={textColor}
+        color="#64748B"
         fontWeight="500"
-        letterSpacing="0.5px"
-        opacity={0.8}
-        animation="cleanTextFade 1.5s ease-in-out infinite"
-        position="relative"
+        letterSpacing="0.3px"
+        mb={3}
         fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
-
+        animation="statusFade 1.8s ease-in-out infinite"
         sx={{
-          '@keyframes cleanTextFade': {
-            '0%': {
-              opacity: 0.4,
-              transform: 'translateY(1px)'
-            },
-            '50%': {
-              opacity: 1,
-              transform: 'translateY(0px)'
-            },
-            '100%': {
-              opacity: 0.4,
-              transform: 'translateY(1px)'
-            }
-          },
+          '@keyframes statusFade': {
+            '0%, 100%': { opacity: 0.7 },
+            '50%': { opacity: 1 }
+          }
         }}
       >
         {displayMessage}
       </Text>
 
-      {/* Clean dots animation */}
-      <HStack spacing={1} justify="center" mt={2}>
-        {[0, 1, 2].map((index) => (
+      {/* Confidence & Voting Metrics */}
+      <Flex justify="space-between" align="center" fontSize="xs" color="#94A3B8" mb={2}>
+        <Text>Confidence: {confidence.toFixed(0)}%</Text>
+        <Text>Voting: {votingProgress.toFixed(0)}%</Text>
+      </Flex>
+
+      {/* Progress Indicators */}
+      <Flex gap={1} justify="center">
+        {ensemblePhases.map((_, index) => (
           <Box
             key={index}
-            w="3px"
-            h="3px"
-            bg="#4F9CF9"
+            w="20px"
+            h="2px"
+            bg={index <= currentPhase ? '#4F9CF9' : '#E2E8F0'}
             borderRadius="full"
-            animation={`cleanDotPulse 1.2s ease-in-out infinite ${index * 0.2}s`}
-
+            transition="all 0.3s ease"
+            animation={index === currentPhase ? 'activeProgress 1.6s ease-in-out infinite' : 'none'}
             sx={{
-              '@keyframes cleanDotPulse': {
-                '0%': {
-                  opacity: 0.3,
-                  transform: 'scale(0.8)'
-                },
-                '50%': {
-                  opacity: 1,
-                  transform: 'scale(1.2)'
-                },
-                '100%': {
-                  opacity: 0.3,
-                  transform: 'scale(0.8)'
-                }
+              '@keyframes activeProgress': {
+                '0%, 100%': { opacity: 0.6 },
+                '50%': { opacity: 1, transform: 'scaleY(1.5)' }
               }
             }}
           />
         ))}
-      </HStack>
+      </Flex>
     </Box>
   );
 });
 
-AlternatingText.displayName = 'AlternatingText';
+AIEnsembleStatus.displayName = 'AIEnsembleStatus';
 
 export const Loader = memo(({
   variant = 'spinner',
@@ -1000,40 +1114,39 @@ export const Loader = memo(({
   const renderLoader = () => {
     switch (variant) {
       case 'dots':
-        return <LoadingDots size={size} />;
+      case 'modern':
+        return <ModernEnsembleLoader size={size} />;
       case 'team':
         return <WaveAnimation size={size} />;
       case 'skeleton':
         return <SkeletonLoader lines={lines} />;
       case 'futuristic':
         return <FuturisticLoader size={size} message={message} variant="neural" />;
-      default:
+      case 'spinner':
         return <Spinner size={size} color="blue.500" thickness="3px" />;
+      default:
+        return <ModernEnsembleLoader size={size} />;
     }
   };
 
   const content = (
-    <Flex direction="column" align="center" gap={4}>
-      {/* Only show loader for non-team variants */}
+    <Flex direction="column" align="center" gap={3}>
+      {/* Modern loader for all variants except team */}
       {variant !== 'team' && renderLoader()}
+
+      {/* AI Ensemble Status for team variant, simple message for others */}
       {(message || variant === 'team') && (
         variant === 'team' ? (
-          <AlternatingText baseMessage={message} />
+          <AIEnsembleStatus baseMessage={message} />
         ) : (
           <Text
             fontSize="sm"
             color={textColor}
             textAlign="center"
             fontWeight="500"
-            letterSpacing="0.5px"
-            opacity={0.9}
-            animation="fadeInOut 2s ease-in-out infinite"
-            sx={{
-              '@keyframes fadeInOut': {
-                '0%, 100%': { opacity: 0.6 },
-                '50%': { opacity: 1 }
-              }
-            }}
+            letterSpacing="0.3px"
+            opacity={0.8}
+            fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
           >
             {message}
           </Text>

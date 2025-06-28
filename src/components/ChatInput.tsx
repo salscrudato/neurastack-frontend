@@ -80,14 +80,14 @@ export default function ChatInput() {
 
   // 10 short, innovative prompt suggestions for one-line display
   const placeholderSuggestions = useMemo(() => [
-    "Explain quantum computing simply",
-    "Create a startup business plan",
-    "Write a 100-word story",
-    "Design a quick workout routine",
-    "Analyze remote work benefits",
-    "Generate climate solutions",
+    "Explain an AI ensemble with voting",
+    "How do I create a React app?",
+    "Why is Hackensack, NJ elite?",
+    "Design a quick leg workout",
+    "Analyze remote work impacts",
+    "Generate solutions for world hunger",
     "Plan a budget weekend trip",
-    "Teach me something new",
+    "Teach me something about Hackensack",
     "Brainstorm app ideas for 2024",
     "Help write a persuasive email"
   ], []);
@@ -343,9 +343,8 @@ export default function ChatInput() {
     <Box
       ref={containerRef}
       w="full"
-      bg={colorSystem.page.bg}
-      borderTopWidth="0" // Remove border for cleaner look
-      borderColor={colorSystem.page.borderTop}
+      bg="transparent" // Remove white background
+      borderTopWidth="0"
       position="sticky"
       bottom={0}
       zIndex={100}
@@ -355,38 +354,34 @@ export default function ChatInput() {
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         // Safe area support for mobile devices
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)', // Reduced padding
         // Performance optimizations
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
         // Optimized mobile input for native app feeling
         '@media (max-width: 768px)': {
-          paddingX: 3, // Slightly increased for better touch targets
-          paddingY: 3, // Compact but comfortable padding
+          paddingX: 2, // Reduced padding to minimize white space
+          paddingY: 1, // Minimal padding
           position: 'fixed', // Fixed positioning for better mobile behavior
           bottom: 0,
           left: 0,
           right: 0,
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)', // Reduced
           // Allow expansion for 3 lines of text
-          maxHeight: '140px', // Increased to accommodate 3 lines + padding
+          maxHeight: '120px', // Reduced to minimize blocking
           zIndex: 1000, // Ensure it stays above content
-          // Clean modern background
-          background: 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(226, 232, 240, 0.3)',
+          // Transparent background to not block content
+          background: 'transparent',
         },
         // Desktop optimization with centered container and clean styling
         '@media (min-width: 769px)': {
-          maxHeight: '160px', // Increased to accommodate 3 lines + padding
+          maxHeight: '140px', // Reduced
           display: 'flex',
           justifyContent: 'center',
-          paddingY: 4, // Reduced vertical padding for compact design
-          paddingX: 4, // Reduced horizontal padding
-          // Clean desktop-specific styling
-          background: 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(226, 232, 240, 0.2)',
+          paddingY: 2, // Reduced vertical padding
+          paddingX: 2, // Reduced horizontal padding
+          // Transparent background
+          background: 'transparent',
         }
       }}
     >
@@ -414,8 +409,8 @@ export default function ChatInput() {
             borderWidth="0"
             borderColor="transparent"
             borderRadius={inputConfig.borderRadius}
-            px={{ base: 3, sm: 4, md: 0 }} // Optimized mobile padding for better touch targets
-            py={{ base: 3, sm: 3, md: 4, lg: 4, xl: 4 }} // Compact but comfortable padding
+            px={{ base: 2, sm: 2, md: 0 }} // Minimal mobile padding to reduce white space
+            py={{ base: 1, sm: 1, md: 2, lg: 2, xl: 2 }} // Minimal padding
             alignItems="center"
             transition={animationConfig.transition}
             boxShadow="none"
@@ -503,7 +498,7 @@ export default function ChatInput() {
               // Enhanced scrolling with hidden scrollbar
               overflowY: 'auto',
               scrollbarWidth: 'none',
-              '-ms-overflow-style': 'none',
+              msOverflowStyle: 'none',
               '&::-webkit-scrollbar': {
                 display: 'none',
               },

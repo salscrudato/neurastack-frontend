@@ -1,30 +1,29 @@
 import {
-  Avatar,
-  Box,
-  Button,
-  Drawer, DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  Flex,
-  HStack, Icon,
-  IconButton,
-  Text,
-  useColorModeValue,
-  useDisclosure,
-  useToast,
-  VStack
+    Avatar,
+    Box,
+    Button,
+    Drawer, DrawerBody,
+    DrawerCloseButton,
+    DrawerContent,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerOverlay,
+    Flex,
+    HStack, Icon,
+    IconButton,
+    Text,
+    useColorModeValue,
+    useDisclosure,
+    useToast,
+    VStack
 } from '@chakra-ui/react';
 import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
-  PiChatCircleBold, PiClockCounterClockwiseBold,
-  PiHeartBold,
-  PiListBold,
-  PiSignOutBold,
-  PiUserLight
+    PiChatCircleBold, PiClockCounterClockwiseBold,
+    PiListBold,
+    PiSignOutBold,
+    PiUserLight
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -51,8 +50,8 @@ export function Header() {
   }
 
   // Determine brand text and navigation based on current page
-  const isNeuraFitPage = location.pathname === '/neurafit';
-  const brandText = isNeuraFitPage ? 'neurafit' : 'neurastack';
+  // const isNeuraFitPage = location.pathname === '/neurafit';
+  const brandText = 'neurastack'; // Always show neurastack since NeuraFit is commented out
 
   // Semantic color tokens with dark-mode support
   const primaryColor = useColorModeValue('blue.500', 'blue.300');
@@ -70,7 +69,7 @@ export function Header() {
   // Navigation menu items configuration
   const navigationItems = useMemo(() => {
     // Check if current user is authorized for NeuraFit
-    const isNeuraFitAuthorized = user?.email === 'sal.scrudato@gmail.com';
+    // const isNeuraFitAuthorized = user?.email === 'sal.scrudato@gmail.com';
 
     return [
       {
@@ -85,12 +84,12 @@ export function Header() {
         icon: PiClockCounterClockwiseBold,
         disabled: false
       },
-      {
-        label: 'NeuraFit',
-        path: '/neurafit',
-        icon: PiHeartBold,
-        disabled: !isNeuraFitAuthorized
-      }
+      // {
+      //   label: 'NeuraFit',
+      //   path: '/neurafit',
+      //   icon: PiHeartBold,
+      //   disabled: !isNeuraFitAuthorized
+      // }
     ];
   }, [user?.email]);
 
@@ -256,8 +255,8 @@ export function Header() {
         mx="auto"
         px={{ base: 4, md: 6, lg: 8 }}
         py={0}
-        h={{ base: "48px", md: "52px" }}
-        minH={{ base: "48px", md: "52px" }}
+        h={{ base: "56px", md: "60px" }}
+        minH={{ base: "56px", md: "60px" }}
       >
 
         {/* Blue-themed Menu Button */}

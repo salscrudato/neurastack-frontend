@@ -6,7 +6,7 @@ import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PrivacyConsent from "./components/PrivacyConsent";
 import UpdateNotification from "./components/UpdateNotification";
-import { useFitnessSync } from "./hooks/useFitnessSync";
+// import { useFitnessSync } from "./hooks/useFitnessSync";
 import "./styles/global.css";
 import "./styles/utilities.css";
 
@@ -107,7 +107,7 @@ const Fallback = () => (
 );
 
 export default function App() {
-  useFitnessSync();
+  // useFitnessSync();
 
   return (
     <PageContentWrapper>

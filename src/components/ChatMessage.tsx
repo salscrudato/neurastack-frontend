@@ -6,16 +6,18 @@ import {
     Text,
     Tooltip,
     useClipboard,
-    VStack,
+    VStack
 } from "@chakra-ui/react";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 
 import {
     PiCheckBold,
     PiCopyBold,
+    PiInfoBold,
 } from "react-icons/pi";
 import { useModelResponses } from "../hooks/useModelResponses";
 import type { Message } from "../store/useChatStore";
+import { EnsembleInfoModal } from "./EnsembleInfoModal";
 import { IndividualModelModal } from "./IndividualModelModal";
 import { Loader } from "./LoadingSpinner";
 import { ModelResponseGrid } from "./ModelResponseGrid";
@@ -59,9 +61,17 @@ const CopyButton = memo(({ text }: { text: string }) => {
         variant="ghost"
         onClick={onCopy}
         color="#94A3B8"
+        boxShadow="none" // Remove shadow
         _hover={{
           color: "#475569",
           bg: "#F8FAFC",
+          boxShadow: "none", // Ensure no shadow on hover
+        }}
+        _focus={{
+          boxShadow: "none", // Remove focus shadow
+        }}
+        _active={{
+          boxShadow: "none", // Remove active shadow
         }}
         minW="32px"
         h="32px"
@@ -136,15 +146,20 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const availableModels = getAvailableModels();
   const hasIndividualResponses = availableModels.length > 0;
 
-  // Enhanced modern color scheme - optimized for readability and mobile
-  const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)";
+  // Ensemble info modal state
+  const [isEnsembleInfoOpen, setIsEnsembleInfoOpen] = useState(false);
+  const onEnsembleInfoOpen = () => setIsEnsembleInfoOpen(true);
+  const onEnsembleInfoClose = () => setIsEnsembleInfoOpen(false);
+
+  // Enhanced modern color scheme - clean, minimal design
+  const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)";
   const bgAi = "#FFFFFF";
   const textAi = "#1E293B";
   const bgErr = "#FEF2F2";
   const textErr = "#DC2626";
   const timestampColor = "#94A3B8";
   const borderAi = "#E2E8F0";
-  const shadowUser = "0 3px 10px rgba(79, 156, 249, 0.2)";
+  const shadowUser = "0 2px 12px rgba(79, 156, 249, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)";
   const shadowAi = "0 1px 6px rgba(0, 0, 0, 0.06)";
 
   const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
@@ -181,30 +196,45 @@ export const ChatMessage = memo<ChatMessageProps>(({
       >
       {/* Remove the "Powered by..." badge - no longer needed */}
 
-      {/* Message Bubble - iMessage-style with reduced padding */}
+      {/* Modern Message Bubble - Clean, minimal design */}
       <Box
         bg={bubbleBg}
         color={bubbleText}
-        px={{ base: 4, md: 5, lg: 6 }} // Optimized padding for better content density
-        py={{ base: 3, md: 3, lg: 3.5 }} // Compact but comfortable padding
-        borderRadius="2xl"
-        maxW={{ base: "92%", sm: "90%", md: "80%", lg: "75%" }} // Optimized width for better content flow
-        minW={{ base: "30%", sm: "35%", md: "40%" }} // Reduced minimum width for more natural bubbles
+        px={{ base: isUser ? 4 : 5, md: isUser ? 4.5 : 6 }}
+        py={{ base: isUser ? 3 : 4, md: isUser ? 3.5 : 4.5 }}
+        borderRadius={isUser ? "2xl" : "xl"}
+        maxW={{ base: "90%", sm: "88%", md: "80%", lg: "75%" }}
+        minW={{ base: "20%", sm: "25%", md: "30%" }}
         position="relative"
         boxShadow={isUser ? shadowUser : shadowAi}
         border={isUser ? "none" : "1px solid"}
         borderColor={isUser ? "transparent" : borderAi}
-        transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+        backdropFilter={isUser ? "none" : "blur(8px)"}
+        transition="all 250ms cubic-bezier(0.4, 0, 0.2, 1)"
         _hover={{
-          transform: "translateY(-1px)",
+          transform: isUser ? "translateY(-2px) scale(1.01)" : "translateY(-1px)",
           boxShadow: isUser
-            ? "0 8px 24px rgba(79, 156, 249, 0.25)" // Enhanced user message shadow
-            : "0 6px 20px rgba(0, 0, 0, 0.08)", // Enhanced AI message shadow
+            ? "0 8px 32px rgba(79, 156, 249, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)"
+            : "0 6px 20px rgba(0, 0, 0, 0.08)",
         }}
-        // Enhanced touch targets for mobile
         sx={{
+          // Enhanced user message styling
+          ...(isUser && {
+            background: 'linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+              borderRadius: '2xl',
+              pointerEvents: 'none'
+            }
+          }),
           '@media (max-width: 768px)': {
-            minHeight: '44px', // Minimum touch target size
+            minHeight: '44px',
           }
         }}
       >
@@ -220,27 +250,78 @@ export const ChatMessage = memo<ChatMessageProps>(({
               bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
               borderRadius="lg"
               border="1px solid #E2E8F0"
+              position="relative"
             >
-              {/* Provider Information */}
-              <HStack spacing={2}>
-                <Text
-                  fontSize={{ base: "sm", md: "md" }}
-                  fontWeight="600"
-                  color="#1E293B"
-                  letterSpacing="-0.025em"
-                >
-                  {message.metadata.metadata.synthesis?.provider?.toUpperCase() || 'AI ENSEMBLE'}
-                </Text>
-                {message.metadata.metadata.synthesis?.model && (
-                  <Text
-                    fontSize={{ base: "xs", md: "sm" }}
+              {/* Info Icon - Top Right */}
+              {(message.metadata.metadata.synthesis?.provider?.toUpperCase() === 'AI ENSEMBLE' ||
+                !message.metadata.metadata.synthesis?.provider) && (
+                <Tooltip label="View ensemble details" hasArrow fontSize="xs">
+                  <IconButton
+                    aria-label="View ensemble information"
+                    icon={<PiInfoBold />}
+                    size="sm"
+                    variant="ghost"
+                    onClick={onEnsembleInfoOpen}
+                    position="absolute"
+                    top={2}
+                    right={2}
                     color="#64748B"
-                    fontWeight="500"
+                    _hover={{
+                      color: "#1E293B",
+                      bg: "#F1F5F9",
+                    }}
+                    _focus={{
+                      boxShadow: "none",
+                    }}
+                    minW="28px"
+                    h="28px"
+                  />
+                </Tooltip>
+              )}
+
+              {/* Provider Information */}
+              <Box>
+                <HStack spacing={2}>
+                  <Text
+                    fontSize={{ base: "sm", md: "md" }}
+                    fontWeight="600"
+                    color="#1E293B"
+                    letterSpacing="-0.025em"
                   >
-                    {message.metadata.metadata.synthesis.model.toUpperCase()}
+                    {message.metadata.metadata.synthesis?.provider?.toUpperCase() || 'AI ENSEMBLE'}
+                  </Text>
+                  {message.metadata.metadata.synthesis?.model && (
+                    <Text
+                      fontSize={{ base: "xs", md: "sm" }}
+                      color="#64748B"
+                      fontWeight="500"
+                    >
+                      {message.metadata.metadata.synthesis.model.toUpperCase()}
+                    </Text>
+                  )}
+                </HStack>
+
+                {/* Voting Recommendation */}
+                {(message.metadata.metadata.synthesis?.provider?.toUpperCase() === 'AI ENSEMBLE' ||
+                  !message.metadata.metadata.synthesis?.provider) && (
+                  <Text
+                    fontSize="xs"
+                    color="#94A3B8"
+                    fontWeight="500"
+                    mt={1}
+                    letterSpacing="0.025em"
+                  >
+                    {message.metadata.metadata.confidenceAnalysis?.modelAgreement > 0.8
+                      ? 'Unanimous consensus recommendation'
+                      : message.metadata.metadata.confidenceAnalysis?.modelAgreement > 0.6
+                      ? 'Majority consensus recommendation'
+                      : message.metadata.metadata.confidenceAnalysis?.modelAgreement > 0.4
+                      ? 'Mixed consensus recommendation'
+                      : 'Diverse perspectives recommendation'
+                    }
                   </Text>
                 )}
-              </HStack>
+              </Box>
 
               {/* Confidence Metrics */}
               <HStack spacing={4} fontSize={{ base: "xs", md: "sm" }}>
@@ -294,9 +375,15 @@ export const ChatMessage = memo<ChatMessageProps>(({
           ) : isUser ? (
             <Text
               fontSize={fontSizes.content}
-              lineHeight={{ base: "1.5", md: "1.6" }} // Better desktop line height
-              fontWeight="400"
-              letterSpacing={{ base: "normal", md: "0.01em" }} // Subtle desktop letter spacing
+              lineHeight={{ base: "1.5", md: "1.6" }}
+              fontWeight="500"
+              letterSpacing="0.01em"
+              color="white"
+              sx={{
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word'
+              }}
             >
               {displayText}
             </Text>
@@ -341,6 +428,13 @@ export const ChatMessage = memo<ChatMessageProps>(({
         isOpen={isModalOpen}
         onClose={closeModal}
         modelData={selectedModel}
+      />
+
+      {/* Ensemble Info Modal */}
+      <EnsembleInfoModal
+        isOpen={isEnsembleInfoOpen}
+        onClose={onEnsembleInfoClose}
+        ensembleData={message.metadata?.metadata}
       />
     </VStack>
   );
