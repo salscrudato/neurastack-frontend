@@ -1,8 +1,8 @@
 import {
-    Box,
-    Flex,
-    IconButton,
-    Text,
+  Box,
+  Flex,
+  IconButton,
+  Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -40,14 +40,14 @@ export function ChatPage() {
 
 
 
-  // Modern color values - light mode only
+  // Modern clean color values - light mode only
   const bgColor = "#FAFBFC";
   const containerBg = "#FAFBFC";
 
   const scrollButtonBg = "#FFFFFF";
-  const scrollButtonColor = "#64748B";
+  const scrollButtonColor = "#4F9CF9";
   const scrollButtonHoverBg = "#F8FAFC";
-  const heroTextColor = "#475569";
+  const heroTextColor = "#1E293B"; // Darker for better contrast
   const heroSubTextColor = "#64748B";
 
   // Enhanced responsive configuration with ChatGPT-style desktop centering
@@ -62,7 +62,7 @@ export function ChatPage() {
         lg: 0,      // Large: no padding
         xl: 0       // XL: no padding
       },
-      gap: { base: 3, sm: 4, md: 5, lg: 6, xl: 7 }, // Increased desktop spacing
+      gap: { base: 3, sm: 3, md: 4, lg: 5, xl: 6 }, // Compact spacing for better content density
       // Desktop container constraints - wider for better readability
       maxWidth: {
         base: "100%",
@@ -79,11 +79,11 @@ export function ChatPage() {
     hero: {
       fontSize: { base: "xl", sm: "2xl", md: "3xl", lg: "4xl", xl: "4xl" }, // Larger desktop text
       subFontSize: { base: "md", sm: "lg", md: "xl", lg: "2xl", xl: "2xl" }, // Larger desktop subtext
-      padding: { base: 4, sm: 6, md: 12, lg: 16, xl: 20 } // More generous desktop padding
+      padding: { base: 6, sm: 8, md: 16, lg: 20, xl: 24 } // Clean, generous padding
     },
     scrollButton: {
       size: { base: "sm", sm: "md", md: "md", lg: "lg" },
-      bottom: { base: "100px", sm: "110px", md: "140px", lg: "150px", xl: "160px" }, // Adjusted for new input height
+      bottom: { base: "80px", sm: "85px", md: "100px", lg: "110px", xl: "120px" }, // Adjusted for reduced input height
       right: { base: "16px", sm: "20px", md: "32px", lg: "40px", xl: "48px" } // More spacing from edge
     }
   }), []);
@@ -252,21 +252,24 @@ export function ChatPage() {
         overflowY: 'auto',
         overflowX: 'hidden',
         WebkitOverflowScrolling: 'touch',
-        // Mobile viewport support with proper header spacing
+        // Mobile viewport support with optimized scrolling
         '@media (max-width: 768px)': {
-          // Full viewport height minus fixed header
-          height: 'calc(100vh - 56px)',
-          minHeight: 'calc(100vh - 56px)',
-          maxHeight: 'calc(100vh - 56px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          // Full viewport height minus fixed header and input area
+          height: 'calc(100vh - 60px)', // Updated for new header height
+          minHeight: 'calc(100vh - 60px)',
+          maxHeight: 'calc(100vh - 60px)',
+          paddingBottom: '120px', // Reduced space for input area - more compact design
+          // Prevent body scroll when input is focused
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
         },
-        // Desktop viewport support with improved spacing
+        // Desktop viewport support with clean background
         '@media (min-width: 769px)': {
           height: 'calc(100vh - 64px)',
           minHeight: 'calc(100vh - 64px)',
           maxHeight: 'calc(100vh - 64px)',
-          // Add subtle background pattern for desktop
-          background: 'linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%)',
+          // Clean, minimal background
+          background: '#FAFBFC',
         },
         '@supports (-webkit-touch-callout: none)': {
           '@media (max-width: 768px)': {
@@ -303,25 +306,25 @@ export function ChatPage() {
           >
             <Box textAlign="center" maxW={{ base: "sm", sm: "md", md: "2xl", lg: "3xl" }} mx="auto">
               <Text
-                fontSize={chatConfig.hero.fontSize}
-                lineHeight={{ base: "short", md: "shorter" }}
-                fontWeight={{ base: "semibold", md: "bold" }}
+                fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
+                lineHeight={{ base: "shorter", md: "none" }}
+                fontWeight={{ base: "bold", md: "bold" }}
                 color={heroTextColor}
-                mb={{ base: 2, sm: 2, md: 4, lg: 6 }}
+                mb={{ base: 4, sm: 5, md: 6, lg: 8 }}
                 // Enhanced accessibility
                 as="h1"
                 role="heading"
                 aria-level={1}
                 // Better desktop typography
-                letterSpacing={{ base: "normal", md: "-0.025em" }}
+                letterSpacing={{ base: "-0.01em", md: "-0.02em" }}
               >
                 What do you want to know?
               </Text>
               <Text
-                fontSize={chatConfig.hero.subFontSize}
+                fontSize={{ base: "lg", sm: "xl", md: "2xl", lg: "2xl" }}
                 color={heroSubTextColor}
                 fontWeight={{ base: "normal", md: "medium" }}
-                opacity={{ base: 0.8, md: 0.7 }}
+                opacity={{ base: 0.7, md: 0.8 }}
                 lineHeight={{ base: "relaxed", md: "normal" }}
                 // Enhanced accessibility
                 as="p"
@@ -330,7 +333,7 @@ export function ChatPage() {
                 maxW={{ base: "full", md: "2xl" }}
                 mx="auto"
               >
-                Our team is happy to assist you...
+                The team will look into it...
               </Text>
             </Box>
           </Box>
@@ -349,20 +352,24 @@ export function ChatPage() {
         sx={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          // Enhanced mobile support with wider content area
+          // Enhanced mobile support with optimized scrolling
           '@media (max-width: 768px)': {
-            paddingX: 1, // Reduced from 3 for wider content
-            paddingY: 2,
-            // Ensure messages container doesn't exceed viewport
-            maxHeight: 'calc(100vh - 56px - 120px)', // viewport - header - input area
+            paddingX: 2, // Reduced padding for more content space
+            paddingY: 2, // Reduced vertical padding for compact design
+            paddingBottom: 3, // Minimal bottom padding for input clearance
+            // Ensure messages container doesn't exceed viewport and allows proper scrolling
+            maxHeight: 'calc(100vh - 60px - 100px)', // viewport - header - reduced input area
+            // Smooth scrolling behavior
+            scrollBehavior: 'smooth',
+            WebkitOverflowScrolling: 'touch',
           },
-          // Desktop support with centered container and enhanced spacing
+          // Desktop support with centered container and clean spacing
           '@media (min-width: 769px)': {
-            maxHeight: 'calc(100vh - 64px - 160px)', // viewport - header - input area (adjusted for larger input)
+            maxHeight: 'calc(100vh - 64px - 140px)', // viewport - header - reduced input area
             display: 'flex',
             justifyContent: 'center',
-            paddingY: 6, // Increased vertical padding
-            paddingX: 4, // Add horizontal padding for better edge spacing
+            paddingY: 6, // Reduced vertical padding for more content space
+            paddingX: 4, // Reduced horizontal padding
           }
         }}
         // Enhanced accessibility
@@ -402,17 +409,15 @@ export function ChatPage() {
                 <Box
                   key={m.id}
                   id={`message-${m.id}`}
-                  px={{ base: 0, sm: 0.5, md: 0 }} // Reduced mobile padding for wider content
-                  py={{ base: 0, md: 1 }} // Add subtle vertical spacing on desktop
+                  px={{ base: 0, sm: 0, md: 0 }} // Minimal padding for maximum content width
+                  py={{ base: 0, md: 0.5 }} // Minimal vertical spacing
                   // Enhanced accessibility
                   role="article"
                   aria-label={`Message ${index + 1} from ${m.role === 'user' ? 'you' : 'AI assistant'}`}
                   aria-describedby={`message-content-${m.id}`}
-                  tabIndex={0}
+                  tabIndex={-1}
                   _focus={{
-                    outline: '2px solid',
-                    outlineColor: 'blue.500',
-                    outlineOffset: '2px',
+                    outline: 'none',
                   }}
                 >
                   <ChatMessage
@@ -453,15 +458,17 @@ export function ChatPage() {
           borderRadius="full"
           bg={scrollButtonBg}
           color={scrollButtonColor}
-          boxShadow="lg"
+          boxShadow="0 4px 20px rgba(79, 156, 249, 0.15)"
           transition={animationConfig.transition}
+          border="1px solid rgba(79, 156, 249, 0.1)"
           // Enhanced touch targets
           minW={{ xs: "44px", sm: "46px", md: "48px", lg: "52px" }}
           h={{ xs: "44px", sm: "46px", md: "48px", lg: "52px" }}
           _hover={{
             bg: scrollButtonHoverBg,
             transform: animationConfig.transform,
-            boxShadow: "xl"
+            boxShadow: "0 8px 32px rgba(79, 156, 249, 0.2)",
+            borderColor: "rgba(79, 156, 249, 0.2)"
           }}
           _focus={{
             outline: "2px solid #4F9CF9",

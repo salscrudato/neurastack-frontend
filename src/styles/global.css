@@ -141,6 +141,41 @@ body {
 }
 
 /* ===================================================================
+   HIDDEN SCROLLBARS (MAINTAIN FUNCTIONALITY)
+   =================================================================== */
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Specific targeting for textarea and input elements */
+textarea::-webkit-scrollbar,
+input::-webkit-scrollbar,
+.chakra-textarea::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Ensure scrolling still works */
+.scroll-container,
+.chakra-stack,
+[data-overlayscrollbars-viewport] {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ===================================================================
    TYPOGRAPHY
    =================================================================== */
 h1,

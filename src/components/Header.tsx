@@ -1,38 +1,34 @@
 import {
-    Avatar,
-    Box,
-    Drawer, DrawerBody,
-    DrawerCloseButton,
-    DrawerContent,
-    DrawerHeader,
-    DrawerOverlay,
-    Flex,
-    HStack, Icon,
-    IconButton,
-    Menu, MenuButton,
-    MenuDivider,
-    MenuItem,
-    MenuList,
-    Text,
-    Tooltip,
-    useBreakpointValue,
-    useDisclosure,
-    useToast,
-    VStack
+  Avatar,
+  Box,
+  Button,
+  Drawer, DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  Flex,
+  HStack, Icon,
+  IconButton,
+  Text,
+  useColorModeValue,
+  useDisclosure,
+  useToast,
+  VStack
 } from '@chakra-ui/react';
 import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
-    PiChatCircleBold, PiClockCounterClockwiseBold,
-    PiHeartBold,
-    PiListBold,
-    PiSignOutBold, PiUserCircleBold,
-    PiUserLight
+  PiChatCircleBold, PiClockCounterClockwiseBold,
+  PiHeartBold,
+  PiListBold,
+  PiSignOutBold,
+  PiUserLight
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { auth } from '../firebase';
-import { useReducedMotion } from '../hooks/useAccessibility';
 import { useAuthStore } from '../store/useAuthStore';
 import { BrandLogo } from './BrandLogo';
 
@@ -41,13 +37,11 @@ export function Header() {
   const location = useLocation();
   const setUser = useAuthStore(s => s.setUser);
   const user = useAuthStore(s => s.user);
-  const prefersReducedMotion = useReducedMotion();
+
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const toast = useToast();
 
-  // Responsive navigation menu configuration
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Performance optimization: Close drawer on route change
   const prevPathname = useRef(location.pathname);
@@ -59,28 +53,25 @@ export function Header() {
   // Determine brand text and navigation based on current page
   const isNeuraFitPage = location.pathname === '/neurafit';
   const brandText = isNeuraFitPage ? 'neurafit' : 'neurastack';
-  const brandLabel = isNeuraFitPage ? 'NeuraFit - Go to NeuraFit' : 'Neurastack - Go to Chat';
-  const brandNavigateTo = isNeuraFitPage ? '/neurafit' : '/chat';
 
+  // Semantic color tokens with dark-mode support
+  const primaryColor = useColorModeValue('blue.500', 'blue.300');
 
+  const headerBg = useColorModeValue(
+    'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(37,99,235,0.08) 100%)',
+    'linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(37,99,235,0.16) 100%)'
+  );
+  const headerBorder = useColorModeValue(
+    '1px solid rgba(59,130,246,0.1)',
+    '1px solid rgba(59,130,246,0.2)'
+  );
 
-  // Modern color values - light mode only
-  const gray = '#64748B';
-  const grayHover = '#475569';
-  const menuBg = '#FFFFFF';
-  const menuBorder = '#E2E8F0';
-  const hoverBg = '#F8FAFC';
-
-  // Responsive configuration
-  const headerConfig = useMemo(() => ({
-    height: { xs: "56px", sm: "58px", md: "60px", lg: "64px", xl: "68px" },
-    padding: { xs: 3, sm: 3.5, md: 4, lg: 5, xl: 6 },
-    logoSize: { base: "md", md: "lg" },
-    fontSize: { xs: "sm", sm: "md", md: "md", lg: "lg", xl: "lg" }
-  }), []);
 
   // Navigation menu items configuration
   const navigationItems = useMemo(() => {
+    // Check if current user is authorized for NeuraFit
+    const isNeuraFitAuthorized = user?.email === 'sal.scrudato@gmail.com';
+
     return [
       {
         label: 'Chat',
@@ -98,16 +89,12 @@ export function Header() {
         label: 'NeuraFit',
         path: '/neurafit',
         icon: PiHeartBold,
-        disabled: false
+        disabled: !isNeuraFitAuthorized
       }
     ];
-  }, []);
+  }, [user?.email]);
 
-  // Get current page info for accessibility
-  const currentPageInfo = useMemo(() => {
-    const currentItem = navigationItems.find(item => item.path === location.pathname);
-    return currentItem || navigationItems[1]; // Default to Chat
-  }, [location.pathname, navigationItems]);
+
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -153,16 +140,11 @@ export function Header() {
     return 'Guest User';
   }, [user]);
 
-  const isGuest = useMemo(() => user?.isAnonymous, [user?.isAnonymous]);
 
-  // Enhanced animation configuration with performance optimizations
-  const animationConfig = useMemo(() => ({
-    transition: prefersReducedMotion ? 'none' : 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-    transform: prefersReducedMotion ? 'none' : 'translateY(-1px)',
-    iconRotation: prefersReducedMotion ? 'none' : 'rotate(180deg) scale(1.1)',
-    // GPU acceleration for smooth animations
-    willChange: prefersReducedMotion ? 'auto' : 'transform, opacity'
-  }), [prefersReducedMotion]);
+
+
+
+
 
   // Performance optimization: Memoize drawer content to prevent unnecessary re-renders
   const drawerContent = useMemo(() => (
@@ -181,97 +163,104 @@ export function Header() {
           onKeyDown={isDisabled ? undefined : (e: React.KeyboardEvent) => handleMenuKeyDown(e, item.path)}
           w="100%"
           p={4}
-          borderRadius="xl"
-          transition={animationConfig.transition}
-          bg={isActive ? "rgba(79, 156, 249, 0.1)" : "transparent"}
-          border={isActive ? "1px solid rgba(79, 156, 249, 0.2)" : "1px solid transparent"}
+          borderRadius="16px"
+          transition="all 0.2s ease"
+          bg={isActive ? "rgba(79, 156, 249, 0.1)" : "rgba(255, 255, 255, 0.6)"}
+          border={isActive ? "1px solid rgba(79, 156, 249, 0.2)" : "1px solid rgba(0, 0, 0, 0.05)"}
           opacity={isDisabled ? 0.5 : 1}
           cursor={isDisabled ? "not-allowed" : "pointer"}
+          backdropFilter="blur(12px)"
+          boxShadow={isActive ? "0 4px 12px rgba(79, 156, 249, 0.15)" : "0 2px 8px rgba(0, 0, 0, 0.04)"}
           _hover={isDisabled ? {} : {
-            bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(248, 250, 252, 0.8)",
-            transform: prefersReducedMotion ? 'none' : 'translateX(4px)',
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)"
+            bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(255, 255, 255, 0.8)",
+            transform: "translateY(-2px)",
+            boxShadow: isActive ? "0 8px 24px rgba(79, 156, 249, 0.2)" : "0 8px 24px rgba(0, 0, 0, 0.1)",
+            borderColor: isActive ? "rgba(79, 156, 249, 0.3)" : "rgba(0, 0, 0, 0.1)"
           }}
           _focus={isDisabled ? {} : {
-            outline: "2px solid #4F9CF9",
-            outlineOffset: "2px",
-            bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(248, 250, 252, 0.8)"
+            outline: "none",
+            boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.2)"
           }}
           _active={isDisabled ? {} : {
-            transform: prefersReducedMotion ? 'none' : 'scale(0.98)'
+            transform: "translateY(-1px)"
           }}
           aria-label={`Navigate to ${item.label}`}
           aria-current={isActive ? 'page' : undefined}
           aria-disabled={isDisabled}
         >
           <HStack spacing={4} align="center">
-            <Icon
-              as={IconComponent}
-              w={5}
-              h={5}
-              color={isDisabled ? "#94A3B8" : (isActive ? "#4F9CF9" : "#64748B")}
-              transition={animationConfig.transition}
-            />
-            <Text
-              fontSize="md"
-              fontWeight={isActive ? "semibold" : "medium"}
-              color={isDisabled ? "#94A3B8" : (isActive ? "#1E293B" : "#374151")}
-              textAlign="left"
-              flex={1}
+            <Box
+              w="40px"
+              h="40px"
+              borderRadius="12px"
+              bg={isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(100, 116, 139, 0.08)"}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              transition="all 0.2s ease"
             >
-              {item.label}
-            </Text>
-            {isActive && !isDisabled && (
-              <Box
-                w={2}
-                h={2}
-                borderRadius="full"
-                bg="#4F9CF9"
-                flexShrink={0}
+              <Icon
+                as={IconComponent}
+                w={5}
+                h={5}
+                color={isDisabled ? "#94A3B8" : (isActive ? "#4F9CF9" : "#64748B")}
+                transition="all 0.2s ease"
               />
-            )}
+            </Box>
+            <VStack spacing={0} align="start" flex={1}>
+              <Text
+                fontSize="md"
+                fontWeight={isActive ? "600" : "500"}
+                color={isDisabled ? "#94A3B8" : (isActive ? "#1E293B" : "#374151")}
+                textAlign="left"
+                lineHeight="1.2"
+              >
+                {item.label}
+              </Text>
+            </VStack>
           </HStack>
         </Box>
       );
     })
-  ), [location.pathname, navigationItems, handleNavigationClick, handleMenuKeyDown, animationConfig, prefersReducedMotion]);
+  ), [location.pathname, navigationItems, handleNavigationClick, handleMenuKeyDown]);
 
   return (
-    <Flex
+    <Box
       as="header"
       role="banner"
       position="sticky"
       top={0}
       zIndex={1100}
-      bg="white"
-      borderBottom="1px solid"
-      borderColor="gray.100"
-      px={headerConfig.padding}
-      py={{ xs: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
-      gap={{ xs: 2, sm: 2.5, md: 3, lg: 3.5, xl: 4 }}
-      align="center"
       w="100%"
-      minH={headerConfig.height}
-      // Enhanced touch interactions
+      // Blue gradient theme design
+      bg={headerBg}
+      backdropFilter="blur(24px)"
+      borderBottom={headerBorder}
+      // Modern minimal styling
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
-        // Mobile-specific optimizations
+        // Clean shadow
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+        // Mobile optimizations
         '@media (max-width: 768px)': {
-          minHeight: '56px',
-          paddingX: 3,
-          paddingY: 2.5,
+          borderBottom: '1px solid rgba(0, 0, 0, 0.04)',
         }
       }}
     >
-
-      {/* Enhanced Navigation Menu Button */}
-      <Tooltip
-        label="Navigation menu"
-        hasArrow
-        placement="bottom-start"
-        openDelay={500}
+      <Flex
+        align="center"
+        justify="center"
+        position="relative"
+        maxW="1200px"
+        mx="auto"
+        px={{ base: 4, md: 6, lg: 8 }}
+        py={0}
+        h={{ base: "48px", md: "52px" }}
+        minH={{ base: "48px", md: "52px" }}
       >
+
+        {/* Blue-themed Menu Button */}
         <IconButton
           aria-label="Open navigation menu"
           aria-expanded={isOpen}
@@ -279,309 +268,221 @@ export function Header() {
           icon={<PiListBold size={20} />}
           onClick={onOpen}
           variant="ghost"
-          color="#64748B"
-          bg="rgba(255, 255, 255, 0.8)"
-          backdropFilter="blur(10px)"
-          border="1px solid rgba(255, 255, 255, 0.2)"
-          borderRadius={{ xs: "lg", sm: "xl", md: "xl", lg: "2xl" }}
-          boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
-          // Enhanced touch targets for mobile
-          minH={{ xs: "44px", sm: "46px", md: "48px" }}
-          minW={{ xs: "44px", sm: "46px", md: "48px" }}
-          // Desktop-only left padding
-          ml={{ base: 0, md: 4 }}
-          transition={animationConfig.transition}
+          size="md"
+          color={primaryColor}
+          bg="rgba(59, 130, 246, 0.08)"
+          borderRadius="10px"
+          minH="36px"
+          minW="36px"
+          position="absolute"
+          left="2.5"
+          transition="all 0.2s ease"
           _hover={{
-            bg: "rgba(255, 255, 255, 0.95)",
-            transform: animationConfig.transform,
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-            color: "#4F9CF9"
-          }}
-          _focus={{
-            outline: "2px solid #4F9CF9",
-            outlineOffset: "2px",
-            bg: "rgba(255, 255, 255, 0.95)"
+            bg: "rgba(59, 130, 246, 0.12)",
+            color: "#1D4ED8",
+            transform: "translateY(-1px)"
           }}
           _active={{
-            transform: prefersReducedMotion ? 'none' : 'scale(0.98)',
-            bg: "rgba(255, 255, 255, 1)"
+            transform: "translateY(0)",
+            bg: "rgba(59, 130, 246, 0.16)"
+          }}
+          _focus={{
+            outline: "none",
+            boxShadow: "0 0 0 1px rgba(31, 117, 255, 0.3)"
           }}
         />
-      </Tooltip>
 
-      {/* Enhanced Absolutely Centered Logo */}
-      <Box
-        position="absolute"
-        left="50%"
-        top="50%"
-        transform="translate(-50%, -50%)"
-        zIndex={1}
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Tooltip
-          label={brandLabel}
-          hasArrow
-          placement="bottom"
-          openDelay={500}
+        {/* Centered Logo */}
+        <Box
+          flex="1"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          pointerEvents="none"
         >
-          <Box
-            as="button"
-            role="button"
-            tabIndex={0}
-            aria-label={`${brandText} logo - navigate to ${isNeuraFitPage ? 'NeuraFit' : 'chat'}`}
-            onClick={() => navigate(brandNavigateTo)}
-            onKeyDown={(e: React.KeyboardEvent) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                navigate(brandNavigateTo);
-              }
-            }}
-            transition={animationConfig.transition}
-            borderRadius="lg"
-            p={1}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            _hover={{
-              transform: prefersReducedMotion ? 'none' : "scale(1.05)",
-              opacity: 0.8
-            }}
-            _focus={{
-              outline: "none",
-              boxShadow: "none"
-            }}
-            _active={{
-              transform: prefersReducedMotion ? 'none' : "scale(0.98)"
-            }}
-          >
-            <BrandLogo
-              size={headerConfig.logoSize}
-              variant="header"
-              cursor="pointer"
-              text={brandText}
-            />
-          </Box>
-        </Tooltip>
-      </Box>
-
-      {/* Spacer to balance the layout */}
-      <Box flex="1" />
-
-      {/* Enhanced User menu */}
-      <Menu>
-        <Tooltip
-          label={`Account menu - ${getUserDisplayName()}`}
-          hasArrow
-          placement="bottom-end"
-          openDelay={500}
-        >
-          <MenuButton
-            as={IconButton}
-            aria-label={`Account menu for ${getUserDisplayName()}`}
-            aria-expanded="false"
-            aria-haspopup="menu"
-            variant="ghost"
-            color="#64748B"
-            bg="rgba(255, 255, 255, 0.8)"
-            backdropFilter="blur(10px)"
-            border="1px solid rgba(255, 255, 255, 0.2)"
-            borderRadius={{ xs: "lg", sm: "xl", md: "xl", lg: "2xl" }}
-            boxShadow="0 2px 8px rgba(0, 0, 0, 0.04)"
-            // Enhanced touch targets
-            minH={{ xs: "44px", sm: "46px", md: "48px" }}
-            minW={{ xs: "44px", sm: "46px", md: "48px" }}
-            // Desktop-only right padding
-            mr={{ base: 0, md: 4 }}
-            // Perfect centering for icon content
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            transition={animationConfig.transition}
-            _hover={{
-              bg: "rgba(255, 255, 255, 0.95)",
-              transform: animationConfig.transform,
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)"
-            }}
-            _focus={{
-              outline: "2px solid #4F9CF9",
-              outlineOffset: "2px",
-              bg: "rgba(255, 255, 255, 0.95)"
-            }}
-            _active={{
-              transform: prefersReducedMotion ? 'none' : 'scale(0.98)',
-              bg: "rgba(255, 255, 255, 1)"
-            }}
-          >
-            {user?.photoURL ? (
-              <Avatar
-                size="sm"
-                src={user.photoURL}
-                name={getUserDisplayName()}
-                w="28px"
-                h="28px"
-                borderRadius="full"
-                objectFit="cover"
-                overflow="hidden"
-                flexShrink={0}
-              />
-            ) : (
-              <Icon
-                as={PiUserLight}
-                w="20px"
-                h="20px"
-                color="inherit"
-              />
-            )}
-          </MenuButton>
-        </Tooltip>
-
-        <MenuList
-          bg={menuBg}
-          border="1px solid"
-          borderColor={menuBorder}
-          borderRadius={{ xs: "lg", sm: "xl", md: "xl", lg: "2xl" }}
-          boxShadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
-          backdropFilter="blur(10px)"
-          p={{ xs: 1.5, sm: 2, md: 2, lg: 2.5 }}
-          minW={{ xs: "200px", sm: "220px", md: "240px" }}
-          // Enhanced mobile support
-          sx={{
-            '@media (max-width: 768px)': {
-              minWidth: '180px',
-              padding: '1rem',
-            }
-          }}
-        >
-          {/* Enhanced User info */}
-          <MenuItem
-            isDisabled
-            borderRadius="lg"
-            p={{ xs: 2, sm: 2.5, md: 3 }}
-            _disabled={{
-              opacity: 1,
-              cursor: 'default'
-            }}
-          >
-            <HStack spacing={{ xs: 2, sm: 3 }}>
-              <PiUserCircleBold size={20} />
-              <Box>
-                <Text
-                  fontSize={{ xs: "sm", md: "sm" }}
-                  fontWeight="medium"
-                  color="#374151"
-                >
-                  {getUserDisplayName()}
-                </Text>
-                {user?.email && !isGuest && (
-                  <Text
-                    fontSize={{ xs: "xs", md: "xs" }}
-                    color={gray}
-                    noOfLines={1}
-                  >
-                    {user.email}
-                  </Text>
-                )}
-              </Box>
-            </HStack>
-          </MenuItem>
-
-          <MenuDivider />
-
-          <MenuItem
-            onClick={handleSignOut}
-            color={grayHover}
-            borderRadius="lg"
-            p={{ xs: 2, sm: 2.5, md: 3 }}
-            transition={animationConfig.transition}
-            _hover={{
-              bg: hoverBg,
-              transform: prefersReducedMotion ? 'none' : 'translateX(2px)'
-            }}
-            _focus={{
-              bg: hoverBg,
-              outline: "2px solid #4F9CF9",
-              outlineOffset: "-2px"
-            }}
-            // Enhanced touch target
-            minH={{ xs: "44px", sm: "46px", md: "48px" }}
-          >
-            <HStack spacing={{ xs: 2, sm: 3 }}>
-              <PiSignOutBold size={18} />
-              <Text fontSize={{ xs: "sm", md: "sm" }}>Sign Out</Text>
-            </HStack>
-          </MenuItem>
-        </MenuList>
-      </Menu>
-
-      {/* Enhanced Navigation Drawer */}
-      <Drawer
-        isOpen={isOpen}
-        placement="left"
-        onClose={onClose}
-        size={isMobile ? "xs" : "sm"}
-        blockScrollOnMount={true}
-        preserveScrollBarGap={true}
-        returnFocusOnClose={true}
-        trapFocus={true}
-      >
-        <DrawerOverlay
-          bg="rgba(0, 0, 0, 0.4)"
-          backdropFilter="blur(4px)"
-          transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
-        />
-        <DrawerContent
-          bg="rgba(255, 255, 255, 0.95)"
-          backdropFilter="blur(20px)"
-          borderRight="1px solid rgba(255, 255, 255, 0.2)"
-          boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-          // Enhanced mobile support
-          sx={{
-            '@media (max-width: 768px)': {
-              maxWidth: '280px',
-            }
-          }}
-        >
-          <DrawerCloseButton
-            color="#64748B"
-            _hover={{ color: "#4F9CF9", bg: "rgba(79, 156, 249, 0.1)" }}
-            _focus={{ outline: "2px solid #4F9CF9", outlineOffset: "2px" }}
-            size="lg"
-            top={4}
-            right={4}
+          <BrandLogo
+            size="sm"
+            variant="header"
+            text={brandText}
           />
+        </Box>
 
-          <DrawerHeader
-            pb={6}
-            pt={8}
-            px={6}
-            borderBottom="1px solid rgba(226, 232, 240, 0.8)"
+
+
+        {/* Clean Navigation Drawer */}
+        <Drawer
+          isOpen={isOpen}
+          placement="left"
+          onClose={onClose}
+          size="sm"
+        >
+          <DrawerOverlay
+            bg="rgba(0, 0, 0, 0.4)"
+            backdropFilter="blur(8px)"
+            transition="all 0.3s ease"
+          />
+          <DrawerContent
+            bg="linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 251, 252, 0.95) 100%)"
+            backdropFilter="blur(24px)"
+            borderRight="none"
+            boxShadow="0 32px 64px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
+            borderRadius="0 24px 24px 0"
+            maxW="320px"
           >
-            <Text
-              fontSize="xl"
-              fontWeight="bold"
-              color="#1E293B"
-              fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
-            >
-              Navigation
-            </Text>
-            <Text
-              fontSize="sm"
+            <DrawerCloseButton
               color="#64748B"
-              mt={1}
-            >
-              Current: {currentPageInfo.label}
-            </Text>
-          </DrawerHeader>
+              _hover={{
+                color: "#374151",
+                bg: "rgba(100, 116, 139, 0.08)",
+                transform: "scale(1.1)"
+              }}
+              borderRadius="16px"
+              size="lg"
+              top={6}
+              right={6}
+              transition="all 0.2s ease"
+              bg="rgba(255, 255, 255, 0.8)"
+              backdropFilter="blur(12px)"
+              boxShadow="0 4px 12px rgba(0, 0, 0, 0.1)"
+            />
 
-          <DrawerBody px={6} py={6}>
-            <VStack spacing={3} align="stretch">
-              {drawerContent}
-            </VStack>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    </Flex>
+            <DrawerHeader
+              borderBottomWidth="1px"
+              borderColor="rgba(0, 0, 0, 0.06)"
+              pb={8}
+              pt={8}
+              px={8}
+              bg="rgba(255, 255, 255, 0.5)"
+              backdropFilter="blur(16px)"
+            >
+              <VStack spacing={4} align="start">
+                <BrandLogo
+                  size="xl"
+                  variant="header"
+                  text={brandText}
+                />
+                {user && (
+                  <HStack spacing={3} w="full">
+                    {user?.photoURL ? (
+                      <Avatar
+                        size="sm"
+                        src={user.photoURL}
+                        name={getUserDisplayName()}
+                        w="32px"
+                        h="32px"
+                        borderRadius="12px"
+                        border="2px solid rgba(255, 255, 255, 0.8)"
+                        boxShadow="0 4px 12px rgba(0, 0, 0, 0.1)"
+                      />
+                    ) : (
+                      <Box
+                        w="32px"
+                        h="32px"
+                        borderRadius="12px"
+                        bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        boxShadow="0 4px 12px rgba(0, 0, 0, 0.1)"
+                      >
+                        <Icon
+                          as={PiUserLight}
+                          w="18px"
+                          h="18px"
+                          color="white"
+                        />
+                      </Box>
+                    )}
+                    <VStack spacing={0} align="start" flex={1}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="600"
+                        color="#1E293B"
+                        lineHeight="1.2"
+                      >
+                        {getUserDisplayName()}
+                      </Text>
+                      {user?.email && (
+                        <Text
+                          fontSize="xs"
+                          color="#64748B"
+                          lineHeight="1.2"
+                          noOfLines={1}
+                        >
+                          {user.email}
+                        </Text>
+                      )}
+                    </VStack>
+                  </HStack>
+                )}
+              </VStack>
+            </DrawerHeader>
+
+            <DrawerBody p={8} pt={6}>
+              <VStack spacing={3} align="stretch">
+                <Text
+                  fontSize="xs"
+                  fontWeight="600"
+                  color="#64748B"
+                  textTransform="uppercase"
+                  letterSpacing="0.05em"
+                  mb={2}
+                >
+                  Navigation
+                </Text>
+                {drawerContent}
+              </VStack>
+            </DrawerBody>
+
+            <DrawerFooter
+              borderTopWidth="1px"
+              borderColor="rgba(0, 0, 0, 0.06)"
+              pt={6}
+              pb={8}
+              px={8}
+              bg="rgba(255, 255, 255, 0.5)"
+              backdropFilter="blur(16px)"
+            >
+              <VStack spacing={4} w="full">
+                <Button
+                  leftIcon={<PiSignOutBold size={18} />}
+                  onClick={handleSignOut}
+                  variant="ghost"
+                  w="full"
+                  justifyContent="flex-start"
+                  fontWeight="600"
+                  borderRadius="16px"
+                  h="48px"
+                  color="#EF4444"
+                  bg="rgba(239, 68, 68, 0.05)"
+                  border="1px solid rgba(239, 68, 68, 0.1)"
+                  transition="all 0.2s ease"
+                  _hover={{
+                    bg: "rgba(239, 68, 68, 0.1)",
+                    borderColor: "rgba(239, 68, 68, 0.2)",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)"
+                  }}
+                  _active={{
+                    transform: "translateY(0)"
+                  }}
+                >
+                  Sign Out
+                </Button>
+
+                <Text
+                  fontSize="2xs"
+                  color="#94A3B8"
+                  textAlign="center"
+                  lineHeight="1.4"
+                >
+                  neurastack v5.16 • hackensack.ai
+                </Text>
+              </VStack>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </Flex>
+    </Box>
   );
 }

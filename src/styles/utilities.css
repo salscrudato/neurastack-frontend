@@ -641,3 +641,12 @@
     outline: none;
   }
 }
+
+/* Remove focus outlines from chat message containers */
+[role="article"]:focus,
+[role="article"]:focus-visible,
+.chakra-box[role="article"]:focus,
+.chakra-box[role="article"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

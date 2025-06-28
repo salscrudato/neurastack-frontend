@@ -1,6 +1,5 @@
-import { Text } from '@chakra-ui/react';
-import type { TextProps } from '@chakra-ui/react';
-import { memo, forwardRef } from 'react';
+import { Text, useColorModeValue, type TextProps } from '@chakra-ui/react';
+import { forwardRef, memo } from 'react';
 
 interface BrandLogoProps extends Omit<TextProps, 'children'> {
   size?: 'sm' | 'md' | 'lg' | 'xl' | { base: string; md: string };
@@ -10,9 +9,9 @@ interface BrandLogoProps extends Omit<TextProps, 'children'> {
 
 const sizeMap = {
   sm: { fontSize: 'lg', fontWeight: '600' },
-  md: { fontSize: 'xl', fontWeight: '700' },
-  lg: { fontSize: '2xl', fontWeight: '700' },
-  xl: { fontSize: '4xl', fontWeight: '800' },
+  md: { fontSize: 'xl', fontWeight: '600' },
+  lg: { fontSize: '2xl', fontWeight: '600' },
+  xl: { fontSize: '3xl', fontWeight: '600' },
 };
 
 export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>(({
@@ -21,34 +20,28 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
   text = 'neurastack',
   ...props
 }, ref) => {
-  // Modern gradient styles - always light mode
-  const getLogoStyles = () => {
+  // Adapt gradient to light / dark mode for a cleaner, on‑brand look
+  const gradient = useColorModeValue(
+    'linear(135deg, #2563EB 0%, #1D4ED8 50%, #1E40AF 100%)',   // light
+    'linear(135deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%)'    // dark
+  );
+
+  const getLogoStyles = (): Record<string, any> => {
     if (variant === 'glass') {
       return {
-        color: "#FFFFFF",
-        textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        color: 'whiteAlpha.900',
+        textShadow: '0 2px 4px rgba(0, 0, 0, 0.12)',
       };
     }
 
     return {
-      bgGradient: "linear(135deg, #4F9CF9 0%, #8B5CF6 100%)",
-      bgClip: "text",
+      bgGradient: gradient,
+      bgClip: 'text',
+      color: 'transparent',
       sx: {
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        backgroundClip: "text",
-      },
-      color: "transparent",
-      // Fallback for browsers that don't support background-clip
-      _before: {
-        content: `"${text}"`,
-        position: "absolute",
-        top: 0,
-        left: 0,
-        background: "linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        zIndex: -1,
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        textRendering: 'optimizeLegibility',
       },
     };
   };
@@ -59,9 +52,14 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
     ref,
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
     userSelect: "none" as const,
-    letterSpacing: variant === 'splash' ? '0.5px' : variant === 'header' ? '-0.025em' : '0px',
+    letterSpacing: variant === 'splash' ? '0.5px' : variant === 'header' ? '0em' : '0px',
     transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
     position: "relative" as const,
+    // Ensure perfect vertical centering
+    lineHeight: variant === 'header' ? '1' : '1.2',
+    margin: 0,
+    padding: 0,
+    display: 'inline-block',
     ...getLogoStyles(),
     fontSize: typeof size === 'object' ? size : fontSize,
     fontWeight,

@@ -114,82 +114,98 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
         w="100%"
         display="flex"
         justifyContent="center"
-        py={3}
+        py={6}
         px={4}
       >
-        <HStack spacing={3}>
+        <HStack spacing={4}>
           <Button
-            leftIcon={isSaved ? <PiCheckBold /> : <PiFloppyDiskBold />}
+            leftIcon={isSaved ? <PiCheckBold size={14} /> : <PiFloppyDiskBold size={14} />}
             onClick={handleSave}
             isLoading={isSaving}
             loadingText="Saving..."
-            colorScheme={isSaved ? "green" : "blue"}
-            variant="ghost"
-            size="xs"
-            borderRadius="md"
-            fontWeight="500"
+            variant="solid"
+            size="sm"
+            borderRadius="xl"
+            fontWeight="600"
             px={6}
-            py={1}
+            py={3}
             h="auto"
-            minH="24px"
-            fontSize="xs"
-            bg={isSaved ? "green.50" : "blue.50"}
-            color={isSaved ? "green.600" : "blue.600"}
-            border="1px solid"
-            borderColor={isSaved ? "green.200" : "blue.200"}
+            minH="40px"
+            fontSize="sm"
+            bg={isSaved ? "linear-gradient(135deg, #10B981 0%, #059669 100%)" : "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)"}
+            color="white"
+            border="none"
+            boxShadow={isSaved
+              ? "0 4px 12px rgba(16, 185, 129, 0.25), 0 2px 4px rgba(16, 185, 129, 0.1)"
+              : "0 4px 12px rgba(79, 156, 249, 0.25), 0 2px 4px rgba(79, 156, 249, 0.1)"
+            }
             _hover={{
-              bg: isSaved ? "green.100" : "blue.100",
-              borderColor: isSaved ? "green.300" : "blue.300",
-              transform: "translateY(-1px)",
+              transform: "translateY(-2px)",
+              boxShadow: isSaved
+                ? "0 8px 20px rgba(16, 185, 129, 0.35), 0 4px 8px rgba(16, 185, 129, 0.15)"
+                : "0 8px 20px rgba(79, 156, 249, 0.35), 0 4px 8px rgba(79, 156, 249, 0.15)",
             }}
             _active={{
-              transform: "translateY(0)",
+              transform: "translateY(-1px)",
             }}
             _focus={{
               outline: "none",
-              boxShadow: "none"
+              boxShadow: isSaved
+                ? "0 0 0 3px rgba(16, 185, 129, 0.2), 0 8px 20px rgba(16, 185, 129, 0.35)"
+                : "0 0 0 3px rgba(79, 156, 249, 0.2), 0 8px 20px rgba(79, 156, 249, 0.35)",
             }}
-            transition="all 150ms ease"
+            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
             disabled={isSaving || isSaved}
+            _disabled={{
+              opacity: 0.7,
+              transform: "none",
+              cursor: "not-allowed"
+            }}
           >
-            <Text fontSize="xs" fontWeight="500">
+            <Text fontSize="sm" fontWeight="600" letterSpacing="0.025em">
               {isSaved ? 'Saved!' : 'Save Session'}
             </Text>
           </Button>
 
           <Button
-            leftIcon={<PiTrashBold />}
+            leftIcon={<PiTrashBold size={14} />}
             onClick={onOpen}
-            colorScheme="red"
-            variant="ghost"
-            size="xs"
-            borderRadius="md"
-            fontWeight="500"
+            variant="outline"
+            size="sm"
+            borderRadius="xl"
+            fontWeight="600"
             px={6}
-            py={1}
+            py={3}
             h="auto"
-            minH="24px"
-            fontSize="xs"
-            bg="red.50"
-            color="red.600"
+            minH="40px"
+            fontSize="sm"
+            bg="rgba(255, 255, 255, 0.8)"
+            color="#DC2626"
             border="1px solid"
-            borderColor="red.200"
+            borderColor="rgba(220, 38, 38, 0.2)"
+            backdropFilter="blur(8px)"
             _hover={{
-              bg: "red.100",
-              borderColor: "red.300",
-              transform: "translateY(-1px)",
+              bg: "rgba(254, 242, 242, 0.9)",
+              borderColor: "rgba(220, 38, 38, 0.3)",
+              transform: "translateY(-2px)",
+              boxShadow: "0 8px 20px rgba(220, 38, 38, 0.15), 0 4px 8px rgba(220, 38, 38, 0.1)",
             }}
             _active={{
-              transform: "translateY(0)",
+              transform: "translateY(-1px)",
             }}
             _focus={{
               outline: "none",
-              boxShadow: "none"
+              boxShadow: "0 0 0 3px rgba(220, 38, 38, 0.2), 0 8px 20px rgba(220, 38, 38, 0.15)",
             }}
-            transition="all 150ms ease"
+            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
             disabled={isSaving}
+            _disabled={{
+              opacity: 0.5,
+              transform: "none",
+              cursor: "not-allowed"
+            }}
           >
-            <Text fontSize="xs" fontWeight="500">
+            <Text fontSize="sm" fontWeight="600" letterSpacing="0.025em">
               Clear Session
             </Text>
           </Button>
@@ -203,21 +219,82 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
         onClose={onClose}
         isCentered
       >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+        <AlertDialogOverlay bg="rgba(0, 0, 0, 0.4)" backdropFilter="blur(4px)">
+          <AlertDialogContent
+            borderRadius="2xl"
+            bg="rgba(255, 255, 255, 0.98)"
+            backdropFilter="blur(20px)"
+            border="1px solid rgba(226, 232, 240, 0.3)"
+            boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+            mx={4}
+          >
+            <AlertDialogHeader
+              fontSize="xl"
+              fontWeight="700"
+              color="#1E293B"
+              pb={2}
+            >
               Clear Current Session
             </AlertDialogHeader>
 
-            <AlertDialogBody>
+            <AlertDialogBody
+              fontSize="md"
+              color="#475569"
+              lineHeight="1.6"
+              pb={6}
+            >
               Are you sure you want to clear the current conversation? This will start a new session and cannot be undone.
             </AlertDialogBody>
 
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
+            <AlertDialogFooter gap={3} pt={0}>
+              <Button
+                ref={cancelRef}
+                onClick={onClose}
+                variant="outline"
+                borderRadius="xl"
+                fontWeight="600"
+                px={6}
+                py={3}
+                h="auto"
+                minH="44px"
+                bg="rgba(255, 255, 255, 0.8)"
+                color="#64748B"
+                border="1px solid rgba(226, 232, 240, 0.6)"
+                _hover={{
+                  bg: "rgba(248, 250, 252, 0.9)",
+                  borderColor: "rgba(148, 163, 184, 0.4)",
+                  transform: "translateY(-1px)",
+                }}
+                _focus={{
+                  outline: "none",
+                  boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.2)",
+                }}
+                transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+              >
                 Cancel
               </Button>
-              <Button colorScheme="red" onClick={handleClearSession} ml={3}>
+              <Button
+                onClick={handleClearSession}
+                variant="solid"
+                borderRadius="xl"
+                fontWeight="600"
+                px={6}
+                py={3}
+                h="auto"
+                minH="44px"
+                bg="linear-gradient(135deg, #DC2626 0%, #B91C1C 100%)"
+                color="white"
+                _hover={{
+                  bg: "linear-gradient(135deg, #B91C1C 0%, #991B1B 100%)",
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 8px 20px rgba(220, 38, 38, 0.35)",
+                }}
+                _focus={{
+                  outline: "none",
+                  boxShadow: "0 0 0 3px rgba(220, 38, 38, 0.2), 0 8px 20px rgba(220, 38, 38, 0.35)",
+                }}
+                transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+              >
                 Clear Session
               </Button>
             </AlertDialogFooter>

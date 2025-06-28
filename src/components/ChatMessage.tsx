@@ -185,11 +185,11 @@ export const ChatMessage = memo<ChatMessageProps>(({
       <Box
         bg={bubbleBg}
         color={bubbleText}
-        px={{ base: 3, md: 5, lg: 6 }} // Increased desktop padding
-        py={{ base: 2, md: 3, lg: 3.5 }} // Increased desktop padding
+        px={{ base: 4, md: 5, lg: 6 }} // Optimized padding for better content density
+        py={{ base: 3, md: 3, lg: 3.5 }} // Compact but comfortable padding
         borderRadius="2xl"
-        maxW={{ base: "98%", sm: "95%", md: "80%", lg: "75%" }} // Wider on mobile for better content display
-        minW={{ base: "40%", sm: "45%", md: "50%" }} // Increased minimum width for desktop
+        maxW={{ base: "92%", sm: "90%", md: "80%", lg: "75%" }} // Optimized width for better content flow
+        minW={{ base: "30%", sm: "35%", md: "40%" }} // Reduced minimum width for more natural bubbles
         position="relative"
         boxShadow={isUser ? shadowUser : shadowAi}
         border={isUser ? "none" : "1px solid"}

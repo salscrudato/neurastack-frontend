@@ -1,15 +1,12 @@
 import {
     Box,
-    Fade,
     HStack,
     IconButton,
     InputGroup,
     InputRightElement,
     ScaleFade,
-    Text,
     Textarea,
-    useToast,
-    VStack,
+    useToast
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -46,21 +43,23 @@ export default function ChatInput() {
 
 
 
-  // Enhanced input configuration with elegant rounded design - Made smaller
+  // Enhanced input configuration with modern clean design
   const inputConfig = useMemo(() => ({
-    minHeight: { xs: "40px", sm: "42px", md: "44px", lg: "46px", xl: "48px" },
-    maxHeight: { xs: "120px", sm: "130px", md: "140px", lg: "150px", xl: "160px" },
-    fontSize: { xs: "14px", sm: "14px", md: "15px", lg: "15px", xl: "16px" }, // Smaller font size
+    minHeight: { xs: "44px", sm: "46px", md: "48px", lg: "50px", xl: "52px" },
+    // Optimized for exactly 3 lines of text with proper line height
+    maxHeight: { xs: "84px", sm: "90px", md: "96px", lg: "102px", xl: "108px" }, // ~3 lines
+    fontSize: { xs: "16px", sm: "16px", md: "16px", lg: "16px", xl: "16px" }, // Consistent 16px for better readability
+    lineHeight: "1.4", // Optimal line height for readability
     padding: { xs: 3, sm: 3.5, md: 4, lg: 4.5, xl: 5 },
-    // More rounded edges for modern, elegant design
-    borderRadius: { xs: "3xl", sm: "3xl", md: "4xl", lg: "4xl", xl: "4xl" },
+    // Ultra-rounded edges for modern, clean design
+    borderRadius: "24px", // Consistent ultra-rounded design
     // Optimized circular send button sizes for mobile and desktop
     sendButton: {
-      base: "36px",  // Mobile: reduced from too large
-      sm: "38px",    // Small mobile: slightly larger
-      md: "42px",    // Desktop: increased for better click target
-      lg: "44px",    // Large desktop: better visibility
-      xl: "46px"     // XL desktop: optimal size
+      base: "36px",  // Mobile: better touch target
+      sm: "36px",    // Small mobile: consistent size
+      md: "40px",    // Desktop: clean and proportional
+      lg: "40px",    // Large desktop: consistent
+      xl: "40px"     // XL desktop: optimal size
     }
   }), []);
 
@@ -79,23 +78,18 @@ export default function ChatInput() {
            window.innerWidth <= 768;
   }, []);
 
-  // Enhanced smart suggestions with contextual intelligence
+  // 10 short, innovative prompt suggestions for one-line display
   const placeholderSuggestions = useMemo(() => [
-    "What do you want to know?",
-    "Ask me anything...",
-    "How can I help you today?",
-    "What's on your mind?",
-    "Need help with something?",
-    "Tell me about...",
-    "Help me understand...",
-    "Explain how to...",
-    "Give me ideas for...",
-    "What are the benefits of...",
-    "Compare and contrast...",
-    "Walk me through...",
-    "What's the best way to...",
-    "Can you analyze...",
-    "Help me solve..."
+    "Explain quantum computing simply",
+    "Create a startup business plan",
+    "Write a 100-word story",
+    "Design a quick workout routine",
+    "Analyze remote work benefits",
+    "Generate climate solutions",
+    "Plan a budget weekend trip",
+    "Teach me something new",
+    "Brainstorm app ideas for 2024",
+    "Help write a persuasive email"
   ], []);
 
   const MAX_CHARS = 10000; // Increased limit - let backend control token restrictions
@@ -135,7 +129,7 @@ export default function ChatInput() {
     }
   }, [txt.length, isFocused, placeholderSuggestions.length]);
 
-  // Auto-resize functionality with performance optimization
+  // Auto-resize functionality optimized for 3-line maximum
   const handleAutoResize = useCallback(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -144,21 +138,47 @@ export default function ChatInput() {
     textarea.style.height = 'auto';
     const scrollHeight = textarea.scrollHeight;
 
-    // Apply height with constraints - smaller max heights
-    const maxHeight = isMobile ? 120 : 160;
-    const newHeight = Math.min(scrollHeight, maxHeight);
+    // Calculate line height and max height for exactly 3 lines
+    const lineHeight = 24; // 16px font * 1.4 line-height + padding
+    const maxHeight = lineHeight * 3 + 16; // 3 lines + padding
+    const minHeight = isMobile ? 44 : 48;
+
+    // Apply height with constraints
+    const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
     textarea.style.height = `${newHeight}px`;
+
+    // Enable internal scrolling when content exceeds 3 lines
+    if (scrollHeight > maxHeight) {
+      textarea.style.overflowY = 'auto';
+    } else {
+      textarea.style.overflowY = 'hidden';
+    }
   }, [isMobile]);
 
-  // Enhanced focus management
+  // Enhanced focus management with mobile optimization
   const handleFocus = useCallback(() => {
     setIsFocused(true);
     handleAutoResize();
-  }, [handleAutoResize]);
+
+    // Mobile-specific optimizations
+    if (isMobile) {
+      // Prevent body scroll when input is focused
+      document.body.style.overflow = 'hidden';
+      // Ensure input stays in view
+      setTimeout(() => {
+        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300); // Delay to allow keyboard animation
+    }
+  }, [handleAutoResize, isMobile]);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
-  }, []);
+
+    // Restore body scroll on mobile when input loses focus
+    if (isMobile) {
+      document.body.style.overflow = 'auto';
+    }
+  }, [isMobile]);
 
   // Enhanced send handler with security validation and haptic feedback
   const handleSend = useCallback(async () => {
@@ -284,38 +304,38 @@ export default function ChatInput() {
     setIsComposing(false);
   }, []);
 
-  // Enhanced color system with dark grey send button
+  // Enhanced color system with modern clean design
   const colorSystem = useMemo(() => ({
     shell: {
       bg: "#FFFFFF",
-      border: isFocused ? "#3b82f6" : "#CBD5E1",
+      border: isFocused ? "#4F9CF9" : "#E2E8F0",
       shadow: isFocused
-        ? "0 0 0 1px #3b82f6, 0 8px 24px rgba(59, 130, 246, 0.15)"
-        : "0 2px 8px rgba(0, 0, 0, 0.04)"
+        ? "0 0 0 1px #4F9CF9, 0 8px 32px rgba(79, 156, 249, 0.12)"
+        : "0 2px 12px rgba(0, 0, 0, 0.04)"
     },
     page: {
       bg: "#FAFBFC",
-      borderTop: "#E2E8F0"
+      borderTop: "transparent" // Remove border for cleaner look
     },
     button: {
-      bg: txt.trim() ? "#374151" : "#F8FAFC", // Dark grey when ready
-      color: txt.trim() ? "white" : "#64748B",
-      border: txt.trim() ? "none" : "1px solid #CBD5E1",
+      bg: txt.trim() ? "#4F9CF9" : "#F1F5F9", // Brand blue when ready, light grey when empty
+      color: txt.trim() ? "white" : "#94A3B8",
+      border: "none", // Remove borders for cleaner look
       hover: {
-        bg: txt.trim() ? "#1F2937" : "#E2E8F0", // Darker grey on hover
-        border: txt.trim() ? "transparent" : "#94A3B8"
+        bg: txt.trim() ? "#3B82F6" : "#E2E8F0", // Darker blue on hover
+        border: "transparent"
       },
       disabled: {
         bg: "#F1F5F9",
-        color: "#94A3B8",
-        border: "#E2E8F0"
+        color: "#CBD5E1",
+        border: "transparent"
       }
     },
     text: {
       primary: "#1E293B",
       placeholder: "#94A3B8",
-      hint: "#94A3B8",
-      hover: "#94A3B8"
+      hint: "#64748B",
+      hover: "#64748B"
     }
   }), [isFocused, txt]);
 
@@ -324,7 +344,7 @@ export default function ChatInput() {
       ref={containerRef}
       w="full"
       bg={colorSystem.page.bg}
-      borderTopWidth="1px"
+      borderTopWidth="0" // Remove border for cleaner look
       borderColor={colorSystem.page.borderTop}
       position="sticky"
       bottom={0}
@@ -335,31 +355,38 @@ export default function ChatInput() {
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         // Safe area support for mobile devices
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
         // Performance optimizations
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
-        // Ensure input stays at bottom on mobile with proper sizing
+        // Optimized mobile input for native app feeling
         '@media (max-width: 768px)': {
-          paddingX: 3,
-          paddingY: 2,
-          position: 'sticky',
+          paddingX: 3, // Slightly increased for better touch targets
+          paddingY: 3, // Compact but comfortable padding
+          position: 'fixed', // Fixed positioning for better mobile behavior
           bottom: 0,
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-          // Prevent input from taking too much space
-          maxHeight: '120px',
+          left: 0,
+          right: 0,
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          // Allow expansion for 3 lines of text
+          maxHeight: '140px', // Increased to accommodate 3 lines + padding
+          zIndex: 1000, // Ensure it stays above content
+          // Clean modern background
+          background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(226, 232, 240, 0.3)',
         },
-        // Desktop optimization with centered container and enhanced styling
+        // Desktop optimization with centered container and clean styling
         '@media (min-width: 769px)': {
-          maxHeight: '160px', // Increased for better desktop experience
+          maxHeight: '160px', // Increased to accommodate 3 lines + padding
           display: 'flex',
           justifyContent: 'center',
-          paddingY: 6, // Increased vertical padding
-          paddingX: 4, // Add horizontal padding
-          // Subtle desktop-specific styling
-          borderTop: '1px solid rgba(226, 232, 240, 0.6)',
-          background: 'linear-gradient(180deg, rgba(248, 250, 252, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%)',
-          backdropFilter: 'blur(12px)',
+          paddingY: 4, // Reduced vertical padding for compact design
+          paddingX: 4, // Reduced horizontal padding
+          // Clean desktop-specific styling
+          background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(226, 232, 240, 0.2)',
         }
       }}
     >
@@ -373,11 +400,11 @@ export default function ChatInput() {
           xl: "1000px"   // Increased for XL screens
         }}
         px={{
-          base: 1,    // Reduced from 3 for wider input on mobile
-          sm: 2,      // Reduced from 3.5 for wider input on small screens
-          md: 8,      // Increased from 6
-          lg: 12,     // Increased from 8
-          xl: 16      // Increased from 12
+          base: 1,    // Minimal padding for maximum input width on mobile
+          sm: 2,      // Slightly more on small screens
+          md: 8,      // Maintained desktop spacing
+          lg: 12,     // Maintained large screen spacing
+          xl: 16      // Maintained XL screen spacing
         }}
       >
         <ScaleFade in={true} initialScale={0.95}>
@@ -387,8 +414,8 @@ export default function ChatInput() {
             borderWidth="0"
             borderColor="transparent"
             borderRadius={inputConfig.borderRadius}
-            px={{ base: 3, sm: 3.5, md: 0 }}
-            py={{ base: 2.5, sm: 3, md: 3.5, lg: 4, xl: 4.5 }}
+            px={{ base: 3, sm: 4, md: 0 }} // Optimized mobile padding for better touch targets
+            py={{ base: 3, sm: 3, md: 4, lg: 4, xl: 4 }} // Compact but comfortable padding
             alignItems="center"
             transition={animationConfig.transition}
             boxShadow="none"
@@ -428,15 +455,16 @@ export default function ChatInput() {
             autoComplete="off"
             autoCorrect="on"
             spellCheck="true"
-            // Enhanced border and styling for desktop/mobile
+            // Enhanced border and styling for modern clean design
             borderWidth="1px"
-            borderColor={isFocused ? "#3b82f6" : "rgba(203, 213, 225, 0.8)"}
-            borderRadius={inputConfig.borderRadius}
-            bg="rgba(255, 255, 255, 0.98)" // Slightly more opaque for better readability
-            backdropFilter="blur(12px)" // Increased blur for better glass effect
+            borderColor={isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.4)"}
+            borderRadius="16px" // More rounded for modern Apple-like design
+            bg="rgba(255, 255, 255, 0.98)" // Cleaner white background
+            backdropFilter="blur(20px)" // Enhanced blur for premium glass effect
+            lineHeight={inputConfig.lineHeight} // Consistent line height for proper 3-line calculation
             boxShadow={isFocused
-              ? "0 0 0 1px #3b82f6, 0 20px 50px rgba(59, 130, 246, 0.12)" // Enhanced desktop shadow
-              : "0 4px 16px rgba(0, 0, 0, 0.06)" // Better default shadow
+              ? "0 0 0 2px rgba(79, 156, 249, 0.2), 0 8px 32px rgba(79, 156, 249, 0.12)" // Modern focus shadow
+              : "0 2px 8px rgba(0, 0, 0, 0.06)" // Subtle default shadow
             }
             _placeholder={{
               color: colorSystem.text.placeholder,
@@ -447,21 +475,21 @@ export default function ChatInput() {
             }}
             _focus={{
               outline: "none",
-              borderColor: "#3b82f6",
-              boxShadow: "0 0 0 1px #3b82f6, 0 20px 50px rgba(59, 130, 246, 0.12)", // Enhanced focus shadow
+              borderColor: "#4F9CF9",
+              boxShadow: "0 0 0 1px #4F9CF9, 0 12px 40px rgba(79, 156, 249, 0.08)", // Clean focus shadow
               transform: animationConfig.focusTransform,
             }}
             _hover={{
-              borderColor: colorSystem.text.hover,
-              boxShadow: "0 12px 32px rgba(0, 0, 0, 0.08)", // Enhanced hover shadow
-              transform: prefersReducedMotion ? 'none' : 'translateY(-2px)', // Slightly more lift
+              borderColor: "#4F9CF9",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)", // Subtle hover shadow
+              transform: prefersReducedMotion ? 'none' : 'translateY(-1px)', // Gentle lift
             }}
             _disabled={{
               opacity: 0.6,
               cursor: "not-allowed",
               bg: "#F8FAFC"
             }}
-            // Enhanced touch interactions with performance optimization
+            // Enhanced touch interactions with performance optimization and scrollbar styling
             sx={{
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent',
@@ -472,31 +500,24 @@ export default function ChatInput() {
               // Performance optimizations
               willChange: 'height',
               backfaceVisibility: 'hidden',
-              // Enhanced scrolling
+              // Enhanced scrolling with hidden scrollbar
               overflowY: 'auto',
-              scrollbarWidth: 'thin',
+              scrollbarWidth: 'none',
+              '-ms-overflow-style': 'none',
               '&::-webkit-scrollbar': {
-                width: '4px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'transparent',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: '#CBD5E1',
-                borderRadius: '2px',
+                display: 'none',
               },
             }}
             color={colorSystem.text.primary}
-            pr={{ base: "4rem", sm: "4.5rem", md: "5rem", lg: "5.5rem" }} // Adjusted for new button sizes
-            pl={{ base: "1rem", md: "1.5rem" }}
-            py={{ base: "1rem", md: "1.25rem" }}
+            pr={{ base: "3rem", sm: "3.5rem", md: "4.5rem", lg: "5rem" }} // Optimized for mobile width
+            pl={{ base: "1rem", md: "1.5rem" }} // Reduced mobile padding
+            py={{ base: "0.875rem", md: "1.25rem" }} // Reduced mobile padding
             fontSize={inputConfig.fontSize}
-            lineHeight="1.5"
             fontWeight="400"
           />
 
           <InputRightElement
-            width={{ base: "3.5rem", sm: "4rem", md: "4.5rem", lg: "5rem" }} // Adjusted for new button sizes
+            width={{ base: "3rem", sm: "3.5rem", md: "4rem", lg: "4.5rem" }} // Adjusted for smaller button sizes
             top="50%"
             transform="translateY(-50%)"
             pr={{ base: 1, sm: 1, md: 1.5, lg: 2 }} // Adjusted padding
@@ -507,11 +528,11 @@ export default function ChatInput() {
           >
             <HStack spacing={{ base: 1, md: 1.5 }} align="center" w="100%" justify="flex-end">
 
-              {/* Smaller Circular Dark Grey Send Button */}
+              {/* Modern Clean Send Button */}
               <IconButton
                 aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
                 aria-disabled={busy || !txt.trim()}
-                icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 18 : 22) : (isMobile ? 16 : 20)} />}
+                icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 16 : 18) : (isMobile ? 14 : 16)} />}
                 onClick={handleSend}
                 isLoading={busy}
                 size="sm"
@@ -527,25 +548,25 @@ export default function ChatInput() {
                   bg: colorSystem.button.hover.bg,
                   borderColor: colorSystem.button.hover.border,
                   transform: animationConfig.scale,
-                  boxShadow: txt.trim() ? "0 4px 12px rgba(55, 65, 81, 0.3)" : "0 2px 8px rgba(0, 0, 0, 0.1)"
+                  boxShadow: txt.trim() ? "0 4px 16px rgba(79, 156, 249, 0.25)" : "0 2px 8px rgba(0, 0, 0, 0.08)"
                 }}
                 _focus={{
                   boxShadow: txt.trim()
-                    ? "0 0 0 2px rgba(55, 65, 81, 0.3)"
-                    : "0 0 0 2px rgba(100, 116, 139, 0.3)",
+                    ? "0 0 0 2px rgba(79, 156, 249, 0.3)"
+                    : "0 0 0 2px rgba(148, 163, 184, 0.3)",
                   outline: "2px solid transparent",
                   outlineOffset: "2px"
                 }}
                 _active={{
-                  transform: prefersReducedMotion ? 'none' : "scale(0.90)",
-                  bg: txt.trim() ? "#111827" : "#E2E8F0"
+                  transform: prefersReducedMotion ? 'none' : "scale(0.95)",
+                  bg: txt.trim() ? "#3B82F6" : "#E2E8F0"
                 }}
                 _disabled={{
                   bg: colorSystem.button.disabled.bg,
                   color: colorSystem.button.disabled.color,
                   borderColor: colorSystem.button.disabled.border,
                   cursor: "not-allowed",
-                  opacity: 0.6,
+                  opacity: 0.5,
                   transform: "none"
                 }}
                 borderRadius="full"
@@ -571,37 +592,7 @@ export default function ChatInput() {
           </InputGroup>
         </ScaleFade>
 
-        {/* Enhanced Input Hints and Status */}
-        <Fade in={isFocused || txt.trim().length > 0}>
-          <VStack spacing={1} mt={2} id="input-hints">
-            {/* Send Instructions */}
-            {txt.trim() && (
-              <HStack spacing={3} justify="center" w="full">
-                <Text
-                  fontSize={{ base: "2xs", md: "xs" }}
-                  color={colorSystem.text.hint}
-                  opacity={0.8}
-                  fontWeight="500"
-                >
-                  {isMobile ? "⏎ Send" : "⏎ Send • ⇧⏎ New line"}
-                </Text>
-              </HStack>
-            )}
 
-            {/* Desktop Shortcuts Hint */}
-            {!isMobile && isFocused && !txt.trim() && (
-              <Text
-                fontSize="2xs"
-                color={colorSystem.text.hint}
-                opacity={0.6}
-                textAlign="center"
-                fontWeight="400"
-              >
-                Tip: Use Ctrl+K to focus input • Esc to clear
-              </Text>
-            )}
-          </VStack>
-        </Fade>
       </Box>
     </Box>
   );

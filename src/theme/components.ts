@@ -21,6 +21,20 @@ const responsivePatterns = {
   }
 };
 
+// Enhanced Box component to remove focus outlines
+export const Box = defineStyleConfig({
+  baseStyle: {
+    _focus: {
+      outline: 'none',
+      boxShadow: 'none',
+    },
+    _focusVisible: {
+      outline: 'none',
+      boxShadow: 'none',
+    },
+  },
+});
+
 // Enhanced Button component with extracted patterns
 export const Button = defineStyleConfig({
   baseStyle: {
@@ -335,6 +349,7 @@ export const Textarea = defineStyleConfig({
 
 // Export all components
 export const components = {
+  Box,
   Button,
   Input,
   Card,
