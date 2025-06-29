@@ -218,9 +218,9 @@ export const ChatMessage = memo<ChatMessageProps>(({
             : "0 6px 20px rgba(0, 0, 0, 0.08)",
         }}
         sx={{
-          // Enhanced user message styling
+          // Enhanced user message styling with glass effects
           ...(isUser && {
-            background: 'linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)',
+            background: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -228,10 +228,15 @@ export const ChatMessage = memo<ChatMessageProps>(({
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
               borderRadius: '2xl',
               pointerEvents: 'none'
             }
+          }),
+          // Enhanced AI message glass effects
+          ...(!isUser && !isError && {
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
           }),
           '@media (max-width: 768px)': {
             minHeight: '44px',

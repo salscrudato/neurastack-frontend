@@ -416,13 +416,53 @@ export const loadingStates = {
   },
 };
 
-// Responsive breakpoints
+// Enhanced responsive breakpoints with mobile-first approach
 export const breakpoints = {
-  sm: '30em',    // 480px
-  md: '48em',    // 768px
-  lg: '62em',    // 992px
-  xl: '80em',    // 1280px
-  '2xl': '96em', // 1536px
+  xs: '20em',    // 320px - Small phones
+  sm: '30em',    // 480px - Large phones
+  md: '48em',    // 768px - Tablets
+  lg: '62em',    // 992px - Small laptops
+  xl: '80em',    // 1280px - Desktops
+  '2xl': '96em', // 1536px - Large screens
+};
+
+// Mobile-specific responsive patterns
+export const mobilePatterns = {
+  // Touch target sizes
+  touchTargets: {
+    small: { base: '44px', md: '40px' },
+    medium: { base: '48px', md: '44px' },
+    large: { base: '56px', md: '48px' },
+    xlarge: { base: '64px', md: '52px' },
+  },
+
+  // Typography scaling
+  typography: {
+    xs: { base: '12px', md: '11px' },
+    sm: { base: '14px', md: '13px' },
+    md: { base: '16px', md: '14px' },
+    lg: { base: '18px', md: '16px' },
+    xl: { base: '20px', md: '18px' },
+    '2xl': { base: '24px', md: '20px' },
+    '3xl': { base: '30px', md: '24px' },
+  },
+
+  // Spacing adjustments
+  spacing: {
+    xs: { base: 2, md: 1 },
+    sm: { base: 3, md: 2 },
+    md: { base: 4, md: 3 },
+    lg: { base: 6, md: 4 },
+    xl: { base: 8, md: 6 },
+  },
+
+  // Container padding
+  containerPadding: {
+    base: { px: 4, py: 3 },
+    sm: { px: 6, py: 4 },
+    md: { px: 8, py: 6 },
+    lg: { px: 12, py: 8 },
+  },
 };
 
 // Export complete design system theme

@@ -65,61 +65,91 @@ export default defineConfig({
     }
   },
 
-  // Dev server settings
-  server: {
-    port: 3000, // Port to serve the app during development
-    open: true  // Automatically open the browser on server start
-  },
-
   // Preview settings used for `vite preview` (usually post-build preview)
   preview: {
-    port: 4173 // Port for preview server
+    port: 4173, // Port for preview server
+    open: true,
   },
 
-  // Build optimizations
+  // Enhanced build optimizations
   build: {
     // Target modern browsers for smaller bundles
     target: 'esnext',
 
-    // Enable minification
-    minify: 'esbuild',
+    // Enable minification with terser for better compression
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.log in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+      },
+      mangle: {
+        safari10: true,
+      },
+    },
 
-    // Generate source maps for debugging
+    // Generate source maps for debugging (disabled for production)
     sourcemap: false,
 
-    // Optimize chunk splitting for better caching and loading
+    // Enhanced chunk splitting for better caching and loading
     rollupOptions: {
       output: {
+        // Improved chunk naming for better caching
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+
         manualChunks: {
-          // Core React chunk (most stable) - include framer-motion here to ensure React context availability
-          vendor: ['react', 'react-dom', 'framer-motion'],
+          // Core React chunk (most stable)
+          vendor: ['react', 'react-dom'],
+
+          // Animation library (separate for better caching)
+          animation: ['framer-motion'],
 
           // UI library chunk
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'styled-components'],
+          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
+
+          // Styling libraries
+          styling: ['styled-components'],
 
           // State management and utilities
           state: ['zustand'],
 
-          // Firebase services
+          // Firebase services (split for better loading)
           firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
 
           // Icons (separate for better caching)
-          icons: ['react-icons/pi'],
+          icons: ['react-icons/pi', '@heroicons/react'],
 
           // Markdown rendering (used in chat)
           markdown: ['react-markdown', 'remark-gfm'],
 
           // Router (separate for better caching)
           router: ['react-router-dom'],
+
+          // HTTP client
+          http: ['axios'],
+
+          // Date utilities
+          utils: ['date-fns', 'nanoid'],
         },
       },
+      // External dependencies that should not be bundled
+      external: [],
     },
 
-    // Chunk size warning limit
-    chunkSizeWarningLimit: 1000,
+    // Reduced chunk size warning limit for better performance
+    chunkSizeWarningLimit: 800,
 
     // Optimize CSS
     cssCodeSplit: true,
+
+    // Enable CSS minification
+    cssMinify: true,
+
+    // Optimize asset handling
+    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
   },
 
   // Enhanced dependency optimization for better performance
@@ -127,6 +157,7 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
+      'react/jsx-runtime',
       '@chakra-ui/react',
       '@emotion/react',
       '@emotion/styled',
@@ -135,8 +166,29 @@ export default defineConfig({
       'remark-gfm',
       'react-router-dom',
       'framer-motion',
-      'styled-components'
+      'styled-components',
+      'axios',
+      'date-fns',
+      'nanoid',
+      '@heroicons/react/24/solid',
+      'react-icons/pi'
     ],
-    exclude: ['firebase'], // Firebase works better when not pre-bundled
+    exclude: [
+      'firebase', // Firebase works better when not pre-bundled
+      'firebase/app',
+      'firebase/auth',
+      'firebase/firestore'
+    ],
+    // Force optimization of these packages
+    force: true,
+  },
+
+  // Enhanced server configuration for development
+  server: {
+    port: 3000,
+    open: true,
+    hmr: {
+      overlay: false, // Disable error overlay for better development experience
+    },
   },
 });

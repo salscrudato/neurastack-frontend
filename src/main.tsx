@@ -78,6 +78,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>
 );
 
+// Performance optimizations will be initialized by individual components as needed
+
 // Load API test utilities in development mode
 // if (import.meta.env.DEV) {
 //   import('./utils/api-test').then(() => {

@@ -16,14 +16,6 @@ export const useUpdateManager = () => {
       // Clear version cache
       localStorage.removeItem(VERSION_KEY);
 
-      // Clear all caches
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
-        );
-      }
-
       // Force reload
       window.location.reload();
     } catch (error) {
@@ -126,13 +118,22 @@ export const cacheManager = {
 };
 
 // Force refresh utility - simplified without service worker
-export const forceRefresh = () => {
+export const forceRefresh = async () => {
   // Clear all storage
   localStorage.clear();
   sessionStorage.clear();
 
-  // Clear caches
-  cacheManager.clearAllCaches();
+  // Clear caches (simplified without service worker)
+  try {
+    // Clear any remaining cache data
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('neurastack-')) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch (error) {
+    console.warn('Cache cleanup failed:', error);
+  }
 
   // Force reload with cache bypass
   window.location.reload();

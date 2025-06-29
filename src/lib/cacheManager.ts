@@ -504,12 +504,6 @@ export async function clearAllCaches(): Promise<void> {
   // Clear our cache manager
   cacheManager.invalidateAll('manual-clear');
 
-  // Clear service worker caches
-  if ('caches' in window) {
-    const names = await caches.keys();
-    await Promise.all(names.map(name => caches.delete(name)));
-  }
-
   // Clear localStorage
   Object.keys(localStorage).forEach(key => {
     if (key.startsWith('neurastack-')) {

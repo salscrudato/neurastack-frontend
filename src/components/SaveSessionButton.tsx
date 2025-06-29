@@ -131,20 +131,24 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             h="auto"
             minH="36px"
             fontSize="sm"
-            bg={isSaved ? "#10B981" : "#4F9CF9"}
+            bg={isSaved ? "linear-gradient(135deg, #10B981 0%, #059669 100%)" : "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)"}
             color="white"
             border="none"
+            boxShadow={isSaved ? "0 4px 12px rgba(16, 185, 129, 0.25)" : "0 4px 12px rgba(79, 156, 249, 0.25)"}
             _hover={{
-              bg: isSaved ? "#059669" : "#3B82F6",
+              bg: isSaved ? "linear-gradient(135deg, #059669 0%, #047857 100%)" : "linear-gradient(135deg, #3B82F6 0%, #5B21B6 100%)",
+              transform: "translateY(-1px)",
+              boxShadow: isSaved ? "0 8px 20px rgba(16, 185, 129, 0.35)" : "0 8px 20px rgba(79, 156, 249, 0.35)",
             }}
             _active={{
-              bg: isSaved ? "#047857" : "#2563EB",
+              transform: "translateY(0)",
+              boxShadow: isSaved ? "0 2px 8px rgba(16, 185, 129, 0.3)" : "0 2px 8px rgba(79, 156, 249, 0.3)",
             }}
             _focus={{
               outline: "none",
-              boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.5)",
+              boxShadow: isSaved ? "0 0 0 2px rgba(16, 185, 129, 0.5)" : "0 0 0 2px rgba(79, 156, 249, 0.5)",
             }}
-            transition="all 150ms ease"
+            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
             disabled={isSaving || isSaved}
             _disabled={{
               opacity: 0.6,
@@ -166,17 +170,25 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             h="auto"
             minH="36px"
             fontSize="sm"
-            bg="white"
+            bg="rgba(255, 255, 255, 0.9)"
             color="#DC2626"
             border="1px solid"
-            borderColor="#DC2626"
+            borderColor="rgba(220, 38, 38, 0.6)"
+            sx={{
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
+            boxShadow="0 2px 8px rgba(220, 38, 38, 0.1)"
             _hover={{
-              bg: "#FEF2F2",
+              bg: "rgba(254, 242, 242, 0.95)",
               borderColor: "#B91C1C",
-              color: "#B91C1C"
+              color: "#B91C1C",
+              transform: "translateY(-1px)",
+              boxShadow: "0 4px 12px rgba(220, 38, 38, 0.2)"
             }}
             _active={{
-              bg: "#FEE2E2",
+              transform: "translateY(0)",
+              bg: "rgba(254, 226, 226, 0.95)",
               borderColor: "#991B1B",
               color: "#991B1B"
             }}
@@ -184,7 +196,7 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
               outline: "none",
               boxShadow: "0 0 0 2px rgba(220, 38, 38, 0.5)",
             }}
-            transition="all 150ms ease"
+            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
             disabled={isSaving}
             _disabled={{
               opacity: 0.4,

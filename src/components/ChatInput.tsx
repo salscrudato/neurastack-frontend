@@ -304,26 +304,28 @@ export default function ChatInput() {
     setIsComposing(false);
   }, []);
 
-  // Enhanced color system with modern clean design
+  // Enhanced color system with modern glass design
   const colorSystem = useMemo(() => ({
     shell: {
-      bg: "#FFFFFF",
-      border: isFocused ? "#4F9CF9" : "#E2E8F0",
+      bg: "rgba(255, 255, 255, 0.95)",
+      border: isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.8)",
       shadow: isFocused
-        ? "0 0 0 1px #4F9CF9, 0 8px 32px rgba(79, 156, 249, 0.12)"
-        : "0 2px 12px rgba(0, 0, 0, 0.04)"
+        ? "0 0 0 1px #4F9CF9, 0 8px 32px rgba(79, 156, 249, 0.15), 0 4px 16px rgba(79, 156, 249, 0.08)"
+        : "0 2px 12px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.02)"
     },
     page: {
       bg: "#FAFBFC",
       borderTop: "transparent" // Remove border for cleaner look
     },
     button: {
-      bg: txt.trim() ? "#4F9CF9" : "#F1F5F9", // Brand blue when ready, light grey when empty
+      bg: txt.trim() ? "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)" : "#F1F5F9",
       color: txt.trim() ? "white" : "#94A3B8",
       border: "none", // Remove borders for cleaner look
       hover: {
-        bg: txt.trim() ? "#3B82F6" : "#E2E8F0", // Darker blue on hover
-        border: "transparent"
+        bg: txt.trim() ? "linear-gradient(135deg, #3B82F6 0%, #5B21B6 100%)" : "#E2E8F0",
+        border: "transparent",
+        transform: "translateY(-1px)",
+        shadow: txt.trim() ? "0 8px 20px rgba(79, 156, 249, 0.35)" : "0 4px 12px rgba(0, 0, 0, 0.08)"
       },
       disabled: {
         bg: "#F1F5F9",
@@ -452,14 +454,14 @@ export default function ChatInput() {
             spellCheck="true"
             // Enhanced border and styling for modern clean design
             borderWidth="1px"
-            borderColor={isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.4)"}
-            borderRadius="16px" // More rounded for modern Apple-like design
-            bg="rgba(255, 255, 255, 0.98)" // Cleaner white background
-            backdropFilter="blur(20px)" // Enhanced blur for premium glass effect
+            borderColor={isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.6)"}
+            borderRadius="20px" // More rounded for modern Apple-like design
+            bg="rgba(255, 255, 255, 0.95)" // Enhanced glass background
+            backdropFilter="blur(24px)" // Enhanced blur for premium glass effect
             lineHeight={inputConfig.lineHeight} // Consistent line height for proper 3-line calculation
             boxShadow={isFocused
-              ? "0 0 0 2px rgba(79, 156, 249, 0.2), 0 8px 32px rgba(79, 156, 249, 0.12)" // Modern focus shadow
-              : "0 2px 8px rgba(0, 0, 0, 0.06)" // Subtle default shadow
+              ? "0 0 0 1px rgba(79, 156, 249, 0.3), 0 8px 32px rgba(79, 156, 249, 0.15), 0 4px 16px rgba(79, 156, 249, 0.08)" // Enhanced focus shadow
+              : "0 2px 12px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.02)" // Enhanced glass shadow
             }
             _placeholder={{
               color: colorSystem.text.placeholder,

@@ -36,12 +36,14 @@ const modernColors = {
     },
   },
 
-  // Enhanced brand colors
+  // Enhanced brand colors with modern gradients
   brand: {
     gradient: {
-      primary: "linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)",
-      secondary: "linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%)",
-      accent: "linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)",
+      primary: "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)",
+      secondary: "linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)",
+      accent: "linear-gradient(135deg, #06B6D4 0%, #0EA5E9 100%)",
+      glass: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.1) 100%)",
+      iridescent: "linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 25%, #06B6D4 50%, #10B981 75%, #F59E0B 100%)",
     },
     primary: "#4F9CF9",
     secondary: "#8B5CF6",

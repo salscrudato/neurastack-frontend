@@ -34,6 +34,15 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           minHeight: '-webkit-fill-available',
         },
         overflow: 'hidden',
+        // Enhanced mobile viewport handling
+        '@media (max-width: 768px)': {
+          minHeight: '100vh',
+          height: '100vh',
+          maxHeight: '100vh',
+        },
+        // Safe area support
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
       }}
     >
       {!isSplashPage && (

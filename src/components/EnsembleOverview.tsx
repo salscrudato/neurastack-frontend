@@ -42,12 +42,13 @@ interface EnsembleOverviewProps {
 // ============================================================================
 
 export function EnsembleOverview({ data, compact = false }: EnsembleOverviewProps) {
-  // Modern color values
-  const cardBg = 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)';
-  const borderColor = '#E2E8F0';
+  // Enhanced glass design values
+  const cardBg = 'rgba(248, 250, 252, 0.9)';
+  const borderColor = 'rgba(226, 232, 240, 0.6)';
   const textColor = '#1E293B';
   const mutedColor = '#64748B';
   const accentColor = '#4F9CF9';
+  const glassBlur = 'blur(16px)';
 
   // Calculate success rate
   const successRate = data.totalRoles > 0 ? (data.successfulRoles / data.totalRoles) * 100 : 0;
@@ -72,11 +73,16 @@ export function EnsembleOverview({ data, compact = false }: EnsembleOverviewProp
   return (
     <Box
       bg={cardBg}
-      borderRadius="xl"
+      borderRadius="20px"
       border="1px solid"
       borderColor={borderColor}
       p={compact ? 4 : 6}
       w="100%"
+      sx={{
+        backdropFilter: glassBlur,
+        WebkitBackdropFilter: glassBlur,
+      }}
+      boxShadow="0 4px 16px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.02)"
     >
       <VStack spacing={compact ? 3 : 4} align="stretch">
         {/* Header */}

@@ -1,15 +1,15 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  Text,
+    Box,
+    Flex,
+    IconButton,
+    Text,
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
 import ChatInput from '../components/ChatInput';
 import ChatMessage from '../components/ChatMessage';
 import { Loader } from '../components/LoadingSpinner';
-import OfflineIndicator from '../components/OfflineIndicator';
+// Removed OfflineIndicator as PWA features were removed
 import { SaveSessionButton } from '../components/SaveSessionButton';
 import { useReducedMotion } from '../hooks/useAccessibility';
 import { useChatStore } from '../store/useChatStore';
@@ -285,8 +285,7 @@ export function ChatPage() {
         }
       }}
     >
-      {/* Offline indicator */}
-      <OfflineIndicator />
+      {/* Offline indicator removed with PWA features */}
 
       {/* Enhanced hero prompt with centered container */}
       {msgs.length === 0 && (

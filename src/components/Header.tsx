@@ -57,12 +57,12 @@ export function Header() {
   const primaryColor = useColorModeValue('blue.500', 'blue.300');
 
   const headerBg = useColorModeValue(
-    'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(37,99,235,0.08) 100%)',
-    'linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(37,99,235,0.16) 100%)'
+    'linear-gradient(135deg, rgba(79,156,249,0.06) 0%, rgba(99,102,241,0.08) 100%)',
+    'linear-gradient(135deg, rgba(79,156,249,0.12) 0%, rgba(99,102,241,0.16) 100%)'
   );
   const headerBorder = useColorModeValue(
-    '1px solid rgba(59,130,246,0.1)',
-    '1px solid rgba(59,130,246,0.2)'
+    '1px solid rgba(79,156,249,0.12)',
+    '1px solid rgba(79,156,249,0.2)'
   );
 
 
@@ -162,19 +162,22 @@ export function Header() {
           onKeyDown={isDisabled ? undefined : (e: React.KeyboardEvent) => handleMenuKeyDown(e, item.path)}
           w="100%"
           p={4}
-          borderRadius="16px"
-          transition="all 0.2s ease"
-          bg={isActive ? "rgba(79, 156, 249, 0.1)" : "rgba(255, 255, 255, 0.6)"}
-          border={isActive ? "1px solid rgba(79, 156, 249, 0.2)" : "1px solid rgba(0, 0, 0, 0.05)"}
+          borderRadius="18px"
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+          bg={isActive ? "rgba(79, 156, 249, 0.12)" : "rgba(255, 255, 255, 0.8)"}
+          border={isActive ? "1px solid rgba(79, 156, 249, 0.25)" : "1px solid rgba(79, 156, 249, 0.08)"}
           opacity={isDisabled ? 0.5 : 1}
           cursor={isDisabled ? "not-allowed" : "pointer"}
-          backdropFilter="blur(12px)"
-          boxShadow={isActive ? "0 4px 12px rgba(79, 156, 249, 0.15)" : "0 2px 8px rgba(0, 0, 0, 0.04)"}
+          sx={{
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }}
+          boxShadow={isActive ? "0 4px 16px rgba(79, 156, 249, 0.2), 0 8px 32px rgba(79, 156, 249, 0.08)" : "0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.02)"}
           _hover={isDisabled ? {} : {
-            bg: isActive ? "rgba(79, 156, 249, 0.15)" : "rgba(255, 255, 255, 0.8)",
+            bg: isActive ? "rgba(79, 156, 249, 0.18)" : "rgba(79, 156, 249, 0.12)",
             transform: "translateY(-2px)",
-            boxShadow: isActive ? "0 8px 24px rgba(79, 156, 249, 0.2)" : "0 8px 24px rgba(0, 0, 0, 0.1)",
-            borderColor: isActive ? "rgba(79, 156, 249, 0.3)" : "rgba(0, 0, 0, 0.1)"
+            boxShadow: "0 6px 20px rgba(79, 156, 249, 0.25), 0 12px 40px rgba(79, 156, 249, 0.1)",
+            borderColor: "rgba(79, 156, 249, 0.35)"
           }}
           _focus={isDisabled ? {} : {
             outline: "none",
@@ -231,19 +234,20 @@ export function Header() {
       top={0}
       zIndex={1100}
       w="100%"
-      // Blue gradient theme design
+      // Enhanced glass theme design
       bg={headerBg}
-      backdropFilter="blur(24px)"
+      backdropFilter="blur(32px)"
       borderBottom={headerBorder}
-      // Modern minimal styling
+      // Modern glass styling
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
-        // Clean shadow
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+        // Enhanced glass shadow
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)',
         // Mobile optimizations
         '@media (max-width: 768px)': {
-          borderBottom: '1px solid rgba(0, 0, 0, 0.04)',
+          borderBottom: '1px solid rgba(79, 156, 249, 0.08)',
+          backdropFilter: 'blur(24px)',
         }
       }}
     >
@@ -259,7 +263,7 @@ export function Header() {
         minH={{ base: "56px", md: "60px" }}
       >
 
-        {/* Blue-themed Menu Button */}
+        {/* Enhanced Glass Menu Button */}
         <IconButton
           aria-label="Open navigation menu"
           aria-expanded={isOpen}
@@ -269,25 +273,32 @@ export function Header() {
           variant="ghost"
           size="md"
           color={primaryColor}
-          bg="rgba(59, 130, 246, 0.08)"
-          borderRadius="10px"
-          minH="36px"
-          minW="36px"
+          bg="rgba(79, 156, 249, 0.1)"
+          borderRadius="12px"
+          minH="40px"
+          minW="40px"
           position="absolute"
-          left="2.5"
-          transition="all 0.2s ease"
+          left="3"
+          sx={{
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
+          border="1px solid rgba(79, 156, 249, 0.2)"
+          boxShadow="0 2px 8px rgba(79, 156, 249, 0.1)"
+          transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           _hover={{
-            bg: "rgba(59, 130, 246, 0.12)",
-            color: "#1D4ED8",
-            transform: "translateY(-1px)"
+            bg: "rgba(79, 156, 249, 0.15)",
+            color: "#3B82F6",
+            transform: "translateY(-1px)",
+            boxShadow: "0 4px 12px rgba(79, 156, 249, 0.2)"
           }}
           _active={{
             transform: "translateY(0)",
-            bg: "rgba(59, 130, 246, 0.16)"
+            bg: "rgba(79, 156, 249, 0.2)"
           }}
           _focus={{
             outline: "none",
-            boxShadow: "0 0 0 1px rgba(31, 117, 255, 0.3)"
+            boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
           }}
         />
 
@@ -347,12 +358,15 @@ export function Header() {
 
             <DrawerHeader
               borderBottomWidth="1px"
-              borderColor="rgba(0, 0, 0, 0.06)"
+              borderColor="rgba(79, 156, 249, 0.1)"
               pb={8}
               pt={8}
               px={8}
-              bg="rgba(255, 255, 255, 0.5)"
-              backdropFilter="blur(16px)"
+              bg="rgba(255, 255, 255, 0.8)"
+              sx={{
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+              }}
             >
               <VStack spacing={4} align="start">
                 <BrandLogo

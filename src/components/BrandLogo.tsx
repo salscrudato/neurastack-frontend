@@ -22,7 +22,7 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
 }, ref) => {
   // Adapt gradient to light / dark mode for a cleaner, on‑brand look
   const gradient = useColorModeValue(
-    'linear(135deg, #2563EB 0%, #1D4ED8 50%, #1E40AF 100%)',   // light
+    'linear(135deg, #4F9CF9 0%, #6366F1 50%, #8B5CF6 100%)',   // light - blue to purple
     'linear(135deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%)'    // dark
   );
 

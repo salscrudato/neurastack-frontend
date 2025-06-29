@@ -10,20 +10,38 @@ export function useMobileOptimization() {
   const [viewportHeight, setViewportHeight] = useState(0);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-  // Detect mobile device and touch capability
+  // Enhanced mobile device and touch capability detection
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                    window.innerWidth <= 768;
-      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      
-      setIsMobile(mobile);
-      setIsTouch(touch);
+      // More comprehensive mobile detection
+      const userAgent = navigator.userAgent.toLowerCase();
+      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i;
+      const isMobileUA = mobileRegex.test(userAgent);
+      const isMobileWidth = window.innerWidth <= 768;
+      const isTabletWidth = window.innerWidth <= 1024 && window.innerWidth > 768;
+
+      // Enhanced touch detection
+      const hasTouch = 'ontouchstart' in window ||
+                      navigator.maxTouchPoints > 0 ||
+                      (window as any).DocumentTouch && document instanceof (window as any).DocumentTouch;
+
+      setIsMobile(isMobileUA || isMobileWidth);
+      setIsTouch(hasTouch);
+
+      // Set CSS custom properties for responsive design
+      document.documentElement.style.setProperty('--is-mobile', isMobileUA || isMobileWidth ? '1' : '0');
+      document.documentElement.style.setProperty('--is-tablet', isTabletWidth ? '1' : '0');
+      document.documentElement.style.setProperty('--viewport-width', `${window.innerWidth}px`);
+      document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
     };
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener('orientationchange', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('orientationchange', checkMobile);
+    };
   }, []);
 
   // Track viewport height changes (for virtual keyboard detection)

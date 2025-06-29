@@ -58,13 +58,14 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
   const isFailed = model.status === 'failed';
   const isSuccess = model.status === 'success';
 
-  // Enhanced modern color values with subtle gradients
-  const cardBg = 'linear-gradient(135deg, #FFFFFF 0%, #FAFBFC 100%)';
-  const cardHoverBg = 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)';
-  const borderColor = '#E2E8F0';
+  // Enhanced modern glass design with improved gradients
+  const cardBg = 'rgba(255, 255, 255, 0.9)';
+  const cardHoverBg = 'rgba(255, 255, 255, 0.95)';
+  const borderColor = 'rgba(226, 232, 240, 0.6)';
   const textColor = '#1E293B';
   const shadowColor = 'rgba(0, 0, 0, 0.04)';
-  const hoverShadowColor = 'rgba(79, 156, 249, 0.15)';
+  const hoverShadowColor = 'rgba(79, 156, 249, 0.2)';
+  const glassBlur = 'blur(12px)';
 
   // Status colors and icons
   const statusColor = isFailed ? 'red' : isSuccess ? 'green' : 'yellow';
@@ -89,11 +90,16 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
         bg={cardBg}
         borderColor={borderColor}
         borderWidth="1px"
-        boxShadow={`0 1px 4px ${shadowColor}`}
+        boxShadow={`0 2px 8px ${shadowColor}, 0 8px 24px rgba(0, 0, 0, 0.02)`}
+        borderRadius="16px"
+        sx={{
+          backdropFilter: glassBlur,
+          WebkitBackdropFilter: glassBlur,
+        }}
         _hover={{
           bg: cardHoverBg,
           transform: "translateY(-2px)",
-          boxShadow: `0 4px 12px ${hoverShadowColor}`,
+          boxShadow: `0 4px 16px ${hoverShadowColor}, 0 8px 32px rgba(79, 156, 249, 0.08)`,
           borderColor: "#4F9CF9"
         }}
         _active={{
@@ -108,7 +114,6 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
         isDisabled={isFailed}
         cursor={isFailed ? "not-allowed" : "pointer"}
         p={compact ? 2 : 3}
-        borderRadius="lg"
       >
         <VStack spacing={compact ? 1.5 : 2} w="100%" align="stretch">
           <HStack justify="space-between" w="100%" align="center">

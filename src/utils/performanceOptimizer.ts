@@ -1,9 +1,11 @@
 /**
- * Performance Optimization Utilities
- * 
+ * Enhanced Performance Optimization Utilities
+ *
  * Collection of utilities to optimize app performance, reduce bundle size,
  * and improve user experience across the NeuraStack application.
  */
+
+import React from 'react';
 
 // ============================================================================
 // Lazy Loading Utilities
@@ -213,7 +215,6 @@ export function createImageLoader(src: string, _options: {
 // React Optimization Hooks
 // ============================================================================
 
-import React from 'react';
 
 /**
  * Optimized useCallback with dependency comparison
