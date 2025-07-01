@@ -1,12 +1,12 @@
 import {
-    Box,
-    HStack,
-    IconButton,
-    InputGroup,
-    InputRightElement,
-    ScaleFade,
-    Textarea,
-    useToast
+  Box,
+  HStack,
+  IconButton,
+  InputGroup,
+  InputRightElement,
+  ScaleFade,
+  Textarea,
+  useToast
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -363,7 +363,7 @@ export default function ChatInput() {
         // Optimized mobile input for native app feeling
         '@media (max-width: 768px)': {
           paddingX: 2, // Reduced padding to minimize white space
-          paddingY: 1, // Minimal padding
+          paddingY: 0, // No vertical padding to eliminate extra space
           position: 'fixed', // Fixed positioning for better mobile behavior
           bottom: 0,
           left: 0,
@@ -380,7 +380,7 @@ export default function ChatInput() {
           maxHeight: '140px', // Reduced
           display: 'flex',
           justifyContent: 'center',
-          paddingY: 2, // Reduced vertical padding
+          paddingY: 0, // No vertical padding to eliminate extra space
           paddingX: 2, // Reduced horizontal padding
           // Transparent background
           background: 'transparent',
@@ -412,7 +412,7 @@ export default function ChatInput() {
             borderColor="transparent"
             borderRadius={inputConfig.borderRadius}
             px={{ base: 2, sm: 2, md: 0 }} // Minimal mobile padding to reduce white space
-            py={{ base: 1, sm: 1, md: 2, lg: 2, xl: 2 }} // Minimal padding
+            py={{ base: 0, sm: 0, md: 1, lg: 1, xl: 1 }} // Minimal padding to eliminate extra space
             alignItems="center"
             transition={animationConfig.transition}
             boxShadow="none"

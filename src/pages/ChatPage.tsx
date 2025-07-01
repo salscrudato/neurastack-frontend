@@ -62,7 +62,7 @@ export function ChatPage() {
         lg: 0,      // Large: no padding
         xl: 0       // XL: no padding
       },
-      gap: { base: 3, sm: 3, md: 4, lg: 5, xl: 6 }, // Compact spacing for better content density
+      gap: { base: 2, sm: 2, md: 3, lg: 4, xl: 5 }, // More compact spacing to reduce overlap with input
       // Desktop container constraints - wider for better readability
       maxWidth: {
         base: "100%",
@@ -258,7 +258,7 @@ export function ChatPage() {
           height: 'calc(100vh - 60px)', // Updated for new header height
           minHeight: 'calc(100vh - 60px)',
           maxHeight: 'calc(100vh - 60px)',
-          paddingBottom: '120px', // Reduced space for input area - more compact design
+          paddingBottom: '100px', // Reduced space for input area - more compact design
           // Prevent body scroll when input is focused
           overflowY: 'auto',
           overscrollBehavior: 'contain',
@@ -355,16 +355,16 @@ export function ChatPage() {
           '@media (max-width: 768px)': {
             paddingX: 2, // Reduced padding for more content space
             paddingY: 2, // Reduced vertical padding for compact design
-            paddingBottom: 3, // Minimal bottom padding for input clearance
+            paddingBottom: 2, // Minimal bottom padding for input clearance
             // Ensure messages container doesn't exceed viewport and allows proper scrolling
-            maxHeight: 'calc(100vh - 60px - 100px)', // viewport - header - reduced input area
+            maxHeight: 'calc(100vh - 60px - 80px)', // viewport - header - reduced input area
             // Smooth scrolling behavior
             scrollBehavior: 'smooth',
             WebkitOverflowScrolling: 'touch',
           },
           // Desktop support with centered container and clean spacing
           '@media (min-width: 769px)': {
-            maxHeight: 'calc(100vh - 64px - 140px)', // viewport - header - reduced input area
+            maxHeight: 'calc(100vh - 64px - 120px)', // viewport - header - reduced input area
             display: 'flex',
             justifyContent: 'center',
             paddingY: 6, // Reduced vertical padding for more content space
@@ -409,7 +409,7 @@ export function ChatPage() {
                   key={m.id}
                   id={`message-${m.id}`}
                   px={{ base: 0, sm: 0, md: 0 }} // Minimal padding for maximum content width
-                  py={{ base: 0, md: 0.5 }} // Minimal vertical spacing
+                  py={{ base: 0, md: 0 }} // No vertical spacing to prevent overlap
                   // Enhanced accessibility
                   role="article"
                   aria-label={`Message ${index + 1} from ${m.role === 'user' ? 'you' : 'AI assistant'}`}

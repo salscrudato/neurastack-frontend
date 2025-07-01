@@ -130,12 +130,7 @@ export function IndividualModelModal({
 }: IndividualModelModalProps) {
   // Modern color values - light mode only
   const modalBg = '#FFFFFF';
-  const headerBg = '#F8FAFC';
-  const borderColor = '#E2E8F0';
   const textColor = '#1E293B';
-  const closeButtonColor = '#64748B';
-  const closeButtonHoverColor = '#1E293B';
-  const closeButtonHoverBg = '#F1F5F9';
 
   // Keyboard navigation (simplified - only Escape to close)
   useEffect(() => {
@@ -168,19 +163,23 @@ export function IndividualModelModal({
       <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
       <ModalContent
         bg={modalBg}
-        borderRadius={{ base: 0, md: "xl" }}
-        maxH={{ base: "100vh", md: "70vh" }}
-        maxW={{ base: "100vw", md: "600px" }}
+        borderRadius={{ base: 0, md: "2xl" }}
+        maxH={{ base: "100vh", md: "80vh" }}
+        maxW={{ base: "100vw", md: "700px" }}
         mx={{ base: 0, md: 4 }}
-        my={{ base: 0, md: "15vh" }}
+        my={{ base: 0, md: "10vh" }}
+        boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
+        border="1px solid"
+        borderColor="rgba(226, 232, 240, 0.8)"
       >
         {/* Header */}
         <ModalHeader
-          bg={headerBg}
-          borderTopRadius={{ base: 0, md: "xl" }}
+          bg="linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%)"
+          borderTopRadius={{ base: 0, md: "2xl" }}
           borderBottom="1px solid"
-          borderColor={borderColor}
-          pb={4}
+          borderColor="rgba(226, 232, 240, 0.6)"
+          pb={6}
+          pt={6}
         >
           <VStack align="start" spacing={2}>
             <Text fontSize="lg" fontWeight="bold" color={textColor}>
@@ -205,15 +204,19 @@ export function IndividualModelModal({
         </ModalHeader>
 
         <ModalCloseButton
-          color={closeButtonColor}
+          color="#4F9CF9"
           _hover={{
-            color: closeButtonHoverColor,
-            bg: closeButtonHoverBg
+            bg: "rgba(79, 156, 249, 0.1)",
+            color: "#3B82F6"
           }}
+          _focus={{
+            boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
+          }}
+          size="lg"
         />
 
         {/* Body */}
-        <ModalBody p={6}>
+        <ModalBody p={6} bg="#FAFBFC">
           {isFailed ? (
             <Alert status="error" borderRadius="md">
               <AlertIcon as={PiWarningBold} />
@@ -226,6 +229,12 @@ export function IndividualModelModal({
             </Alert>
           ) : (
             <Box
+              bg="white"
+              borderRadius="2xl"
+              p={6}
+              border="1px solid"
+              borderColor="rgba(226, 232, 240, 0.6)"
+              boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
               color={textColor}
               lineHeight="1.7"
               sx={{

@@ -1,19 +1,19 @@
 import {
-    Box,
-    Flex,
-    HStack,
-    IconButton,
-    Text,
-    Tooltip,
-    useClipboard,
-    VStack
+  Box,
+  Flex,
+  HStack,
+  IconButton,
+  Text,
+  Tooltip,
+  useClipboard,
+  VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 
 import {
-    PiCheckBold,
-    PiCopyBold,
-    PiInfoBold,
+  PiCheckBold,
+  PiCopyBold,
+  PiInfoBold,
 } from "react-icons/pi";
 import { useModelResponses } from "../hooks/useModelResponses";
 import type { Message } from "../store/useChatStore";
@@ -166,9 +166,9 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
 
   return (
-    <VStack spacing={{ base: 6, md: 8 }} w="100%" align="stretch">
+    <VStack spacing={{ base: 3, md: 4 }} w="100%" align="stretch">
       {/* Centered Timestamp with Line - for all messages */}
-      <Flex align="center" w="100%" my={{ base: 2, md: 3 }}>
+      <Flex align="center" w="100%" my={{ base: 1, md: 2 }}>
         <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.4} />
         <Text
           px={{ base: 3, md: 4 }}
@@ -201,9 +201,9 @@ export const ChatMessage = memo<ChatMessageProps>(({
         bg={bubbleBg}
         color={bubbleText}
         px={{ base: isUser ? 4 : 5, md: isUser ? 4.5 : 6 }}
-        py={{ base: isUser ? 3 : 4, md: isUser ? 3.5 : 4.5 }}
+        py={{ base: isUser ? 2.5 : 4, md: isUser ? 3 : 4.5 }}
         borderRadius={isUser ? "2xl" : "xl"}
-        maxW={{ base: "90%", sm: "88%", md: "80%", lg: "75%" }}
+        maxW={{ base: isUser ? "90%" : "95%", sm: isUser ? "88%" : "92%", md: isUser ? "80%" : "88%", lg: isUser ? "75%" : "85%" }}
         minW={{ base: "20%", sm: "25%", md: "30%" }}
         position="relative"
         boxShadow={isUser ? shadowUser : shadowAi}
@@ -380,7 +380,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
           ) : isUser ? (
             <Text
               fontSize={fontSizes.content}
-              lineHeight={{ base: "1.5", md: "1.6" }}
+              lineHeight={{ base: "1.4", md: "1.5" }}
               fontWeight="500"
               letterSpacing="0.01em"
               color="white"
