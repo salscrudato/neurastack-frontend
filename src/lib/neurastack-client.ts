@@ -6,7 +6,6 @@
  */
 
 // Removed cacheManager import - NO CACHING for fresh API calls
-import { getCacheBustingHeaders } from '../utils/cacheControl';
 import type {
     CostEstimateRequest,
     CostEstimateResponse,
@@ -1175,18 +1174,12 @@ export class NeuraStackClient {
     }
 
     try {
-      // Merge CORS-safe cache-busting headers with existing headers
-      const cacheBustingHeaders = getCacheBustingHeaders();
-      const mergedHeaders = {
-        ...cacheBustingHeaders,
-        ...options.headers
-      };
-
+      // Only use backend-approved headers (no additional cache-busting headers)
+      // Cache busting is handled via URL parameters and fetch cache option
       const response = await fetch(`${this.config.baseUrl}${finalEndpoint}`, {
         ...options,
-        headers: mergedHeaders,
         signal: options.signal || controller.signal,
-        // Add cache control to the request itself
+        // Browser-level cache control (doesn't affect CORS)
         cache: 'no-store'
       });
 

@@ -143,19 +143,20 @@ export function addCacheBuster(url: string): string {
 }
 
 /**
- * Get cache-busting headers for API requests (CORS-safe only)
+ * Get cache-busting headers for API requests (Backend-approved headers only)
  *
- * Note: We avoid Cache-Control, Pragma, and Expires headers here because
- * they trigger CORS preflight requests and the backend may not allow them.
- * Instead, we rely on URL parameters and the fetch cache: 'no-store' option.
+ * Only the following headers are allowed by the backend:
+ * - Content-Type, Authorization, X-Requested-With, X-User-Id, X-Session-Id, X-Correlation-ID
+ *
+ * Since X-Correlation-ID is already used for request tracking, we rely entirely on:
+ * 1. URL parameters for cache busting
+ * 2. fetch cache: 'no-store' option for browser-level cache control
+ *
+ * This function returns an empty object to avoid header conflicts.
  */
 export function getCacheBustingHeaders(): Record<string, string> {
   return {
-    // Only include CORS-safe headers that don't require preflight
-    'X-App-Version': APP_VERSION,
-    'X-Build-Time': BUILD_TIME,
-    'X-Cache-Bust': Date.now().toString(),
-    'X-Request-Time': new Date().toISOString(),
+    // No additional headers - rely on URL parameters and fetch cache option
   };
 }
 
