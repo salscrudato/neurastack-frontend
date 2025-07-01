@@ -1,5 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { useCallback, useState } from 'react';
+import { forceRefreshApp } from './cacheControl';
 
 // Version tracking for cache busting
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || Date.now().toString();

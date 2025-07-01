@@ -6,6 +6,7 @@
  */
 
 // Removed cacheManager import - NO CACHING for fresh API calls
+import { getCacheBustingHeaders } from '../utils/cacheControl';
 import type {
     CostEstimateRequest,
     CostEstimateResponse,
