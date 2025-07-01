@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
-import PrivacyConsent from "./components/PrivacyConsent";
+
 import UpdateNotification from "./components/UpdateNotification";
 // import { useFitnessSync } from "./hooks/useFitnessSync";
 import "./styles/global.css";
@@ -121,7 +121,6 @@ export default function App() {
   return (
     <PageContentWrapper>
       <UpdateNotification />
-      <PrivacyConsent />
       <Suspense fallback={<Fallback />}>
         <Outlet />
       </Suspense>

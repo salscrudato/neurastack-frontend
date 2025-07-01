@@ -1172,8 +1172,16 @@ export class NeuraStackClient {
     }
 
     try {
+      // Merge cache-busting headers with existing headers
+      const cacheBustingHeaders = getCacheBustingHeaders();
+      const mergedHeaders = {
+        ...cacheBustingHeaders,
+        ...options.headers
+      };
+
       const response = await fetch(`${this.config.baseUrl}${finalEndpoint}`, {
         ...options,
+        headers: mergedHeaders,
         signal: options.signal || controller.signal
       });
 

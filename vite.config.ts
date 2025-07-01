@@ -22,7 +22,7 @@ const generateVersionInfo = () => {
   return {
     buildTime: now.toString(),
     gitHash,
-    version: '3.0.0'
+    version: `3.0.0-${now}` // Include timestamp for unique versions
   };
 };
 

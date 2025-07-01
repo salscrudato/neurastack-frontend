@@ -7,6 +7,7 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
 import theme from './theme/theme';
+import { setupCacheManagement } from './utils/cacheControl';
 
 // Import pages directly for debugging
 import { ChatPage } from './pages/ChatPage';
@@ -68,6 +69,9 @@ function RouteErrorBoundary() {
   );
 }
 
+// Setup cache management before rendering
+const cleanupCacheManagement = setupCacheManagement();
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
@@ -77,6 +81,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </React.StrictMode>
 );
+
+// Cleanup cache management on page unload
+window.addEventListener('beforeunload', cleanupCacheManagement);
 
 // Performance optimizations will be initialized by individual components as needed
 

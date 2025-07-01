@@ -434,8 +434,8 @@ export class SimpleCacheManager {
 // ============================================================================
 
 export const cacheManager = new SimpleCacheManager({
-  defaultTTL: 5 * 60 * 1000, // 5 minutes
-  maxSize: 500,
+  defaultTTL: 30 * 1000, // Reduced to 30 seconds for faster updates
+  maxSize: 100, // Reduced size to prevent stale data
   enableAutoCleanup: true
 });
 

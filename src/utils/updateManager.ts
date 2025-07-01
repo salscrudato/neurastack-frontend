@@ -117,26 +117,10 @@ export const cacheManager = {
   },
 };
 
-// Force refresh utility - simplified without service worker
+// Force refresh utility - using comprehensive cache control
 export const forceRefresh = async () => {
-  // Clear all storage
-  localStorage.clear();
-  sessionStorage.clear();
-
-  // Clear caches (simplified without service worker)
-  try {
-    // Clear any remaining cache data
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('neurastack-')) {
-        localStorage.removeItem(key);
-      }
-    });
-  } catch (error) {
-    console.warn('Cache cleanup failed:', error);
-  }
-
-  // Force reload with cache bypass
-  window.location.reload();
+  console.log('🔄 Force refresh requested...');
+  forceRefreshApp();
 };
 
 // Auto-update on app focus (when user returns to tab) - simplified without service worker
