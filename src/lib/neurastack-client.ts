@@ -1163,17 +1163,19 @@ export class NeuraStackClient {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), options.timeout || this.config.timeout);
 
-    // Add cache-busting parameter to URL if requested (CORS-compliant approach)
+    // Add aggressive cache-busting parameters to URL (CORS-compliant approach)
     let finalEndpoint = endpoint;
     if (options.bustCache !== false) { // Default to true unless explicitly set to false
       const separator = endpoint.includes('?') ? '&' : '?';
       const timestamp = Date.now();
       const random = Math.random().toString(36).substr(2, 9);
-      finalEndpoint = `${endpoint}${separator}_t=${timestamp}&_r=${random}`;
+      const appVersion = (__APP_VERSION__ || '3.0.0').replace(/\./g, '');
+      const buildTime = (__BUILD_TIME__ || Date.now().toString()).substr(-8);
+      finalEndpoint = `${endpoint}${separator}_t=${timestamp}&_r=${random}&_v=${appVersion}&_b=${buildTime}`;
     }
 
     try {
-      // Merge cache-busting headers with existing headers
+      // Merge CORS-safe cache-busting headers with existing headers
       const cacheBustingHeaders = getCacheBustingHeaders();
       const mergedHeaders = {
         ...cacheBustingHeaders,
@@ -1183,7 +1185,9 @@ export class NeuraStackClient {
       const response = await fetch(`${this.config.baseUrl}${finalEndpoint}`, {
         ...options,
         headers: mergedHeaders,
-        signal: options.signal || controller.signal
+        signal: options.signal || controller.signal,
+        // Add cache control to the request itself
+        cache: 'no-store'
       });
 
       clearTimeout(timeoutId);

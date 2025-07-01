@@ -137,20 +137,25 @@ export function addCacheBuster(url: string): string {
   const separator = url.includes('?') ? '&' : '?';
   const timestamp = Date.now();
   const version = APP_VERSION.replace(/\./g, '');
-  return `${url}${separator}v=${version}&t=${timestamp}`;
+  const random = Math.random().toString(36).substr(2, 9);
+  const buildTime = BUILD_TIME.substr(-8);
+  return `${url}${separator}v=${version}&t=${timestamp}&r=${random}&b=${buildTime}`;
 }
 
 /**
- * Get cache-busting headers for API requests
+ * Get cache-busting headers for API requests (CORS-safe only)
+ *
+ * Note: We avoid Cache-Control, Pragma, and Expires headers here because
+ * they trigger CORS preflight requests and the backend may not allow them.
+ * Instead, we rely on URL parameters and the fetch cache: 'no-store' option.
  */
 export function getCacheBustingHeaders(): Record<string, string> {
   return {
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
+    // Only include CORS-safe headers that don't require preflight
     'X-App-Version': APP_VERSION,
     'X-Build-Time': BUILD_TIME,
     'X-Cache-Bust': Date.now().toString(),
+    'X-Request-Time': new Date().toISOString(),
   };
 }
 
