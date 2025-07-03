@@ -5,32 +5,32 @@
  * optimized component for rendering AI responses with markdown support.
  */
 
-import { memo } from 'react';
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Badge,
-  Divider,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
-  useDisclosure,
-  Code,
-  UnorderedList,
-  OrderedList,
-  ListItem,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
+    Badge,
+    Box,
+    Code,
+    Divider,
+    HStack,
+    ListItem,
+    OrderedList,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Text,
+    Th,
+    Thead,
+    Tr,
+    UnorderedList,
+    useDisclosure,
+    VStack,
 } from '@chakra-ui/react';
+import { memo } from 'react';
 import { PiClockBold } from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -60,11 +60,7 @@ interface FontSizeConfig {
   small: string | object;
 }
 
-interface MarkdownComponentProps {
-  children?: React.ReactNode;
-  className?: string;
-  href?: string;
-}
+
 
 interface UnifiedAIResponseProps {
   content?: string;

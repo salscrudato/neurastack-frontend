@@ -5,7 +5,6 @@
  * model responses in modals. Features responsive design and accessibility.
  */
 
-import React, { memo, useMemo, useCallback } from 'react';
 import {
     Box,
     Button,
@@ -19,6 +18,7 @@ import {
     useColorModeValue,
     VStack
 } from '@chakra-ui/react';
+import { memo, useMemo } from 'react';
 import {
     PiCheckCircleBold,
     PiClockBold,
