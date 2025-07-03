@@ -5,6 +5,7 @@
  * model responses in modals. Features responsive design and accessibility.
  */
 
+import React, { memo, useMemo, useCallback } from 'react';
 import {
     Box,
     Button,
@@ -158,12 +159,17 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
 // Main Grid Component
 // ============================================================================
 
-export function ModelResponseGrid({
+export const ModelResponseGrid = memo(function ModelResponseGrid({
   models,
   onModelClick,
   compact = false,
   maxVisible
 }: ModelResponseGridProps) {
+  // Always call hooks at the top level
+  const emptyStateColor = useColorModeValue('gray.500', 'gray.400');
+  const summaryTextColor = useColorModeValue('gray.500', 'gray.400');
+  const summaryBorderColor = useColorModeValue('gray.200', 'gray.600');
+
   // Enhanced responsive grid columns with better spacing
   const columns = useBreakpointValue({
     base: compact ? 1 : 1,
@@ -172,29 +178,35 @@ export function ModelResponseGrid({
     lg: compact ? 3 : 3
   });
 
-  // Filter and sort models
-  const sortedModels = [...models].sort((a, b) => {
-    // Successful models first
-    if (a.status === 'success' && b.status !== 'success') return -1;
-    if (b.status === 'success' && a.status !== 'success') return 1;
+  // Memoize expensive sorting operation
+  const sortedModels = useMemo(() => {
+    return [...models].sort((a, b) => {
+      // Successful models first
+      if (a.status === 'success' && b.status !== 'success') return -1;
+      if (b.status === 'success' && a.status !== 'success') return 1;
 
-    // Alphabetical by provider then model
-    const aProvider = a.provider || '';
-    const bProvider = b.provider || '';
-    if (aProvider !== bProvider) return aProvider.localeCompare(bProvider);
+      // Alphabetical by provider then model
+      const aProvider = a.provider || '';
+      const bProvider = b.provider || '';
+      if (aProvider !== bProvider) return aProvider.localeCompare(bProvider);
 
-    return a.model.localeCompare(b.model);
-  });
+      return a.model.localeCompare(b.model);
+    });
+  }, [models]);
 
-  const visibleModels = maxVisible ? sortedModels.slice(0, maxVisible) : sortedModels;
-  const hasMore = maxVisible && sortedModels.length > maxVisible;
+  // Memoize visible models calculation
+  const { visibleModels, hasMore } = useMemo(() => {
+    const visible = maxVisible ? sortedModels.slice(0, maxVisible) : sortedModels;
+    const more = maxVisible && sortedModels.length > maxVisible;
+    return { visibleModels: visible, hasMore: more };
+  }, [sortedModels, maxVisible]);
 
   if (models.length === 0) {
     return (
       <Box
         p={4}
         textAlign="center"
-        color={useColorModeValue('gray.500', 'gray.400')}
+        color={emptyStateColor}
         fontSize="sm"
       >
         No individual model responses available
@@ -240,10 +252,10 @@ export function ModelResponseGrid({
           justify="space-between"
           w="100%"
           fontSize="xs"
-          color={useColorModeValue('gray.500', 'gray.400')}
+          color={summaryTextColor}
           pt={2}
           borderTop="1px solid"
-          borderColor={useColorModeValue('gray.200', 'gray.600')}
+          borderColor={summaryBorderColor}
         >
           <Text>
             {models.filter(m => m.status === 'success').length} successful
@@ -258,4 +270,4 @@ export function ModelResponseGrid({
       )}
     </VStack>
   );
-}
+});

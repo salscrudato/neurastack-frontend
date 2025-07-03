@@ -87,11 +87,16 @@ const MarkdownComponents = {
     </Text>
   ),
   code: ({ children, className }: any) => {
+    // Move hooks to top level - this is a component function
+    const inlineCodeBg = useColorModeValue('gray.100', 'gray.700');
+    const blockCodeBg = useColorModeValue('gray.50', 'gray.800');
+    const blockCodeBorder = useColorModeValue('gray.200', 'gray.600');
+
     const isInline = !className;
     return isInline ? (
       <Text
         as="code"
-        bg={useColorModeValue('gray.100', 'gray.700')}
+        bg={inlineCodeBg}
         px={1}
         py={0.5}
         borderRadius="sm"
@@ -103,13 +108,13 @@ const MarkdownComponents = {
     ) : (
       <Box
         as="pre"
-        bg={useColorModeValue('gray.50', 'gray.800')}
+        bg={blockCodeBg}
         p={3}
         borderRadius="md"
         overflow="auto"
         mb={3}
         border="1px solid"
-        borderColor={useColorModeValue('gray.200', 'gray.600')}
+        borderColor={blockCodeBorder}
       >
         <Text as="code" fontSize="sm" fontFamily="mono">
           {children}

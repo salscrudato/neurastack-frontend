@@ -109,7 +109,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const heartRateRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Theme colors
+  // Theme colors - all hooks at top level
   const bgColor = useColorModeValue('white', 'gray.800');
   const cardBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(26, 32, 44, 0.8)');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -118,6 +118,24 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const activeColor = useColorModeValue('blue.500', 'blue.300');
   const successColor = useColorModeValue('green.500', 'green.300');
   const warningColor = useColorModeValue('orange.500', 'orange.300');
+
+  // Additional theme colors for conditional usage
+  const mainBgColor = useColorModeValue('gray.50', 'gray.900');
+  const modalBorderColor = useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)');
+  const timerBgColor = useColorModeValue('gray.100', 'gray.700');
+  const instructionsBgColor = useColorModeValue('blue.50', 'blue.900');
+  const instructionsIconColor = useColorModeValue('blue.600', 'blue.300');
+  const instructionsTextColor = useColorModeValue('blue.700', 'blue.200');
+  const tipsBgColor = useColorModeValue('green.50', 'green.900');
+  const tipsTextColor = useColorModeValue('green.700', 'green.200');
+  const targetBgColor = useColorModeValue('blue.50', 'blue.900');
+  const targetTextColor = useColorModeValue('blue.700', 'blue.200');
+  const weightBgColor = useColorModeValue('green.50', 'green.900');
+  const weightTextColor = useColorModeValue('green.700', 'green.200');
+  const debugBgColor = useColorModeValue('gray.50', 'gray.800');
+  const weightSummaryBgColor = useColorModeValue('blue.50', 'blue.900');
+  const weightSummaryTextColor = useColorModeValue('blue.700', 'blue.200');
+  const setTextColor = useColorModeValue('blue.600', 'blue.300');
 
   // Current exercise
   const currentExercise = workoutPlan.exercises[currentExerciseIndex];
@@ -527,7 +545,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   return (
     <Box
       position="relative"
-      bg={useColorModeValue('gray.50', 'gray.900')}
+      bg={mainBgColor}
       sx={{
         // Use dynamic viewport height for better mobile support
         height: ['100dvh', '100vh'],
@@ -582,7 +600,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
           bg={cardBg}
           backdropFilter="blur(16px)"
           border="1px solid"
-          borderColor={useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)')}
+          borderColor={modalBorderColor}
           borderRadius="xl"
           boxShadow="0 8px 32px rgba(0,0,0,0.1)"
         >
@@ -616,7 +634,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 colorScheme="blue"
                 borderRadius="full"
                 size={{ base: "lg", md: "lg" }}
-                bg={useColorModeValue('gray.100', 'gray.700')}
+                bg={timerBgColor}
                 sx={{
                   '& > div': {
                     background: 'linear-gradient(90deg, #4299E1 0%, #667EEA 100%)',
@@ -786,15 +804,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               )}
 
               {/* Exercise instructions */}
-              <Box bg={useColorModeValue('blue.50', 'blue.900')} p={{ base: 4, md: 4 }} borderRadius="lg">
+              <Box bg={instructionsBgColor} p={{ base: 4, md: 4 }} borderRadius="lg">
                 <VStack spacing={{ base: 3, md: 2 }} align="start">
                   <HStack>
-                    <Icon as={PiTargetBold} color={useColorModeValue('blue.600', 'blue.300')} boxSize={{ base: 4, md: 4 }} />
-                    <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('blue.700', 'blue.200')}>
+                    <Icon as={PiTargetBold} color={instructionsIconColor} boxSize={{ base: 4, md: 4 }} />
+                    <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={instructionsTextColor}>
                       Instructions
                     </Text>
                   </HStack>
-                  <Text fontSize={{ base: "md", md: "sm" }} color={useColorModeValue('blue.700', 'blue.200')} lineHeight="1.5">
+                  <Text fontSize={{ base: "md", md: "sm" }} color={instructionsTextColor} lineHeight="1.5">
                     {currentExercise.instructions}
                   </Text>
                 </VStack>
@@ -802,15 +820,15 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
               {/* Tips */}
               {currentExercise.tips && (
-                <Box bg={useColorModeValue('green.50', 'green.900')} p={{ base: 4, md: 4 }} borderRadius="lg">
+                <Box bg={tipsBgColor} p={{ base: 4, md: 4 }} borderRadius="lg">
                   <VStack spacing={{ base: 3, md: 2 }} align="start">
                     <HStack>
                       <Text fontSize={{ base: "md", md: "sm" }}>💡</Text>
-                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={useColorModeValue('green.700', 'green.200')}>
+                      <Text fontSize={{ base: "md", md: "sm" }} fontWeight="bold" color={tipsTextColor}>
                         Pro Tip
                       </Text>
                     </HStack>
-                    <Text fontSize={{ base: "md", md: "sm" }} color={useColorModeValue('green.700', 'green.200')} lineHeight="1.5">
+                    <Text fontSize={{ base: "md", md: "sm" }} color={tipsTextColor} lineHeight="1.5">
                       {currentExercise.tips}
                     </Text>
                   </VStack>
@@ -868,13 +886,13 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 {/* Reps reminder and current weight display */}
                 <VStack spacing={2} w="100%">
                   <Box
-                    bg={useColorModeValue('blue.50', 'blue.900')}
+                    bg={targetBgColor}
                     p={3}
                     borderRadius="lg"
                     w="100%"
                     textAlign="center"
                   >
-                    <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')} fontWeight="medium">
+                    <Text fontSize="sm" color={targetTextColor} fontWeight="medium">
                       Target: {currentExercise.reps} reps
                     </Text>
                   </Box>
@@ -882,13 +900,13 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                   {/* Debug: Show current weight */}
                   {currentSetWeight !== undefined && (
                     <Box
-                      bg={useColorModeValue('green.50', 'green.900')}
+                      bg={weightBgColor}
                       p={2}
                       borderRadius="md"
                       w="100%"
                       textAlign="center"
                     >
-                      <Text fontSize="xs" color={useColorModeValue('green.700', 'green.200')} fontWeight="medium">
+                      <Text fontSize="xs" color={weightTextColor} fontWeight="medium">
                         Current Weight: {currentSetWeight} lbs
                       </Text>
                     </Box>
@@ -1041,7 +1059,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
           bg={cardBg}
           backdropFilter="blur(16px)"
           border="1px solid"
-          borderColor={useColorModeValue('rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.1)')}
+          borderColor={modalBorderColor}
           borderRadius="xl"
           boxShadow="0 20px 60px rgba(0,0,0,0.2)"
         >
@@ -1066,7 +1084,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
 
               {/* Debug: Show recorded weights */}
               <Box
-                bg={useColorModeValue('gray.50', 'gray.800')}
+                bg={debugBgColor}
                 p={3}
                 borderRadius="md"
               >
@@ -1084,14 +1102,14 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                 <Text fontSize="sm" fontWeight="semibold">Exercise Summary</Text>
 
                 {/* Weight Summary with Editing */}
-                <Box bg={useColorModeValue('blue.50', 'blue.900')} p={4} borderRadius="lg">
-                  <Text fontSize="sm" fontWeight="semibold" mb={3} color={useColorModeValue('blue.700', 'blue.200')}>
+                <Box bg={weightSummaryBgColor} p={4} borderRadius="lg">
+                  <Text fontSize="sm" fontWeight="semibold" mb={3} color={weightSummaryTextColor}>
                     Weight Tracking
                   </Text>
                   <VStack spacing={3} align="stretch">
                     {Array.from({ length: currentExercise.sets }, (_, index) => (
                       <HStack key={index} justify="space-between" align="center">
-                        <Text fontSize="sm" color={useColorModeValue('blue.600', 'blue.300')} minW="60px">
+                        <Text fontSize="sm" color={setTextColor} minW="60px">
                           Set {index + 1}:
                         </Text>
                         <Box flex={1} maxW="120px">

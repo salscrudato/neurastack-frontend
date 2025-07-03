@@ -14,7 +14,7 @@ export interface Message {
   role: 'user' | 'assistant' | 'error';
   text: string;
   timestamp: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /* ============================================================================
@@ -87,7 +87,7 @@ export interface SubAnswer {
   };
 
   // Model reliability and metadata
-  metadata?: any;            // Flexible metadata object from API
+  metadata?: Record<string, unknown>;            // Flexible metadata object from API
 
   // Legacy fields for backward compatibility
   answer?: string;           // Fallback to content field
@@ -115,7 +115,7 @@ export interface EnsembleRole {
   responseTime?: number;
   characterCount?: number;
   quality?: number;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface EnsembleSynthesis {
@@ -126,7 +126,7 @@ export interface EnsembleSynthesis {
   error?: string;
   overallConfidence?: number;
   synthesisStrategy?: string;
-  votingResults?: any;
+  votingResults?: Record<string, unknown>;
   isFineTuned?: boolean;
 }
 
@@ -665,7 +665,7 @@ export interface WorkoutPlan {
 
   // AI generation context
   generationContext?: {
-    userContext?: any; // Legacy field - backend handles this now
+    userContext?: Record<string, unknown>; // Legacy field - backend handles this now
     aiModelsUsed?: string[]; // Legacy field - backend handles this now
     generationTime: number;
     sessionId: string;
@@ -1227,7 +1227,7 @@ export interface WorkoutAPIRequest {
 export interface WorkoutAPIResponse {
   status: 'success' | 'error';
   data?: {
-    workout: any; // Legacy format
+    workout: Record<string, unknown>; // Legacy format
     metadata: {
       model: string;
       provider: string;
@@ -1334,8 +1334,8 @@ export interface WorkoutAdaptation {
   userId: string;
   adaptationType: 'difficulty_increase' | 'difficulty_decrease' | 'exercise_swap' | 'duration_change' | 'rest_adjustment';
   reason: string;
-  originalValue: any;
-  adaptedValue: any;
+  originalValue: unknown;
+  adaptedValue: unknown;
   confidence: number; // 0-1 scale
   appliedAt: Date;
   effectiveFrom: Date;

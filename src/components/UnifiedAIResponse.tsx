@@ -53,15 +53,23 @@ interface AIResponseData {
   };
 }
 
+interface FontSizeConfig {
+  content: string | object;
+  heading: string | object;
+  code: string | object;
+  small: string | object;
+}
+
+interface MarkdownComponentProps {
+  children?: React.ReactNode;
+  className?: string;
+  href?: string;
+}
+
 interface UnifiedAIResponseProps {
   content?: string;
   data?: AIResponseData;
-  fontSize?: {
-    content: any;
-    heading: any;
-    code: any;
-    small: any;
-  };
+  fontSize?: FontSizeConfig;
 }
 
 // ============================================================================

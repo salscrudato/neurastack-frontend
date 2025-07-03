@@ -2,7 +2,7 @@
 import { defineConfig } from 'vite';
 
 // Import the React plugin for Vite to handle JSX and React fast refresh
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc'; // Use SWC for faster builds
 
 // Import the SVGR plugin to allow importing SVGs as React components
 import svgr from 'vite-plugin-svgr';
@@ -14,6 +14,9 @@ import path from 'node:path';
 
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
+
+// Import compression plugin for better performance
+import compression from 'vite-plugin-compression';
 
 // Generate version information for cache busting
 const generateVersionInfo = () => {
@@ -46,6 +49,16 @@ export default defineConfig({
       open: false, // Don't auto-open in CI/CD
       gzipSize: true,
       brotliSize: true,
+    }),
+
+    // Compression plugins for better performance
+    compression({
+      algorithm: 'gzip',
+      ext: '.gz',
+    }),
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
     }),
 
   ],
@@ -116,8 +129,10 @@ export default defineConfig({
           // State management and utilities
           state: ['zustand'],
 
-          // Firebase services (split for better loading)
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+          // Firebase services (optimized imports)
+          'firebase-core': ['firebase/app'],
+          'firebase-auth': ['firebase/auth'],
+          'firebase-firestore': ['firebase/firestore'],
 
           // Icons (separate for better caching)
           icons: ['react-icons/pi', '@heroicons/react'],
@@ -175,9 +190,6 @@ export default defineConfig({
     ],
     exclude: [
       'firebase', // Firebase works better when not pre-bundled
-      'firebase/app',
-      'firebase/auth',
-      'firebase/firestore'
     ],
     // Force optimization of these packages
     force: true,
