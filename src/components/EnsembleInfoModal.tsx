@@ -62,29 +62,11 @@ const formatPercentage = (value: number): string => {
     return `${Math.round(value * 100)}%`;
 };
 
-const formatTime = (ms: number): string => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(1)}s`;
-};
-
-
-
 const getConfidenceColor = (confidence: number): string => {
     if (confidence > 0.8) return "#10B981"; // Green
     if (confidence > 0.6) return "#F59E0B"; // Amber
     if (confidence > 0.4) return "#EF4444"; // Red
     return "#DC2626"; // Dark Red
-};
-
-const getConsensusLabel = (consensus: string): string => {
-    switch (consensus) {
-        case 'very-strong': return 'Very Strong';
-        case 'strong': return 'Strong';
-        case 'moderate': return 'Moderate';
-        case 'weak': return 'Weak';
-        case 'very-weak': return 'Very Weak';
-        default: return 'Unknown';
-    }
 };
 
 const getBadgeColor = (type: 'confidence' | 'models' | 'response', value?: number): string => {
@@ -186,64 +168,7 @@ const HeaderBadge = ({ label, value, color, icon: IconComponent }: HeaderBadgePr
     </Badge>
 );
 
-// ============================================================================
-// Compact Metric Components
-// ============================================================================
 
-interface CompactMetricProps {
-    label: string;
-    value: string | number;
-    color?: string;
-    type?: 'progress' | 'badge' | 'text';
-    progress?: number;
-}
-
-const CompactMetric = ({ label, value, color, type = 'text', progress }: CompactMetricProps) => {
-    const textColor = '#1E293B';
-    const mutedColor = '#64748B';
-
-    return (
-        <Flex justify="space-between" align="center" py={2}>
-            <Text fontSize="sm" color={mutedColor} fontWeight="500">
-                {label}
-            </Text>
-
-            {type === 'progress' && typeof progress === 'number' && (
-                <Box w="120px">
-                    <Progress
-                        value={progress * 100}
-                        colorScheme={color === '#10B981' ? 'green' : color === '#F59E0B' ? 'yellow' : 'red'}
-                        size="sm"
-                        borderRadius="full"
-                        bg="rgba(226, 232, 240, 0.3)"
-                    />
-                    <Text fontSize="xs" color={color || textColor} textAlign="right" mt={1}>
-                        {value}
-                    </Text>
-                </Box>
-            )}
-
-            {type === 'badge' && (
-                <Badge
-                    colorScheme={color === '#10B981' ? 'green' : color === '#F59E0B' ? 'yellow' : 'red'}
-                    variant="solid"
-                    borderRadius="md"
-                    px={2}
-                    py={1}
-                    fontSize="xs"
-                >
-                    {value}
-                </Badge>
-            )}
-
-            {type === 'text' && (
-                <Text fontSize="sm" fontWeight="600" color={color || textColor}>
-                    {value}
-                </Text>
-            )}
-        </Flex>
-    );
-};
 
 // ============================================================================
 // Main Component
@@ -281,7 +206,7 @@ export function EnsembleInfoModal({
     );
 
     const successfulModels = metadata?.successfulRoles ||
-                           roles.filter(role => role.status === 'fulfilled').length ||
+                           roles.filter((role: any) => role.status === 'fulfilled').length ||
                            0;
 
     const totalModels = metadata?.totalRoles ||
@@ -310,15 +235,12 @@ export function EnsembleInfoModal({
     // Quality distribution using API's qualityDistribution data
     const highQualityCount = qualityDistribution?.high !== undefined ?
                            qualityDistribution.high :
-                           roles.filter(role => (role.confidence?.score || 0) > 0.8).length;
+                           roles.filter((role: any) => (role.confidence?.score || 0) > 0.8).length;
     const medLowQualityCount = qualityDistribution?.medium !== undefined && qualityDistribution?.low !== undefined ?
                               (qualityDistribution.medium + qualityDistribution.low) :
                               Math.max(0, roles.length - highQualityCount);
 
-    // Calculate derived metrics with better fallbacks and proper data access
-    const votingCertainty = votingAnalysis.distributionEntropy !== undefined ?
-        Math.max(0, 1 - votingAnalysis.distributionEntropy) :
-        (voting.confidence || 0.01); // Very low fallback to show actual data when available
+
 
     return (
         <Modal

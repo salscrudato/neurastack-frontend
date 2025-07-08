@@ -10,7 +10,6 @@ import {
     Badge,
     Box,
     Flex,
-    HStack,
     Icon,
     Progress,
     SimpleGrid,
@@ -23,7 +22,6 @@ import {
     PiChartBarBold,
     PiClockBold,
     PiCurrencyDollarBold,
-    PiLightningBold,
     PiTargetBold,
     PiTrendUpBold
 } from 'react-icons/pi';
@@ -160,7 +158,6 @@ export const APIResponseAnalytics = memo(function APIResponseAnalytics({
         processingTimeMs,
         totalRoles,
         successfulRoles,
-        failedRoles,
         confidenceAnalysis,
         costEstimate,
         synthesis,
