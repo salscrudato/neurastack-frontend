@@ -37,15 +37,12 @@ export function AuthGuard({
     // Set a maximum timeout for auth check to prevent infinite loading
     const authTimeout = setTimeout(() => {
       if (isLoading) {
-        console.warn('⚠️ Auth check timeout, proceeding without auth');
         setIsLoading(false);
         setIsAuthenticated(false);
       }
-    }, 3000); // 3 second timeout
+    }, 2000); // Reduced to 2 seconds for better UX
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('🔐 Auth state changed:', user?.uid, 'isAnonymous:', user?.isAnonymous);
-
       // Clear timeout since we got a response
       clearTimeout(authTimeout);
 
@@ -53,20 +50,18 @@ export function AuthGuard({
       setIsAuthenticated(!!user);
       setIsLoading(false);
 
-      // Handle authentication requirements with delay to prevent race conditions
+      // Handle authentication requirements with minimal delay to prevent race conditions
       setTimeout(() => {
         if (requireAuth && !user) {
-          console.log('🚫 Authentication required, redirecting to:', redirectTo);
           navigate(redirectTo, {
             replace: true,
             state: { from: location.pathname }
           });
         } else if (!requireAuth && user && location.pathname === '/') {
           // User is authenticated but on splash page, redirect to chat
-          console.log('✅ User authenticated, redirecting to /chat');
           navigate('/chat', { replace: true });
         }
-      }, 100);
+      }, 50); // Reduced delay for faster transitions
     });
 
     return () => {

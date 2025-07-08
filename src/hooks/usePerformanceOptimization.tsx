@@ -1,14 +1,5 @@
 import { useCallback, useEffect } from 'react';
 
-// Performance metrics interface for future use
-// interface PerformanceMetrics {
-//   fcp: number; // First Contentful Paint
-//   lcp: number; // Largest Contentful Paint
-//   fid: number; // First Input Delay
-//   cls: number; // Cumulative Layout Shift
-//   ttfb: number; // Time to First Byte
-// }
-
 interface PerformanceConfig {
   enableMetrics: boolean;
   enableResourceHints: boolean;
@@ -17,111 +8,92 @@ interface PerformanceConfig {
 }
 
 export const usePerformanceOptimization = (config: PerformanceConfig = {
-  enableMetrics: true,
+  enableMetrics: false, // Disabled by default to reduce logging
   enableResourceHints: true,
   enableImageOptimization: true,
   enableFontOptimization: true
 }) => {
-  
-  // Performance metrics collection
+
+  // Minimal performance monitoring - only critical warnings in development
   const collectMetrics = useCallback(() => {
-    if (!config.enableMetrics || typeof window === 'undefined') return;
+    if (!config.enableMetrics || typeof window === 'undefined' || !import.meta.env.DEV) return;
 
     try {
-      // Web Vitals measurement
+      // Only track critical performance issues in development
       if ('PerformanceObserver' in window) {
-        // Largest Contentful Paint
+        // Only warn about slow LCP
         const lcpObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries();
           const lastEntry = entries[entries.length - 1] as any;
-          if (lastEntry) {
-            console.log('🎯 LCP:', Math.round(lastEntry.startTime), 'ms');
+          if (lastEntry && lastEntry.startTime > 2500) {
+            console.warn('⚠️ Slow LCP detected:', Math.round(lastEntry.startTime), 'ms');
           }
         });
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
 
-        // First Input Delay
+        // Only warn about slow FID
         const fidObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries();
           entries.forEach((entry: any) => {
-            console.log('⚡ FID:', Math.round(entry.processingStart - entry.startTime), 'ms');
+            const fid = entry.processingStart - entry.startTime;
+            if (fid > 100) {
+              console.warn('⚠️ Slow FID detected:', Math.round(fid), 'ms');
+            }
           });
         });
         fidObserver.observe({ entryTypes: ['first-input'] });
-
-        // Cumulative Layout Shift
-        const clsObserver = new PerformanceObserver((list) => {
-          let clsValue = 0;
-          const entries = list.getEntries();
-          entries.forEach((entry: any) => {
-            if (!entry.hadRecentInput) {
-              clsValue += entry.value;
-            }
-          });
-          if (clsValue > 0) {
-            console.log('📐 CLS:', Math.round(clsValue * 1000) / 1000);
-          }
-        });
-        clsObserver.observe({ entryTypes: ['layout-shift'] });
-      }
-
-      // Navigation timing
-      if ('performance' in window && 'getEntriesByType' in performance) {
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        if (navigation) {
-          const ttfb = navigation.responseStart - navigation.fetchStart;
-          const fcp = performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0;
-          
-          console.log('🚀 Performance Metrics:');
-          console.log('  TTFB:', Math.round(ttfb), 'ms');
-          console.log('  FCP:', Math.round(fcp), 'ms');
-          console.log('  DOM Load:', Math.round(navigation.domContentLoadedEventEnd - navigation.fetchStart), 'ms');
-          console.log('  Page Load:', Math.round(navigation.loadEventEnd - navigation.fetchStart), 'ms');
-        }
       }
     } catch (error) {
-      console.warn('Performance metrics collection failed:', error);
+      // Silent fail - don't log performance monitoring errors
     }
   }, [config.enableMetrics]);
 
-  // Resource hints optimization
+  // Resource hints optimization - simplified and silent
   const optimizeResourceHints = useCallback(() => {
     if (!config.enableResourceHints || typeof document === 'undefined') return;
 
     try {
-      // Preconnect to external domains
+      // Only add resource hints if they don't already exist
+      const existingPreconnects = Array.from(document.querySelectorAll('link[rel="preconnect"]'))
+        .map(link => (link as HTMLLinkElement).href);
+
       const preconnectDomains = [
         'https://fonts.googleapis.com',
         'https://fonts.gstatic.com',
       ];
 
       preconnectDomains.forEach(domain => {
-        const link = document.createElement('link');
-        link.rel = 'preconnect';
-        link.href = domain;
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
+        if (!existingPreconnects.includes(domain)) {
+          const link = document.createElement('link');
+          link.rel = 'preconnect';
+          link.href = domain;
+          link.crossOrigin = 'anonymous';
+          document.head.appendChild(link);
+        }
       });
 
       // DNS prefetch for API domains
+      const existingDnsPrefetch = Array.from(document.querySelectorAll('link[rel="dns-prefetch"]'))
+        .map(link => (link as HTMLLinkElement).href);
+
       const dnsPrefetchDomains = [
         'https://neurastack-backend-638289111765.us-central1.run.app',
       ];
 
       dnsPrefetchDomains.forEach(domain => {
-        const link = document.createElement('link');
-        link.rel = 'dns-prefetch';
-        link.href = domain;
-        document.head.appendChild(link);
+        if (!existingDnsPrefetch.includes(domain)) {
+          const link = document.createElement('link');
+          link.rel = 'dns-prefetch';
+          link.href = domain;
+          document.head.appendChild(link);
+        }
       });
-
-      console.log('🔗 Resource hints optimized');
     } catch (error) {
-      console.warn('Resource hints optimization failed:', error);
+      // Silent fail
     }
   }, [config.enableResourceHints]);
 
-  // Image optimization
+  // Image optimization - simplified and silent
   const optimizeImages = useCallback(() => {
     if (!config.enableImageOptimization || typeof document === 'undefined') return;
 
@@ -137,81 +109,52 @@ export const usePerformanceOptimization = (config: PerformanceConfig = {
       allImages.forEach((img) => {
         (img as HTMLImageElement).decoding = 'async';
       });
-
-      console.log('🖼️ Images optimized:', images.length + allImages.length);
     } catch (error) {
-      console.warn('Image optimization failed:', error);
+      // Silent fail
     }
   }, [config.enableImageOptimization]);
 
-  // Font optimization
+  // Font optimization - simplified and silent
   const optimizeFonts = useCallback(() => {
     if (!config.enableFontOptimization || typeof document === 'undefined') return;
 
     try {
-      // Add font-display: swap to font faces
-      const style = document.createElement('style');
-      style.textContent = `
-        @font-face {
-          font-display: swap;
-        }
-      `;
-      document.head.appendChild(style);
-
-      console.log('🔤 Fonts optimized');
+      // Only add font-display style if it doesn't exist
+      if (!document.querySelector('style[data-font-display]')) {
+        const style = document.createElement('style');
+        style.setAttribute('data-font-display', 'true');
+        style.textContent = `
+          @font-face {
+            font-display: swap;
+          }
+        `;
+        document.head.appendChild(style);
+      }
     } catch (error) {
-      console.warn('Font optimization failed:', error);
+      // Silent fail
     }
   }, [config.enableFontOptimization]);
 
-  // Memory optimization
-  const optimizeMemory = useCallback(() => {
-    if (typeof window === 'undefined') return;
-
-    try {
-      // Clean up event listeners on page unload
-      const cleanup = () => {
-        // Force garbage collection if available (dev tools)
-        if ('gc' in window) {
-          (window as any).gc();
-        }
-      };
-
-      window.addEventListener('beforeunload', cleanup);
-      
-      return () => {
-        window.removeEventListener('beforeunload', cleanup);
-      };
-    } catch (error) {
-      console.warn('Memory optimization failed:', error);
-    }
-  }, []);
-
-  // Initialize optimizations
+  // Initialize optimizations - simplified
   useEffect(() => {
+    // Run optimizations once on mount with a small delay
     const timer = setTimeout(() => {
       collectMetrics();
       optimizeResourceHints();
       optimizeImages();
       optimizeFonts();
-      
-      const memoryCleanup = optimizeMemory();
-      
-      return () => {
-        if (memoryCleanup) memoryCleanup();
-      };
-    }, 100); // Small delay to ensure DOM is ready
+    }, 100);
 
     return () => clearTimeout(timer);
-  }, [collectMetrics, optimizeResourceHints, optimizeImages, optimizeFonts, optimizeMemory]);
+  }, [collectMetrics, optimizeResourceHints, optimizeImages, optimizeFonts]);
 
-  // Periodic image optimization for dynamic content
+  // Periodic image optimization for dynamic content - less frequent
   useEffect(() => {
     if (!config.enableImageOptimization) return;
 
     const interval = setInterval(() => {
       optimizeImages();
-    }, 5000); // Check every 5 seconds
+    }, 10000); // Check every 10 seconds instead of 5
 
     return () => clearInterval(interval);
   }, [config.enableImageOptimization, optimizeImages]);
@@ -220,8 +163,7 @@ export const usePerformanceOptimization = (config: PerformanceConfig = {
     collectMetrics,
     optimizeResourceHints,
     optimizeImages,
-    optimizeFonts,
-    optimizeMemory
+    optimizeFonts
   };
 };
 

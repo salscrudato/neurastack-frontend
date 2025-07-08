@@ -99,7 +99,7 @@ export const useFitnessStore = create<FitnessState>()(
         try {
           await saveFitnessProfile(newProfile);
         } catch (error) {
-          console.warn('Failed to sync profile to Firestore:', error);
+          // Silent fail for profile sync
         }
       },
 
@@ -261,9 +261,8 @@ export const useFitnessStore = create<FitnessState>()(
         try {
           // Sync profile only (backend handles workout data)
           await saveFitnessProfile(profile);
-          console.log('✅ Profile synced to Firestore');
         } catch (error) {
-          console.warn('Failed to sync profile to Firestore:', error);
+          // Silent fail for profile sync
         }
       },
 

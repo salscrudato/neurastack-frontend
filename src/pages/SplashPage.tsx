@@ -1,8 +1,8 @@
 import {
-    CheckCircleIcon,
-    ExclamationCircleIcon,
-    InformationCircleIcon,
-    XMarkIcon
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  InformationCircleIcon,
+  XMarkIcon
 } from '@heroicons/react/24/solid';
 import { GoogleAuthProvider, signInAnonymously, signInWithPopup } from "firebase/auth";
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,7 +16,7 @@ import { useAuthStore } from "../store/useAuthStore";
 
 const provider = new GoogleAuthProvider();
 
-/* ---------- type definitions ---------- */
+/* ---------- Type Definitions ---------- */
 interface AnimatedElementProps {
   $color?: string;
   $duration?: string;
@@ -28,7 +28,7 @@ interface MessageProps {
   type: 'error' | 'success';
 }
 
-/* ---------- animations ---------- */
+/* ---------- Animations ---------- */
 const fadeInUp = keyframes`
   from {
     opacity: 0;
@@ -102,7 +102,7 @@ const cosmicPulse = keyframes`
   }
 `;
 
-/* ---------- responsive breakpoints ---------- */
+/* ---------- Responsive Breakpoints ---------- */
 const breakpoints = {
   xs: '320px',
   sm: '480px',
@@ -111,7 +111,7 @@ const breakpoints = {
   xl: '1200px'
 };
 
-/* ---------- main page container ---------- */
+/* ---------- Main Page Container ---------- */
 const Page = styled.div`
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for mobile */
@@ -169,7 +169,7 @@ const Page = styled.div`
   }
 `;
 
-/* ---------- flying stars effect ---------- */
+/* ---------- Flying Stars Effect ---------- */
 const FlyingStar = styled.div<AnimatedElementProps>`
   position: absolute;
   width: 2px;
@@ -181,7 +181,7 @@ const FlyingStar = styled.div<AnimatedElementProps>`
   box-shadow: 0 0 6px ${props => props.$color || 'rgba(255, 255, 255, 0.8)'};
 `;
 
-/* ---------- warp speed lines ---------- */
+/* ---------- Warp Speed Lines ---------- */
 const WarpLine = styled.div<AnimatedElementProps>`
   position: absolute;
   height: 1px;
@@ -196,7 +196,7 @@ const WarpLine = styled.div<AnimatedElementProps>`
   filter: blur(0.5px);
 `;
 
-/* ---------- cosmic orbs ---------- */
+/* ---------- Cosmic Orbs ---------- */
 const CosmicOrb = styled.div<AnimatedElementProps>`
   position: absolute;
   border-radius: 50%;
@@ -209,7 +209,7 @@ const CosmicOrb = styled.div<AnimatedElementProps>`
   filter: blur(2px);
 `;
 
-/* ---------- card container ---------- */
+/* ---------- Card Container ---------- */
 const Card = styled.form`
   width: 100%;
   max-width: 420px;
@@ -285,7 +285,7 @@ const Card = styled.form`
   }
 `;
 
-/* ---------- logo container ---------- */
+/* ---------- Logo Container ---------- */
 const LogoContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -348,7 +348,7 @@ const LogoImage = styled.img`
   }
 `;
 
-/* ---------- loading spinner ---------- */
+/* ---------- Loading Spinner ---------- */
 const LoadingSpinner = styled.div`
   width: 20px;
   height: 20px;
@@ -359,7 +359,7 @@ const LoadingSpinner = styled.div`
   margin-right: 8px;
 `;
 
-/* ---------- google button ---------- */
+/* ---------- Google Button ---------- */
 const GoogleButton = styled.button`
   width: 100%;
   height: 50px;
@@ -384,7 +384,7 @@ const GoogleButton = styled.button`
   /* Enhanced accessibility */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  min-height: 44px; /* WCAG touch target size */
+  min-height: 48px; /* WCAG touch target size */
 
   &::before {
     content: '';
@@ -484,16 +484,16 @@ const GoogleButton = styled.button`
   }
 `;
 
-/* ---------- guest button ---------- */
+/* ---------- Guest Button ---------- */
 const GuestButton = styled.button`
   width: 100%;
   height: 50px;
   padding: 0 24px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid Placesrgba(255, 255, 255, 0.2);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgbaರೀಕರಣ: rgba(255, 255, 255, 0.8); /* Default color with 80% opacity */
   font-weight: 500;
   font-size: 0.95rem;
   cursor: pointer;
@@ -553,7 +553,7 @@ const GuestButton = styled.button`
   }
 `;
 
-/* ---------- info button ---------- */
+/* ---------- Info Button ---------- */
 const InfoButton = styled.button`
   width: 100%;
   height: 46px;
@@ -617,7 +617,7 @@ const InfoButton = styled.button`
   }
 `;
 
-/* ---------- divider ---------- */
+/* ---------- Divider ---------- */
 const Divider = styled.div`
   display: flex;
   align-items: center;
@@ -647,7 +647,7 @@ const Divider = styled.div`
   }
 `;
 
-/* ---------- error/success message ---------- */
+/* ---------- Error/Success Message ---------- */
 const Message = styled.div<MessageProps>`
   display: flex;
   align-items: center;
@@ -700,7 +700,7 @@ const Message = styled.div<MessageProps>`
   }
 `;
 
-/* ---------- modal components ---------- */
+/* ---------- Modal Components ---------- */
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -728,12 +728,12 @@ const ModalContent = styled.div`
 `;
 
 const ModalImage = styled.img`
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 80vh;
   object-fit: contain;
   border-radius: 24px;
-  max-width: 100%;
-  max-height: 90vh;
 `;
 
 const CloseButton = styled.button`
@@ -765,7 +765,7 @@ const CloseButton = styled.button`
   }
 `;
 
-/* ---------- google icon component ---------- */
+/* ---------- Google Icon Component ---------- */
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
     <path
@@ -787,19 +787,19 @@ const GoogleIcon = () => (
   </svg>
 );
 
-/* ---------- helper function to map Firebase error codes to messages ---------- */
+/* ---------- Helper Function for Firebase Errors ---------- */
 const prettyError = (code: string): string => {
   switch (code) {
-    case 'auth/user-not-found':    return 'No account matches that username.';
-    case 'auth/wrong-password':    return 'Incorrect password.';
-    case 'auth/weak-password':     return 'Choose a stronger password.';
+    case 'auth/user-not-found': return 'No account matches that username.';
+    case 'auth/wrong-password': return 'Incorrect password.';
+    case 'auth/weak-password': return 'Choose a stronger password.';
     case 'auth/email-already-in-use': return 'Username is already registered.';
     case 'auth/invalid-credentials': return 'Invalid username or password.';
     default: return 'Something went wrong. Please try again.';
   }
 };
 
-/* ---------- component ---------- */
+/* ---------- Component ---------- */
 export function SplashPage() {
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);
@@ -812,28 +812,23 @@ export function SplashPage() {
   // Performance and accessibility hooks
   const prefersReducedMotion = useReducedMotion();
 
-  // Memoized animation configurations
+  // Memoized animation configurations with reduced elements
   const animationConfig = useMemo(() => ({
-    starsCount: prefersReducedMotion ? 5 : 20,
-    warpLinesCount: prefersReducedMotion ? 3 : 8,
+    starsCount: prefersReducedMotion ? 5 : 10,
+    warpLinesCount: prefersReducedMotion ? 3 : 4,
     animationDuration: prefersReducedMotion ? '10s' : '3s'
   }), [prefersReducedMotion]);
 
   useEffect(() => {
-    console.log('🔄 SplashPage useEffect - user changed:', user?.uid, 'isAnonymous:', user?.isAnonymous);
     if (user) {
-      console.log('🔄 User detected, navigating to /chat...');
       navigate("/chat", { replace: true });
     }
   }, [user, navigate]);
 
   // Lock scroll on splash page
   useEffect(() => {
-    // Prevent scrolling on splash page
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
-
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = '';
       document.documentElement.style.overflow = '';
@@ -844,9 +839,7 @@ export function SplashPage() {
     setErr('');
     setSuccess('');
     setIsLoading(true);
-
     try {
-      // Google sign-in using Firebase
       const res = await signInWithPopup(auth, provider);
       setUser(res.user);
       navigate("/chat", { replace: true });
@@ -861,28 +854,11 @@ export function SplashPage() {
     setErr('');
     setSuccess('');
     setIsLoading(true);
-
     try {
-      console.log('🚀 Starting guest login...');
-
-      // Guest login using Firebase anonymous auth
       const cred = await signInAnonymously(auth);
-      console.log('✅ Firebase anonymous auth successful:', cred.user?.uid);
-
       setUser(cred.user);
-      console.log('✅ User set in auth store');
-
-      // Temporary: Set success message instead of navigating
-      setSuccess('Guest login successful! User ID: ' + cred.user?.uid);
-
-      // Add a small delay then navigate
-      setTimeout(() => {
-        console.log('🔄 Navigating to /chat...');
-        navigate("/chat", { replace: true });
-        console.log('✅ Navigation called');
-      }, 1000);
+      navigate("/chat", { replace: true });
     } catch (error: any) {
-      console.error('❌ Guest login failed:', error);
       setErr(prettyError(error?.code || 'guest-login-failed'));
     } finally {
       setIsLoading(false);
@@ -912,13 +888,11 @@ export function SplashPage() {
   // Focus management for accessibility
   useEffect(() => {
     if (showModal) {
-      // Focus trap for modal
       const focusableElements = document.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       const firstElement = focusableElements[0] as HTMLElement;
       const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-
       const handleTabKey = (e: KeyboardEvent) => {
         if (e.key === 'Tab') {
           if (e.shiftKey) {
@@ -934,93 +908,61 @@ export function SplashPage() {
           }
         }
       };
-
       document.addEventListener('keydown', handleTabKey);
       firstElement?.focus();
-
       return () => document.removeEventListener('keydown', handleTabKey);
     }
   }, [showModal]);
 
   return (
     <Page>
-      {/* Optimized flying stars effect */}
+      {/* Optimized flying stars effect with reduced count */}
       {Array.from({ length: animationConfig.starsCount }, (_, i) => (
         <FlyingStar
           key={`star-${i}`}
-          style={{
-            top: `${Math.random() * 100}%`,
-            left: '-10px'
-          }}
-          $color={i % 3 === 0 ? 'rgba(255, 255, 255, 0.9)' :
-                i % 3 === 1 ? 'rgba(30, 58, 138, 0.8)' :
-                'rgba(59, 130, 246, 0.6)'}
+          style={{ top: `${Math.random() * 100}%`, left: '-10px' }}
+          $color={i % 3 === 0 ? 'rgba(255,255,255,0.9)' : i % 3 === 1 ? 'rgba(30,58,138,0.8)' : 'rgba(59,130,246,0.6)'}
           $duration={`${2 + Math.random() * 3}s`}
           $delay={`${Math.random() * 5}s`}
         />
       ))}
 
-      {/* Optimized warp speed lines */}
+      {/* Optimized warp speed lines with reduced count */}
       {Array.from({ length: animationConfig.warpLinesCount }, (_, i) => (
         <WarpLine
           key={`warp-${i}`}
-          style={{
-            top: `${10 + i * 12}%`,
-            left: '-100px'
-          }}
-          $color={i % 2 === 0 ? 'rgba(30, 58, 138, 0.6)' : 'rgba(59, 130, 246, 0.4)'}
+          style={{ top: `${10 + i * 12}%`, left: '-100px' }}
+          $color={i % 2 === 0 ? 'rgba(30,58,138,0.6)' : 'rgba(59,130,246,0.4)'}
           $duration={`${1.5 + Math.random() * 2}s`}
           $delay={`${Math.random() * 3}s`}
         />
       ))}
 
       {/* Cosmic orbs */}
-      <CosmicOrb
-        style={{
-          width: '200px',
-          height: '200px',
-          top: '5%',
-          left: '5%'
-        }}
-        $color="rgba(30, 58, 138, 0.3)"
-        $duration="8s"
-        $delay="0s"
-      />
-      <CosmicOrb
-        style={{
-          width: '150px',
-          height: '150px',
-          top: '60%',
-          right: '10%'
-        }}
-        $color="rgba(59, 130, 246, 0.2)"
-        $duration="6s"
-        $delay="2s"
-      />
-      <CosmicOrb
-        style={{
-          width: '100px',
-          height: '100px',
-          top: '30%',
-          right: '5%'
-        }}
-        $color="rgba(15, 23, 42, 0.4)"
-        $duration="10s"
-        $delay="4s"
-      />
+      <CosmicOrb style={{ width: '200px', height: '200px', top: '5%', left: '5%' }} $color="rgba(30,58,138,0.3)" $duration="8s" $delay="0s" />
+      <CosmicOrb style={{ width: '150px', height: '150px', top: '60%', right: '10%' }} $color="rgba(59,130,246,0.2)" $duration="6s" $delay="2s" />
+      <CosmicOrb style={{ width: '100px', height: '100px', top: '30%', right: '5%' }} $color="rgba(15,23,42,0.4)" $duration="10s" $delay="4s" />
 
       <Card>
         <LogoContainer>
           <LogoImage src={logo} alt="NeuraStack Logo" />
         </LogoContainer>
 
-        <GoogleButton
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={isLoading}
-          aria-label="Sign in with Google account"
-          aria-describedby={err ? "error-message" : undefined}
-        >
+        {/* Moved error and success messages above buttons for better visibility */}
+        {err && (
+          <Message type="error" id="error-message" role="alert">
+            <ExclamationCircleIcon width={20} />
+            {err}
+          </Message>
+        )}
+        {success && (
+          <Message type="success" role="status">
+            <CheckCircleIcon width={20} />
+            {success}
+          </Message>
+        )}
+
+        <GoogleButton type="button" onClick={handleGoogleLogin} disabled={isLoading} aria-label="Sign in with Google account">
           {isLoading ? (
             <>
               <LoadingSpinner />
@@ -1036,13 +978,7 @@ export function SplashPage() {
 
         <Divider>or</Divider>
 
-        <GuestButton
-          type="button"
-          onClick={handleGuestLogin}
-          disabled={isLoading}
-          aria-label="Continue as guest user without account"
-          aria-describedby={err ? "error-message" : undefined}
-        >
+        <GuestButton type="button" onClick={handleGuestLogin} disabled={isLoading} aria-label="Continue as guest user without account">
           {isLoading ? (
             <>
               <LoadingSpinner />
@@ -1053,58 +989,22 @@ export function SplashPage() {
           )}
         </GuestButton>
 
-        <InfoButton
-          type="button"
-          onClick={handleInfoClick}
-          disabled={isLoading}
-          aria-label="Learn more about NeuraStack"
-          aria-expanded={showModal}
-          aria-haspopup="dialog"
-        >
+        <InfoButton type="button" onClick={handleInfoClick} disabled={isLoading} aria-label="Learn more about NeuraStack" aria-expanded={showModal} aria-haspopup="dialog">
           <InformationCircleIcon width={18} />
           What is NeuraStack?
         </InfoButton>
-
-        {err && (
-          <Message type="error" id="error-message" role="alert">
-            <ExclamationCircleIcon width={20} />
-            {err}
-          </Message>
-        )}
-
-        {success && (
-          <Message type="success" role="status">
-            <CheckCircleIcon width={20} />
-            {success}
-          </Message>
-        )}
       </Card>
 
-      {/* Enhanced How it works modal */}
+      {/* Enhanced How it Works Modal */}
       {showModal && (
-        <ModalOverlay
-          onClick={handleModalClose}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          aria-describedby="modal-description"
-        >
+        <ModalOverlay onClick={handleModalClose} role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
           <ModalContent onClick={e => e.stopPropagation()}>
-            <CloseButton
-              onClick={handleModalClose}
-              aria-label="Close information modal"
-              autoFocus
-            >
+            <CloseButton onClick={handleModalClose} aria-label="Close information modal" autoFocus>
               <XMarkIcon width={20} />
             </CloseButton>
-            <ModalImage
-              src={howItWorksImage}
-              alt="Detailed diagram showing how NeuraStack works with AI models and user interactions"
-              loading="lazy"
-              id="modal-description"
-            />
+            <ModalImage src={howItWorksImage} alt="Detailed diagram showing how NeuraStack works with AI models and user interactions" loading="lazy" id="modal-description" />
             <div id="modal-title" style={{ position: 'absolute', left: '-9999px' }}>
-              NeuraStack Information
+              How NeuraStack Works
             </div>
           </ModalContent>
         </ModalOverlay>

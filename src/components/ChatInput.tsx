@@ -185,13 +185,34 @@ export default function ChatInput() {
     setIsFocused(true);
     handleAutoResize();
 
-    // Mobile-specific optimizations
+    // Enhanced mobile keyboard handling
     if (isMobile) {
-      // Prevent body scroll when input is focused
-      document.body.style.overflow = 'hidden';
-      // Ensure input stays in view
+      // Add keyboard-visible class for CSS adjustments
+      document.body.classList.add('keyboard-visible');
+
+      // Improved viewport adjustment for keyboard
       setTimeout(() => {
-        textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (textareaRef.current) {
+          // Better positioning for mobile keyboards
+          textareaRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end',
+            inline: 'nearest'
+          });
+
+          // Additional adjustment for visual viewport if available
+          if (window.visualViewport) {
+            const inputRect = textareaRef.current.getBoundingClientRect();
+            const viewportHeight = window.visualViewport.height;
+
+            if (inputRect.bottom > viewportHeight * 0.7) {
+              window.scrollBy({
+                top: inputRect.bottom - (viewportHeight * 0.6),
+                behavior: 'smooth'
+              });
+            }
+          }
+        }
       }, 300); // Delay to allow keyboard animation
     }
   }, [handleAutoResize, isMobile]);
@@ -199,9 +220,15 @@ export default function ChatInput() {
   const handleBlur = useCallback(() => {
     setIsFocused(false);
 
-    // Restore body scroll on mobile when input loses focus
+    // Enhanced mobile blur handling
     if (isMobile) {
-      document.body.style.overflow = 'auto';
+      // Remove keyboard-visible class
+      document.body.classList.remove('keyboard-visible');
+
+      // Small delay to prevent layout jump
+      setTimeout(() => {
+        // Reset any scroll adjustments if needed
+      }, 100);
     }
   }, [isMobile]);
 
@@ -275,9 +302,20 @@ export default function ChatInput() {
         action: 'sendMessage'
       });
 
-      // Only show toast for non-Firebase errors
-      if (!error || !(error instanceof Error) || !error.message.includes('Firebase')) {
+      // Enhanced error filtering - only show critical errors to users
+      if (!error || !(error instanceof Error)) {
         toast(errorToast);
+      } else {
+        const errorMessage = error.message.toLowerCase();
+        const shouldShowToast = !errorMessage.includes('firebase') &&
+                               !errorMessage.includes('permission') &&
+                               !errorMessage.includes('insufficient') &&
+                               !errorMessage.includes('sync') &&
+                               !errorMessage.includes('offline');
+
+        if (shouldShowToast) {
+          toast(errorToast);
+        }
       }
     }
   }, [busy, txt, toast, send, isMobile]);

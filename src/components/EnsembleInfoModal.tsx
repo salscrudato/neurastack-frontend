@@ -23,6 +23,7 @@ import {
     Tooltip,
     VStack
 } from "@chakra-ui/react";
+import { useState } from 'react';
 import {
     PiBrainBold,
     PiChartBarBold,
@@ -73,6 +74,40 @@ export function EnsembleInfoModal({
     onClose,
     ensembleData
 }: EnsembleInfoModalProps) {
+    // Mobile help modal state
+    const [mobileHelpModal, setMobileHelpModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        content: string;
+    }>({
+        isOpen: false,
+        title: '',
+        content: ''
+    });
+
+    // Check if mobile
+    const isMobile = window.innerWidth < 768;
+
+    // Handle mobile metric click
+    const handleMobileMetricClick = (title: string, content: string) => {
+        if (isMobile) {
+            setMobileHelpModal({
+                isOpen: true,
+                title,
+                content
+            });
+        }
+    };
+
+    // Close mobile help modal
+    const closeMobileHelpModal = () => {
+        setMobileHelpModal({
+            isOpen: false,
+            title: '',
+            content: ''
+        });
+    };
+
     // Modern color values - light mode only
     const modalBg = '#FFFFFF';
     const textColor = '#1E293B';
@@ -129,6 +164,17 @@ export function EnsembleInfoModal({
             console.log('📊 responseConsistency:', ensembleData.confidenceAnalysis.responseConsistency);
             console.log('📊 overallConfidence:', ensembleData.confidenceAnalysis.overallConfidence);
         }
+        // Additional voting debug
+        if (ensembleData.voting) {
+            console.log('📊 voting.winner:', ensembleData.voting.winner);
+            console.log('📊 voting.confidence:', ensembleData.voting.confidence);
+            console.log('📊 voting.weights:', ensembleData.voting.weights);
+            console.log('📊 voting full object:', JSON.stringify(ensembleData.voting, null, 2));
+        }
+        // Check if voting data might be elsewhere
+        if (ensembleData.votingAnalysis) {
+            console.log('📊 votingAnalysis:', JSON.stringify(ensembleData.votingAnalysis, null, 2));
+        }
         console.groupEnd();
     }
 
@@ -136,8 +182,9 @@ export function EnsembleInfoModal({
 
     // Enhanced data extraction with comprehensive null/undefined handling for new API structure
     // The ensembleData contains the full metadata structure from the API response
+    // Structure: { ...data.metadata, synthesis: data.synthesis }
     const synthesis = ensembleData?.synthesis || {};
-    const voting = ensembleData?.voting || {};
+    const voting = ensembleData?.voting || {}; // voting is at the top level of metadata
     const metadata = ensembleData || {};
     const roles = Array.isArray(ensembleData?.roles) ? ensembleData.roles : [];
     const confidenceAnalysis = ensembleData?.confidenceAnalysis || {};
@@ -166,9 +213,35 @@ export function EnsembleInfoModal({
         (confidenceAnalysis?.responseConsistency || 0) * 100
     )));
 
-    // Winner information from voting
-    const winnerModel = voting?.winner || 'none';
-    const winnerConfidence = Math.round((voting?.confidence || 0) * 100);
+    // Winner information from voting - check multiple possible locations and calculate from weights if needed
+    let winnerModel = voting?.winner || votingAnalysis?.winner;
+    let winnerConfidence = Math.round((voting?.confidence || votingAnalysis?.confidence || 0) * 100);
+
+    // If no explicit winner, calculate from voting weights
+    if (!winnerModel && voting?.weights && Object.keys(voting.weights).length > 0) {
+        const weights = voting.weights;
+        const maxWeight = Math.max(...Object.values(weights) as number[]);
+        const winnerEntry = Object.entries(weights).find(([_, weight]) => weight === maxWeight);
+        if (winnerEntry) {
+            winnerModel = winnerEntry[0];
+            winnerConfidence = Math.round(maxWeight * 100);
+        }
+    }
+
+    // Fallback to 'none' if still no winner
+    winnerModel = winnerModel || 'none';
+
+    // Debug winner calculation
+    if (import.meta.env.DEV && isOpen) {
+        console.log('🏆 Winner Debug:');
+        console.log('  final winnerModel:', winnerModel);
+        console.log('  final winnerConfidence:', winnerConfidence);
+        console.log('  voting?.winner:', voting?.winner);
+        console.log('  voting?.confidence:', voting?.confidence);
+        console.log('  voting?.weights:', voting?.weights);
+        console.log('  votingAnalysis?.winner:', votingAnalysis?.winner);
+        console.log('  votingAnalysis?.confidence:', votingAnalysis?.confidence);
+    }
 
     // Quality distribution from confidence analysis
     const qualityDistribution = confidenceAnalysis?.qualityDistribution || {
@@ -202,12 +275,13 @@ export function EnsembleInfoModal({
     }
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            size={{ base: "full", md: "2xl" }}
-            scrollBehavior="inside"
-        >
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                size={{ base: "full", md: "2xl" }}
+                scrollBehavior="inside"
+            >
             <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
             <ModalContent
                 bg={modalBg}
@@ -275,7 +349,10 @@ export function EnsembleInfoModal({
                         {/* Core Metrics Grid - Redesigned */}
                         <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
                             {/* Overall Confidence */}
-                            <Tooltip label="Primary reliability indicator based on model consensus and response quality">
+                            <Tooltip
+                                label="Primary reliability indicator based on model consensus and response quality"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -284,12 +361,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Confidence",
+                                        "Primary reliability indicator based on model consensus and response quality"
+                                    )}
                                 >
                                     <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(overallConfidence / 100)} mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
@@ -302,7 +383,10 @@ export function EnsembleInfoModal({
                             </Tooltip>
 
                             {/* Model Agreement */}
-                            <Tooltip label="Level of agreement between different AI models in their responses">
+                            <Tooltip
+                                label="Level of agreement between different AI models in their responses"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -311,12 +395,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Agreement",
+                                        "Level of agreement between different AI models in their responses"
+                                    )}
                                 >
                                     <Icon as={PiScalesBold} boxSize={6} color={getConfidenceColor(modelAgreement / 100)} mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
@@ -329,7 +417,10 @@ export function EnsembleInfoModal({
                             </Tooltip>
 
                             {/* Response Speed */}
-                            <Tooltip label="Total processing time for ensemble response generation">
+                            <Tooltip
+                                label="Total processing time for ensemble response generation"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -338,12 +429,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Response Time",
+                                        "Total processing time for ensemble response generation"
+                                    )}
                                 >
                                     <Icon as={PiLightningBold} boxSize={6} color="#F59E0B" mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
@@ -356,7 +451,10 @@ export function EnsembleInfoModal({
                             </Tooltip>
 
                             {/* Success Rate */}
-                            <Tooltip label="Percentage of AI models that successfully contributed to the response">
+                            <Tooltip
+                                label="Percentage of AI models that successfully contributed to the response"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -365,12 +463,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Success Rate",
+                                        "Percentage of AI models that successfully contributed to the response"
+                                    )}
                                 >
                                     <Icon as={PiTargetBold} boxSize={6} color="#10B981" mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
@@ -386,7 +488,10 @@ export function EnsembleInfoModal({
                         {/* Consensus & Voting Analysis */}
                         <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
                             {/* Consensus Strength */}
-                            <Tooltip label="How strongly the AI models agree on the response approach and content">
+                            <Tooltip
+                                label="How strongly the AI models agree on the response approach and content"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -395,12 +500,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Consensus",
+                                        "How strongly the AI models agree on the response approach and content"
+                                    )}
                                 >
                                     <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={5} color={getConsensusInfo(consensusStrength).color} mb={2} />
                                     <Text fontSize="lg" fontWeight="bold" color={textColor}>
@@ -413,7 +522,10 @@ export function EnsembleInfoModal({
                             </Tooltip>
 
                             {/* Winner Margin */}
-                            <Tooltip label="How decisively the winning model outperformed others in voting">
+                            <Tooltip
+                                label="How decisively the winning model outperformed others in voting"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -422,12 +534,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Win Margin",
+                                        "How decisively the winning model outperformed others in voting"
+                                    )}
                                 >
                                     <Icon as={PiChartBarBold} boxSize={5} color={getConfidenceColor(winnerMargin / 100)} mb={2} />
                                     <Text fontSize="lg" fontWeight="bold" color={textColor}>
@@ -440,7 +556,10 @@ export function EnsembleInfoModal({
                             </Tooltip>
 
                             {/* Response Diversity */}
-                            <Tooltip label="How diverse the AI model responses were (higher = more varied approaches)">
+                            <Tooltip
+                                label="How diverse the AI model responses were (higher = more varied approaches)"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -449,12 +568,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Diversity",
+                                        "How diverse the AI model responses were (higher = more varied approaches)"
+                                    )}
                                 >
                                     <Icon as={PiBrainBold} boxSize={5} color={getEntropyDescription(distributionEntropy).color} mb={2} />
                                     <Text fontSize="sm" fontWeight="bold" color={textColor}>
@@ -467,7 +590,10 @@ export function EnsembleInfoModal({
                             </Tooltip>
 
                             {/* Average Model Confidence */}
-                            <Tooltip label="Average confidence score across all contributing AI models">
+                            <Tooltip
+                                label="Average confidence score across all contributing AI models"
+                                isDisabled={isMobile}
+                            >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
@@ -476,12 +602,16 @@ export function EnsembleInfoModal({
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                                     textAlign="center"
-                                    cursor="help"
+                                    cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
                                     transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Avg Confidence",
+                                        "Average confidence score across all contributing AI models"
+                                    )}
                                 >
                                     <Icon as={PiShieldCheckBold} boxSize={5} color={getConfidenceColor(averageConfidence / 100)} mb={2} />
                                     <Text fontSize="lg" fontWeight="bold" color={textColor}>
@@ -865,5 +995,40 @@ export function EnsembleInfoModal({
                 </ModalBody>
             </ModalContent>
         </Modal>
+
+        {/* Mobile Help Modal */}
+        <Modal
+            isOpen={mobileHelpModal.isOpen}
+            onClose={closeMobileHelpModal}
+            size="sm"
+            isCentered
+        >
+            <ModalOverlay bg="blackAlpha.600" />
+            <ModalContent
+                mx={4}
+                borderRadius="2xl"
+                bg="white"
+                boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+            >
+                <ModalCloseButton
+                    color="blue.500"
+                    fontSize="lg"
+                    fontWeight="bold"
+                    _hover={{ bg: "blue.50" }}
+                    borderRadius="full"
+                />
+                <ModalBody p={6}>
+                    <VStack spacing={4} align="start">
+                        <Text fontSize="lg" fontWeight="bold" color="gray.800">
+                            {mobileHelpModal.title}
+                        </Text>
+                        <Text fontSize="sm" color="gray.600" lineHeight="1.6">
+                            {mobileHelpModal.content}
+                        </Text>
+                    </VStack>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+        </>
     );
 }

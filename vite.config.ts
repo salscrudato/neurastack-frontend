@@ -62,7 +62,7 @@ export default defineConfig({
       ext: '.br',
     }),
 
-    // PWA plugin with intelligent caching strategy
+    // PWA plugin with optimized caching strategy
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
@@ -96,17 +96,38 @@ export default defineConfig({
             options: {
               cacheName: 'api-cache',
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
+                maxEntries: 100, // Increased for better caching
+                maxAgeSeconds: 60 * 10 // Increased to 10 minutes
               },
-              networkTimeoutSeconds: 10
+              networkTimeoutSeconds: 15, // Increased timeout
+              plugins: [{
+                cacheKeyWillBeUsed: async ({ request }) => {
+                  // Remove auth headers from cache key for better hit rate
+                  const url = new URL(request.url);
+                  return url.href;
+                }
+              }]
+            }
+          },
+          {
+            // Cache static assets more aggressively
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
             }
           }
         ],
-        // Ensure HTML is always fresh
-        navigateFallback: null,
+        // Ensure HTML is always fresh but allow offline fallback
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
         skipWaiting: true,
-        clientsClaim: true
+        clientsClaim: true,
+        cleanupOutdatedCaches: true
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo.svg'],
       manifest: {

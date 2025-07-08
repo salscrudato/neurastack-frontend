@@ -51,14 +51,7 @@ const router = createBrowserRouter([
           </AuthGuard>
         )
       },
-      // {
-      //   path: 'neurafit',
-      //   element: (
-      //     <Suspense fallback={<PageLoader message="Loading NeuraFit..." />}>
-      //       <NeuraFitPage />
-      //     </Suspense>
-      //   )
-      // },
+
     ]
   }
 ], {
@@ -125,12 +118,4 @@ if (cleanupCacheManagement) {
   window.addEventListener('beforeunload', cleanupCacheManagement);
 }
 
-// Performance optimizations will be initialized by individual components as needed
-
-// Load API test utilities in development mode
-// if (import.meta.env.DEV) {
-//   import('./utils/api-test').then(() => {
-//     console.log('🔧 API test utilities loaded in development mode');
-//     console.log('Use window.apiTest.runAllAPITests("your-user-id") to test APIs');
-//   });
-// }
+// Performance optimizations are handled by individual components

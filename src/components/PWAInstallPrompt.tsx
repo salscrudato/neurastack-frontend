@@ -43,28 +43,39 @@ export const PWAInstallPrompt = () => {
       const dismissedTime = lastDismissed ? parseInt(lastDismissed) : 0;
       const daysSinceDismissed = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
 
-      // Only show if not dismissed in the last 7 days and after user interaction
+      // Only show if not dismissed in the last 7 days and after meaningful user interaction
       if (daysSinceDismissed > 7) {
-        // Wait for user interaction before showing
-        const showAfterInteraction = () => {
-          setTimeout(() => {
-            setShowInstallPrompt(true);
-          }, 2000); // Show 2 seconds after first interaction
+        let interactionCount = 0;
 
-          // Remove listeners after first interaction
-          document.removeEventListener('click', showAfterInteraction);
-          document.removeEventListener('scroll', showAfterInteraction);
-          document.removeEventListener('keydown', showAfterInteraction);
+        // Wait for multiple interactions to ensure user is engaged
+        const showAfterInteraction = () => {
+          interactionCount++;
+          if (interactionCount >= 3) { // Require 3 interactions before showing
+            setTimeout(() => {
+              setShowInstallPrompt(true);
+              // Auto-hide after 45 seconds if no interaction
+              const timer = setTimeout(() => {
+                setShowInstallPrompt(false);
+                setIsDismissed(true);
+              }, 45000);
+              setAutoHideTimer(timer);
+            }, 3000); // Show 3 seconds after engagement
+
+            // Remove listeners after showing
+            document.removeEventListener('click', showAfterInteraction);
+            document.removeEventListener('scroll', showAfterInteraction);
+            document.removeEventListener('keydown', showAfterInteraction);
+          }
         };
 
-        // Show after user interaction or after 15 seconds (whichever comes first)
-        document.addEventListener('click', showAfterInteraction, { once: true });
-        document.addEventListener('scroll', showAfterInteraction, { once: true });
-        document.addEventListener('keydown', showAfterInteraction, { once: true });
+        // Show after meaningful user engagement
+        document.addEventListener('click', showAfterInteraction);
+        document.addEventListener('scroll', showAfterInteraction);
+        document.addEventListener('keydown', showAfterInteraction);
 
-        // Fallback: show after 15 seconds even without interaction
+        // Fallback: show after 30 seconds even without enough interaction (but only if some interaction)
         setTimeout(() => {
-          if (!showInstallPrompt) {
+          if (!showInstallPrompt && interactionCount > 0) {
             setShowInstallPrompt(true);
             // Auto-hide after 30 seconds if no interaction
             const timer = setTimeout(() => {
@@ -73,7 +84,7 @@ export const PWAInstallPrompt = () => {
             }, 30000);
             setAutoHideTimer(timer);
           }
-        }, 15000);
+        }, 30000); // Increased from 15 to 30 seconds
       }
     };
 
@@ -108,18 +119,12 @@ export const PWAInstallPrompt = () => {
       await deferredPrompt.prompt();
       
       // Wait for the user to respond to the prompt
-      const { outcome } = await deferredPrompt.userChoice;
-      
-      if (outcome === 'accepted') {
-        console.log('✅ User accepted the install prompt');
-      } else {
-        console.log('🚫 User dismissed the install prompt');
-      }
-      
+      await deferredPrompt.userChoice;
+
       setDeferredPrompt(null);
       setShowInstallPrompt(false);
     } catch (error) {
-      console.error('❌ Install prompt failed:', error);
+      // Silent fail for PWA install errors
     } finally {
       setIsInstalling(false);
     }

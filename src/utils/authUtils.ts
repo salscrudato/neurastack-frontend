@@ -42,10 +42,8 @@ export class AuthManager {
     }
 
     this.unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('🔐 Auth state changed:', user?.uid, 'isAnonymous:', user?.isAnonymous);
-      
       useAuthStore.getState().setUser(user);
-      
+
       if (user) {
         this.setupSessionManagement(user);
       } else {
@@ -69,7 +67,6 @@ export class AuthManager {
       : 7 * 24 * 60 * 60 * 1000; // 7 days for authenticated
 
     this.sessionTimeout = setTimeout(() => {
-      console.log('🕐 Session timeout reached, signing out...');
       this.signOut();
     }, timeoutDuration);
 
@@ -103,10 +100,8 @@ export class AuthManager {
       
       // Clear any cached data
       this.clearUserData();
-      
-      console.log('✅ User signed out successfully');
     } catch (error) {
-      console.error('❌ Sign out failed:', error);
+      // Silent fail for sign out errors
       throw error;
     }
   }

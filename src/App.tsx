@@ -7,10 +7,9 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import UpdateNotification from "./components/UpdateNotification";
 import { usePerformanceOptimization } from "./hooks/usePerformanceOptimization";
-import { authManager } from "./utils/authUtils";
-// import { useFitnessSync } from "./hooks/useFitnessSync";
 import "./styles/global.css";
 import "./styles/utilities.css";
+import { authManager } from "./utils/authUtils";
 
 // Single transition variant for all pages
 const pageVariants = {
@@ -141,11 +140,9 @@ const Fallback = () => (
 );
 
 export default function App() {
-  // useFitnessSync();
-
-  // Initialize performance optimizations
+  // Initialize performance optimizations - minimal logging
   usePerformanceOptimization({
-    enableMetrics: import.meta.env.PROD,
+    enableMetrics: false, // Disabled to reduce console noise
     enableResourceHints: true,
     enableImageOptimization: true,
     enableFontOptimization: true
