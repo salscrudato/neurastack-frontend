@@ -182,11 +182,7 @@ describe('EnsembleInfoModal', () => {
 
     expect(screen.getByText('AI Intelligence Analysis')).toBeInTheDocument();
 
-    // Should display winning model (any model name in uppercase)
-    expect(screen.getByText('GEMINI')).toBeInTheDocument();
-
-    // Should display voting section
-    expect(screen.getByText('Model Voting Weights')).toBeInTheDocument();
+    // Model performance section has been removed per user request
 
     // Component should render without errors
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -207,8 +203,7 @@ describe('EnsembleInfoModal', () => {
     const timeElements = screen.getAllByText(/\d+s$/);
     expect(timeElements.length).toBeGreaterThan(0);
 
-    // Should display success rate label
-    expect(screen.getByText('Success Rate')).toBeInTheDocument();
+    // Success rate has been removed per user request
 
     // Note: Cost information is excluded per user preferences
   });

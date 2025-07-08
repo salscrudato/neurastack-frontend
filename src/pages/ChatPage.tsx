@@ -208,42 +208,38 @@ export function ChatPage() {
   return (
     <Flex
       direction="column"
-      h="100%"
-      minH="100%"
+      h="100vh"
+      minH="100vh"
+      maxH="100vh"
       p="0px"
       bg={bgColor}
       position="relative"
       data-testid="chat-page"
+      overflow="hidden"
       sx={{
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
-        overflowY: "auto",
-        overflowX: "hidden",
-        WebkitOverflowScrolling: "touch",
         "@media (max-width: 768px)": {
-          // Account for fixed header height with safe area
-          height: "calc(100vh - env(safe-area-inset-top, 0px) - 56px)",
-          minHeight: "calc(100vh - env(safe-area-inset-top, 0px) - 56px)",
-          maxHeight: "calc(100vh - env(safe-area-inset-top, 0px) - 56px)",
-          // Account for fixed input with safe area
-          paddingBottom: "calc(120px + env(safe-area-inset-bottom, 0px))",
-          // Add top padding to account for fixed header
-          paddingTop: "calc(env(safe-area-inset-top, 0px) + 56px)",
-          overflowY: "auto",
-          overscrollBehavior: "contain",
-          // Enhanced mobile scrolling
-          WebkitOverflowScrolling: "touch",
-          scrollBehavior: "smooth",
-          // Prevent content from jumping during keyboard show/hide
-          position: "relative",
+          // Full viewport height - no scrolling on page level
+          height: "100vh",
+          minHeight: "100vh",
+          maxHeight: "100vh",
+          overflow: "hidden",
+          // Prevent any page-level scrolling
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           // Ensure content doesn't go behind fixed elements
           zIndex: 1,
         },
         "@media (min-width: 769px)": {
-          height: "calc(100vh - 64px)",
-          minHeight: "calc(100vh - 64px)",
-          maxHeight: "calc(100vh - 64px)",
+          height: "100vh",
+          minHeight: "100vh",
+          maxHeight: "100vh",
           background: "#FAFBFC",
+          overflow: "hidden",
         },
         "@supports (-webkit-touch-callout: none)": {
           "@media (max-width: 768px)": {
@@ -294,7 +290,7 @@ export function ChatPage() {
         </Flex>
       )}
 
-      {/* Messages Container */}
+      {/* Messages Container - Only Scrollable Area */}
       <Box
         ref={messagesContainerRef}
         flex="1"
@@ -309,24 +305,42 @@ export function ChatPage() {
             paddingX: "clamp(0.5rem, 2vw, 1rem)",
             paddingY: "clamp(0.5rem, 2vw, 1rem)",
             paddingBottom: "clamp(0.5rem, 2vw, 1rem)",
-            // Account for fixed header (56px + safe area) and fixed input (120px + safe area)
+            // Precise height: full viewport minus header and input
+            height: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
+            minHeight: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
             maxHeight: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
+            // Position to account for fixed header
+            marginTop: "calc(56px + env(safe-area-inset-top, 0px))",
+            marginBottom: "calc(120px + env(safe-area-inset-bottom, 0px))",
             scrollBehavior: "smooth",
             scrollSnapType: "y proximity",
             touchAction: "pan-y",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             "&::-webkit-scrollbar": { display: "none" },
-            // Ensure proper spacing from fixed elements
-            marginTop: 0,
-            marginBottom: 0,
+            // Ensure this is the only scrollable area
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 2,
           },
           "@media (min-width: 769px)": {
-            maxHeight: "calc(100vh - 64px - clamp(120px, 15vw, 140px))",
+            // Desktop: account for header height and input area
+            height: "calc(100vh - 64px - 140px)",
+            minHeight: "calc(100vh - 64px - 140px)",
+            maxHeight: "calc(100vh - 64px - 140px)",
+            marginTop: "64px",
+            marginBottom: "140px",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 2,
             display: "flex",
             justifyContent: "center",
+            paddingX: "clamp(1rem, 4vw, 2rem)",
             paddingY: "clamp(1rem, 3vw, 1.5rem)",
-            paddingX: "clamp(1rem, 2vw, 1.25rem)",
             "&::-webkit-scrollbar": { width: "6px" },
             "&::-webkit-scrollbar-track": { background: "rgba(0, 0, 0, 0.05)", borderRadius: "3px" },
             "&::-webkit-scrollbar-thumb": {
@@ -343,6 +357,35 @@ export function ChatPage() {
       >
         <Box w="100%" maxW={chatConfig.container.maxWidth} px={chatConfig.container.centerPadding}>
           <Flex direction="column" align="stretch" gap={chatConfig.container.gap}>
+            {/* Placeholder when no messages */}
+            {msgs.length === 0 && !isLoading && (
+              <Flex
+                direction="column"
+                align="center"
+                justify="center"
+                minH="60vh"
+                textAlign="center"
+                px={4}
+              >
+                <Text
+                  fontSize={{ base: "2xl", md: "3xl" }}
+                  fontWeight="500"
+                  color="gray.800"
+                  mb={3}
+                  letterSpacing="-0.02em"
+                >
+                  What do you want to know?
+                </Text>
+                <Text
+                  fontSize={{ base: "md", md: "lg" }}
+                  color="gray.500"
+                  fontWeight="400"
+                >
+                  The team will look into it...
+                </Text>
+              </Flex>
+            )}
+
             {msgs.map((m, index) => {
               const isFirstAssistantMessage =
                 m.role === "assistant" && msgs.slice(0, index).every((prevMsg) => prevMsg.role !== "assistant");

@@ -28,11 +28,9 @@ import {
     PiBrainBold,
     PiChartBarBold,
     PiCheckCircleBold,
-    PiGaugeBold,
     PiLightningBold,
     PiScalesBold,
     PiShieldCheckBold,
-    PiTargetBold,
     PiWarningCircleBold
 } from "react-icons/pi";
 
@@ -191,7 +189,6 @@ export function EnsembleInfoModal({
     const votingAnalysis = confidenceAnalysis?.votingAnalysis || {};
 
     // Extract metrics with proper fallbacks and type safety
-    const successfulModels = roles.filter((role: any) => role?.status === 'fulfilled').length;
     const totalModels = Math.max(roles.length, metadata?.totalRoles || 1); // Prevent division by zero
 
     // Response time from metadata (primary source)
@@ -213,35 +210,7 @@ export function EnsembleInfoModal({
         (confidenceAnalysis?.responseConsistency || 0) * 100
     )));
 
-    // Winner information from voting - check multiple possible locations and calculate from weights if needed
-    let winnerModel = voting?.winner || votingAnalysis?.winner;
-    let winnerConfidence = Math.round((voting?.confidence || votingAnalysis?.confidence || 0) * 100);
 
-    // If no explicit winner, calculate from voting weights
-    if (!winnerModel && voting?.weights && Object.keys(voting.weights).length > 0) {
-        const weights = voting.weights;
-        const maxWeight = Math.max(...Object.values(weights) as number[]);
-        const winnerEntry = Object.entries(weights).find(([_, weight]) => weight === maxWeight);
-        if (winnerEntry) {
-            winnerModel = winnerEntry[0];
-            winnerConfidence = Math.round(maxWeight * 100);
-        }
-    }
-
-    // Fallback to 'none' if still no winner
-    winnerModel = winnerModel || 'none';
-
-    // Debug winner calculation
-    if (import.meta.env.DEV && isOpen) {
-        console.log('🏆 Winner Debug:');
-        console.log('  final winnerModel:', winnerModel);
-        console.log('  final winnerConfidence:', winnerConfidence);
-        console.log('  voting?.winner:', voting?.winner);
-        console.log('  voting?.confidence:', voting?.confidence);
-        console.log('  voting?.weights:', voting?.weights);
-        console.log('  votingAnalysis?.winner:', votingAnalysis?.winner);
-        console.log('  votingAnalysis?.confidence:', votingAnalysis?.confidence);
-    }
 
     // Quality distribution from confidence analysis
     const qualityDistribution = confidenceAnalysis?.qualityDistribution || {
@@ -255,7 +224,6 @@ export function EnsembleInfoModal({
 
     // Voting analysis metrics
     const consensusStrength = votingAnalysis?.consensusStrength || 'unknown';
-    const winnerMargin = Math.round((votingAnalysis?.winnerMargin || 0) * 100);
     const distributionEntropy = votingAnalysis?.distributionEntropy || 0;
 
     // Synthesis metadata
@@ -263,9 +231,6 @@ export function EnsembleInfoModal({
     const basedOnResponses = synthesisMetadata?.basedOnResponses || totalModels;
     const averageConfidence = Math.round((synthesisMetadata?.averageConfidence || 0) * 100);
     const consensusLevel = synthesisMetadata?.consensusLevel || 'unknown';
-
-    // Success rate with safe calculation
-    const successRate = totalModels > 0 ? Math.round((successfulModels / totalModels) * 100) : 0;
 
 
 
@@ -347,7 +312,7 @@ export function EnsembleInfoModal({
                         </Box>
 
                         {/* Core Metrics Grid - Redesigned */}
-                        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                        <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
                             {/* Overall Confidence */}
                             <Tooltip
                                 label="Primary reliability indicator based on model consensus and response quality"
@@ -450,43 +415,8 @@ export function EnsembleInfoModal({
                                 </Box>
                             </Tooltip>
 
-                            {/* Success Rate */}
-                            <Tooltip
-                                label="Percentage of AI models that successfully contributed to the response"
-                                isDisabled={isMobile}
-                            >
-                                <Box
-                                    bg="white"
-                                    borderRadius="xl"
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
-                                    cursor={isMobile ? "pointer" : "help"}
-                                    _hover={{
-                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                        transform: "translateY(-2px)"
-                                    }}
-                                    transition="all 0.2s ease"
-                                    onClick={() => handleMobileMetricClick(
-                                        "Success Rate",
-                                        "Percentage of AI models that successfully contributed to the response"
-                                    )}
-                                >
-                                    <Icon as={PiTargetBold} boxSize={6} color="#10B981" mb={2} />
-                                    <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {successRate}%
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Success Rate
-                                    </Text>
-                                </Box>
-                            </Tooltip>
-                        </SimpleGrid>
 
-                        {/* Consensus & Voting Analysis */}
-                        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+
                             {/* Consensus Strength */}
                             <Tooltip
                                 label="How strongly the AI models agree on the response approach and content"
@@ -521,39 +451,7 @@ export function EnsembleInfoModal({
                                 </Box>
                             </Tooltip>
 
-                            {/* Winner Margin */}
-                            <Tooltip
-                                label="How decisively the winning model outperformed others in voting"
-                                isDisabled={isMobile}
-                            >
-                                <Box
-                                    bg="white"
-                                    borderRadius="xl"
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
-                                    cursor={isMobile ? "pointer" : "help"}
-                                    _hover={{
-                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                        transform: "translateY(-2px)"
-                                    }}
-                                    transition="all 0.2s ease"
-                                    onClick={() => handleMobileMetricClick(
-                                        "Win Margin",
-                                        "How decisively the winning model outperformed others in voting"
-                                    )}
-                                >
-                                    <Icon as={PiChartBarBold} boxSize={5} color={getConfidenceColor(winnerMargin / 100)} mb={2} />
-                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                        {winnerMargin}%
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Win Margin
-                                    </Text>
-                                </Box>
-                            </Tooltip>
+
 
                             {/* Response Diversity */}
                             <Tooltip
@@ -625,79 +523,8 @@ export function EnsembleInfoModal({
                         </SimpleGrid>
 
                         {/* Advanced Analytics Section */}
-                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                            {/* Winning Model Analysis */}
-                            <Box
-                                bg="white"
-                                borderRadius="xl"
-                                p={6}
-                                border="1px solid"
-                                borderColor="rgba(226, 232, 240, 0.6)"
-                                boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                            >
-                                <HStack spacing={3} mb={4}>
-                                    <Icon as={PiGaugeBold} boxSize={6} color="#4F9CF9" />
-                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                        Model Performance
-                                    </Text>
-                                </HStack>
+                        <Box>
 
-                                <VStack spacing={4} align="stretch">
-                                    <Box textAlign="center" p={4} bg="gray.50" borderRadius="lg">
-                                        <HStack justify="center" spacing={2} mb={2}>
-                                            <Icon
-                                                as={winnerModel !== 'none' ? PiCheckCircleBold : PiWarningCircleBold}
-                                                color={winnerModel !== 'none' ? '#10B981' : '#F59E0B'}
-                                                boxSize={5}
-                                            />
-                                            <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                                {winnerModel !== 'none' ? winnerModel.toUpperCase() : 'NO CLEAR WINNER'}
-                                            </Text>
-                                        </HStack>
-                                        <Text fontSize="2xl" fontWeight="bold" color={getConfidenceColor(winnerConfidence / 100)}>
-                                            {winnerConfidence}%
-                                        </Text>
-                                        <Text fontSize="sm" color={mutedColor}>
-                                            Best performing model
-                                        </Text>
-                                    </Box>
-
-                                    {/* Voting Analysis */}
-                                    {voting.weights && Object.keys(voting.weights).length > 0 && (
-                                        <VStack spacing={2} align="stretch">
-                                            <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                Model Voting Weights
-                                            </Text>
-                                            {Object.entries(voting.weights).map(([model, weight]) => (
-                                                <Flex key={model} justify="space-between" align="center" py={1}>
-                                                    <Text fontSize="sm" color={mutedColor} fontWeight="500">
-                                                        {model.toUpperCase()}
-                                                    </Text>
-                                                    <HStack spacing={2}>
-                                                        <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                            {formatPercentage(weight as number)}
-                                                        </Text>
-                                                        <Box
-                                                            w="40px"
-                                                            h="4px"
-                                                            bg="gray.200"
-                                                            borderRadius="full"
-                                                            overflow="hidden"
-                                                        >
-                                                            <Box
-                                                                w={`${(weight as number) * 100}%`}
-                                                                h="100%"
-                                                                bg={model === voting.winner ? '#10B981' : '#4F9CF9'}
-                                                                borderRadius="full"
-                                                            />
-                                                        </Box>
-                                                    </HStack>
-                                                </Flex>
-                                            ))}
-                                        </VStack>
-                                    )}
-                                </VStack>
-                            </Box>
 
                             {/* Response Quality & Consistency Analysis */}
                             <Box
@@ -831,7 +658,7 @@ export function EnsembleInfoModal({
                                     </Box>
                                 </VStack>
                             </Box>
-                        </SimpleGrid>
+                        </Box>
 
                         {/* Synthesis Insights */}
                         <Box

@@ -447,10 +447,10 @@ select {
     padding-right: env(safe-area-inset-right, 0px) !important;
   }
 
-  /* Prevent horizontal scrolling and improve viewport stability */
+  /* Prevent page scrolling - only content containers should scroll */
   html,
   body {
-    overflow-x: hidden;
+    overflow: hidden; /* Prevent all page-level scrolling */
     max-width: 100vw;
     /* Prevent zoom on input focus */
     -webkit-text-size-adjust: 100%;
@@ -461,6 +461,13 @@ select {
     height: -webkit-fill-available;
     min-height: 100vh;
     min-height: -webkit-fill-available;
+  }
+
+  /* Ensure root container doesn't scroll */
+  #root {
+    height: 100vh;
+    height: -webkit-fill-available;
+    overflow: hidden;
   }
 
   /* Optimize touch interactions and prevent unwanted behaviors */
