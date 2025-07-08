@@ -21,6 +21,11 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Validate required config
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  console.error('❌ Firebase configuration is incomplete. Please check your environment variables.');
+}
+
 /** Initialize Firebase once */
 const app = initializeApp(firebaseConfig);
 
@@ -30,5 +35,12 @@ export const auth: Auth = getAuth(app);
 /** Firestore database singleton */
 export const db = getFirestore(app);
 
-/** Analytics singleton */
-export const analytics = getAnalytics(app);
+/** Analytics singleton (with error handling) */
+let analytics: any = null;
+try {
+  analytics = getAnalytics(app);
+} catch (error) {
+  console.warn('Analytics initialization failed (this is normal in development):', error);
+}
+
+export { analytics };

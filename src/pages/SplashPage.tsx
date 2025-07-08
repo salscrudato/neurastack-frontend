@@ -820,7 +820,9 @@ export function SplashPage() {
   }), [prefersReducedMotion]);
 
   useEffect(() => {
+    console.log('🔄 SplashPage useEffect - user changed:', user?.uid, 'isAnonymous:', user?.isAnonymous);
     if (user) {
+      console.log('🔄 User detected, navigating to /chat...');
       navigate("/chat", { replace: true });
     }
   }, [user, navigate]);
@@ -848,11 +850,26 @@ export function SplashPage() {
     setIsLoading(true);
 
     try {
+      console.log('🚀 Starting guest login...');
+
       // Guest login using Firebase anonymous auth
       const cred = await signInAnonymously(auth);
+      console.log('✅ Firebase anonymous auth successful:', cred.user?.uid);
+
       setUser(cred.user);
-      navigate("/chat", { replace: true });
+      console.log('✅ User set in auth store');
+
+      // Temporary: Set success message instead of navigating
+      setSuccess('Guest login successful! User ID: ' + cred.user?.uid);
+
+      // Add a small delay then navigate
+      setTimeout(() => {
+        console.log('🔄 Navigating to /chat...');
+        navigate("/chat", { replace: true });
+        console.log('✅ Navigation called');
+      }, 1000);
     } catch (error: any) {
+      console.error('❌ Guest login failed:', error);
       setErr(prettyError(error?.code || 'guest-login-failed'));
     } finally {
       setIsLoading(false);

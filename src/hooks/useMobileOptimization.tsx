@@ -35,12 +35,20 @@ export function useMobileOptimization() {
       document.documentElement.style.setProperty('--viewport-height', `${window.innerHeight}px`);
     };
 
+    // Debounced handlers for better performance
+    let resizeTimeout: NodeJS.Timeout;
+    const debouncedCheck = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(checkMobile, 150);
+    };
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    window.addEventListener('orientationchange', checkMobile);
+    window.addEventListener('resize', debouncedCheck, { passive: true });
+    window.addEventListener('orientationchange', checkMobile, { passive: true });
     return () => {
-      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('resize', debouncedCheck);
       window.removeEventListener('orientationchange', checkMobile);
+      clearTimeout(resizeTimeout);
     };
   }, []);
 

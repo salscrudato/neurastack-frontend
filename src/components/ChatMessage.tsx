@@ -1,19 +1,19 @@
 import {
-  Box,
-  Flex,
-  HStack,
-  IconButton,
-  Text,
-  Tooltip,
-  useClipboard,
-  VStack
+    Box,
+    Button,
+    Flex,
+    HStack,
+    IconButton,
+    Text,
+    Tooltip,
+    useClipboard,
+    VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 
 import {
-  PiCheckBold,
-  PiCopyBold,
-  PiInfoBold,
+    PiCheckBold,
+    PiCopyBold
 } from "react-icons/pi";
 import { useModelResponses } from "../hooks/useModelResponses";
 import type { Message } from "../store/useChatStore";
@@ -243,128 +243,51 @@ export const ChatMessage = memo<ChatMessageProps>(({
           }
         }}
       >
-        {/* Enhanced AI Response Header with Confidence Metrics */}
+        {/* Clean AI Response Header - Minimalistic Design */}
         {!isUser && !isError && !isLoading && message.metadata?.metadata && (
           <Box mb={3}>
             <Flex
-              direction={{ base: "column", sm: "row" }}
               justify="space-between"
-              align={{ base: "start", sm: "center" }}
-              gap={2}
-              p={3}
-              bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
-              borderRadius="lg"
-              border="1px solid #E2E8F0"
+              align="center"
+              p={{ base: 2, md: 3 }}
+              bg="rgba(248, 250, 252, 0.6)"
+              borderRadius="xl"
+              border="1px solid rgba(226, 232, 240, 0.4)"
               position="relative"
+              backdropFilter="blur(8px)"
             >
-              {/* Info Icon - Top Right */}
-              {(message.metadata.metadata.synthesis?.provider?.toUpperCase() === 'AI ENSEMBLE' ||
-                !message.metadata.metadata.synthesis?.provider) && (
-                <Tooltip label="View ensemble details" hasArrow fontSize="xs">
-                  <IconButton
-                    aria-label="View ensemble information"
-                    icon={<PiInfoBold />}
-                    size="sm"
-                    variant="ghost"
-                    onClick={onEnsembleInfoOpen}
-                    position="absolute"
-                    top={2}
-                    right={2}
-                    color="#64748B"
-                    _hover={{
-                      color: "#1E293B",
-                      bg: "#F1F5F9",
-                    }}
-                    _focus={{
-                      boxShadow: "none",
-                    }}
-                    minW="28px"
-                    h="28px"
-                  />
-                </Tooltip>
-              )}
+              {/* Clean Provider Label */}
+              <Text
+                fontSize={{ base: "sm", md: "md" }}
+                fontWeight="600"
+                color="#1E293B"
+                letterSpacing="-0.025em"
+              >
+                AI ENSEMBLE
+              </Text>
 
-              {/* Provider Information */}
-              <Box>
-                <HStack spacing={2}>
-                  <Text
-                    fontSize={{ base: "sm", md: "md" }}
-                    fontWeight="600"
-                    color="#1E293B"
-                    letterSpacing="-0.025em"
-                  >
-                    {message.metadata.metadata.synthesis?.provider?.toUpperCase() || 'AI ENSEMBLE'}
-                  </Text>
-                  {message.metadata.metadata.synthesis?.model && (
-                    <Text
-                      fontSize={{ base: "xs", md: "sm" }}
-                      color="#64748B"
-                      fontWeight="500"
-                    >
-                      {message.metadata.metadata.synthesis.model.toUpperCase()}
-                    </Text>
-                  )}
-                </HStack>
-
-                {/* Voting Recommendation */}
-                {(message.metadata.metadata.synthesis?.provider?.toUpperCase() === 'AI ENSEMBLE' ||
-                  !message.metadata.metadata.synthesis?.provider) && (
-                  <Text
-                    fontSize="xs"
-                    color="#94A3B8"
-                    fontWeight="500"
-                    mt={1}
-                    letterSpacing="0.025em"
-                  >
-                    {message.metadata.metadata.confidenceAnalysis?.modelAgreement > 0.8
-                      ? 'Unanimous consensus recommendation'
-                      : message.metadata.metadata.confidenceAnalysis?.modelAgreement > 0.6
-                      ? 'Majority consensus recommendation'
-                      : message.metadata.metadata.confidenceAnalysis?.modelAgreement > 0.4
-                      ? 'Mixed consensus recommendation'
-                      : 'Diverse perspectives recommendation'
-                    }
-                  </Text>
-                )}
-              </Box>
-
-              {/* Confidence Metrics */}
-              <HStack spacing={4} fontSize={{ base: "xs", md: "sm" }}>
-                {message.metadata.metadata.confidenceAnalysis?.overallConfidence && (
-                  <HStack spacing={1}>
-                    <Text color="#64748B" fontWeight="500">Confidence:</Text>
-                    <Text
-                      color={
-                        message.metadata.metadata.confidenceAnalysis.overallConfidence > 0.8
-                          ? "#059669"
-                          : message.metadata.metadata.confidenceAnalysis.overallConfidence > 0.6
-                          ? "#D97706"
-                          : "#DC2626"
-                      }
-                      fontWeight="600"
-                    >
-                      {Math.round(message.metadata.metadata.confidenceAnalysis.overallConfidence * 100)}%
-                    </Text>
-                  </HStack>
-                )}
-                {message.metadata.metadata.confidenceAnalysis?.modelAgreement && (
-                  <HStack spacing={1}>
-                    <Text color="#64748B" fontWeight="500">Agreement:</Text>
-                    <Text
-                      color={
-                        message.metadata.metadata.confidenceAnalysis.modelAgreement > 0.8
-                          ? "#059669"
-                          : message.metadata.metadata.confidenceAnalysis.modelAgreement > 0.6
-                          ? "#D97706"
-                          : "#DC2626"
-                      }
-                      fontWeight="600"
-                    >
-                      {Math.round(message.metadata.metadata.confidenceAnalysis.modelAgreement * 100)}%
-                    </Text>
-                  </HStack>
-                )}
-              </HStack>
+              {/* Details Button - Clean & Modern */}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onEnsembleInfoOpen}
+                color="#64748B"
+                fontSize="xs"
+                fontWeight="500"
+                _hover={{
+                  color: "#4F9CF9",
+                  bg: "rgba(79, 156, 249, 0.1)",
+                }}
+                _focus={{
+                  boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
+                }}
+                borderRadius="lg"
+                px={3}
+                py={1}
+                h="auto"
+              >
+                Details
+              </Button>
             </Flex>
           </Box>
         )}
@@ -405,10 +328,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
             />
           )}
         </Box>
-
-
-
-        {/* Enhanced Individual Model Responses Section */}
+        {/* Individual Model Responses - Clean & Minimal */}
         {!isUser && !isError && !isLoading && hasIndividualResponses && (
           <Box mt={4}>
             <ModelResponseGrid
@@ -418,6 +338,10 @@ export const ChatMessage = memo<ChatMessageProps>(({
             />
           </Box>
         )}
+
+
+
+
 
         {/* Message Actions - Only show copy button for AI messages */}
         {!isUser && (

@@ -113,24 +113,26 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
         w="100%"
         display="flex"
         justifyContent="center"
-        py={2}
-        px={4}
+        py={{ base: 3, md: 4 }}
+        px={{ base: 3, sm: 4, md: 6 }}
+        maxW="900px"
+        mx="auto"
       >
-        <HStack spacing={3}>
+        <HStack spacing={{ base: 2, sm: 3, md: 4 }} flexWrap="wrap" justify="center">
           <Button
             leftIcon={isSaved ? <PiCheckBold size={14} /> : <PiFloppyDiskBold size={14} />}
             onClick={handleSave}
             isLoading={isSaving}
             loadingText="Saving..."
             variant="solid"
-            size="sm"
-            borderRadius="lg"
+            size={{ base: "md", md: "sm" }}
+            borderRadius="xl"
             fontWeight="600"
-            px={4}
-            py={2}
+            px={{ base: 5, md: 4 }}
+            py={{ base: 3, md: 2 }}
             h="auto"
-            minH="36px"
-            fontSize="sm"
+            minH={{ base: "44px", md: "36px" }}
+            fontSize={{ base: "sm", md: "sm" }}
             bg={isSaved ? "linear-gradient(135deg, #10B981 0%, #059669 100%)" : "linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)"}
             color="white"
             border="none"
@@ -162,14 +164,14 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             leftIcon={<PiTrashBold size={14} />}
             onClick={onOpen}
             variant="outline"
-            size="sm"
-            borderRadius="lg"
+            size={{ base: "md", md: "sm" }}
+            borderRadius="xl"
             fontWeight="600"
-            px={4}
-            py={2}
+            px={{ base: 5, md: 4 }}
+            py={{ base: 3, md: 2 }}
             h="auto"
-            minH="36px"
-            fontSize="sm"
+            minH={{ base: "44px", md: "36px" }}
+            fontSize={{ base: "sm", md: "sm" }}
             bg="rgba(255, 255, 255, 0.9)"
             color="#DC2626"
             border="1px solid"

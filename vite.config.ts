@@ -129,10 +129,8 @@ export default defineConfig({
           // State management and utilities
           state: ['zustand'],
 
-          // Firebase services (optimized imports)
-          'firebase-core': ['firebase/app'],
-          'firebase-auth': ['firebase/auth'],
-          'firebase-firestore': ['firebase/firestore'],
+          // Firebase services (keep together to avoid circular dependencies)
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
 
           // Icons (separate for better caching)
           icons: ['react-icons/pi', '@heroicons/react'],
@@ -155,16 +153,21 @@ export default defineConfig({
     },
 
     // Reduced chunk size warning limit for better performance
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 500, // More aggressive chunk size limits
 
-    // Optimize CSS
+    // Optimize CSS with better splitting
     cssCodeSplit: true,
 
     // Enable CSS minification
     cssMinify: true,
 
-    // Optimize asset handling
-    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
+    // Optimize asset handling with better thresholds
+    assetsInlineLimit: 2048, // Inline smaller assets (2kb) for fewer requests
+
+    // Enhanced module preload for better performance
+    modulePreload: {
+      polyfill: false, // Reduce bundle size for modern browsers
+    },
   },
 
   // Enhanced dependency optimization for better performance

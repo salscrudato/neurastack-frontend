@@ -1,16 +1,16 @@
 import {
-  Box,
-  HStack,
-  IconButton,
-  InputGroup,
-  InputRightElement,
-  ScaleFade,
-  Textarea,
-  useToast
+    Box,
+    IconButton,
+    InputGroup,
+    InputRightElement,
+    ScaleFade,
+    Textarea,
+    useToast
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
 import { useReducedMotion } from "../hooks/useAccessibility";
+import { useMobileOptimization } from "../hooks/useMobileOptimization";
 import { useChatStore } from "../store/useChatStore";
 
 import { createErrorToast } from "../utils/errorHandler";
@@ -43,23 +43,50 @@ export default function ChatInput() {
 
 
 
-  // Enhanced input configuration with modern clean design
+  // Enhanced mobile-first input configuration with improved touch targets
   const inputConfig = useMemo(() => ({
-    minHeight: { xs: "44px", sm: "46px", md: "48px", lg: "50px", xl: "52px" },
+    // Enhanced responsive height with better mobile touch targets
+    minHeight: {
+      base: "56px",  // Increased for better mobile accessibility (minimum 44px + padding)
+      sm: "58px",
+      md: "60px",
+      lg: "62px",
+      xl: "64px"
+    },
     // Optimized for exactly 3 lines of text with proper line height
-    maxHeight: { xs: "84px", sm: "90px", md: "96px", lg: "102px", xl: "108px" }, // ~3 lines
-    fontSize: { xs: "16px", sm: "16px", md: "16px", lg: "16px", xl: "16px" }, // Consistent 16px for better readability
-    lineHeight: "1.4", // Optimal line height for readability
-    padding: { xs: 3, sm: 3.5, md: 4, lg: 4.5, xl: 5 },
-    // Ultra-rounded edges for modern, clean design
-    borderRadius: "24px", // Consistent ultra-rounded design
-    // Optimized circular send button sizes for mobile and desktop
+    maxHeight: {
+      base: "120px",   // 3 lines on mobile with enhanced spacing
+      sm: "126px",
+      md: "132px",
+      lg: "138px",
+      xl: "144px"
+    },
+    // Enhanced responsive font sizing to prevent zoom on iOS
+    fontSize: {
+      base: "max(16px, 1rem)",  // Prevent iOS zoom while maintaining readability
+      sm: "max(16px, 1.0625rem)",
+      md: "1.0625rem",
+      lg: "1.125rem",
+      xl: "1.1875rem"
+    },
+    lineHeight: "1.5", // Optimal readability
+    // Enhanced responsive padding with better mobile spacing
+    padding: {
+      base: "clamp(0.875rem, 3.5vw, 1.125rem)",
+      sm: "clamp(1rem, 3vw, 1.25rem)",
+      md: "clamp(1.125rem, 2.5vw, 1.375rem)",
+      lg: "clamp(1.25rem, 2vw, 1.5rem)",
+      xl: "clamp(1.375rem, 1.5vw, 1.625rem)"
+    },
+    // Enhanced ultra-rounded edges for premium modern design
+    borderRadius: "clamp(24px, 6vw, 32px)", // Increased fluid border radius
+    // Enhanced circular send button sizes for optimal touch targets
     sendButton: {
-      base: "36px",  // Mobile: better touch target
-      sm: "36px",    // Small mobile: consistent size
-      md: "40px",    // Desktop: clean and proportional
-      lg: "40px",    // Large desktop: consistent
-      xl: "40px"     // XL desktop: optimal size
+      base: "48px",  // Enhanced mobile touch target (48px for better accessibility)
+      sm: "50px",
+      md: "52px",
+      lg: "54px",
+      xl: "56px"
     }
   }), []);
 
@@ -72,24 +99,21 @@ export default function ChatInput() {
     shadowTransition: prefersReducedMotion ? 'none' : 'box-shadow 0.2s ease'
   }), [prefersReducedMotion]);
 
-  // Mobile detection for enhanced touch interactions
-  const isMobile = useMemo(() => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           window.innerWidth <= 768;
-  }, []);
+  // Enhanced mobile detection with better accuracy
+  const { isMobile } = useMobileOptimization();
 
-  // 10 short, innovative prompt suggestions for one-line display
+  // Enhanced prompt suggestions with better mobile-friendly text
   const placeholderSuggestions = useMemo(() => [
-    "Explain an AI ensemble with voting",
-    "How do I create a React app?",
-    "Why is Hackensack, NJ elite?",
-    "Design a quick leg workout",
-    "Analyze remote work impacts",
-    "Generate solutions for world hunger",
-    "Plan a budget weekend trip",
-    "Teach me something about Hackensack",
-    "Brainstorm app ideas for 2024",
-    "Help write a persuasive email"
+    "Explain AI ensemble voting",
+    "Create a React app guide",
+    "Why is Hackensack elite?",
+    "Design a leg workout",
+    "Remote work analysis",
+    "Solutions for world hunger",
+    "Budget weekend trip ideas",
+    "Tell me about Hackensack",
+    "2024 app ideas",
+    "Write persuasive email"
   ], []);
 
   const MAX_CHARS = 10000; // Increased limit - let backend control token restrictions
@@ -392,17 +416,19 @@ export default function ChatInput() {
         w="100%"
         maxW={{
           base: "100%",
-          md: "800px",   // Increased to match chat container
-          lg: "900px",   // Increased for large screens
-          xl: "1000px"   // Increased for XL screens
+          md: "850px",   // Enhanced to better match chat container
+          lg: "950px",   // Enhanced for large screens
+          xl: "1050px"   // Enhanced for XL screens
         }}
         px={{
-          base: 1,    // Minimal padding for maximum input width on mobile
-          sm: 2,      // Slightly more on small screens
-          md: 8,      // Maintained desktop spacing
-          lg: 12,     // Maintained large screen spacing
-          xl: 16      // Maintained XL screen spacing
+          base: "clamp(0.75rem, 2vw, 1rem)",    // Enhanced mobile padding to prevent button cutoff
+          sm: "clamp(1rem, 2.5vw, 1.25rem)",    // Enhanced small screen spacing
+          md: "clamp(1.5rem, 4vw, 2rem)",       // Enhanced desktop spacing
+          lg: "clamp(2rem, 5vw, 3rem)",         // Enhanced large screen spacing
+          xl: "clamp(2.5rem, 6vw, 4rem)"        // Enhanced XL screen spacing
         }}
+        position="relative"
+        overflow="visible" // Ensure button overflow is visible
       >
         <ScaleFade in={true} initialScale={0.95}>
           <InputGroup
@@ -416,6 +442,8 @@ export default function ChatInput() {
             alignItems="center"
             transition={animationConfig.transition}
             boxShadow="none"
+            position="relative"
+            overflow="visible" // Ensure button isn't clipped
             // Enhanced accessibility
             role="group"
             aria-label="Message input area"
@@ -453,15 +481,15 @@ export default function ChatInput() {
             autoCorrect="on"
             spellCheck="true"
             // Enhanced border and styling for modern clean design
-            borderWidth="1px"
-            borderColor={isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.6)"}
-            borderRadius="20px" // More rounded for modern Apple-like design
-            bg="rgba(255, 255, 255, 0.95)" // Enhanced glass background
-            backdropFilter="blur(24px)" // Enhanced blur for premium glass effect
+            borderWidth="1.5px"
+            borderColor={isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.8)"}
+            borderRadius={inputConfig.borderRadius} // Fluid border radius
+            bg="rgba(255, 255, 255, 0.98)" // Enhanced glass background
+            backdropFilter="blur(32px)" // Enhanced blur for premium glass effect
             lineHeight={inputConfig.lineHeight} // Consistent line height for proper 3-line calculation
             boxShadow={isFocused
-              ? "0 0 0 1px rgba(79, 156, 249, 0.3), 0 8px 32px rgba(79, 156, 249, 0.15), 0 4px 16px rgba(79, 156, 249, 0.08)" // Enhanced focus shadow
-              : "0 2px 12px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.02)" // Enhanced glass shadow
+              ? "0 0 0 2px rgba(79, 156, 249, 0.2), 0 12px 40px rgba(79, 156, 249, 0.12), 0 6px 20px rgba(79, 156, 249, 0.06)" // Enhanced focus shadow
+              : "0 4px 16px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.04)" // Enhanced glass shadow
             }
             _placeholder={{
               color: colorSystem.text.placeholder,
@@ -506,72 +534,91 @@ export default function ChatInput() {
               },
             }}
             color={colorSystem.text.primary}
-            pr={{ base: "3rem", sm: "3.5rem", md: "4.5rem", lg: "5rem" }} // Optimized for mobile width
-            pl={{ base: "1rem", md: "1.5rem" }} // Reduced mobile padding
-            py={{ base: "0.875rem", md: "1.25rem" }} // Reduced mobile padding
+            pr={{ base: "4rem", sm: "4.5rem", md: "5rem", lg: "5.5rem" }} // Enhanced padding to prevent button cutoff
+            pl={{ base: "1rem", md: "1.5rem" }} // Consistent left padding
+            py={{ base: "0.875rem", md: "1.25rem" }} // Consistent vertical padding
             fontSize={inputConfig.fontSize}
             fontWeight="400"
           />
 
           <InputRightElement
-            width={{ base: "3rem", sm: "3.5rem", md: "4rem", lg: "4.5rem" }} // Adjusted for smaller button sizes
+            width={{ base: "4rem", sm: "4.5rem", md: "5rem", lg: "5.5rem" }} // Enhanced width to match textarea padding
             top="50%"
             transform="translateY(-50%)"
-            pr={{ base: 1, sm: 1, md: 1.5, lg: 2 }} // Adjusted padding
+            pr={{ base: "0.5rem", sm: "0.75rem", md: "1rem", lg: "1.25rem" }} // Enhanced padding for proper button positioning
             display="flex"
             alignItems="center"
-            justifyContent="flex-end"
+            justifyContent="center" // Center the button within the container
             h="100%"
+            position="absolute"
+            right={0}
+            zIndex={2}
           >
-            <HStack spacing={{ base: 1, md: 1.5 }} align="center" w="100%" justify="flex-end">
-
-              {/* Modern Clean Send Button */}
-              <IconButton
-                aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
-                aria-disabled={busy || !txt.trim()}
-                icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 16 : 18) : (isMobile ? 14 : 16)} />}
-                onClick={handleSend}
-                isLoading={busy}
-                size="sm"
-                w={inputConfig.sendButton}
-                h={inputConfig.sendButton}
-                minW={inputConfig.sendButton}
-                minH={inputConfig.sendButton}
-                bg={colorSystem.button.bg}
-                color={colorSystem.button.color}
-                border={colorSystem.button.border}
-                transition={animationConfig.transition}
-                _hover={{
-                  bg: colorSystem.button.hover.bg,
-                  borderColor: colorSystem.button.hover.border,
-                  transform: animationConfig.scale,
-                  boxShadow: txt.trim() ? "0 4px 16px rgba(79, 156, 249, 0.25)" : "0 2px 8px rgba(0, 0, 0, 0.08)"
-                }}
-                _focus={{
-                  boxShadow: txt.trim()
-                    ? "0 0 0 2px rgba(79, 156, 249, 0.3)"
-                    : "0 0 0 2px rgba(148, 163, 184, 0.3)",
-                  outline: "2px solid transparent",
-                  outlineOffset: "2px"
-                }}
-                _active={{
-                  transform: prefersReducedMotion ? 'none' : "scale(0.95)",
-                  bg: txt.trim() ? "#3B82F6" : "#E2E8F0"
-                }}
-                _disabled={{
-                  bg: colorSystem.button.disabled.bg,
-                  color: colorSystem.button.disabled.color,
-                  borderColor: colorSystem.button.disabled.border,
-                  cursor: "not-allowed",
-                  opacity: 0.5,
-                  transform: "none"
-                }}
-                borderRadius="full"
-                isDisabled={busy || !txt.trim()}
-                flexShrink={0}
-                sx={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent',
+            {/* Enhanced Modern Send Button - Optimized Positioning */}
+            <IconButton
+              aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
+              aria-disabled={busy || !txt.trim()}
+              icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 18 : 20) : (isMobile ? 16 : 18)} />}
+              onClick={handleSend}
+              isLoading={busy}
+              size="sm"
+              w={inputConfig.sendButton}
+              h={inputConfig.sendButton}
+              minW={inputConfig.sendButton}
+              minH={inputConfig.sendButton}
+              maxW={inputConfig.sendButton}
+              maxH={inputConfig.sendButton}
+              bg={txt.trim() ? colorSystem.button.bg : "rgba(148, 163, 184, 0.1)"}
+              color={txt.trim() ? colorSystem.button.color : "rgba(148, 163, 184, 0.6)"}
+              border={txt.trim() ? colorSystem.button.border : "1px solid rgba(148, 163, 184, 0.2)"}
+              borderRadius="full"
+              transition={animationConfig.transition}
+              cursor={txt.trim() ? "pointer" : "not-allowed"}
+              flexShrink={0}
+              flexGrow={0}
+              position="relative"
+              _hover={{
+                bg: txt.trim() ? colorSystem.button.hover.bg : "rgba(148, 163, 184, 0.15)",
+                borderColor: txt.trim() ? colorSystem.button.hover.border : "rgba(148, 163, 184, 0.3)",
+                transform: txt.trim() && !prefersReducedMotion ? "scale(1.05)" : "none",
+                boxShadow: txt.trim() ? "0 8px 25px rgba(79, 156, 249, 0.35)" : "0 2px 8px rgba(0, 0, 0, 0.08)"
+              }}
+              _focus={{
+                boxShadow: txt.trim()
+                  ? "0 0 0 3px rgba(79, 156, 249, 0.4), 0 8px 25px rgba(79, 156, 249, 0.2)"
+                  : "0 0 0 2px rgba(148, 163, 184, 0.4)",
+                outline: "none",
+                outlineOffset: "2px"
+              }}
+              _active={{
+                transform: prefersReducedMotion ? 'none' : "scale(0.95)",
+                bg: txt.trim() ? "#3B82F6" : "#E2E8F0",
+                boxShadow: txt.trim() ? "0 4px 15px rgba(79, 156, 249, 0.4)" : "0 1px 4px rgba(0, 0, 0, 0.1)"
+              }}
+              _disabled={{
+                bg: colorSystem.button.disabled.bg,
+                color: colorSystem.button.disabled.color,
+                borderColor: colorSystem.button.disabled.border,
+                cursor: "not-allowed",
+                opacity: 0.5,
+                transform: "none",
+                boxShadow: "none"
+              }}
+              isDisabled={busy || !txt.trim()}
+              sx={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                // Enhanced button positioning
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                // Prevent button from being cut off
+                overflow: 'visible',
+                // Enhanced mobile touch target
+                '@media (max-width: 768px)': {
+                  minWidth: inputConfig.sendButton.base,
+                  minHeight: inputConfig.sendButton.base,
+                },
                   // Enhanced icon visibility and animation
                   '& svg': {
                     color: 'currentColor !important',
@@ -584,7 +631,6 @@ export default function ChatInput() {
                   backfaceVisibility: 'hidden'
                 }}
               />
-            </HStack>
           </InputRightElement>
           </InputGroup>
         </ScaleFade>

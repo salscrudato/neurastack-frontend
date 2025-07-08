@@ -29,20 +29,28 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
       overflowX="hidden"
       position="relative"
       sx={{
-        minHeight: ['100vh', '100dvh'],
+        // Modern viewport units with fallbacks
+        minHeight: ['100vh', '100dvh', '100svh'],
+        height: ['100vh', '100dvh'],
         '@supports (-webkit-touch-callout: none)': {
           minHeight: '-webkit-fill-available',
+          height: '-webkit-fill-available',
         },
         overflow: 'hidden',
-        // Enhanced mobile viewport handling
+        // Enhanced mobile viewport handling with container queries
         '@media (max-width: 768px)': {
-          minHeight: '100vh',
-          height: '100vh',
-          maxHeight: '100vh',
+          minHeight: 'max(100vh, 100dvh)',
+          height: 'max(100vh, 100dvh)',
+          maxHeight: 'max(100vh, 100dvh)',
         },
-        // Safe area support
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)',
+        // Safe area support with enhanced padding
+        paddingLeft: 'max(env(safe-area-inset-left), 0px)',
+        paddingRight: 'max(env(safe-area-inset-right), 0px)',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        // Performance optimizations
+        contain: 'layout style paint',
+        willChange: 'auto',
       }}
     >
       {!isSplashPage && (
@@ -70,14 +78,26 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          '@media (max-width: 768px)': {
-            paddingTop: !isSplashPage ? '56px' : 0,
-            minHeight: !isSplashPage ? 'calc(100vh - 56px)' : '100vh',
+          // Performance optimizations
+          contain: 'layout style',
+          willChange: 'auto',
+          // Enhanced responsive padding with fluid values
+          paddingTop: !isSplashPage ? 'clamp(56px, 15vw, 64px)' : 0,
+          minHeight: !isSplashPage
+            ? 'calc(100vh - clamp(56px, 15vw, 64px))'
+            : '100vh',
+          // Modern viewport support
+          '@supports (height: 100dvh)': {
+            minHeight: !isSplashPage
+              ? 'calc(100dvh - clamp(56px, 15vw, 64px))'
+              : '100dvh',
           },
-          '@media (min-width: 769px)': {
-            paddingTop: !isSplashPage ? '64px' : 0,
-            minHeight: !isSplashPage ? 'calc(100vh - 64px)' : '100vh',
-          }
+          // Enhanced mobile optimizations
+          '@media (max-width: 768px)': {
+            paddingTop: !isSplashPage ? 'clamp(52px, 12vw, 56px)' : 0,
+            minHeight: !isSplashPage ? 'calc(100vh - clamp(52px, 12vw, 56px))' : '100vh',
+            touchAction: 'pan-y',
+          },
         }}
       >
         <AnimatePresence mode="wait">

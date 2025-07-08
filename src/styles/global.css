@@ -155,9 +155,19 @@ body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 
+  /* Modern viewport units support */
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height */
+  min-height: 100svh; /* Small viewport height */
+
   /* Support for safe areas on notched devices */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+
+  /* Enhanced font rendering for mobile */
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
@@ -342,7 +352,7 @@ button:active {
   }
 }
 
-/* Prevent zoom on iOS inputs */
+/* Prevent zoom on iOS inputs with better responsive scaling */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -351,10 +361,13 @@ input[type="tel"],
 input[type="url"],
 textarea,
 select {
-  font-size: 16px !important;
+  font-size: max(16px, 1rem) !important; /* Prevent zoom while maintaining accessibility */
+  line-height: 1.5;
+  padding: clamp(0.5rem, 2vw, 0.75rem);
 }
 
-@media (min-width: 769px) {
+/* Enhanced responsive typography */
+@media (min-width: 768px) {
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -363,7 +376,22 @@ select {
   input[type="url"],
   textarea,
   select {
-    font-size: 14px !important;
+    font-size: clamp(14px, 1.5vw, 16px) !important;
+    padding: clamp(0.75rem, 2.5vw, 1rem);
+  }
+}
+
+/* Container queries support for modern responsive design */
+@supports (container-type: inline-size) {
+  .responsive-container {
+    container-type: inline-size;
+  }
+
+  @container (min-width: 768px) {
+    .responsive-text {
+      font-size: 1.125rem;
+      line-height: 1.6;
+    }
   }
 }
 

@@ -37,8 +37,8 @@ const ModernEnsembleLoader = memo(({ size = 'md' }: { size?: string }) => {
     };
   }, []);
 
-  const containerSize = size === 'sm' ? '48px' : size === 'lg' ? '72px' : '60px';
-  const nodeSize = size === 'sm' ? '8px' : size === 'lg' ? '12px' : '10px';
+  const containerSize = size === 'sm' ? '52px' : size === 'lg' ? '76px' : '64px';
+  const nodeSize = size === 'sm' ? '9px' : size === 'lg' ? '13px' : '11px';
 
   return (
     <Box position="relative" w={containerSize} h={containerSize}>

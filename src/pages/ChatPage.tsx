@@ -17,6 +17,9 @@ import { useChatStore } from '../store/useChatStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useHistoryStore } from '../store/useHistoryStore';
 
+// Lazy load VirtualChatList for better performance (will be implemented later)
+// const VirtualChatList = lazy(() => import('../components/VirtualChatList'));
+
 export function ChatPage() {
   const msgs = useChatStore(s => s.messages);
   const isLoading = useChatStore(s => s.isLoading);
@@ -50,30 +53,35 @@ export function ChatPage() {
   const heroTextColor = "#1E293B"; // Darker for better contrast
   const heroSubTextColor = "#64748B";
 
-  // Enhanced responsive configuration with ChatGPT-style desktop centering
+  // Enhanced mobile-first responsive configuration with improved UX
   const chatConfig = useMemo(() => ({
     container: {
-      // Mobile: full width with padding
-      // Desktop: centered container with max width - optimized for modern chat UX
+      // Enhanced mobile-first padding with fluid scaling
       padding: {
-        base: 1,    // Mobile: 4px padding (reduced for wider content)
-        sm: 2,      // Small: 8px padding (reduced for wider content)
+        base: "clamp(0.25rem, 1vw, 0.5rem)",    // Enhanced mobile: fluid padding for maximum content width
+        sm: "clamp(0.5rem, 1.5vw, 0.75rem)",    // Enhanced small: fluid padding
         md: 0,      // Desktop: no padding (handled by centered container)
         lg: 0,      // Large: no padding
         xl: 0       // XL: no padding
       },
-      gap: { base: 2, sm: 2, md: 3, lg: 4, xl: 5 }, // More compact spacing to reduce overlap with input
-      // Desktop container constraints - wider for better readability
+      gap: {
+        base: "clamp(0.5rem, 2vw, 1rem)",       // Enhanced mobile: fluid gap spacing
+        sm: "clamp(0.5rem, 2vw, 1rem)",
+        md: "clamp(0.75rem, 2.5vw, 1.25rem)",
+        lg: "clamp(1rem, 3vw, 1.5rem)",
+        xl: "clamp(1.25rem, 3.5vw, 1.75rem)"
+      },
+      // Enhanced desktop container constraints - optimized for readability and input alignment
       maxWidth: {
         base: "100%",
-        md: "800px",   // Increased from 768px
-        lg: "900px",   // Increased for large screens
-        xl: "1000px"   // Increased for XL screens
+        md: "850px",   // Enhanced to match input container
+        lg: "950px",   // Enhanced for large screens
+        xl: "1050px"   // Enhanced for XL screens
       },
       centerPadding: {
-        md: 8,    // Increased from 6
-        lg: 12,   // Increased from 8
-        xl: 16    // Increased from 12
+        md: "clamp(1.5rem, 4vw, 2rem)",         // Enhanced fluid desktop padding
+        lg: "clamp(2rem, 5vw, 2.5rem)",         // Enhanced large screen padding
+        xl: "clamp(2.5rem, 6vw, 3rem)"          // Enhanced XL screen padding
       }
     },
     hero: {
@@ -97,7 +105,9 @@ export function ChatPage() {
 
   // Load sessions when user is authenticated (no chat history loading - backend handles memory)
   useEffect(() => {
+    console.log('🔄 ChatPage useEffect - user:', user?.uid, 'isAnonymous:', user?.isAnonymous);
     if (user) {
+      console.log('🔄 Loading sessions...');
       loadAllSessions();
     }
   }, [user, loadAllSessions]);
@@ -351,24 +361,51 @@ export function ChatPage() {
         sx={{
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          // Enhanced mobile support with optimized scrolling
+          // Enhanced mobile-first support with superior scrolling
           '@media (max-width: 768px)': {
-            paddingX: 2, // Reduced padding for more content space
-            paddingY: 2, // Reduced vertical padding for compact design
-            paddingBottom: 2, // Minimal bottom padding for input clearance
-            // Ensure messages container doesn't exceed viewport and allows proper scrolling
-            maxHeight: 'calc(100vh - 60px - 80px)', // viewport - header - reduced input area
-            // Smooth scrolling behavior
+            paddingX: "clamp(0.5rem, 2vw, 1rem)", // Fluid mobile padding
+            paddingY: "clamp(0.5rem, 2vw, 1rem)", // Fluid vertical padding
+            paddingBottom: "clamp(0.5rem, 2vw, 1rem)", // Minimal bottom padding for input clearance
+            // Enhanced viewport calculations for better mobile experience
+            maxHeight: 'calc(100vh - clamp(52px, 12vw, 56px) - clamp(80px, 20vw, 100px))', // fluid header and input heights
+            // Enhanced smooth scrolling behavior
             scrollBehavior: 'smooth',
             WebkitOverflowScrolling: 'touch',
+            // Enhanced scroll snap for better UX
+            scrollSnapType: 'y proximity',
+            // Enhanced touch interactions
+            touchAction: 'pan-y',
+            // Improved scrollbar hiding while maintaining functionality
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            '&::-webkit-scrollbar': {
+              display: 'none',
+            },
+            // Enhanced momentum scrolling
+            WebkitMomentumScrolling: 'touch',
           },
-          // Desktop support with centered container and clean spacing
+          // Enhanced desktop support with centered container and fluid spacing
           '@media (min-width: 769px)': {
-            maxHeight: 'calc(100vh - 64px - 120px)', // viewport - header - reduced input area
+            maxHeight: 'calc(100vh - 64px - clamp(120px, 15vw, 140px))', // fluid input area
             display: 'flex',
             justifyContent: 'center',
-            paddingY: 6, // Reduced vertical padding for more content space
-            paddingX: 4, // Reduced horizontal padding
+            paddingY: "clamp(1rem, 3vw, 1.5rem)", // Fluid vertical padding
+            paddingX: "clamp(1rem, 2vw, 1.25rem)", // Fluid horizontal padding
+            // Enhanced scrollbar styling for desktop
+            '&::-webkit-scrollbar': {
+              width: '6px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(0, 0, 0, 0.05)',
+              borderRadius: '3px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(79, 156, 249, 0.3)',
+              borderRadius: '3px',
+              '&:hover': {
+                background: 'rgba(79, 156, 249, 0.5)',
+              },
+            },
           }
         }}
         // Enhanced accessibility

@@ -118,20 +118,35 @@ function ModelCard({ model, onClick, compact = false }: ModelCardProps) {
       >
         <VStack spacing={compact ? 1.5 : 2} w="100%" align="stretch">
           <HStack justify="space-between" w="100%" align="center">
-            <Text
-              fontSize={compact ? "xs" : "sm"}
-              fontWeight="600"
-              color={textColor}
-              noOfLines={1}
-              textAlign="left"
-              letterSpacing="-0.025em"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-              flex="1"
-            >
-              {model.provider?.toUpperCase() || 'AI'}
-            </Text>
+            <VStack spacing={0.5} align="start" flex="1">
+              <Text
+                fontSize={compact ? "xs" : "sm"}
+                fontWeight="600"
+                color={textColor}
+                noOfLines={1}
+                letterSpacing="-0.025em"
+              >
+                {model.provider?.toUpperCase() || 'AI'}
+              </Text>
+
+              {/* Clean Confidence Display */}
+              {model.confidence && (
+                <Text
+                  fontSize={{ base: "xs", md: "2xs" }}
+                  fontWeight="700"
+                  color={
+                    model.confidence.score > 0.8
+                      ? "green.600"
+                      : model.confidence.score > 0.6
+                      ? "yellow.600"
+                      : "red.600"
+                  }
+                  letterSpacing="0.025em"
+                >
+                  {Math.round(model.confidence.score * 100)}% confidence
+                </Text>
+              )}
+            </VStack>
 
             <Icon
               as={StatusIcon}
@@ -170,12 +185,13 @@ export const ModelResponseGrid = memo(function ModelResponseGrid({
   const summaryTextColor = useColorModeValue('gray.500', 'gray.400');
   const summaryBorderColor = useColorModeValue('gray.200', 'gray.600');
 
-  // Enhanced responsive grid columns with better spacing
+  // Enhanced mobile-first responsive grid columns with optimal spacing
   const columns = useBreakpointValue({
-    base: compact ? 1 : 1,
-    sm: compact ? 2 : 2,
-    md: compact ? 3 : 3,
-    lg: compact ? 3 : 3
+    base: compact ? 1 : 1,        // Mobile: single column for better readability
+    sm: compact ? 2 : 2,          // Small: two columns for compact view
+    md: compact ? 2 : 3,          // Medium: 2-3 columns based on compact mode
+    lg: compact ? 3 : 3,          // Large: 3 columns
+    xl: compact ? 3 : 4           // XL: up to 4 columns for non-compact
   });
 
   // Memoize expensive sorting operation
@@ -216,10 +232,15 @@ export const ModelResponseGrid = memo(function ModelResponseGrid({
 
   return (
     <VStack spacing={4} w="100%">
-      {/* Enhanced Grid with better spacing */}
+      {/* Enhanced Mobile-First Grid with Fluid Spacing */}
       <SimpleGrid
         columns={columns}
-        spacing={compact ? 2 : 3}
+        spacing={{
+          base: compact ? 2 : 3,
+          sm: compact ? 2 : 3,
+          md: compact ? 3 : 4,
+          lg: compact ? 3 : 4
+        }}
         w="100%"
       >
         {visibleModels.map((model) => (

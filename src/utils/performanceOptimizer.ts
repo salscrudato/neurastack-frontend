@@ -67,6 +67,20 @@ export function throttle<T extends (...args: any[]) => any>(
   };
 }
 
+/**
+ * Mobile-optimized throttle with adaptive timing
+ */
+export function mobileThrottle<T extends (...args: any[]) => any>(
+  func: T,
+  mobileLimit: number = 100,
+  desktopLimit: number = 50
+): (...args: Parameters<T>) => void {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const limit = isMobile ? mobileLimit : desktopLimit;
+
+  return throttle(func, limit);
+}
+
 // ============================================================================
 // Component Optimization
 // ============================================================================

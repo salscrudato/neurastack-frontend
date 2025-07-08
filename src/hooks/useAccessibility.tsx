@@ -37,14 +37,19 @@ export const useAccessibility = (options: AccessibilityOptions = {}) => {
   const announcementRef = useRef<HTMLDivElement>(null);
   const focusHistoryRef = useRef<HTMLElement[]>([]);
 
-  // Detect screen reader usage
+  // Enhanced screen reader detection with mobile support
   useEffect(() => {
     const detectScreenReader = () => {
       const hasScreenReader =
         navigator.userAgent.includes('NVDA') ||
         navigator.userAgent.includes('JAWS') ||
         navigator.userAgent.includes('VoiceOver') ||
-        window.speechSynthesis?.getVoices().length > 0;
+        navigator.userAgent.includes('TalkBack') ||
+        navigator.userAgent.includes('Voice Assistant') ||
+        window.speechSynthesis?.getVoices().length > 0 ||
+        // Mobile accessibility detection
+        (window as any).accessibility?.isEnabled ||
+        document.documentElement.getAttribute('data-a11y-animated') === 'false';
 
       setState(prev => ({ ...prev, isScreenReaderActive: hasScreenReader }));
     };
