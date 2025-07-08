@@ -1,17 +1,20 @@
 // main.tsx
-import { ChakraProvider } from '@chakra-ui/react';
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
-import theme from './theme/theme';
 import { setupCacheManagement } from './utils/cacheControl';
+import { initializeResourcePreloading } from './utils/resourcePreloader';
 
-// Import pages directly for debugging
+// Import pages and auth guard
+import { AuthGuard } from './components/AuthGuard';
+import OptimizedChakraProvider from './components/OptimizedChakraProvider';
 import { ChatPage } from './pages/ChatPage';
 import { SplashPage } from './pages/SplashPage';
+import { preloadCriticalServices } from './services/lazyFirebase';
+
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 // const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
 
@@ -24,18 +27,28 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <SplashPage />
+        element: (
+          <AuthGuard requireAuth={false}>
+            <SplashPage />
+          </AuthGuard>
+        )
       },
       {
         path: 'chat',
-        element: <ChatPage />
+        element: (
+          <AuthGuard requireAuth={true}>
+            <ChatPage />
+          </AuthGuard>
+        )
       },
       {
         path: 'history',
         element: (
-          <Suspense fallback={<PageLoader message="Loading History..." />}>
-            <HistoryPage />
-          </Suspense>
+          <AuthGuard requireAuth={true}>
+            <Suspense fallback={<PageLoader message="Loading History..." />}>
+              <HistoryPage />
+            </Suspense>
+          </AuthGuard>
         )
       },
       // {
@@ -72,12 +85,18 @@ function RouteErrorBoundary() {
 // Setup cache management before rendering
 const cleanupCacheManagement = setupCacheManagement();
 
+// Initialize resource preloading for optimal performance
+initializeResourcePreloading();
+
+// Preload critical Firebase services
+preloadCriticalServices();
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ChakraProvider theme={theme}>
+      <OptimizedChakraProvider>
         <RouterProvider router={router} />
-      </ChakraProvider>
+      </OptimizedChakraProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

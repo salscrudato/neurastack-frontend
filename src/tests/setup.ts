@@ -51,3 +51,33 @@ Object.defineProperty(window, 'localStorage', {
     clear: () => {},
   },
 });
+
+// Mock Firebase Analytics
+vi.mock('firebase/analytics', () => ({
+  getAnalytics: vi.fn(),
+  isSupported: vi.fn(() => Promise.resolve(false)),
+}));
+
+// Mock NeuraStack Client for tests
+vi.mock('../lib/neurastack-client', () => ({
+  neuraStackClient: {
+    healthCheck: vi.fn(() => Promise.resolve({ status: 'healthy' })),
+    queryAI: vi.fn(() => Promise.resolve({ answer: 'Test response' })),
+    configure: vi.fn(),
+  },
+}));
+
+// Mock navigator.vibrate for haptic feedback tests
+Object.defineProperty(navigator, 'vibrate', {
+  writable: true,
+  value: vi.fn(),
+});
+
+// Mock environment variables for tests
+Object.defineProperty(import.meta, 'env', {
+  value: {
+    VITEST: true,
+    NODE_ENV: 'test',
+    VITE_BACKEND_URL: 'https://neurastack-backend-638289111765.us-central1.run.app',
+  },
+});

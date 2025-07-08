@@ -480,13 +480,31 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
 ### PWA Capabilities
 
-- **Installable**: Add to home screen on mobile and desktop
-- **Offline Support**: Service worker caching for core functionality
-- **Background Sync**: Queue actions when offline, sync when online
-- **Push Notifications**: Ready for future notification features
-- **App-like Experience**: Standalone display mode
+- **Installable**: Add to home screen on mobile and desktop with custom install prompts
+- **Offline Support**: Intelligent service worker caching with version-aware updates
+- **Smart Caching**: NetworkFirst for APIs, CacheFirst for fonts, fresh HTML always
+- **Auto-Updates**: Seamless background updates with user-friendly notifications
+- **App-like Experience**: Standalone display mode with app shortcuts
+- **Performance**: Aggressive compression (Gzip + Brotli) and optimized caching
 
 ### Service Worker Configuration
+
+```typescript
+// Intelligent caching strategy
+VitePWA({
+  registerType: "autoUpdate",
+  workbox: {
+    runtimeCaching: [
+      // Google Fonts - Cache first (1 year)
+      { urlPattern: /fonts\.googleapis\.com/, handler: "CacheFirst" },
+      // API calls - Network first (5 min cache)
+      { urlPattern: /\/api\//, handler: "NetworkFirst" },
+    ],
+    skipWaiting: true,
+    clientsClaim: true,
+  },
+});
+```
 
 ---
 

@@ -99,22 +99,28 @@ const renderWithChakra = (component: React.ReactElement) => {
 describe('ChatMessage Ensemble Response Display', () => {
   it('displays provider information in the header', () => {
     renderWithChakra(<ChatMessage message={mockEnsembleMessage} />);
-    
-    // Should show the provider from synthesis
+
+    // Should show AI ENSEMBLE header
+    expect(screen.getByText('AI ENSEMBLE')).toBeInTheDocument();
+
+    // Should show individual provider names in model cards
     expect(screen.getByText('OPENAI')).toBeInTheDocument();
-    expect(screen.getByText('GPT-4O')).toBeInTheDocument();
+    expect(screen.getByText('GEMINI')).toBeInTheDocument();
+    expect(screen.getByText('CLAUDE')).toBeInTheDocument();
   });
 
   it('displays confidence metrics correctly', () => {
     renderWithChakra(<ChatMessage message={mockEnsembleMessage} />);
-    
-    // Should show overall confidence rounded to nearest percent
-    expect(screen.getByText('84%')).toBeInTheDocument();
-    expect(screen.getByText('Confidence:')).toBeInTheDocument();
-    
-    // Should show response consistency rounded to nearest percent
-    expect(screen.getByText('66%')).toBeInTheDocument();
-    expect(screen.getByText('Consistency:')).toBeInTheDocument();
+
+    // Should show individual model confidence percentages in model cards
+    expect(screen.getByText('90% confidence')).toBeInTheDocument(); // Claude
+
+    // Should show multiple instances of 70% confidence (Gemini and OpenAI)
+    const seventyPercentElements = screen.getAllByText('70% confidence');
+    expect(seventyPercentElements).toHaveLength(2);
+
+    // Should show AI ENSEMBLE header
+    expect(screen.getByText('AI ENSEMBLE')).toBeInTheDocument();
   });
 
   it('displays individual model responses', () => {

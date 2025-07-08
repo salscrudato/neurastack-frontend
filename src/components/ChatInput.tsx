@@ -29,6 +29,7 @@ import { logSecurityEvent, validateInput } from "../utils/securityUtils";
 export default function ChatInput() {
   const send = useChatStore((s) => s.sendMessage);
   const busy = useChatStore((s) => s.isLoading);
+  const clearError = useChatStore((s) => s.clearError);
   const [txt, setTxt] = useState("");
   const [charCount, setCharCount] = useState(0);
 
@@ -459,6 +460,10 @@ export default function ChatInput() {
             onChange={(e) => {
               setTxt(e.target.value);
               handleAutoResize();
+              // Clear any existing errors when user starts typing
+              if (e.target.value.trim() && clearError) {
+                clearError();
+              }
             }}
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}

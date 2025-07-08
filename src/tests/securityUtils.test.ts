@@ -3,15 +3,15 @@
  * Tests input sanitization, validation, and security measures
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  sanitizeInput,
-  validateInput,
-  checkRateLimit,
-  cleanupRateLimitStore,
-  validateApiResponse,
-  generateSecureSessionId,
-  logSecurityEvent,
+    checkRateLimit,
+    cleanupRateLimitStore,
+    generateSecureSessionId,
+    logSecurityEvent,
+    sanitizeInput,
+    validateApiResponse,
+    validateInput,
 } from '../utils/securityUtils';
 
 describe('Security Utils', () => {
@@ -27,9 +27,10 @@ describe('Security Utils', () => {
 
   describe('sanitizeInput', () => {
     it('should sanitize basic HTML entities', () => {
-      const input = '<script>alert("xss")</script>';
+      // Test with non-blocked HTML that should be encoded
+      const input = '<div>Hello "world" & friends</div>';
       const result = sanitizeInput(input);
-      expect(result).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(result).toBe('&lt;div&gt;Hello &quot;world&quot; &amp; friends&lt;&#x2F;div&gt;');
     });
 
     it('should remove dangerous patterns', () => {

@@ -1,26 +1,83 @@
 import { useToast } from '@chakra-ui/react';
-import { useCallback, useState } from 'react';
-import { forceRefreshApp } from './cacheControl';
+import { useCallback, useEffect, useState } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 // Version tracking for cache busting
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || Date.now().toString();
 const VERSION_KEY = 'neurastack_app_version';
 
-// Simplified update manager hook without PWA functionality
+// Modern PWA update manager with intelligent update handling
 export const useUpdateManager = () => {
   const toast = useToast();
-  const [offlineReady] = useState(false); // Always false since no PWA
-  const [needRefresh] = useState(false); // Always false since no PWA
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleUpdate = async () => {
+  const {
+    offlineReady,
+    needRefresh,
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegistered(r) {
+      console.log('✅ Service Worker registered:', r);
+    },
+    onRegisterError(error) {
+      console.error('❌ Service Worker registration error:', error);
+    },
+    onNeedRefresh() {
+      console.log('🔄 New content available, will update...');
+      setUpdateAvailable(true);
+
+      // Show user-friendly update notification
+      toast({
+        title: 'Update Available',
+        description: 'A new version is ready. Click to update.',
+        status: 'info',
+        duration: null, // Don't auto-dismiss
+        isClosable: true,
+        position: 'bottom-right',
+        onCloseComplete: () => setUpdateAvailable(false)
+      });
+    },
+    onOfflineReady() {
+      console.log('📱 App ready to work offline');
+      toast({
+        title: 'Ready for Offline Use',
+        description: 'App cached and ready to work offline.',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+        position: 'bottom-right'
+      });
+    },
+  });
+
+  const handleUpdate = useCallback(async () => {
+    if (!updateServiceWorker) return;
+
+    setIsUpdating(true);
+
     try {
+      console.log('🔄 Updating service worker...');
+
       // Clear version cache
       localStorage.removeItem(VERSION_KEY);
 
-      // Force reload
-      window.location.reload();
+      // Update service worker
+      await updateServiceWorker(true);
+
+      // Show success message
+      toast({
+        title: 'Update Complete',
+        description: 'App updated successfully!',
+        status: 'success',
+        duration: 2000,
+        isClosable: true,
+        position: 'bottom-right'
+      });
+
+      setUpdateAvailable(false);
     } catch (error) {
-      console.error('Update failed:', error);
+      console.error('❌ Update failed:', error);
 
       toast({
         title: 'Update Failed',
@@ -28,45 +85,64 @@ export const useUpdateManager = () => {
         status: 'error',
         duration: 5000,
         isClosable: true,
+        position: 'bottom-right'
       });
+    } finally {
+      setIsUpdating(false);
     }
-  };
+  }, [updateServiceWorker, toast]);
 
-  const checkForUpdates = async () => {
+  const checkForUpdates = useCallback(async () => {
     try {
       // Check if version has changed
       const storedVersion = localStorage.getItem(VERSION_KEY);
 
       if (storedVersion && storedVersion !== APP_VERSION) {
-        console.log('Version change detected:', storedVersion, '->', APP_VERSION);
-        handleUpdate();
+        console.log('📦 Version change detected:', storedVersion, '->', APP_VERSION);
+        // Don't auto-update, let service worker handle it
         return;
       }
 
       // Store current version
       localStorage.setItem(VERSION_KEY, APP_VERSION);
     } catch (error) {
-      console.error('Update check failed:', error);
+      console.error('❌ Update check failed:', error);
     }
-  };
+  }, []);
 
   const dismissUpdate = useCallback(() => {
-    // No-op since we don't have PWA updates
-    console.log('Update dismissed (no PWA functionality)');
+    setUpdateAvailable(false);
+    console.log('🚫 Update dismissed by user');
   }, []);
 
-  // Function to manually re-enable update notifications (for debugging/admin)
-  const enableUpdateNotifications = useCallback(() => {
-    console.log('Update notifications not available (no PWA functionality)');
-  }, []);
+  // Auto-check for updates on mount and focus
+  useEffect(() => {
+    checkForUpdates();
+
+    const handleFocus = () => checkForUpdates();
+    const handleVisibilityChange = () => {
+      if (!document.hidden) checkForUpdates();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [checkForUpdates]);
 
   return {
     offlineReady,
     needRefresh,
+    updateAvailable,
+    isUpdating,
     handleUpdate,
     checkForUpdates,
     dismissUpdate,
-    enableUpdateNotifications,
+    isLoading: isUpdating,
+    error: null,
   };
 };
 
@@ -121,7 +197,16 @@ export const cacheManager = {
 // Force refresh utility - using comprehensive cache control
 export const forceRefresh = async () => {
   console.log('🔄 Force refresh requested...');
-  forceRefreshApp();
+
+  // Clear all caches
+  await cacheManager.clearAllCaches();
+
+  // Clear localStorage and sessionStorage
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Force reload
+  window.location.reload();
 };
 
 // Auto-update on app focus (when user returns to tab) - simplified without service worker

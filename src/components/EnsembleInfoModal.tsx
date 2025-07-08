@@ -89,50 +89,78 @@ export function EnsembleInfoModal({
     const textColor = '#1E293B';
     const mutedColor = '#64748B';
 
+    // Debug: Log the ensemble data structure
+    if (import.meta.env.DEV && ensembleData && isOpen) {
+        console.group('🔍 EnsembleInfoModal Data Debug');
+        console.log('📊 ensembleData keys:', Object.keys(ensembleData));
+        console.log('📊 ensembleData.confidenceAnalysis:', ensembleData.confidenceAnalysis);
+        console.log('📊 ensembleData.synthesis:', ensembleData.synthesis);
+        console.log('📊 ensembleData.voting:', ensembleData.voting);
+        console.log('📊 ensembleData.roles:', ensembleData.roles);
+        if (ensembleData.confidenceAnalysis) {
+            console.log('📊 modelAgreement:', ensembleData.confidenceAnalysis.modelAgreement);
+            console.log('📊 responseConsistency:', ensembleData.confidenceAnalysis.responseConsistency);
+            console.log('📊 overallConfidence:', ensembleData.confidenceAnalysis.overallConfidence);
+        }
+        console.groupEnd();
+    }
 
 
-    // Enhanced data extraction following actual API response structure
+
+    // Enhanced data extraction with comprehensive null/undefined handling for new API structure
+    // The ensembleData contains the full metadata structure from the API response
     const synthesis = ensembleData?.synthesis || {};
     const voting = ensembleData?.voting || {};
-    const metadata = ensembleData?.metadata || synthesis?.metadata || {};
+    const metadata = ensembleData || {};
     const roles = Array.isArray(ensembleData?.roles) ? ensembleData.roles : [];
+    const confidenceAnalysis = ensembleData?.confidenceAnalysis || {};
 
-    // Extract metrics from actual API response structure
-    const successfulModels = roles.filter((role: any) => role.status === 'fulfilled').length;
-    const totalModels = roles.length || 3;
+    // Extract metrics with proper fallbacks and type safety
+    const successfulModels = roles.filter((role: any) => role?.status === 'fulfilled').length;
+    const totalModels = Math.max(roles.length, metadata?.totalRoles || 1); // Prevent division by zero
 
-    // Response time from metadata or calculate from roles
-    const responseTimeSeconds = Math.round((metadata.processingTimeMs ||
-                                          roles.reduce((sum: number, role: any) => sum + (role.responseTime || 0), 0)) / 1000);
+    // Response time from metadata (primary source)
+    const processingTimeMs = metadata?.processingTimeMs || 0;
+    const responseTimeSeconds = Math.max(0, Math.round(processingTimeMs / 1000));
 
-    // Confidence score from synthesis.confidence.score (primary source per API docs)
-    const confidenceScore = Math.round((synthesis.confidence?.score || 0) * 100);
+    // Overall confidence from confidence analysis (primary source)
+    const overallConfidence = Math.round(Math.max(0, Math.min(100,
+        (confidenceAnalysis?.overallConfidence || synthesis?.confidence?.score || 0) * 100
+    )));
 
-    // Overall confidence from synthesis.overallConfidence (as seen in actual response)
-    const overallConfidence = Math.round((synthesis.overallConfidence || synthesis.confidence?.score || 0) * 100);
+    // Model agreement from confidence analysis
+    const modelAgreement = Math.round(Math.max(0, Math.min(100,
+        (confidenceAnalysis?.modelAgreement || 0) * 100
+    )));
 
-    // Model agreement - calculate from synthesis metadata or roles
-    const averageConfidence = metadata.averageConfidence ||
-                             (roles.length > 0 ? roles.reduce((sum: number, role: any) => sum + (role.confidence?.score || 0), 0) / roles.length : 0);
-    const modelAgreement = Math.round(averageConfidence * 100);
+    // Response consistency from confidence analysis
+    const responseConsistency = Math.round(Math.max(0, Math.min(100,
+        (confidenceAnalysis?.responseConsistency || 0) * 100
+    )));
 
+    // Winner information from voting
+    const winnerModel = voting?.winner || 'none';
+    const winnerConfidence = Math.round((voting?.confidence || 0) * 100);
 
+    // Quality distribution from confidence analysis
+    const qualityDistribution = confidenceAnalysis?.qualityDistribution || {
+        high: 0,
+        medium: 0,
+        low: 0,
+        veryLow: 0,
+        averageScore: 0,
+        totalResponses: totalModels
+    };
 
-    // Find winning model - highest confidence score from roles
-    const winningModel = roles.length > 0 ? roles.reduce((prev: any, current: any) => {
-        const prevScore = prev.confidence?.score || 0;
-        const currentScore = current.confidence?.score || 0;
-        return currentScore > prevScore ? current : prev;
-    }) : null;
-
-    // Quality distribution - use synthesis.qualityScore and role quality
-    const highQualityCount = roles.filter((role: any) => (role.confidence?.score || 0) > 0.8).length;
-    const medLowQualityCount = roles.length - highQualityCount;
-
-    // Success rate calculation
+    // Success rate with safe calculation
     const successRate = totalModels > 0 ? Math.round((successfulModels / totalModels) * 100) : 0;
 
 
+
+    // Don't render if no ensemble data is available
+    if (!ensembleData) {
+        return null;
+    }
 
     return (
         <Modal
@@ -224,9 +252,9 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                 >
-                                    <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(confidenceScore / 100)} mb={2} />
+                                    <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(overallConfidence / 100)} mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {confidenceScore}%
+                                        {overallConfidence}%
                                     </Text>
                                     <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
                                         Confidence
@@ -338,16 +366,16 @@ export function EnsembleInfoModal({
                                     <Box textAlign="center" p={4} bg="gray.50" borderRadius="lg">
                                         <HStack justify="center" spacing={2} mb={2}>
                                             <Icon
-                                                as={winningModel ? PiCheckCircleBold : PiWarningCircleBold}
-                                                color={winningModel ? '#10B981' : '#F59E0B'}
+                                                as={winnerModel !== 'none' ? PiCheckCircleBold : PiWarningCircleBold}
+                                                color={winnerModel !== 'none' ? '#10B981' : '#F59E0B'}
                                                 boxSize={5}
                                             />
                                             <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                                {winningModel ? (winningModel.model || winningModel.role || 'UNKNOWN').toUpperCase() : 'NO CLEAR WINNER'}
+                                                {winnerModel !== 'none' ? winnerModel.toUpperCase() : 'NO CLEAR WINNER'}
                                             </Text>
                                         </HStack>
-                                        <Text fontSize="2xl" fontWeight="bold" color={getConfidenceColor(winningModel?.confidence?.score || 0)}>
-                                            {winningModel ? `${Math.round((winningModel.confidence?.score || 0) * 100)}%` : '0%'}
+                                        <Text fontSize="2xl" fontWeight="bold" color={getConfidenceColor(winnerConfidence / 100)}>
+                                            {winnerConfidence}%
                                         </Text>
                                         <Text fontSize="sm" color={mutedColor}>
                                             Best performing model
@@ -416,7 +444,7 @@ export function EnsembleInfoModal({
                                         <SimpleGrid columns={2} spacing={4}>
                                             <Box textAlign="center" p={3} bg="green.50" borderRadius="lg" border="1px solid" borderColor="green.200">
                                                 <Text fontSize="2xl" fontWeight="bold" color="#10B981">
-                                                    {highQualityCount}
+                                                    {qualityDistribution.high}
                                                 </Text>
                                                 <Text fontSize="sm" fontWeight="600" color={textColor}>
                                                     High Quality
@@ -427,7 +455,7 @@ export function EnsembleInfoModal({
                                             </Box>
                                             <Box textAlign="center" p={3} bg="yellow.50" borderRadius="lg" border="1px solid" borderColor="yellow.200">
                                                 <Text fontSize="2xl" fontWeight="bold" color="#F59E0B">
-                                                    {medLowQualityCount}
+                                                    {qualityDistribution.medium + qualityDistribution.low + qualityDistribution.veryLow}
                                                 </Text>
                                                 <Text fontSize="sm" fontWeight="600" color={textColor}>
                                                     Med/Low Quality
@@ -448,14 +476,14 @@ export function EnsembleInfoModal({
                                             <Flex justify="space-between" align="center">
                                                 <Text fontSize="sm" color={mutedColor}>Response Consistency</Text>
                                                 <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                    {formatPercentage(modelAgreement / 100)}
+                                                    {responseConsistency}%
                                                 </Text>
                                             </Flex>
                                             <Progress
-                                                value={modelAgreement}
+                                                value={responseConsistency}
                                                 colorScheme={
-                                                    modelAgreement > 80 ? "green" :
-                                                    modelAgreement > 60 ? "yellow" : "red"
+                                                    responseConsistency > 80 ? "green" :
+                                                    responseConsistency > 60 ? "yellow" : "red"
                                                 }
                                                 size="sm"
                                                 borderRadius="full"
@@ -554,6 +582,26 @@ export function EnsembleInfoModal({
                                 </VStack>
                             </Box>
                         )}
+
+                        {/* Consistency Banner */}
+                        <Box
+                            bg="linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)"
+                            borderRadius="xl"
+                            p={4}
+                            border="1px solid"
+                            borderColor="#F59E0B"
+                            textAlign="center"
+                        >
+                            <HStack justify="center" spacing={2}>
+                                <Icon as={PiScalesBold} boxSize={5} color="#F59E0B" />
+                                <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                    {responseConsistency}% CONSISTENCY
+                                </Text>
+                            </HStack>
+                            <Text fontSize="sm" color={mutedColor} mt={1}>
+                                Model response alignment score
+                            </Text>
+                        </Box>
 
                     </VStack>
                 </ModalBody>

@@ -10,7 +10,8 @@ import svgr from 'vite-plugin-svgr';
 // Import Node.js path module to resolve file paths cleanly
 import path from 'node:path';
 
-
+// Import PWA plugin for Progressive Web App functionality
+import { VitePWA } from 'vite-plugin-pwa';
 
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -59,6 +60,101 @@ export default defineConfig({
     compression({
       algorithm: 'brotliCompress',
       ext: '.br',
+    }),
+
+    // PWA plugin with intelligent caching strategy
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gstatic-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          },
+          {
+            urlPattern: /\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutes
+              },
+              networkTimeoutSeconds: 10
+            }
+          }
+        ],
+        // Ensure HTML is always fresh
+        navigateFallback: null,
+        skipWaiting: true,
+        clientsClaim: true
+      },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo.svg'],
+      manifest: {
+        name: 'NeuraStack AI',
+        short_name: 'NeuraStack',
+        description: 'AI-Powered App Ecosystem with Multi-Model Ensemble',
+        theme_color: '#4F9CF9',
+        background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait-primary',
+        scope: '/',
+        start_url: '/',
+        icons: [
+          {
+            src: 'icons/neurastack-192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'icons/neurastack-512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: 'icons/neurastack-180.png',
+            sizes: '180x180',
+            type: 'image/png',
+            purpose: 'apple-touch-icon'
+          }
+        ],
+        categories: ['productivity', 'utilities', 'lifestyle'],
+        shortcuts: [
+          {
+            name: 'Chat',
+            short_name: 'Chat',
+            description: 'Start AI conversation',
+            url: '/chat',
+            icons: [{ src: 'icons/neurastack-192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'NeuraFit',
+            short_name: 'Fitness',
+            description: 'AI-powered fitness tracking',
+            url: '/neurafit',
+            icons: [{ src: 'icons/neurastack-192.png', sizes: '192x192' }]
+          }
+        ]
+      }
     }),
 
   ],
@@ -120,8 +216,9 @@ export default defineConfig({
           // Animation library (separate for better caching)
           animation: ['framer-motion'],
 
-          // UI library chunk
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
+          // UI library chunk - split Chakra UI for better tree shaking
+          'chakra-core': ['@chakra-ui/react'],
+          'chakra-emotion': ['@emotion/react', '@emotion/styled'],
 
           // Styling libraries
           styling: ['styled-components'],
@@ -129,13 +226,16 @@ export default defineConfig({
           // State management and utilities
           state: ['zustand'],
 
-          // Firebase services (keep together to avoid circular dependencies)
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
+          // Firebase services - split for better lazy loading
+          'firebase-core': ['firebase/app'],
+          'firebase-auth': ['firebase/auth'],
+          'firebase-firestore': ['firebase/firestore'],
+          'firebase-analytics': ['firebase/analytics'],
 
           // Icons (separate for better caching)
           icons: ['react-icons/pi', '@heroicons/react'],
 
-          // Markdown rendering (used in chat)
+          // Markdown rendering (used in chat) - lazy load
           markdown: ['react-markdown', 'remark-gfm'],
 
           // Router (separate for better caching)

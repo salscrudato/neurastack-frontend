@@ -321,8 +321,10 @@ export const useChatStore = create<ChatState>()((set, get) => ({
                 fallbackReasons: response.fallbackReasons,
                 // Individual model responses for modal display
                 individualResponses: response.individualResponses,
-                // Full ensemble metadata for confidence display
-                metadata: response.metadata
+                // Full ensemble metadata for confidence display (includes synthesis, voting, roles)
+                metadata: response.metadata,
+                // Ensemble data for EnsembleInfoModal
+                ensembleData: response.metadata
               }
             };
 

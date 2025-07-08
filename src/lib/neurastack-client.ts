@@ -1050,6 +1050,10 @@ export class NeuraStackClient {
       console.group('🔍 Ensemble Response Structure Debug');
       console.log('📊 Full Response:', JSON.stringify(ensembleResponse, null, 2));
       console.log('📊 Data Object:', JSON.stringify(data, null, 2));
+      console.log('📊 Synthesis:', JSON.stringify(data.synthesis, null, 2));
+      console.log('📊 Roles:', JSON.stringify(data.roles, null, 2));
+      console.log('📊 Voting:', JSON.stringify(data.voting, null, 2));
+      console.log('📊 Metadata:', JSON.stringify(data.metadata, null, 2));
       console.groupEnd();
     }
 
@@ -1067,9 +1071,6 @@ export class NeuraStackClient {
     // Create individual responses for UI display using new format
     // roles: Array of individual AI responses (character limited per API spec)
     const individualResponses: SubAnswer[] = (data.roles || []).map(role => {
-      // Look for ensemble data in multiple possible locations
-      const ensembleData = data.synthesis || data || ensembleResponse.data || {};
-
       return {
         model: role.model,
         content: role.content, // Primary field for new API
@@ -1080,39 +1081,45 @@ export class NeuraStackClient {
         reason: role.status === 'rejected' ? 'Model failed to respond' : undefined,
         wordCount: role.content ? role.content.split(' ').length : 0,
 
-        // Enhanced metadata from API response for customer-centric insights
-        confidence: role.confidence ? (() => {
-          const conf = role.confidence as any;
-          const score = conf.score || conf;
-          return {
-            score: typeof score === 'number' ? score : 0,
-            level: conf.level || (score > 0.8 ? 'high' : score > 0.5 ? 'medium' : 'low'),
-            factors: conf.factors || ['AI model confidence score']
-          };
-        })() : undefined,
-        responseTime: role.responseTime,
-        characterCount: role.characterCount,
-        quality: role.quality ? {
-          wordCount: role.content ? role.content.split(' ').length : 0,
-          sentenceCount: Math.ceil((role.content ? role.content.split(' ').length : 0) / 15), // Rough estimate
-          averageWordsPerSentence: 15, // Default estimate
-          hasStructure: true,
-          hasReasoning: true,
-          complexity: 'medium'
+        // Enhanced confidence data from API response
+        confidence: role.confidence ? {
+          score: typeof role.confidence.score === 'number' ? role.confidence.score : 0,
+          level: role.confidence.level || 'medium',
+          factors: Array.isArray(role.confidence.factors) ? role.confidence.factors : []
         } : undefined,
-        metadata: role.metadata ? {
-          confidenceLevel: role.confidence ? (role.confidence > 0.8 ? 'high' : role.confidence > 0.5 ? 'medium' : 'low') : 'medium',
-          modelReliability: role.confidence || 0.7,
-          processingTime: role.responseTime || 0,
-          tokenCount: Math.ceil((role.characterCount || 0) / 4), // Rough token estimate
-          complexity: 'medium'
-        } : undefined,
+        responseTime: role.responseTime || 0,
+        characterCount: role.characterCount || 0,
 
-        // Include ensemble data for enhanced model cards (check multiple locations)
-        overallConfidence: ensembleData.overallConfidence || (ensembleResponse as any).overallConfidence,
-        synthesisStrategy: ensembleData.synthesisStrategy || (ensembleResponse as any).synthesisStrategy,
-        votingResults: ensembleData.votingResults || (ensembleResponse as any).votingResults,
-        isFineTuned: ensembleData.isFineTuned || (ensembleResponse as any).isFineTuned
+        // Quality metrics from API response
+        quality: {
+          wordCount: role.wordCount || (role.content ? role.content.split(' ').length : 0),
+          sentenceCount: role.quality?.sentenceCount || (role.content ? role.content.split(/[.!?]+/).length - 1 : 0),
+          averageWordsPerSentence: role.quality?.averageWordsPerSentence || 15,
+          hasStructure: role.quality?.hasStructure ?? true,
+          hasReasoning: role.quality?.hasReasoning ?? true,
+          complexity: role.quality?.complexity || 'medium'
+        },
+
+        // Metadata from API response
+        metadata: {
+          confidenceLevel: role.confidence?.level || 'medium',
+          modelReliability: role.confidence?.score || 0.7,
+          processingTime: role.responseTime || 0,
+          tokenCount: role.metadata?.tokenCount || Math.ceil((role.characterCount || 0) / 4),
+          complexity: role.metadata?.complexity || 'medium'
+        },
+
+        // Include ensemble data for enhanced model cards
+        overallConfidence: data.synthesis?.overallConfidence || data.metadata?.confidenceAnalysis?.overallConfidence,
+        synthesisStrategy: data.synthesis?.synthesisStrategy,
+        votingResults: data.voting ? [{
+          role: role.role,
+          model: role.model,
+          confidence: role.confidence?.score || 0,
+          weightedScore: data.voting.weights?.[role.role] || 0,
+          confidenceLevel: role.confidence?.level || 'medium'
+        }] : undefined,
+        isFineTuned: data.synthesis?.isFineTuned || false
       };
     });
 
@@ -1135,7 +1142,10 @@ export class NeuraStackClient {
       individualResponses, // Individual AI responses (character limited)
       fallbackReasons: {}, // No fallback reasons for successful responses
       correlationId: ensembleResponse.correlationId, // For debugging per API spec
-      metadata: data.metadata // Performance metrics and quality indicators per API spec
+      metadata: {
+        ...data.metadata, // Performance metrics and quality indicators per API spec
+        synthesis: data.synthesis // Include synthesis data for UI
+      }
     };
   }
 

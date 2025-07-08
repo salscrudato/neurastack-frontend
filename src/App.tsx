@@ -1,11 +1,13 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
-
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import UpdateNotification from "./components/UpdateNotification";
+import { usePerformanceOptimization } from "./hooks/usePerformanceOptimization";
+import { authManager } from "./utils/authUtils";
 // import { useFitnessSync } from "./hooks/useFitnessSync";
 import "./styles/global.css";
 import "./styles/utilities.css";
@@ -138,9 +140,27 @@ const Fallback = () => (
 export default function App() {
   // useFitnessSync();
 
+  // Initialize performance optimizations
+  usePerformanceOptimization({
+    enableMetrics: import.meta.env.PROD,
+    enableResourceHints: true,
+    enableImageOptimization: true,
+    enableFontOptimization: true
+  });
+
+  // Initialize auth manager
+  useEffect(() => {
+    authManager.initialize();
+
+    return () => {
+      authManager.cleanup();
+    };
+  }, []);
+
   return (
     <PageContentWrapper>
       <UpdateNotification />
+      <PWAInstallPrompt />
       <Suspense fallback={<Fallback />}>
         <Outlet />
       </Suspense>

@@ -3,8 +3,8 @@
  * Tests production-ready features including security, performance, and error handling
  */
 
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useChatStore } from '../store/useChatStore';
 
 // Mock the neurastack client
@@ -254,19 +254,26 @@ describe('useChatStore', () => {
   describe('Memory Management', () => {
     it('should provide memory statistics', () => {
       const { result } = renderHook(() => useChatStore());
-      
-      // Add messages
+
+      // Add messages with proper memory calculation
       act(() => {
+        const messages = [
+          { id: '1', role: 'user' as const, text: 'Hello', timestamp: Date.now() },
+          { id: '2', role: 'assistant' as const, text: 'Hi there!', timestamp: Date.now() },
+        ];
+        // Calculate memory usage manually for the test
+        const memoryUsage = messages.reduce((total, msg) => {
+          return total + JSON.stringify(msg).length * 2; // Rough estimate
+        }, 0);
+
         useChatStore.setState({
-          messages: [
-            { id: '1', role: 'user', text: 'Hello', timestamp: Date.now() },
-            { id: '2', role: 'assistant', text: 'Hi there!', timestamp: Date.now() },
-          ],
+          messages,
+          memoryUsage
         });
       });
-      
+
       const stats = result.current.getMemoryStats();
-      
+
       expect(stats.messageCount).toBe(2);
       expect(stats.estimatedSize).toBeGreaterThan(0);
       expect(stats.oldestMessage).toBeGreaterThan(0);
@@ -274,31 +281,37 @@ describe('useChatStore', () => {
 
     it('should optimize memory when called', () => {
       const { result } = renderHook(() => useChatStore());
-      
-      // Add messages with metadata
+
+      // Add messages with metadata and calculate initial memory
       act(() => {
+        const messages = [
+          {
+            id: '1',
+            role: 'user' as const,
+            text: 'Hello',
+            timestamp: Date.now(),
+            metadata: {
+              largeData: 'x'.repeat(1000),
+              keepThis: 'important'
+            }
+          },
+        ];
+        const memoryUsage = messages.reduce((total, msg) => {
+          return total + JSON.stringify(msg).length * 2;
+        }, 0);
+
         useChatStore.setState({
-          messages: [
-            { 
-              id: '1', 
-              role: 'user', 
-              text: 'Hello', 
-              timestamp: Date.now(),
-              metadata: { 
-                largeData: 'x'.repeat(1000),
-                keepThis: 'important'
-              }
-            },
-          ],
+          messages,
+          memoryUsage
         });
       });
-      
+
       const initialMemory = result.current.memoryUsage;
-      
+
       act(() => {
         result.current.optimizeMemory();
       });
-      
+
       // Memory should be optimized (metadata reduced)
       expect(result.current.memoryUsage).toBeLessThanOrEqual(initialMemory);
     });

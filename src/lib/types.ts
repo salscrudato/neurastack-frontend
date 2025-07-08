@@ -103,7 +103,7 @@ export interface SubAnswer {
   isFineTuned?: boolean;         // Whether model is fine-tuned
 }
 
-/** New Ensemble API Response Types */
+/** New Ensemble API Response Types - Updated to match actual API structure */
 export interface EnsembleRole {
   role: "gpt4o" | "gemini" | "claude";
   content: string;
@@ -111,11 +111,31 @@ export interface EnsembleRole {
   provider: "openai" | "gemini" | "claude";
   status: "fulfilled" | "rejected";
   wordCount: number;
-  confidence?: number;
-  responseTime?: number;
-  characterCount?: number;
-  quality?: number;
-  metadata?: Record<string, unknown>;
+  characterCount: number;
+  responseTime: number;
+  confidence: {
+    score: number;
+    level: "high" | "medium" | "low";
+    factors: string[];
+  };
+  metadata: {
+    confidenceLevel: "high" | "medium" | "low";
+    modelReliability: number;
+    processingTime: number;
+    tokenCount: number;
+    complexity: "high" | "medium" | "low";
+  };
+  quality: {
+    wordCount: number;
+    sentenceCount: number;
+    averageWordsPerSentence: number;
+    hasStructure: boolean;
+    hasReasoning: boolean;
+    complexity: "high" | "medium" | "low";
+  };
+  _confidenceDescription?: string;
+  _qualityDescription?: string;
+  _metadataDescription?: string;
 }
 
 export interface EnsembleSynthesis {
@@ -123,11 +143,68 @@ export interface EnsembleSynthesis {
   model: string;
   provider: "openai" | "gemini" | "claude";
   status: "success" | "failed";
-  error?: string;
-  overallConfidence?: number;
-  synthesisStrategy?: string;
-  votingResults?: Record<string, unknown>;
-  isFineTuned?: boolean;
+  isFineTuned: boolean;
+  synthesisStrategy: string;
+  overallConfidence: number;
+  confidence: {
+    score: number;
+    level: "high" | "medium" | "low";
+    factors: string[];
+  };
+  _confidenceDescription?: string;
+  qualityScore: number;
+  _qualityScoreDescription?: string;
+  metadata: {
+    basedOnResponses: number;
+    _basedOnResponsesDescription?: string;
+    averageConfidence: number;
+    _averageConfidenceDescription?: string;
+    consensusLevel: "high" | "moderate" | "low";
+    _consensusLevelDescription?: string;
+  };
+}
+
+export interface EnsembleVoting {
+  winner: string;
+  _winnerDescription?: string;
+  confidence: number;
+  _confidenceDescription?: string;
+  consensus: "strong" | "moderate" | "weak" | "very-weak";
+  _consensusDescription?: string;
+  weights: Record<string, number>;
+  _weightsDescription?: string;
+  recommendation: string;
+  _recommendationDescription?: string;
+}
+
+export interface EnsembleConfidenceAnalysis {
+  overallConfidence: number;
+  _overallConfidenceDescription?: string;
+  modelAgreement: number;
+  _modelAgreementDescription?: string;
+  responseConsistency: number;
+  _responseConsistencyDescription?: string;
+  qualityDistribution: {
+    high: number;
+    medium: number;
+    low: number;
+    veryLow: number;
+    averageScore: number;
+    scoreRange: {
+      min: number;
+      max: number;
+    };
+    totalResponses: number;
+  };
+  _qualityDistributionDescription?: string;
+  votingAnalysis: {
+    consensusStrength: "strong" | "moderate" | "weak" | "very-weak";
+    _consensusStrengthDescription?: string;
+    winnerMargin: number;
+    _winnerMarginDescription?: string;
+    distributionEntropy: number;
+    _distributionEntropyDescription?: string;
+  };
 }
 
 export interface EnsembleMetadata {
@@ -136,18 +213,40 @@ export interface EnsembleMetadata {
   failedRoles: number;
   synthesisStatus: "success" | "failed";
   processingTimeMs: number;
+  sessionId: string;
+  memoryContextUsed: boolean;
+  responseQuality: number;
+  correlationId: string;
+  contextOptimization: {
+    tokensUsed: number;
+    tokensAvailable: number;
+    efficiency: number;
+    sectionsIncluded: number;
+    hierarchicalContext: boolean;
+  };
   timestamp: string; // ISO 8601 format
-  version?: string; // API version
-  correlationId?: string; // Request tracking ID
-  memoryContextUsed?: boolean;
-  responseQuality?: number; // 0-1 quality score
+  version: string; // API version
+  confidenceAnalysis: EnsembleConfidenceAnalysis;
+  costEstimate: {
+    totalCost: number;
+    breakdown: {
+      inputTokens: number;
+      outputTokens: number;
+      inputCost: number;
+      outputCost: number;
+    };
+  };
+  _costEstimateDescription?: string;
+  synthesis?: any; // Allow synthesis data for UI
 }
 
 export interface EnsembleData {
   prompt: string;
   userId: string;
+  sessionId: string;
   synthesis: EnsembleSynthesis;
   roles: EnsembleRole[];
+  voting: EnsembleVoting;
   metadata: EnsembleMetadata;
 }
 

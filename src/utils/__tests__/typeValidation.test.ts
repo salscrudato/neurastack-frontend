@@ -200,9 +200,7 @@ describe('Type Validation Utilities', () => {
 
       const result = validateWorkoutPlan(workoutWithInvalidExercise);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Exercise 1: Exercise name is required');
-      expect(result.errors).toContain('Exercise 1: Sets must be greater than 0');
-      expect(result.errors).toContain('Exercise 1: Reps must be greater than 0');
+      expect(result.errors).toContain('Exercise 1: Exercise name is required, Sets must be greater than 0, Reps must be greater than 0, Duration must be 0 or greater, Rest time must be 0 or greater, Exercise instructions are required');
     });
   });
 
