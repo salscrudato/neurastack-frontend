@@ -4,8 +4,21 @@
  */
 
 // App version for cache busting with safe fallbacks
-const APP_VERSION = (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '3.0.0');
-const BUILD_TIME = (typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : Date.now().toString());
+const APP_VERSION = (() => {
+  try {
+    return typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '3.0.0';
+  } catch {
+    return '3.0.0';
+  }
+})();
+
+const BUILD_TIME = (() => {
+  try {
+    return typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : Date.now().toString();
+  } catch {
+    return Date.now().toString();
+  }
+})();
 
 // Storage keys
 const VERSION_KEY = 'neurastack-app-version';

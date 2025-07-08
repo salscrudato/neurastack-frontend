@@ -2,8 +2,14 @@ import { useToast } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
-// Version tracking for cache busting
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || Date.now().toString();
+// Version tracking for cache busting with safe fallback
+const APP_VERSION = (() => {
+  try {
+    return import.meta.env.VITE_APP_VERSION || Date.now().toString();
+  } catch {
+    return Date.now().toString();
+  }
+})();
 const VERSION_KEY = 'neurastack_app_version';
 
 // Modern PWA update manager with intelligent update handling

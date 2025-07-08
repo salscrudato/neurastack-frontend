@@ -25,6 +25,15 @@ import { auth, db } from '../firebase';
 import { handleSilentError } from '../utils/errorHandler';
 import type { Message } from './useChatStore';
 
+// Safe UUID generation helper
+const generateSafeUUID = (): string => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  }
+};
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -181,7 +190,7 @@ export const useHistoryStore = create<HistoryState>()(
           success: true,
           session: {
             ...session,
-            newSessionId: crypto.randomUUID() // Generate new session ID for loaded chat
+            newSessionId: generateSafeUUID() // Generate new session ID for loaded chat
           }
         };
       },

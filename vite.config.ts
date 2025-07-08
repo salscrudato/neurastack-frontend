@@ -185,23 +185,28 @@ export default defineConfig({
     // Target modern browsers for optimal bundle size
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
 
-    // Advanced minification with terser
+    // Safe minification with terser (fixed initialization issues)
     minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: process.env.NODE_ENV === 'production',
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-        passes: 2, // Multiple passes for better compression
-        unsafe_arrows: true,
-        unsafe_methods: true,
-        unsafe_proto: true,
+        passes: 1, // Reduced passes to prevent initialization issues
+        // Removed unsafe options that cause initialization problems
+        unsafe_arrows: false,
+        unsafe_methods: false,
+        unsafe_proto: false,
+        // Keep function names to prevent hoisting issues
+        keep_fnames: true,
+        keep_classnames: true,
       },
       mangle: {
         safari10: true,
-        properties: {
-          regex: /^_/,
-        },
+        // Disabled property mangling to prevent initialization issues
+        // properties: {
+        //   regex: /^_/,
+        // },
       },
       format: {
         comments: false,

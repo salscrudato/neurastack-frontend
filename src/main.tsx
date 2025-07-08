@@ -83,21 +83,32 @@ function RouteErrorBoundary() {
 }
 
 // Setup cache management before rendering
-const cleanupCacheManagement = setupCacheManagement();
+let cleanupCacheManagement: (() => void) | undefined;
+try {
+  cleanupCacheManagement = setupCacheManagement();
+} catch (error) {
+  console.warn('Cache management setup failed:', error);
+}
 
 // Initialize resource preloading for optimal performance (with error handling)
-try {
-  initializeResourcePreloading();
-} catch (error) {
-  console.warn('Resource preloading failed:', error);
-}
+// Defer to avoid blocking main thread
+setTimeout(() => {
+  try {
+    initializeResourcePreloading();
+  } catch (error) {
+    console.warn('Resource preloading failed:', error);
+  }
+}, 0);
 
 // Preload critical Firebase services (with error handling)
-try {
-  preloadCriticalServices();
-} catch (error) {
-  console.warn('Firebase preloading failed:', error);
-}
+// Defer to avoid blocking main thread
+setTimeout(() => {
+  try {
+    preloadCriticalServices();
+  } catch (error) {
+    console.warn('Firebase preloading failed:', error);
+  }
+}, 100);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -110,7 +121,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 // Cleanup cache management on page unload
-window.addEventListener('beforeunload', cleanupCacheManagement);
+if (cleanupCacheManagement) {
+  window.addEventListener('beforeunload', cleanupCacheManagement);
+}
 
 // Performance optimizations will be initialized by individual components as needed
 

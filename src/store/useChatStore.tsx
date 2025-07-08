@@ -16,6 +16,15 @@ const PERFORMANCE_CONFIG = {
   RATE_LIMIT_MAX_REQUESTS: 30,
 } as const;
 
+// Safe UUID generation helper
+const generateSafeUUID = (): string => {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  }
+};
+
 /**
  * Represents a chat message with comprehensive metadata
  * @interface Message
@@ -162,7 +171,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
   messages: [],
   isLoading: false,
   retryCount: 0,
-  sessionId: crypto.randomUUID(),
+  sessionId: generateSafeUUID(),
   maxMessages: PERFORMANCE_CONFIG.MAX_MESSAGES,
   memoryUsage: 0,
   lastCleanup: Date.now(),
@@ -433,7 +442,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       clearMessages: () => {
         set({
           messages: [],
-          sessionId: crypto.randomUUID(),
+          sessionId: generateSafeUUID(),
           memoryUsage: 0,
           lastCleanup: Date.now()
         }); // New session when clearing
@@ -471,7 +480,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       },
 
       initializeSession: () => {
-        set({ sessionId: crypto.randomUUID() });
+        set({ sessionId: generateSafeUUID() });
       },
 
       /**

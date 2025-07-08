@@ -222,8 +222,13 @@ export const defaultPreloadConfig: PreloadConfig = {
 
 /**
  * Initialize resource preloading for optimal performance
+ * Temporarily disabled to prevent initialization issues
  */
 export const initializeResourcePreloading = (config: PreloadConfig = defaultPreloadConfig): void => {
+  // Temporarily disabled to prevent initialization issues
+  console.log('Resource preloading temporarily disabled');
+  return;
+
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
