@@ -7,14 +7,26 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnsembleInfoModal } from '../EnsembleInfoModal';
 
-// Mock ensemble data for testing
+// Mock ensemble data matching actual API response structure
 const mockEnsembleData = {
   synthesis: {
-    provider: 'openai',
+    content: "Here's a test response from the AI ensemble.",
     model: 'gpt-4.1-mini',
+    provider: 'openai',
     status: 'success',
     synthesisStrategy: 'simple',
     overallConfidence: 0.8,
+    confidence: {
+      score: 0.92,
+      level: 'high',
+      factors: ['Response generated successfully', 'Well-structured response']
+    },
+    qualityScore: 0.95,
+    metadata: {
+      basedOnResponses: 3,
+      averageConfidence: 0.75,
+      consensusLevel: 'medium'
+    }
   },
   voting: {
     winner: 'gemini',
@@ -31,44 +43,60 @@ const mockEnsembleData = {
     successfulRoles: 3,
     failedRoles: 0,
     processingTimeMs: 4516,
-    costEstimate: {
-      totalCost: 0.000198,
-    },
-    confidenceAnalysis: {
-      overallConfidence: 0.7026,
-      modelAgreement: 0.42,
-    },
+    averageConfidence: 0.75,
+    consensusLevel: 'medium'
   },
   roles: [
     {
       role: 'gpt4o',
+      content: 'Test response from GPT-4o',
       provider: 'openai',
       model: 'gpt-4o-mini',
       status: 'fulfilled',
       wordCount: 14,
+      characterCount: 105,
       responseTime: 699,
       confidence: {
-        score: 0.47,
-        level: 'low',
-        factors: ['Response generated successfully'],
+        score: 0.73,
+        level: 'medium',
+        factors: ['Response generated successfully', 'Well-structured response'],
       },
+      qualityScore: 0.8,
+      metadata: {
+        confidenceLevel: 'medium',
+        modelReliability: 0.8,
+        processingTime: 699,
+        tokenCount: 27,
+        complexity: 'high'
+      }
     },
     {
       role: 'gemini',
-      provider: 'gemini',
+      content: 'Test response from Gemini',
+      provider: 'google',
       model: 'gemini-1.5-flash',
       status: 'fulfilled',
       wordCount: 126,
+      characterCount: 580,
       responseTime: 1358,
       confidence: {
         score: 0.83,
         level: 'high',
         factors: ['Response generated successfully', 'Adequate response length'],
       },
+      qualityScore: 0.9,
+      metadata: {
+        confidenceLevel: 'high',
+        modelReliability: 0.9,
+        processingTime: 1358,
+        tokenCount: 145,
+        complexity: 'medium'
+      }
     },
     {
       role: 'claude',
-      provider: 'claude',
+      content: 'Test response from Claude',
+      provider: 'anthropic',
       model: 'claude-3-5-haiku-latest',
       status: 'fulfilled',
       wordCount: 15,

@@ -16,7 +16,6 @@ import {
     ModalBody,
     ModalCloseButton,
     ModalContent,
-    ModalHeader,
     ModalOverlay,
     Progress,
     SimpleGrid,
@@ -28,14 +27,11 @@ import {
     PiBrainBold,
     PiChartBarBold,
     PiCheckCircleBold,
-    PiClockBold,
-    PiCpuBold,
     PiGaugeBold,
     PiLightningBold,
     PiScalesBold,
     PiShieldCheckBold,
     PiTargetBold,
-    PiTrendUpBold,
     PiWarningCircleBold
 } from "react-icons/pi";
 
@@ -69,104 +65,13 @@ const getConfidenceColor = (confidence: number): string => {
     return "#DC2626"; // Dark Red
 };
 
-const getBadgeColor = (type: 'confidence' | 'models' | 'response', value?: number): string => {
-    switch (type) {
-        case 'confidence':
-            return value && value > 80 ? '#10B981' : value && value > 60 ? '#F59E0B' : '#EF4444';
-        case 'models':
-            return '#4F9CF9'; // Blue for models
-        case 'response':
-            return '#8B5CF6'; // Purple for response time
-        default:
-            return '#64748B';
-    }
-};
 
-const calculateModelAgreement = (roles: any[]): number => {
-    if (!roles || roles.length < 2) return 0;
 
-    // Simple agreement calculation based on confidence score variance
-    const confidenceScores = roles
-        .map(role => role.confidence?.score || 0)
-        .filter(score => score > 0);
 
-    if (confidenceScores.length < 2) return 0;
 
-    const mean = confidenceScores.reduce((sum, score) => sum + score, 0) / confidenceScores.length;
-    const variance = confidenceScores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / confidenceScores.length;
 
-    // Convert variance to agreement (lower variance = higher agreement)
-    return Math.max(0, 1 - (variance * 4)); // Scale variance to 0-1 range
-};
 
-const findWinningModel = (roles: any[], voting?: any): { model: string; confidence: number } | null => {
-    if (!roles || roles.length === 0) return null;
 
-    // First try to use the voting winner from API
-    if (voting?.winner) {
-        const winnerRole = roles.find(role =>
-            role.role === voting.winner ||
-            role.model?.includes(voting.winner) ||
-            voting.winner.includes(role.role)
-        );
-
-        if (winnerRole) {
-            return {
-                model: winnerRole.model || winnerRole.role,
-                confidence: winnerRole.confidence?.score || 0.5
-            };
-        }
-
-        // If we have a winner but can't find the role, still show the winner
-        return {
-            model: voting.winner,
-            confidence: voting.confidence || 0.5
-        };
-    }
-
-    // Fallback to highest confidence model
-    const winner = roles.reduce((prev, current) => {
-        const prevScore = prev.confidence?.score || 0;
-        const currentScore = current.confidence?.score || 0;
-        return currentScore > prevScore ? current : prev;
-    });
-
-    return winner.confidence?.score > 0 ? {
-        model: winner.model || winner.role,
-        confidence: winner.confidence.score
-    } : null;
-};
-
-// ============================================================================
-// Enhanced Header Badge Components
-// ============================================================================
-
-interface HeaderBadgeProps {
-    label: string;
-    value: string;
-    color: string;
-    icon?: React.ComponentType;
-}
-
-const HeaderBadge = ({ label, value, color, icon: IconComponent }: HeaderBadgeProps) => (
-    <Badge
-        bg={color}
-        color="white"
-        px={3}
-        py={2}
-        borderRadius="lg"
-        fontSize="xs"
-        fontWeight="600"
-        display="flex"
-        alignItems="center"
-        gap={1}
-        textTransform="uppercase"
-        letterSpacing="0.5px"
-    >
-        {IconComponent && <Icon as={IconComponent} boxSize={3} />}
-        {value} {label}
-    </Badge>
-);
 
 
 
@@ -186,59 +91,46 @@ export function EnsembleInfoModal({
 
 
 
-    // Enhanced data extraction with robust error handling following API integration guide
+    // Enhanced data extraction following actual API response structure
     const synthesis = ensembleData?.synthesis || {};
     const voting = ensembleData?.voting || {};
-    const metadata = ensembleData?.metadata || ensembleData || {};
-    const confidenceAnalysis = metadata?.confidenceAnalysis || {};
+    const metadata = ensembleData?.metadata || synthesis?.metadata || {};
     const roles = Array.isArray(ensembleData?.roles) ? ensembleData.roles : [];
 
-    // Additional data extraction for enhanced metrics
-    const votingAnalysis = confidenceAnalysis?.votingAnalysis || {};
-    const qualityDistribution = confidenceAnalysis?.qualityDistribution || {};
+    // Extract metrics from actual API response structure
+    const successfulModels = roles.filter((role: any) => role.status === 'fulfilled').length;
+    const totalModels = roles.length || 3;
 
-    // Header badge calculations with proper fallbacks following API integration guide
-    const confidenceScore = Math.round(
-        (synthesis.confidence?.score ||
-         confidenceAnalysis.overallConfidence ||
-         synthesis.overallConfidence ||
-         0) * 100
-    );
+    // Response time from metadata or calculate from roles
+    const responseTimeSeconds = Math.round((metadata.processingTimeMs ||
+                                          roles.reduce((sum: number, role: any) => sum + (role.responseTime || 0), 0)) / 1000);
 
-    const successfulModels = metadata?.successfulRoles ||
-                           roles.filter((role: any) => role.status === 'fulfilled').length ||
-                           0;
+    // Confidence score from synthesis.confidence.score (primary source per API docs)
+    const confidenceScore = Math.round((synthesis.confidence?.score || 0) * 100);
 
-    const totalModels = metadata?.totalRoles ||
-                       roles.length ||
-                       3; // Default to 3 models based on API structure
+    // Overall confidence from synthesis.overallConfidence (as seen in actual response)
+    const overallConfidence = Math.round((synthesis.overallConfidence || synthesis.confidence?.score || 0) * 100);
 
-    const responseTimeSeconds = Math.round((metadata.processingTimeMs || 0) / 1000);
+    // Model agreement - calculate from synthesis metadata or roles
+    const averageConfidence = metadata.averageConfidence ||
+                             (roles.length > 0 ? roles.reduce((sum: number, role: any) => sum + (role.confidence?.score || 0), 0) / roles.length : 0);
+    const modelAgreement = Math.round(averageConfidence * 100);
 
-    // Overall confidence for main display with multiple fallback sources
-    const overallConfidence = Math.round(
-        (confidenceAnalysis.overallConfidence ||
-         synthesis.confidence?.score ||
-         synthesis.overallConfidence ||
-         0) * 100
-    );
 
-    // Model agreement for consensus with fallback calculation
-    const modelAgreement = Math.round(
-        (confidenceAnalysis.modelAgreement ||
-         (roles.length > 1 ? calculateModelAgreement(roles) : 0)) * 100
-    );
 
-    // Find winning model with enhanced logic - use voting.winner from API
-    const winningModel = findWinningModel(roles, voting);
+    // Find winning model - highest confidence score from roles
+    const winningModel = roles.length > 0 ? roles.reduce((prev: any, current: any) => {
+        const prevScore = prev.confidence?.score || 0;
+        const currentScore = current.confidence?.score || 0;
+        return currentScore > prevScore ? current : prev;
+    }) : null;
 
-    // Quality distribution using API's qualityDistribution data
-    const highQualityCount = qualityDistribution?.high !== undefined ?
-                           qualityDistribution.high :
-                           roles.filter((role: any) => (role.confidence?.score || 0) > 0.8).length;
-    const medLowQualityCount = qualityDistribution?.medium !== undefined && qualityDistribution?.low !== undefined ?
-                              (qualityDistribution.medium + qualityDistribution.low) :
-                              Math.max(0, roles.length - highQualityCount);
+    // Quality distribution - use synthesis.qualityScore and role quality
+    const highQualityCount = roles.filter((role: any) => (role.confidence?.score || 0) > 0.8).length;
+    const medLowQualityCount = roles.length - highQualityCount;
+
+    // Success rate calculation
+    const successRate = totalModels > 0 ? Math.round((successfulModels / totalModels) * 100) : 0;
 
 
 
@@ -261,57 +153,6 @@ export function EnsembleInfoModal({
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
             >
-                {/* Header */}
-                <ModalHeader
-                    bg="linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%)"
-                    borderTopRadius={{ base: 0, md: "2xl" }}
-                    borderBottom="1px solid"
-                    borderColor="rgba(226, 232, 240, 0.6)"
-                    pb={6}
-                    pt={6}
-                >
-                    <VStack align="start" spacing={4}>
-                        <Flex justify="space-between" align="center" w="100%">
-                            <Box>
-                                <Text fontSize="2xl" fontWeight="bold" color={textColor} letterSpacing="-0.025em">
-                                    AI Ensemble Analytics
-                                </Text>
-                                <Text fontSize="sm" color={mutedColor} fontWeight="500" mt={1}>
-                                    Comprehensive multi-model intelligence insights
-                                </Text>
-                            </Box>
-                            <ModalCloseButton
-                                position="static"
-                                color="#4F9CF9"
-                                _hover={{ bg: "rgba(79, 156, 249, 0.1)" }}
-                                _focus={{ boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)" }}
-                            />
-                        </Flex>
-
-                        {/* Enhanced Header Badges */}
-                        <HStack spacing={2} wrap="wrap" justify="center" w="100%">
-                            <HeaderBadge
-                                label="CONFIDENCE"
-                                value={`${confidenceScore}%`}
-                                color={getBadgeColor('confidence', confidenceScore)}
-                                icon={PiTrendUpBold}
-                            />
-                            <HeaderBadge
-                                label="MODELS"
-                                value={`${successfulModels}/${totalModels}`}
-                                color={getBadgeColor('models')}
-                                icon={PiCpuBold}
-                            />
-                            <HeaderBadge
-                                label="RESPONSE"
-                                value={`${responseTimeSeconds}S`}
-                                color={getBadgeColor('response')}
-                                icon={PiClockBold}
-                            />
-                        </HStack>
-                    </VStack>
-                </ModalHeader>
-
                 <ModalCloseButton
                     color="#4F9CF9"
                     _hover={{
@@ -322,6 +163,10 @@ export function EnsembleInfoModal({
                         boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
                     }}
                     size="lg"
+                    zIndex={9999}
+                    position="absolute"
+                    top={4}
+                    right={4}
                 />
 
                 {/* Body */}
@@ -379,9 +224,9 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                 >
-                                    <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(overallConfidence / 100)} mb={2} />
+                                    <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(confidenceScore / 100)} mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {overallConfidence}%
+                                        {confidenceScore}%
                                     </Text>
                                     <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
                                         Confidence
@@ -462,7 +307,7 @@ export function EnsembleInfoModal({
                                 >
                                     <Icon as={PiTargetBold} boxSize={6} color="#10B981" mb={2} />
                                     <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {Math.round((successfulModels / totalModels) * 100)}%
+                                        {successRate}%
                                     </Text>
                                     <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
                                         Success Rate
@@ -498,11 +343,11 @@ export function EnsembleInfoModal({
                                                 boxSize={5}
                                             />
                                             <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                                {winningModel ? winningModel.model.toUpperCase() : 'NO CLEAR WINNER'}
+                                                {winningModel ? (winningModel.model || winningModel.role || 'UNKNOWN').toUpperCase() : 'NO CLEAR WINNER'}
                                             </Text>
                                         </HStack>
-                                        <Text fontSize="2xl" fontWeight="bold" color={getConfidenceColor(winningModel?.confidence || 0)}>
-                                            {winningModel ? `${Math.round(winningModel.confidence * 100)}%` : '0%'}
+                                        <Text fontSize="2xl" fontWeight="bold" color={getConfidenceColor(winningModel?.confidence?.score || 0)}>
+                                            {winningModel ? `${Math.round((winningModel.confidence?.score || 0) * 100)}%` : '0%'}
                                         </Text>
                                         <Text fontSize="sm" color={mutedColor}>
                                             Best performing model
@@ -603,14 +448,14 @@ export function EnsembleInfoModal({
                                             <Flex justify="space-between" align="center">
                                                 <Text fontSize="sm" color={mutedColor}>Response Consistency</Text>
                                                 <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                    {formatPercentage(confidenceAnalysis.responseConsistency || 0)}
+                                                    {formatPercentage(modelAgreement / 100)}
                                                 </Text>
                                             </Flex>
                                             <Progress
-                                                value={(confidenceAnalysis.responseConsistency || 0) * 100}
+                                                value={modelAgreement}
                                                 colorScheme={
-                                                    (confidenceAnalysis.responseConsistency || 0) > 0.8 ? "green" :
-                                                    (confidenceAnalysis.responseConsistency || 0) > 0.6 ? "yellow" : "red"
+                                                    modelAgreement > 80 ? "green" :
+                                                    modelAgreement > 60 ? "yellow" : "red"
                                                 }
                                                 size="sm"
                                                 borderRadius="full"
@@ -637,78 +482,7 @@ export function EnsembleInfoModal({
                             </Box>
                         </SimpleGrid>
 
-                        {/* Advanced Voting Analysis */}
-                        {votingAnalysis.winnerMargin !== undefined && (
-                            <Box
-                                bg="white"
-                                borderRadius="xl"
-                                p={6}
-                                border="1px solid"
-                                borderColor="rgba(226, 232, 240, 0.6)"
-                                boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                            >
-                                <HStack spacing={3} mb={4}>
-                                    <Icon as={PiGaugeBold} boxSize={6} color="#10B981" />
-                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                        Voting Intelligence
-                                    </Text>
-                                </HStack>
 
-                                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-                                    {/* Winner Margin */}
-                                    <Box textAlign="center" p={4} bg="blue.50" borderRadius="lg" border="1px solid" borderColor="blue.200">
-                                        <Text fontSize="xl" fontWeight="bold" color="#4F9CF9">
-                                            {Math.round(votingAnalysis.winnerMargin * 100)}%
-                                        </Text>
-                                        <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                            Winner Margin
-                                        </Text>
-                                        <Text fontSize="xs" color={mutedColor}>
-                                            Lead over second place
-                                        </Text>
-                                    </Box>
-
-                                    {/* Voting Entropy */}
-                                    <Box textAlign="center" p={4} bg="purple.50" borderRadius="lg" border="1px solid" borderColor="purple.200">
-                                        <Text fontSize="xl" fontWeight="bold" color="#8B5CF6">
-                                            {Math.round((1 - (votingAnalysis.distributionEntropy || 0)) * 100)}%
-                                        </Text>
-                                        <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                            Voting Certainty
-                                        </Text>
-                                        <Text fontSize="xs" color={mutedColor}>
-                                            Decision clarity
-                                        </Text>
-                                    </Box>
-
-                                    {/* Consensus Strength */}
-                                    <Box textAlign="center" p={4} bg="green.50" borderRadius="lg" border="1px solid" borderColor="green.200">
-                                        <Badge
-                                            bg={
-                                                modelAgreement > 80 ? '#10B981' :
-                                                modelAgreement > 60 ? '#F59E0B' : '#EF4444'
-                                            }
-                                            color="white"
-                                            px={3}
-                                            py={1}
-                                            borderRadius="md"
-                                            fontSize="sm"
-                                            fontWeight="700"
-                                            textTransform="uppercase"
-                                        >
-                                            {modelAgreement > 80 ? 'STRONG' :
-                                             modelAgreement > 60 ? 'MODERATE' : 'WEAK'}
-                                        </Badge>
-                                        <Text fontSize="sm" fontWeight="600" color={textColor} mt={2}>
-                                            Consensus
-                                        </Text>
-                                        <Text fontSize="xs" color={mutedColor}>
-                                            {modelAgreement}% agreement
-                                        </Text>
-                                    </Box>
-                                </SimpleGrid>
-                            </Box>
-                        )}
 
                         {/* Actionable Insights & Recommendations */}
                         {voting.recommendation && (
