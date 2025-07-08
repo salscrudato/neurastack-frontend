@@ -230,24 +230,31 @@ export function Header() {
     <Box
       as="header"
       role="banner"
-      position="sticky"
+      position="fixed"
       top={0}
+      left={0}
+      right={0}
       zIndex={1100}
       w="100%"
       // Enhanced glass theme design
       bg={headerBg}
       backdropFilter="blur(32px)"
       borderBottom={headerBorder}
-      // Modern glass styling
+      // Modern glass styling with mobile fixes
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
         // Enhanced glass shadow
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)',
-        // Mobile optimizations
+        // Mobile optimizations - ensure header stays visible
         '@media (max-width: 768px)': {
+          position: 'fixed',
           borderBottom: '1px solid rgba(79, 156, 249, 0.08)',
           backdropFilter: 'blur(24px)',
+          // Ensure header is always on top
+          zIndex: 9999,
+          // Add safe area support
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }
       }}
     >

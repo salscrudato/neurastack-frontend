@@ -75,7 +75,6 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
         flex="1"
         position="relative"
         w="100%"
-        pt={!isSplashPage ? "64px" : 0}
         sx={{
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
@@ -83,22 +82,26 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           // Performance optimizations
           contain: 'layout style',
           willChange: 'auto',
-          // Enhanced responsive padding with fluid values
-          paddingTop: !isSplashPage ? 'clamp(56px, 15vw, 64px)' : 0,
+          // Enhanced responsive padding with fluid values - account for fixed header
+          paddingTop: !isSplashPage ? 'clamp(64px, 15vw, 72px)' : 0,
           minHeight: !isSplashPage
-            ? 'calc(100vh - clamp(56px, 15vw, 64px))'
+            ? 'calc(100vh - clamp(64px, 15vw, 72px))'
             : '100vh',
           // Modern viewport support
           '@supports (height: 100dvh)': {
             minHeight: !isSplashPage
-              ? 'calc(100dvh - clamp(56px, 15vw, 64px))'
+              ? 'calc(100dvh - clamp(64px, 15vw, 72px))'
               : '100dvh',
           },
-          // Enhanced mobile optimizations
+          // Enhanced mobile optimizations - account for fixed header and safe areas
           '@media (max-width: 768px)': {
-            paddingTop: !isSplashPage ? 'clamp(52px, 12vw, 56px)' : 0,
-            minHeight: !isSplashPage ? 'calc(100vh - clamp(52px, 12vw, 56px))' : '100vh',
+            paddingTop: !isSplashPage ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
+            minHeight: !isSplashPage
+              ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px)'
+              : '100vh',
             touchAction: 'pan-y',
+            // Ensure content doesn't get cut off by keyboard
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
           },
         }}
       >

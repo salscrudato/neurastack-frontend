@@ -827,6 +827,19 @@ export function SplashPage() {
     }
   }, [user, navigate]);
 
+  // Lock scroll on splash page
+  useEffect(() => {
+    // Prevent scrolling on splash page
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, []);
+
   const handleGoogleLogin = useCallback(async () => {
     setErr('');
     setSuccess('');

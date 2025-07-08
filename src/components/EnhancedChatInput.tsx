@@ -123,25 +123,40 @@ export default function EnhancedChatInput() {
   const handleFocus = useCallback(() => {
     setIsFocused(true);
     performanceMonitor.startRender('ChatInput-Focus');
-    
+
     // Mobile-specific optimizations
     if (isMobile) {
-      // Prevent body scroll when input is focused
-      document.body.style.overflow = 'hidden';
-      
+      // Adjust viewport for keyboard
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+      }
+
       // Smooth scroll to input with delay for keyboard animation
       setTimeout(() => {
-        textareaRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center',
+        textareaRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
           inline: 'nearest'
         });
       }, MOBILE_KEYBOARD_THRESHOLD);
-      
+
+      // Additional delay to ensure input stays visible above keyboard
+      setTimeout(() => {
+        if (textareaRef.current) {
+          const inputRect = textareaRef.current.getBoundingClientRect();
+          const keyboardHeight = window.innerHeight - (window.visualViewport?.height || window.innerHeight);
+
+          if (inputRect.bottom > window.innerHeight - keyboardHeight) {
+            window.scrollBy(0, inputRect.bottom - (window.innerHeight - keyboardHeight) + 20);
+          }
+        }
+      }, MOBILE_KEYBOARD_THRESHOLD + 100);
+
       // Haptic feedback for focus
       triggerHaptic('light');
     }
-    
+
     handleAutoResize();
     performanceMonitor.endRender('ChatInput-Focus');
   }, [handleAutoResize, isMobile, triggerHaptic]);
@@ -149,10 +164,19 @@ export default function EnhancedChatInput() {
   // Enhanced blur handling
   const handleBlur = useCallback(() => {
     setIsFocused(false);
-    
-    // Restore body scroll on mobile
+
+    // Restore viewport and scroll on mobile
     if (isMobile) {
-      document.body.style.overflow = '';
+      // Restore original viewport
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover');
+      }
+
+      // Small delay to ensure keyboard is hidden before restoring scroll
+      setTimeout(() => {
+        document.body.style.overflow = '';
+      }, 100);
     }
   }, [isMobile]);
 
@@ -278,7 +302,9 @@ export default function EnhancedChatInput() {
       position="sticky"
       bottom={0}
       zIndex={100}
-      bg="transparent"
+      bg="rgba(255, 255, 255, 0.95)"
+      backdropFilter="blur(8px)"
+      borderTop="1px solid rgba(226, 232, 240, 0.8)"
       sx={{
         ...performanceConfig,
         touchAction: 'manipulation',
@@ -288,10 +314,14 @@ export default function EnhancedChatInput() {
           position: 'fixed',
           left: 0,
           right: 0,
+          bottom: 0,
           paddingX: 2,
-          paddingY: 0,
+          paddingY: 1,
           maxHeight: keyboardVisible ? '100px' : '120px',
           zIndex: 1000,
+          // Ensure input container stays above keyboard
+          transform: keyboardVisible ? 'translateY(0)' : 'translateY(0)',
+          transition: 'transform 0.3s ease-out',
         },
       }}
     >

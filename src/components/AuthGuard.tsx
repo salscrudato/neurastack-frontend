@@ -5,10 +5,10 @@
  * Handles Firebase auth state changes and redirects unauthenticated users.
  */
 
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Box } from '@chakra-ui/react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { useAuthStore } from '../store/useAuthStore';
 import LoadingSpinner from './LoadingSpinner';
@@ -22,10 +22,10 @@ interface AuthGuardProps {
 /**
  * AuthGuard component that protects routes and manages authentication state
  */
-export function AuthGuard({ 
-  children, 
-  requireAuth = true, 
-  redirectTo = '/' 
+export function AuthGuard({
+  children,
+  requireAuth = true,
+  redirectTo = '/'
 }: AuthGuardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -34,29 +34,46 @@ export function AuthGuard({
   const location = useLocation();
 
   useEffect(() => {
+    // Set a maximum timeout for auth check to prevent infinite loading
+    const authTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn('⚠️ Auth check timeout, proceeding without auth');
+        setIsLoading(false);
+        setIsAuthenticated(false);
+      }
+    }, 3000); // 3 second timeout
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       console.log('🔐 Auth state changed:', user?.uid, 'isAnonymous:', user?.isAnonymous);
-      
+
+      // Clear timeout since we got a response
+      clearTimeout(authTimeout);
+
       setUser(user);
       setIsAuthenticated(!!user);
       setIsLoading(false);
 
-      // Handle authentication requirements
-      if (requireAuth && !user) {
-        console.log('🚫 Authentication required, redirecting to:', redirectTo);
-        navigate(redirectTo, { 
-          replace: true,
-          state: { from: location.pathname }
-        });
-      } else if (!requireAuth && user && location.pathname === '/') {
-        // User is authenticated but on splash page, redirect to chat
-        console.log('✅ User authenticated, redirecting to /chat');
-        navigate('/chat', { replace: true });
-      }
+      // Handle authentication requirements with delay to prevent race conditions
+      setTimeout(() => {
+        if (requireAuth && !user) {
+          console.log('🚫 Authentication required, redirecting to:', redirectTo);
+          navigate(redirectTo, {
+            replace: true,
+            state: { from: location.pathname }
+          });
+        } else if (!requireAuth && user && location.pathname === '/') {
+          // User is authenticated but on splash page, redirect to chat
+          console.log('✅ User authenticated, redirecting to /chat');
+          navigate('/chat', { replace: true });
+        }
+      }, 100);
     });
 
-    return () => unsubscribe();
-  }, [setUser, navigate, location.pathname, requireAuth, redirectTo]);
+    return () => {
+      unsubscribe();
+      clearTimeout(authTimeout);
+    };
+  }, [setUser, navigate, location.pathname, requireAuth, redirectTo, isLoading]);
 
   // Show loading spinner while checking auth state
   if (isLoading) {
