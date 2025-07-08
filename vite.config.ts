@@ -84,102 +84,177 @@ export default defineConfig({
     open: true,
   },
 
-  // Enhanced build optimizations
+  // Enhanced build optimizations for leading performance
   build: {
-    // Target modern browsers for smaller bundles
-    target: 'esnext',
+    // Target modern browsers for optimal bundle size
+    target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
 
-    // Enable minification with terser for better compression
+    // Advanced minification with terser
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Remove console.log in production
+        drop_console: process.env.NODE_ENV === 'production',
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+        passes: 2, // Multiple passes for better compression
+        unsafe_arrows: true,
+        unsafe_methods: true,
+        unsafe_proto: true,
       },
       mangle: {
         safari10: true,
-      },
-    },
-
-    // Generate source maps for debugging (disabled for production)
-    sourcemap: false,
-
-    // Enhanced chunk splitting for better caching and loading
-    rollupOptions: {
-      output: {
-        // Improved chunk naming for better caching
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
-
-        manualChunks: {
-          // Core React chunk (most stable)
-          vendor: ['react', 'react-dom'],
-
-          // Animation library (separate for better caching)
-          animation: ['framer-motion'],
-
-          // UI library chunk
-          ui: ['@chakra-ui/react', '@emotion/react', '@emotion/styled'],
-
-          // Styling libraries
-          styling: ['styled-components'],
-
-          // State management and utilities
-          state: ['zustand'],
-
-          // Firebase services (keep together to avoid circular dependencies)
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
-
-          // Icons (separate for better caching)
-          icons: ['react-icons/pi', '@heroicons/react'],
-
-          // Markdown rendering (used in chat)
-          markdown: ['react-markdown', 'remark-gfm'],
-
-          // Router (separate for better caching)
-          router: ['react-router-dom'],
-
-          // HTTP client
-          http: ['axios'],
-
-          // Date utilities
-          utils: ['date-fns', 'nanoid'],
+        properties: {
+          regex: /^_/,
         },
       },
-      // External dependencies that should not be bundled
-      external: [],
+      format: {
+        comments: false,
+      },
     },
 
-    // Reduced chunk size warning limit for better performance
-    chunkSizeWarningLimit: 500, // More aggressive chunk size limits
+    // Source maps for development, disabled for production
+    sourcemap: process.env.NODE_ENV === 'development',
 
-    // Optimize CSS with better splitting
+    // Enhanced chunk splitting strategy for optimal caching
+    rollupOptions: {
+      output: {
+        // Optimized chunk naming with content hashing
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop()?.replace('.tsx', '').replace('.ts', '') : 'chunk';
+          return `assets/js/${facadeModuleId || 'chunk'}-[hash].js`;
+        },
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.name || 'asset';
+          const info = name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `assets/img/[name]-[hash].[ext]`;
+          }
+          if (/woff2?|eot|ttf|otf/i.test(ext)) {
+            return `assets/fonts/[name]-[hash].[ext]`;
+          }
+          return `assets/[ext]/[name]-[hash].[ext]`;
+        },
+
+        // Advanced manual chunking for optimal loading
+        manualChunks: (id) => {
+          // Core React ecosystem (most stable, cached longest)
+          if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+            return 'react-core';
+          }
+
+          // UI framework (Chakra UI ecosystem)
+          if (id.includes('@chakra-ui') || id.includes('@emotion')) {
+            return 'ui-framework';
+          }
+
+          // Animation and motion libraries
+          if (id.includes('framer-motion') || id.includes('popmotion')) {
+            return 'animation';
+          }
+
+          // Styling libraries
+          if (id.includes('styled-components') || id.includes('stylis')) {
+            return 'styling';
+          }
+
+          // State management
+          if (id.includes('zustand')) {
+            return 'state';
+          }
+
+          // Firebase services (keep together for optimal loading)
+          if (id.includes('firebase') || id.includes('@firebase')) {
+            return 'firebase';
+          }
+
+          // Icon libraries (separate for better caching)
+          if (id.includes('react-icons') || id.includes('@heroicons')) {
+            return 'icons';
+          }
+
+          // Markdown and text processing
+          if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark')) {
+            return 'markdown';
+          }
+
+          // Router
+          if (id.includes('react-router')) {
+            return 'router';
+          }
+
+          // HTTP and networking
+          if (id.includes('axios') || id.includes('whatwg-fetch')) {
+            return 'http';
+          }
+
+          // Utilities and helpers
+          if (id.includes('date-fns') || id.includes('nanoid') || id.includes('lodash')) {
+            return 'utils';
+          }
+
+          // Node modules that don't fit other categories
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+
+      // Optimize external dependencies
+      external: [],
+
+      // Tree shaking optimizations
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+      },
+    },
+
+    // Aggressive chunk size limits for mobile performance
+    chunkSizeWarningLimit: 400,
+
+    // Advanced CSS optimization
     cssCodeSplit: true,
-
-    // Enable CSS minification
     cssMinify: true,
 
-    // Optimize asset handling with better thresholds
-    assetsInlineLimit: 2048, // Inline smaller assets (2kb) for fewer requests
+    // Optimized asset handling
+    assetsInlineLimit: 1024, // 1KB limit for inlining (mobile-optimized)
 
-    // Enhanced module preload for better performance
+    // Enhanced module preload configuration
     modulePreload: {
-      polyfill: false, // Reduce bundle size for modern browsers
+      polyfill: false,
+      resolveDependencies: (_filename, deps) => {
+        // Preload critical chunks only
+        return deps.filter(dep =>
+          dep.includes('react-core') ||
+          dep.includes('ui-framework') ||
+          dep.includes('main')
+        );
+      },
     },
+
+    // Report bundle size and performance
+    reportCompressedSize: true,
   },
 
-  // Enhanced dependency optimization for better performance
+  // Advanced dependency optimization for leading performance
   optimizeDeps: {
+    // Pre-bundle critical dependencies for faster dev startup
     include: [
       'react',
       'react-dom',
       'react/jsx-runtime',
+      'react/jsx-dev-runtime',
       '@chakra-ui/react',
+      '@chakra-ui/system',
+      '@chakra-ui/theme-tools',
       '@emotion/react',
       '@emotion/styled',
+      '@emotion/cache',
       'zustand',
+      'zustand/middleware',
       'react-markdown',
       'remark-gfm',
       'react-router-dom',
@@ -187,23 +262,71 @@ export default defineConfig({
       'styled-components',
       'axios',
       'date-fns',
+      'date-fns/format',
+      'date-fns/formatDistanceToNow',
       'nanoid',
       '@heroicons/react/24/solid',
-      'react-icons/pi'
+      '@heroicons/react/24/outline',
+      'react-icons/pi',
     ],
+
+    // Exclude packages that work better unbundled
     exclude: [
-      'firebase', // Firebase works better when not pre-bundled
+      'firebase',
+      'firebase/app',
+      'firebase/auth',
+      'firebase/firestore',
+      'firebase/analytics',
     ],
-    // Force optimization of these packages
-    force: true,
+
+    // Advanced optimization options
+    force: process.env.NODE_ENV === 'development',
+
+    // ESBuild options for dependency optimization
+    esbuildOptions: {
+      target: 'es2020',
+      supported: {
+        'top-level-await': true,
+      },
+    },
   },
 
-  // Enhanced server configuration for development
+  // Enhanced development server configuration
   server: {
     port: 3000,
+    host: true, // Listen on all addresses
     open: true,
+
+    // Advanced HMR configuration
     hmr: {
-      overlay: false, // Disable error overlay for better development experience
+      overlay: false,
+      clientPort: 3000,
+    },
+
+    // Optimize for mobile development
+    headers: {
+      'Cache-Control': 'no-cache',
+      'Access-Control-Allow-Origin': '*',
+    },
+
+    // Proxy configuration for API calls during development
+    proxy: {
+      '/api': {
+        target: process.env.VITE_BACKEND_URL || 'https://neurastack-backend-638289111765.us-central1.run.app',
+        changeOrigin: true,
+        secure: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', (_proxyReq, req, _res) => {
+            console.log('Sending Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+          });
+        },
+      },
     },
   },
 });
