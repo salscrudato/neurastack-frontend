@@ -185,33 +185,8 @@ export default defineConfig({
     // Target modern browsers for optimal bundle size
     target: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
 
-    // Safe minification with terser (fixed initialization issues)
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: process.env.NODE_ENV === 'production',
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
-        passes: 1, // Reduced passes to prevent initialization issues
-        // Removed unsafe options that cause initialization problems
-        unsafe_arrows: false,
-        unsafe_methods: false,
-        unsafe_proto: false,
-        // Keep function names to prevent hoisting issues
-        keep_fnames: true,
-        keep_classnames: true,
-      },
-      mangle: {
-        safari10: true,
-        // Disabled property mangling to prevent initialization issues
-        // properties: {
-        //   regex: /^_/,
-        // },
-      },
-      format: {
-        comments: false,
-      },
-    },
+    // Use esbuild for safer minification (prevents initialization issues)
+    minify: 'esbuild',
 
     // Source maps for development, disabled for production
     sourcemap: process.env.NODE_ENV === 'development',
@@ -238,78 +213,18 @@ export default defineConfig({
           return `assets/[ext]/[name]-[hash].[ext]`;
         },
 
-        // Advanced manual chunking for optimal loading
-        manualChunks: (id) => {
-          // Core React ecosystem (most stable, cached longest)
-          if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-            return 'react-core';
-          }
-
-          // UI framework (Chakra UI ecosystem)
-          if (id.includes('@chakra-ui') || id.includes('@emotion')) {
-            return 'ui-framework';
-          }
-
-          // Animation and motion libraries
-          if (id.includes('framer-motion') || id.includes('popmotion')) {
-            return 'animation';
-          }
-
-          // Styling libraries
-          if (id.includes('styled-components') || id.includes('stylis')) {
-            return 'styling';
-          }
-
-          // State management
-          if (id.includes('zustand')) {
-            return 'state';
-          }
-
-          // Firebase services (keep together for optimal loading)
-          if (id.includes('firebase') || id.includes('@firebase')) {
-            return 'firebase';
-          }
-
-          // Icon libraries (separate for better caching)
-          if (id.includes('react-icons') || id.includes('@heroicons')) {
-            return 'icons';
-          }
-
-          // Markdown and text processing
-          if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark')) {
-            return 'markdown';
-          }
-
-          // Router
-          if (id.includes('react-router')) {
-            return 'router';
-          }
-
-          // HTTP and networking
-          if (id.includes('axios') || id.includes('whatwg-fetch')) {
-            return 'http';
-          }
-
-          // Utilities and helpers
-          if (id.includes('date-fns') || id.includes('nanoid') || id.includes('lodash')) {
-            return 'utils';
-          }
-
-          // Node modules that don't fit other categories
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
+        // Disable manual chunking to prevent initialization issues
+        // manualChunks: undefined,
       },
 
       // Optimize external dependencies
       external: [],
 
-      // Tree shaking optimizations
+      // Conservative tree shaking to prevent initialization issues
       treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
+        moduleSideEffects: true, // Keep side effects to prevent initialization issues
+        propertyReadSideEffects: true, // Keep property reads safe
+        tryCatchDeoptimization: true, // Keep try-catch safe
       },
     },
 
