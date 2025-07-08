@@ -85,11 +85,19 @@ function RouteErrorBoundary() {
 // Setup cache management before rendering
 const cleanupCacheManagement = setupCacheManagement();
 
-// Initialize resource preloading for optimal performance
-initializeResourcePreloading();
+// Initialize resource preloading for optimal performance (with error handling)
+try {
+  initializeResourcePreloading();
+} catch (error) {
+  console.warn('Resource preloading failed:', error);
+}
 
-// Preload critical Firebase services
-preloadCriticalServices();
+// Preload critical Firebase services (with error handling)
+try {
+  preloadCriticalServices();
+} catch (error) {
+  console.warn('Firebase preloading failed:', error);
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

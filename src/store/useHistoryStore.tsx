@@ -5,23 +5,23 @@
  * Provides functionality to save, load, edit, and delete chat sessions.
  */
 
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { nanoid } from 'nanoid';
-import { auth, db } from '../firebase';
 import {
-  collection,
-  doc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  serverTimestamp,
-  type Timestamp
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    serverTimestamp,
+    updateDoc,
+    type Timestamp
 } from 'firebase/firestore';
+import { nanoid } from 'nanoid';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { auth, db } from '../firebase';
 import { handleSilentError } from '../utils/errorHandler';
 import type { Message } from './useChatStore';
 
@@ -55,7 +55,7 @@ interface HistoryState {
   
   // Actions
   saveSession: (messages: Message[], customTitle?: string) => Promise<string>;
-  loadSession: (sessionId: string) => Promise<Message[]>;
+  loadSession: (sessionId: string) => Promise<{ success: boolean; session: any }>;
   updateSessionTitle: (sessionId: string, newTitle: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   loadAllSessions: () => Promise<void>;
@@ -175,16 +175,15 @@ export const useHistoryStore = create<HistoryState>()(
           throw new Error('Session not found');
         }
 
-        // Import chat store dynamically to avoid circular dependency
-        const { useChatStore } = await import('./useChatStore');
-
-        // Load messages into chat store with new session ID
-        useChatStore.setState({
-          messages: session.messages,
-          sessionId: crypto.randomUUID() // Generate new session ID for loaded chat
-        });
-
-        return session.messages;
+        // Return session data for external handling to avoid circular dependency
+        // The calling component should handle loading into chat store
+        return {
+          success: true,
+          session: {
+            ...session,
+            newSessionId: crypto.randomUUID() // Generate new session ID for loaded chat
+          }
+        };
       },
 
       updateSessionTitle: async (sessionId: string, newTitle: string) => {

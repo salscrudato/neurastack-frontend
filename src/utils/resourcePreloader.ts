@@ -54,23 +54,27 @@ class ResourcePreloader {
         return this.loadingPromises.get(imageUrl) || Promise.resolve();
       }
 
-      const promise = new Promise<void>((resolve, reject) => {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = imageUrl;
-        
-        link.onload = () => {
+      const promise = new Promise<void>((resolve) => {
+        // Check if image exists before preloading
+        const img = new Image();
+        img.onload = () => {
+          // Only create preload link if image exists
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = imageUrl;
+          document.head.appendChild(link);
           this.preloadedResources.add(imageUrl);
           resolve();
         };
-        
-        link.onerror = () => {
-          console.warn(`Failed to preload image: ${imageUrl}`);
-          reject(new Error(`Failed to preload image: ${imageUrl}`));
+
+        img.onerror = () => {
+          console.warn(`Image not found, skipping preload: ${imageUrl}`);
+          // Don't reject, just resolve to continue with other images
+          resolve();
         };
-        
-        document.head.appendChild(link);
+
+        img.src = imageUrl;
       });
 
       this.loadingPromises.set(imageUrl, promise);
@@ -202,12 +206,11 @@ export const resourcePreloader = new ResourcePreloader();
  */
 export const defaultPreloadConfig: PreloadConfig = {
   fonts: [
-    // Add Google Fonts or custom fonts here
+    // System fonts don't need preloading
   ],
   criticalImages: [
-    '/icons/neurastack-192.png',
-    '/icons/neurastack-512.png',
-    '/logo.svg'
+    // Only preload images that definitely exist
+    // Icons will be checked for existence before preloading
   ],
   criticalScripts: [
     // Critical JavaScript modules will be auto-detected by Vite

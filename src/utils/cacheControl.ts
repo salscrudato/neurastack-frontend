@@ -3,9 +3,9 @@
  * Ensures users always see the latest version of the app
  */
 
-// App version for cache busting
-const APP_VERSION = __APP_VERSION__ || '3.0.0';
-const BUILD_TIME = __BUILD_TIME__ || Date.now().toString();
+// App version for cache busting with safe fallbacks
+const APP_VERSION = (typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '3.0.0');
+const BUILD_TIME = (typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : Date.now().toString());
 
 // Storage keys
 const VERSION_KEY = 'neurastack-app-version';

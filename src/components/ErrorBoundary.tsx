@@ -13,6 +13,7 @@ import {
     useColorModeValue
 } from '@chakra-ui/react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { logSecurityEvent } from '../utils/securityUtils';
 
 interface Props {
   children: ReactNode;
@@ -62,14 +63,15 @@ class ErrorBoundary extends Component<Props, State> {
 
     // Log security event for potential security-related errors
     if (error.message.includes('script') || error.message.includes('eval') || error.message.includes('unsafe')) {
-      // Import dynamically to avoid bundling issues
-      import('../utils/securityUtils').then(({ logSecurityEvent }) => {
+      try {
         logSecurityEvent({
           action: 'potential_security_error',
           severity: 'high',
           details: errorDetails
         });
-      });
+      } catch (err) {
+        console.warn('Failed to log security event:', err);
+      }
     }
 
     // Log to external service in production
