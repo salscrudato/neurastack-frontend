@@ -51,19 +51,8 @@ interface EnsembleInfoModalProps {
 }
 
 // ============================================================================
-// Helper Functions
+// Helper Functions (defined inside component for proper scope)
 // ============================================================================
-
-const formatPercentage = (value: number): string => {
-    return `${Math.round(value * 100)}%`;
-};
-
-const getConfidenceColor = (confidence: number): string => {
-    if (confidence > 0.8) return "#10B981"; // Green
-    if (confidence > 0.6) return "#F59E0B"; // Amber
-    if (confidence > 0.4) return "#EF4444"; // Red
-    return "#DC2626"; // Dark Red
-};
 
 
 
@@ -88,6 +77,44 @@ export function EnsembleInfoModal({
     const modalBg = '#FFFFFF';
     const textColor = '#1E293B';
     const mutedColor = '#64748B';
+
+    // Helper function to get confidence color
+    const getConfidenceColor = (confidence: number) => {
+        if (confidence >= 0.8) return "#10B981"; // Green
+        if (confidence >= 0.6) return "#F59E0B"; // Yellow
+        return "#EF4444"; // Red
+    };
+
+    // Helper function to format percentage
+    const formatPercentage = (value: number) => {
+        return `${Math.round(value * 100)}%`;
+    };
+
+    // Helper function to get consensus strength color and description
+    const getConsensusInfo = (strength: string) => {
+        switch (strength) {
+            case 'very-strong':
+                return { color: '#10B981', description: 'Very Strong', icon: PiCheckCircleBold };
+            case 'strong':
+                return { color: '#059669', description: 'Strong', icon: PiCheckCircleBold };
+            case 'moderate':
+                return { color: '#F59E0B', description: 'Moderate', icon: PiScalesBold };
+            case 'weak':
+                return { color: '#F97316', description: 'Weak', icon: PiWarningCircleBold };
+            case 'very-weak':
+                return { color: '#EF4444', description: 'Very Weak', icon: PiWarningCircleBold };
+            default:
+                return { color: '#6B7280', description: 'Unknown', icon: PiScalesBold };
+        }
+    };
+
+    // Helper function to format entropy (0-1 scale, higher = more distributed)
+    const getEntropyDescription = (entropy: number) => {
+        if (entropy >= 0.8) return { level: 'High Diversity', color: '#8B5CF6' };
+        if (entropy >= 0.6) return { level: 'Moderate Diversity', color: '#F59E0B' };
+        if (entropy >= 0.4) return { level: 'Low Diversity', color: '#10B981' };
+        return { level: 'Very Low Diversity', color: '#6B7280' };
+    };
 
     // Debug: Log the ensemble data structure
     if (import.meta.env.DEV && ensembleData && isOpen) {
@@ -114,6 +141,7 @@ export function EnsembleInfoModal({
     const metadata = ensembleData || {};
     const roles = Array.isArray(ensembleData?.roles) ? ensembleData.roles : [];
     const confidenceAnalysis = ensembleData?.confidenceAnalysis || {};
+    const votingAnalysis = confidenceAnalysis?.votingAnalysis || {};
 
     // Extract metrics with proper fallbacks and type safety
     const successfulModels = roles.filter((role: any) => role?.status === 'fulfilled').length;
@@ -151,6 +179,17 @@ export function EnsembleInfoModal({
         averageScore: 0,
         totalResponses: totalModels
     };
+
+    // Voting analysis metrics
+    const consensusStrength = votingAnalysis?.consensusStrength || 'unknown';
+    const winnerMargin = Math.round((votingAnalysis?.winnerMargin || 0) * 100);
+    const distributionEntropy = votingAnalysis?.distributionEntropy || 0;
+
+    // Synthesis metadata
+    const synthesisMetadata = synthesis?.metadata || {};
+    const basedOnResponses = synthesisMetadata?.basedOnResponses || totalModels;
+    const averageConfidence = Math.round((synthesisMetadata?.averageConfidence || 0) * 100);
+    const consensusLevel = synthesisMetadata?.consensusLevel || 'unknown';
 
     // Success rate with safe calculation
     const successRate = totalModels > 0 ? Math.round((successfulModels / totalModels) * 100) : 0;
@@ -344,6 +383,117 @@ export function EnsembleInfoModal({
                             </Tooltip>
                         </SimpleGrid>
 
+                        {/* Consensus & Voting Analysis */}
+                        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                            {/* Consensus Strength */}
+                            <Tooltip label="How strongly the AI models agree on the response approach and content">
+                                <Box
+                                    bg="white"
+                                    borderRadius="xl"
+                                    p={4}
+                                    border="1px solid"
+                                    borderColor="rgba(226, 232, 240, 0.6)"
+                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    textAlign="center"
+                                    cursor="help"
+                                    _hover={{
+                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
+                                        transform: "translateY(-2px)"
+                                    }}
+                                    transition="all 0.2s ease"
+                                >
+                                    <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={5} color={getConsensusInfo(consensusStrength).color} mb={2} />
+                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                        {getConsensusInfo(consensusStrength).description}
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
+                                        Consensus
+                                    </Text>
+                                </Box>
+                            </Tooltip>
+
+                            {/* Winner Margin */}
+                            <Tooltip label="How decisively the winning model outperformed others in voting">
+                                <Box
+                                    bg="white"
+                                    borderRadius="xl"
+                                    p={4}
+                                    border="1px solid"
+                                    borderColor="rgba(226, 232, 240, 0.6)"
+                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    textAlign="center"
+                                    cursor="help"
+                                    _hover={{
+                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
+                                        transform: "translateY(-2px)"
+                                    }}
+                                    transition="all 0.2s ease"
+                                >
+                                    <Icon as={PiChartBarBold} boxSize={5} color={getConfidenceColor(winnerMargin / 100)} mb={2} />
+                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                        {winnerMargin}%
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
+                                        Win Margin
+                                    </Text>
+                                </Box>
+                            </Tooltip>
+
+                            {/* Response Diversity */}
+                            <Tooltip label="How diverse the AI model responses were (higher = more varied approaches)">
+                                <Box
+                                    bg="white"
+                                    borderRadius="xl"
+                                    p={4}
+                                    border="1px solid"
+                                    borderColor="rgba(226, 232, 240, 0.6)"
+                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    textAlign="center"
+                                    cursor="help"
+                                    _hover={{
+                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
+                                        transform: "translateY(-2px)"
+                                    }}
+                                    transition="all 0.2s ease"
+                                >
+                                    <Icon as={PiBrainBold} boxSize={5} color={getEntropyDescription(distributionEntropy).color} mb={2} />
+                                    <Text fontSize="sm" fontWeight="bold" color={textColor}>
+                                        {getEntropyDescription(distributionEntropy).level}
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
+                                        Diversity
+                                    </Text>
+                                </Box>
+                            </Tooltip>
+
+                            {/* Average Model Confidence */}
+                            <Tooltip label="Average confidence score across all contributing AI models">
+                                <Box
+                                    bg="white"
+                                    borderRadius="xl"
+                                    p={4}
+                                    border="1px solid"
+                                    borderColor="rgba(226, 232, 240, 0.6)"
+                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    textAlign="center"
+                                    cursor="help"
+                                    _hover={{
+                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
+                                        transform: "translateY(-2px)"
+                                    }}
+                                    transition="all 0.2s ease"
+                                >
+                                    <Icon as={PiShieldCheckBold} boxSize={5} color={getConfidenceColor(averageConfidence / 100)} mb={2} />
+                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                        {averageConfidence}%
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
+                                        Avg Confidence
+                                    </Text>
+                                </Box>
+                            </Tooltip>
+                        </SimpleGrid>
+
                         {/* Advanced Analytics Section */}
                         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
                             {/* Winning Model Analysis */}
@@ -441,30 +591,73 @@ export function EnsembleInfoModal({
                                         <Text fontSize="sm" fontWeight="600" color={textColor} mb={3}>
                                             Response Quality Distribution
                                         </Text>
-                                        <SimpleGrid columns={2} spacing={4}>
+                                        <SimpleGrid columns={4} spacing={3}>
                                             <Box textAlign="center" p={3} bg="green.50" borderRadius="lg" border="1px solid" borderColor="green.200">
-                                                <Text fontSize="2xl" fontWeight="bold" color="#10B981">
+                                                <Text fontSize="xl" fontWeight="bold" color="#10B981">
                                                     {qualityDistribution.high}
                                                 </Text>
-                                                <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                    High Quality
+                                                <Text fontSize="xs" fontWeight="600" color={textColor}>
+                                                    High
                                                 </Text>
                                                 <Text fontSize="xs" color={mutedColor}>
-                                                    Score &gt; 80%
+                                                    &gt;80%
                                                 </Text>
                                             </Box>
                                             <Box textAlign="center" p={3} bg="yellow.50" borderRadius="lg" border="1px solid" borderColor="yellow.200">
-                                                <Text fontSize="2xl" fontWeight="bold" color="#F59E0B">
-                                                    {qualityDistribution.medium + qualityDistribution.low + qualityDistribution.veryLow}
+                                                <Text fontSize="xl" fontWeight="bold" color="#F59E0B">
+                                                    {qualityDistribution.medium}
                                                 </Text>
-                                                <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                    Med/Low Quality
+                                                <Text fontSize="xs" fontWeight="600" color={textColor}>
+                                                    Medium
                                                 </Text>
                                                 <Text fontSize="xs" color={mutedColor}>
-                                                    Score ≤ 80%
+                                                    60-80%
+                                                </Text>
+                                            </Box>
+                                            <Box textAlign="center" p={3} bg="orange.50" borderRadius="lg" border="1px solid" borderColor="orange.200">
+                                                <Text fontSize="xl" fontWeight="bold" color="#F97316">
+                                                    {qualityDistribution.low}
+                                                </Text>
+                                                <Text fontSize="xs" fontWeight="600" color={textColor}>
+                                                    Low
+                                                </Text>
+                                                <Text fontSize="xs" color={mutedColor}>
+                                                    40-60%
+                                                </Text>
+                                            </Box>
+                                            <Box textAlign="center" p={3} bg="red.50" borderRadius="lg" border="1px solid" borderColor="red.200">
+                                                <Text fontSize="xl" fontWeight="bold" color="#EF4444">
+                                                    {qualityDistribution.veryLow}
+                                                </Text>
+                                                <Text fontSize="xs" fontWeight="600" color={textColor}>
+                                                    Very Low
+                                                </Text>
+                                                <Text fontSize="xs" color={mutedColor}>
+                                                    &lt;40%
                                                 </Text>
                                             </Box>
                                         </SimpleGrid>
+
+                                        {/* Quality Score Range */}
+                                        <Box mt={4} p={3} bg="gray.50" borderRadius="lg">
+                                            <HStack justify="space-between" mb={2}>
+                                                <Text fontSize="sm" fontWeight="600" color={textColor}>
+                                                    Quality Score Range
+                                                </Text>
+                                                <Badge colorScheme="blue" variant="subtle">
+                                                    {Math.round((qualityDistribution.scoreRange?.min || 0) * 100)}% - {Math.round((qualityDistribution.scoreRange?.max || 0) * 100)}%
+                                                </Badge>
+                                            </HStack>
+                                            <Progress
+                                                value={Math.round((qualityDistribution.averageScore || 0) * 100)}
+                                                colorScheme={qualityDistribution.averageScore >= 0.8 ? "green" : qualityDistribution.averageScore >= 0.6 ? "yellow" : "red"}
+                                                size="sm"
+                                                borderRadius="full"
+                                            />
+                                            <Text fontSize="xs" color={mutedColor} mt={1}>
+                                                Average: {Math.round((qualityDistribution.averageScore || 0) * 100)}%
+                                            </Text>
+                                        </Box>
                                     </Box>
 
                                     {/* Response Consistency Metrics */}
@@ -510,7 +703,72 @@ export function EnsembleInfoModal({
                             </Box>
                         </SimpleGrid>
 
+                        {/* Synthesis Insights */}
+                        <Box
+                            bg="white"
+                            borderRadius="xl"
+                            p={6}
+                            border="1px solid"
+                            borderColor="rgba(226, 232, 240, 0.6)"
+                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                        >
+                            <HStack spacing={3} mb={4}>
+                                <Icon as={PiBrainBold} boxSize={6} color="#6366F1" />
+                                <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                    Synthesis Intelligence
+                                </Text>
+                            </HStack>
 
+                            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                                <Box textAlign="center" p={4} bg="blue.50" borderRadius="lg">
+                                    <Text fontSize="xl" fontWeight="bold" color="#4F9CF9">
+                                        {basedOnResponses}
+                                    </Text>
+                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
+                                        Models Used
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        Contributing
+                                    </Text>
+                                </Box>
+
+                                <Box textAlign="center" p={4} bg="purple.50" borderRadius="lg">
+                                    <Text fontSize="xl" fontWeight="bold" color="#8B5CF6">
+                                        {synthesis?.synthesisStrategy?.toUpperCase() || 'UNKNOWN'}
+                                    </Text>
+                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
+                                        Strategy
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        Synthesis
+                                    </Text>
+                                </Box>
+
+                                <Box textAlign="center" p={4} bg="green.50" borderRadius="lg">
+                                    <Text fontSize="xl" fontWeight="bold" color="#10B981">
+                                        {Math.round((synthesis?.qualityScore || 0) * 100)}%
+                                    </Text>
+                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
+                                        Quality
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        Synthesis
+                                    </Text>
+                                </Box>
+
+                                <Box textAlign="center" p={4} bg="orange.50" borderRadius="lg">
+                                    <Badge colorScheme={consensusLevel === 'high' ? 'green' : consensusLevel === 'medium' ? 'yellow' : 'red'} variant="solid">
+                                        {consensusLevel.toUpperCase()}
+                                    </Badge>
+                                    <Text fontSize="sm" fontWeight="600" color={textColor} mt={1}>
+                                        Consensus
+                                    </Text>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        Level
+                                    </Text>
+                                </Box>
+                            </SimpleGrid>
+                        </Box>
 
                         {/* Actionable Insights & Recommendations */}
                         {voting.recommendation && (

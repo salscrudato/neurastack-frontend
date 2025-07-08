@@ -40,14 +40,8 @@ export const useUpdateManager = () => {
     },
     onOfflineReady() {
       console.log('📱 App ready to work offline');
-      toast({
-        title: 'Ready for Offline Use',
-        description: 'App cached and ready to work offline.',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-        position: 'bottom-right'
-      });
+      // Note: Visual notification is handled by UpdateNotification component
+      // This toast is disabled to prevent duplicate notifications
     },
   });
 

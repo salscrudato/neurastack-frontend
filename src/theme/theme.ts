@@ -117,8 +117,9 @@ const theme = extendTheme(
       borderStrong: modernColors.border.strong,
     },
     fonts: {
-      heading: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
-      body: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
+      heading: "'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+      body: "'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+      mono: "'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace",
     },
     fontSizes: {
       xs: "0.75rem",    // 12px
@@ -146,9 +147,13 @@ const theme = extendTheme(
         "html, body": {
           bg: modernColors.bg,
           color: modernColors.text.primary,
-          fontFeatureSettings: '"cv02", "cv03", "cv04", "cv11"',
-          fontVariantNumeric: "oldstyle-nums",
+          fontFeatureSettings: '"cv02", "cv03", "cv04", "cv11", "ss01", "ss02"',
+          fontVariantNumeric: "proportional-nums",
+          letterSpacing: "-0.009em",
           lineHeight: "base",
+          textRendering: "optimizeLegibility",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
         },
         "*, *::before, *::after": {
           borderColor: modernColors.border.light,

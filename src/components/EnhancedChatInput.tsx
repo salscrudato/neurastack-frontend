@@ -1,13 +1,13 @@
 import {
-  Box,
-  IconButton,
-  InputGroup,
-  InputRightElement,
-  Textarea,
-  useToast,
-  Progress,
-  Text,
-  Tooltip,
+    Box,
+    IconButton,
+    InputGroup,
+    InputRightElement,
+    Progress,
+    Text,
+    Textarea,
+    Tooltip,
+    useToast,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -330,6 +330,7 @@ export default function EnhancedChatInput() {
         <InputGroup size="lg" position="relative">
           <Textarea
             ref={textareaRef}
+            className="chat-input-modern"
             value={txt}
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
@@ -352,6 +353,9 @@ export default function EnhancedChatInput() {
             bg="rgba(255, 255, 255, 0.95)"
             backdropFilter="blur(8px)"
             transition="all 0.2s ease"
+            fontFamily="'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif"
+            fontWeight="450"
+            letterSpacing="-0.011em"
             _hover={{
               borderColor: isFocused ? "#4F9CF9" : "rgba(79, 156, 249, 0.3)",
               transform: "translateY(-1px)",
@@ -362,11 +366,19 @@ export default function EnhancedChatInput() {
               boxShadow: "0 0 0 1px #4F9CF9, 0 8px 24px rgba(79, 156, 249, 0.15)",
               transform: "translateY(-2px)",
             }}
+            _placeholder={{
+              fontFamily: "'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+              fontWeight: "400",
+              letterSpacing: "-0.008em",
+              opacity: 0.7,
+            }}
             _disabled={{
               opacity: 0.6,
               cursor: 'not-allowed',
             }}
             sx={{
+              // Enhanced typography features
+              fontFeatureSettings: "'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss02'",
               '&::-webkit-scrollbar': {
                 display: 'none',
               },

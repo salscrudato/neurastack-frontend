@@ -455,6 +455,7 @@ export default function ChatInput() {
             ref={textareaRef}
             flex={1}
             variant="unstyled"
+            className="chat-input-modern"
             placeholder={placeholderSuggestions[currentPlaceholderIndex]}
             value={txt}
             onChange={(e) => {
@@ -500,6 +501,9 @@ export default function ChatInput() {
               color: colorSystem.text.placeholder,
               transition: animationConfig.transition,
               fontSize: inputConfig.fontSize,
+              fontWeight: "400", // Lighter weight for placeholder
+              fontFamily: "'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif",
+              letterSpacing: "-0.008em", // Slightly less letter spacing for placeholder
               opacity: isFocused ? 0.5 : 0.7,
               transform: isFocused ? 'translateY(-1px)' : 'none'
             }}
@@ -523,6 +527,8 @@ export default function ChatInput() {
             sx={{
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent',
+              // Enhanced typography features
+              fontFeatureSettings: "'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss02'",
               // Prevent zoom on iOS
               '@media (max-width: 768px)': {
                 fontSize: '16px !important',
@@ -543,7 +549,9 @@ export default function ChatInput() {
             pl={{ base: "1rem", md: "1.5rem" }} // Consistent left padding
             py={{ base: "0.875rem", md: "1.25rem" }} // Consistent vertical padding
             fontSize={inputConfig.fontSize}
-            fontWeight="400"
+            fontWeight="450" // Slightly heavier for better readability
+            fontFamily="'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif"
+            letterSpacing="-0.011em" // Improved letter spacing for modern look
           />
 
           <InputRightElement
