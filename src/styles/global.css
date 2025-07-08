@@ -482,10 +482,25 @@ select {
     min-height: 44px;
   }
 
-  /* Better keyboard handling */
+  /* Enhanced keyboard handling for mobile */
   .keyboard-visible {
     height: 100vh;
     height: 100dvh; /* Dynamic viewport height for better keyboard handling */
+  }
+
+  /* Ensure fixed elements stay in position during keyboard transitions */
+  .keyboard-visible header[role="banner"] {
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 10000 !important;
+  }
+
+  /* Enhanced input positioning during keyboard visibility */
+  .keyboard-visible [data-chat-input] {
+    position: fixed !important;
+    bottom: 0 !important;
+    z-index: 9999 !important;
+    transform: translateZ(0);
   }
 
   /* Keyboard handling */

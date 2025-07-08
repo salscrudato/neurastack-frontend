@@ -246,15 +246,23 @@ export function Header() {
         WebkitTapHighlightColor: 'transparent',
         // Enhanced glass shadow
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)',
-        // Mobile optimizations - ensure header stays visible
+        // Mobile optimizations - ensure header stays fixed at top
         '@media (max-width: 768px)': {
-          position: 'fixed',
+          position: 'fixed !important',
+          top: '0 !important',
+          left: '0 !important',
+          right: '0 !important',
           borderBottom: '1px solid rgba(79, 156, 249, 0.08)',
           backdropFilter: 'blur(24px)',
-          // Ensure header is always on top
-          zIndex: 9999,
-          // Add safe area support
+          // Ensure header is always on top above everything
+          zIndex: 10000,
+          // Add safe area support for devices with notches
           paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingLeft: 'env(safe-area-inset-left, 0px)',
+          paddingRight: 'env(safe-area-inset-right, 0px)',
+          // Prevent any layout shifts
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
         }
       }}
     >

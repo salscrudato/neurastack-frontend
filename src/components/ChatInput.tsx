@@ -185,50 +185,84 @@ export default function ChatInput() {
     setIsFocused(true);
     handleAutoResize();
 
-    // Enhanced mobile keyboard handling
+    // Enhanced mobile keyboard handling with visual viewport support
     if (isMobile) {
       // Add keyboard-visible class for CSS adjustments
       document.body.classList.add('keyboard-visible');
 
-      // Improved viewport adjustment for keyboard
-      setTimeout(() => {
-        if (textareaRef.current) {
-          // Better positioning for mobile keyboards
+      // Enhanced keyboard positioning with visual viewport API
+      const handleKeyboardPosition = () => {
+        if (!textareaRef.current || !containerRef.current) return;
+
+        // Use visual viewport API for better keyboard detection
+        if (window.visualViewport) {
+          const viewport = window.visualViewport;
+          const keyboardHeight = window.innerHeight - viewport.height;
+
+          if (keyboardHeight > 150) { // Keyboard is visible
+            // Position input above keyboard
+            const inputContainer = containerRef.current;
+            inputContainer.style.transform = `translateY(-${keyboardHeight}px)`;
+            inputContainer.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+          }
+        } else {
+          // Fallback for browsers without visual viewport API
           textareaRef.current.scrollIntoView({
             behavior: 'smooth',
             block: 'end',
             inline: 'nearest'
           });
-
-          // Additional adjustment for visual viewport if available
-          if (window.visualViewport) {
-            const inputRect = textareaRef.current.getBoundingClientRect();
-            const viewportHeight = window.visualViewport.height;
-
-            if (inputRect.bottom > viewportHeight * 0.7) {
-              window.scrollBy({
-                top: inputRect.bottom - (viewportHeight * 0.6),
-                behavior: 'smooth'
-              });
-            }
-          }
         }
-      }, 300); // Delay to allow keyboard animation
+      };
+
+      // Immediate positioning
+      handleKeyboardPosition();
+
+      // Listen for viewport changes
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleKeyboardPosition);
+
+        // Cleanup listener on blur
+        const cleanup = () => {
+          window.visualViewport?.removeEventListener('resize', handleKeyboardPosition);
+        };
+
+        // Store cleanup function for blur handler
+        (textareaRef.current as any)._keyboardCleanup = cleanup;
+      }
+
+      // Delay for additional adjustments
+      setTimeout(handleKeyboardPosition, 300);
     }
   }, [handleAutoResize, isMobile]);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
 
-    // Enhanced mobile blur handling
+    // Enhanced mobile blur handling with keyboard cleanup
     if (isMobile) {
       // Remove keyboard-visible class
       document.body.classList.remove('keyboard-visible');
 
+      // Reset input container position
+      if (containerRef.current) {
+        containerRef.current.style.transform = 'translateY(0)';
+        containerRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+      }
+
+      // Clean up visual viewport listener
+      const cleanup = (textareaRef.current as any)?._keyboardCleanup;
+      if (cleanup) {
+        cleanup();
+        delete (textareaRef.current as any)._keyboardCleanup;
+      }
+
       // Small delay to prevent layout jump
       setTimeout(() => {
-        // Reset any scroll adjustments if needed
-      }, 100);
+        if (containerRef.current) {
+          containerRef.current.style.transition = '';
+        }
+      }, 300);
     }
   }, [isMobile]);
 
@@ -407,6 +441,7 @@ export default function ChatInput() {
   return (
     <Box
       ref={containerRef}
+      data-chat-input
       w="full"
       bg="transparent" // Remove white background
       borderTopWidth="0"
@@ -423,20 +458,29 @@ export default function ChatInput() {
         // Performance optimizations
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
-        // Optimized mobile input for native app feeling
+        // Enhanced mobile input positioning for keyboard handling
         '@media (max-width: 768px)': {
-          paddingX: 2, // Reduced padding to minimize white space
-          paddingY: 0, // No vertical padding to eliminate extra space
-          position: 'fixed', // Fixed positioning for better mobile behavior
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)', // Reduced
-          // Allow expansion for 3 lines of text
-          maxHeight: '120px', // Reduced to minimize blocking
-          zIndex: 1000, // Ensure it stays above content
-          // Transparent background to not block content
-          background: 'transparent',
+          paddingX: 2,
+          paddingY: 1,
+          position: 'fixed !important',
+          bottom: '0 !important',
+          left: '0 !important',
+          right: '0 !important',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
+          maxHeight: '120px',
+          zIndex: 9999, // Ensure it stays above content but below header
+          // Enhanced background for better visibility
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(79, 156, 249, 0.08)',
+          // Hardware acceleration for smooth keyboard transitions
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
+          // Smooth transitions for keyboard show/hide
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         },
         // Desktop optimization with centered container and clean styling
         '@media (min-width: 769px)': {

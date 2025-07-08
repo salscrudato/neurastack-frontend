@@ -221,10 +221,14 @@ export function ChatPage() {
         overflowX: "hidden",
         WebkitOverflowScrolling: "touch",
         "@media (max-width: 768px)": {
-          height: "calc(100vh - env(safe-area-inset-top) - 60px)",
-          minHeight: "calc(100vh - env(safe-area-inset-top) - 60px)",
-          maxHeight: "calc(100vh - env(safe-area-inset-top) - 60px)",
-          paddingBottom: "calc(100px + env(safe-area-inset-bottom))",
+          // Account for fixed header height with safe area
+          height: "calc(100vh - env(safe-area-inset-top, 0px) - 56px)",
+          minHeight: "calc(100vh - env(safe-area-inset-top, 0px) - 56px)",
+          maxHeight: "calc(100vh - env(safe-area-inset-top, 0px) - 56px)",
+          // Account for fixed input with safe area
+          paddingBottom: "calc(120px + env(safe-area-inset-bottom, 0px))",
+          // Add top padding to account for fixed header
+          paddingTop: "calc(env(safe-area-inset-top, 0px) + 56px)",
           overflowY: "auto",
           overscrollBehavior: "contain",
           // Enhanced mobile scrolling
@@ -232,6 +236,8 @@ export function ChatPage() {
           scrollBehavior: "smooth",
           // Prevent content from jumping during keyboard show/hide
           position: "relative",
+          // Ensure content doesn't go behind fixed elements
+          zIndex: 1,
         },
         "@media (min-width: 769px)": {
           height: "calc(100vh - 64px)",
@@ -303,13 +309,17 @@ export function ChatPage() {
             paddingX: "clamp(0.5rem, 2vw, 1rem)",
             paddingY: "clamp(0.5rem, 2vw, 1rem)",
             paddingBottom: "clamp(0.5rem, 2vw, 1rem)",
-            maxHeight: "calc(100vh - clamp(52px, 12vw, 56px) - clamp(80px, 20vw, 100px))",
+            // Account for fixed header (56px + safe area) and fixed input (120px + safe area)
+            maxHeight: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
             scrollBehavior: "smooth",
             scrollSnapType: "y proximity",
             touchAction: "pan-y",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             "&::-webkit-scrollbar": { display: "none" },
+            // Ensure proper spacing from fixed elements
+            marginTop: 0,
+            marginBottom: 0,
           },
           "@media (min-width: 769px)": {
             maxHeight: "calc(100vh - 64px - clamp(120px, 15vw, 140px))",
