@@ -37,7 +37,7 @@ import {
     PiTimerBold,
     PiWarningBold
 } from 'react-icons/pi';
-import { useMobileOptimization } from '../../hooks/useMobileOptimization';
+import { useOptimizedDevice } from '../../hooks/core/useOptimizedDevice';
 import type { WorkoutPlan, WorkoutSession } from '../../lib/types';
 
 // Import components
@@ -55,7 +55,13 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   onComplete,
   onExit
 }: EnhancedWorkoutExecutionProps) {
-  const { isMobile, triggerHaptic, workoutConfig } = useMobileOptimization();
+  const { capabilities, triggerHaptic } = useOptimizedDevice();
+
+  // Workout configuration for mobile optimization
+  const workoutConfig = {
+    preventSleep: () => Promise.resolve(), // Mock implementation
+  };
+  const { isMobile } = capabilities;
   // Voice coaching integration - temporarily disabled
   const speakExerciseInstructions = () => {};
   const speakMotivation = () => {};
@@ -182,7 +188,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
               setIsResting(false);
               setRestTimer(0);
               setIsRestPaused(false);
-              triggerHaptic('success');
+              triggerHaptic('SUCCESS');
 
               // Voice coaching for rest period end
               if (isVoiceEnabled) {
@@ -262,7 +268,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
     setIsActive(true);
     setIsPaused(false);
     setExerciseTimer(0);
-    triggerHaptic('success');
+    triggerHaptic('SUCCESS');
 
     // Prevent screen sleep
     if (isMobile && workoutConfig.preventSleep) {
@@ -289,10 +295,10 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   const togglePause = useCallback(() => {
     if (isPaused) {
       setIsPaused(false);
-      triggerHaptic('light');
+      triggerHaptic('LIGHT');
     } else {
       setIsPaused(true);
-      triggerHaptic('medium');
+      triggerHaptic('MEDIUM');
     }
   }, [isPaused, triggerHaptic]);
 
@@ -341,7 +347,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       }
     }
 
-    triggerHaptic('medium');
+    triggerHaptic('MEDIUM');
   }, [completedSets, currentSetIndex, currentExercise, triggerHaptic, isVoiceEnabled, speakSetComplete, speakMotivation, speakRestPeriod, setWeights, currentSetWeight]);
 
   // Complete exercise
@@ -404,7 +410,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
       }
 
       setShowPerformanceModal(false);
-      triggerHaptic('success');
+      triggerHaptic('SUCCESS');
     } catch (error) {
       console.error('Failed to complete exercise:', error);
       toast({
@@ -455,7 +461,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
         setExerciseTimer(0);
       }
 
-      triggerHaptic('light');
+      triggerHaptic('LIGHT');
     } catch (error) {
       console.error('Failed to skip exercise:', error);
     }
@@ -502,29 +508,29 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
   // Rest timer controls
   const pauseRestTimer = useCallback(() => {
     setIsRestPaused(true);
-    triggerHaptic('light');
+    triggerHaptic('LIGHT');
   }, [triggerHaptic]);
 
   const resumeRestTimer = useCallback(() => {
     setIsRestPaused(false);
-    triggerHaptic('light');
+    triggerHaptic('LIGHT');
   }, [triggerHaptic]);
 
   const skipRest = useCallback(() => {
     setIsResting(false);
     setRestTimer(0);
     setIsRestPaused(false);
-    triggerHaptic('medium');
+    triggerHaptic('MEDIUM');
   }, [triggerHaptic]);
 
   const addRestTime = useCallback((seconds: number) => {
     setRestTimer(prev => prev + seconds);
-    triggerHaptic('light');
+    triggerHaptic('LIGHT');
   }, [triggerHaptic]);
 
   const subtractRestTime = useCallback((seconds: number) => {
     setRestTimer(prev => Math.max(0, prev - seconds));
-    triggerHaptic('light');
+    triggerHaptic('LIGHT');
   }, [triggerHaptic]);
 
   // Format time display
@@ -879,7 +885,7 @@ const EnhancedWorkoutExecution = memo(function EnhancedWorkoutExecution({
                   weightHistory={currentExercise.weightHistory?.map(h => h.weights).flat() || []}
                   onWeightSuggestionSelect={(weight) => {
                     setCurrentSetWeight(weight);
-                    triggerHaptic('light');
+                    triggerHaptic('LIGHT');
                   }}
                 />
 

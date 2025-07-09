@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useMobileOptimization } from '../hooks/useMobileOptimization';
+import { useMobileOptimization } from '../utils/mobileOptimizations';
 
 interface VirtualChatListProps {
   /** Array of chat messages */
@@ -22,13 +22,15 @@ interface VirtualChatListProps {
 }
 
 /**
- * High-performance virtual scrolling component for chat messages
+ * Enhanced High-performance virtual scrolling component for chat messages
  * Features:
  * - Renders only visible items for optimal performance
  * - Smooth scrolling with momentum preservation
- * - Mobile-optimized touch interactions
- * - Dynamic item heights support
- * - Memory efficient with item recycling
+ * - Enhanced mobile-optimized touch interactions with haptic feedback
+ * - Dynamic item heights support with intelligent caching
+ * - Memory efficient with item recycling and cleanup
+ * - Keyboard-aware scrolling adjustments
+ * - Performance monitoring and optimization
  */
 export const VirtualChatList = memo<VirtualChatListProps>(({
   items,
@@ -151,7 +153,7 @@ export const VirtualChatList = memo<VirtualChatListProps>(({
   // Auto-scroll to bottom when new items are added
   useEffect(() => {
     const wasAtBottom = scrollTop + height >= totalHeight - 100; // 100px threshold
-    
+
     if (wasAtBottom && items.length > 0) {
       // Use requestAnimationFrame for smooth scrolling
       requestAnimationFrame(() => {
@@ -231,7 +233,7 @@ export const useVirtualChatList = () => {
         });
       }
     }, []),
-    
+
     scrollToIndex: useCallback((
       containerRef: React.RefObject<HTMLDivElement>,
       index: number,

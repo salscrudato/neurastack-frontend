@@ -79,6 +79,9 @@ export interface EnsembleOverviewData {
 }
 
 export interface UseModelResponsesResult {
+  /** All model responses */
+  modelResponses: ModelResponseData[];
+
   /** Currently selected model for modal display */
   selectedModel: ModelResponseData | null;
 
@@ -89,7 +92,7 @@ export interface UseModelResponsesResult {
   openModelModal: (model: ModelResponseData) => void;
 
   /** Close modal */
-  closeModal: () => void;
+  closeModelModal: () => void;
 
   /** Get all available model responses */
   getAvailableModels: () => ModelResponseData[];
@@ -288,10 +291,11 @@ export function useModelResponses(
   }), [currentIndex, availableModels.length]);
 
   return {
+    modelResponses: availableModels,
     selectedModel,
     isModalOpen,
     openModelModal,
-    closeModal,
+    closeModelModal: closeModal,
     getAvailableModels,
     nextModel,
     previousModel,

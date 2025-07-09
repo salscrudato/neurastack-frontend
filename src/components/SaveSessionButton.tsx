@@ -20,8 +20,8 @@ import {
 } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 import { PiCheckBold, PiFloppyDiskBold, PiTrashBold } from 'react-icons/pi';
-import { useChatStore } from '../store/useChatStore';
 import { useHistoryStore } from '../store/useHistoryStore';
+import { useChatStore } from '../stores/useChatStore';
 
 interface SaveSessionButtonProps {
   onSaved?: () => void;

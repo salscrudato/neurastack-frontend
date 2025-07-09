@@ -339,6 +339,167 @@ export class PerformanceMonitor {
 // Global performance monitor instance
 export const performanceMonitor = new PerformanceMonitor();
 
+// ============================================================================
+// Enhanced Mobile Performance Optimizations
+// ============================================================================
+
+export class MobilePerformanceOptimizer {
+  private static instance: MobilePerformanceOptimizer;
+  private isInitialized = false;
+
+  static getInstance(): MobilePerformanceOptimizer {
+    if (!MobilePerformanceOptimizer.instance) {
+      MobilePerformanceOptimizer.instance = new MobilePerformanceOptimizer();
+    }
+    return MobilePerformanceOptimizer.instance;
+  }
+
+  public initialize() {
+    if (this.isInitialized) return;
+
+    // Optimize viewport for mobile
+    this.optimizeViewport();
+
+    // Optimize touch interactions
+    this.optimizeTouchInteractions();
+
+    // Optimize scrolling performance
+    this.optimizeScrolling();
+
+    // Optimize font loading
+    this.optimizeFontLoading();
+
+    // Optimize image loading
+    this.optimizeImageLoading();
+
+    this.isInitialized = true;
+    console.log('🚀 Mobile performance optimizations initialized');
+  }
+
+  private optimizeViewport() {
+    // Prevent zoom on input focus (iOS)
+    const viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+    if (viewport) {
+      viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+    }
+
+    // Add safe area CSS variables
+    document.documentElement.style.setProperty('--safe-area-inset-top', 'env(safe-area-inset-top)');
+    document.documentElement.style.setProperty('--safe-area-inset-bottom', 'env(safe-area-inset-bottom)');
+    document.documentElement.style.setProperty('--safe-area-inset-left', 'env(safe-area-inset-left)');
+    document.documentElement.style.setProperty('--safe-area-inset-right', 'env(safe-area-inset-right)');
+  }
+
+  private optimizeTouchInteractions() {
+    // Optimize touch delay
+    document.addEventListener('touchstart', () => {}, { passive: true });
+
+    // Prevent 300ms click delay
+    const style = document.createElement('style');
+    style.textContent = `
+      * {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+
+      input, textarea, select {
+        touch-action: manipulation;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  private optimizeScrolling() {
+    // Enable momentum scrolling on iOS
+    const style = document.createElement('style');
+    style.textContent = `
+      * {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+
+      body {
+        overscroll-behavior-y: none;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  private optimizeFontLoading() {
+    // Preload critical fonts
+    const fontPreloads = [
+      'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
+    ];
+
+    fontPreloads.forEach(href => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'style';
+      link.href = href;
+      link.onload = () => {
+        link.rel = 'stylesheet';
+      };
+      document.head.appendChild(link);
+    });
+  }
+
+  private optimizeImageLoading() {
+    // Add intersection observer for lazy loading
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target as HTMLImageElement;
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+              imageObserver.unobserve(img);
+            }
+          }
+        });
+      }, {
+        rootMargin: '50px 0px',
+        threshold: 0.01
+      });
+
+      // Observe all images with data-src
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+      });
+    }
+  }
+
+  public optimizeComponent(element: HTMLElement) {
+    // Apply performance optimizations to specific components
+    element.style.contain = 'layout style paint';
+    element.style.willChange = 'auto';
+
+    // Optimize for GPU acceleration if needed
+    if (element.classList.contains('gpu-accelerated')) {
+      element.style.transform = 'translateZ(0)';
+      element.style.backfaceVisibility = 'hidden';
+    }
+  }
+
+  public measureTimeToInteractive(): Promise<number> {
+    return new Promise((resolve) => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          resolve(performance.now());
+        });
+      } else {
+        setTimeout(() => {
+          resolve(performance.now());
+        }, 0);
+      }
+    });
+  }
+}
+
+// Initialize mobile optimizations
+export const mobileOptimizer = MobilePerformanceOptimizer.getInstance();
+
 // React hook for performance monitoring
 export function usePerformanceMonitor(componentName: string) {
   const startTime = performance.now();

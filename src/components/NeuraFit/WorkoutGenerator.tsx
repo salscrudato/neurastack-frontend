@@ -27,7 +27,7 @@ import {
     PiTargetBold,
     PiTimerBold
 } from 'react-icons/pi';
-import { useMobileOptimization } from '../../hooks/useMobileOptimization';
+import { useOptimizedDevice } from '../../hooks/core/useOptimizedDevice';
 import { neuraStackClient } from '../../lib/neurastack-client';
 import type { Exercise, PersonalizationMetadata, WorkoutPlan, WorkoutUserMetadata } from '../../lib/types';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -58,7 +58,13 @@ interface WorkoutGeneratorProps {
 const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onBack }: WorkoutGeneratorProps) {
   const { profile, workoutPlans } = useFitnessStore();
   const { user } = useAuthStore();
-  const { isMobile, triggerHaptic, workoutConfig } = useMobileOptimization();
+  const { capabilities, triggerHaptic } = useOptimizedDevice();
+
+  // Workout configuration for mobile optimization
+  const workoutConfig = {
+    preventSleep: () => Promise.resolve(), // Mock implementation
+  };
+  const { isMobile } = capabilities;
   const toast = useToast();
 
   // Performance monitoring for workout generation
@@ -711,7 +717,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
         console.log(`Workout generated in ${endTime - startTime}ms`);
 
         // Trigger haptic feedback for successful generation
-        triggerHaptic('success');
+        triggerHaptic('SUCCESS');
 
         toast({
           title: 'Workout Generated!',
@@ -969,7 +975,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     initializeWeightTracking();
 
     // Trigger haptic feedback for workout start
-    triggerHaptic('success');
+    triggerHaptic('SUCCESS');
 
     // Prevent screen sleep during workout
     if (isMobile && workoutConfig.preventSleep) {
@@ -995,7 +1001,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
     setCompletedExercises(newCompleted);
 
     // Trigger haptic feedback for exercise completion
-    triggerHaptic('medium');
+    triggerHaptic('MEDIUM');
 
     if (currentExerciseIndex < currentWorkout.exercises.length - 1) {
       // Start rest period
@@ -1007,7 +1013,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
       setExerciseTimer(0);
     } else {
       // Workout complete - stronger haptic feedback
-      triggerHaptic('success');
+      triggerHaptic('SUCCESS');
       finishWorkout();
     }
   };
@@ -1934,7 +1940,7 @@ const WorkoutGenerator = memo(function WorkoutGenerator({ onWorkoutComplete, onB
                   onClick={() => {
                     setIsResting(false);
                     setRestTimer(0);
-                    triggerHaptic('light');
+                    triggerHaptic('LIGHT');
                   }}
                   minH={{ base: "48px", md: "auto" }}
                   fontSize={{ base: "md", md: "sm" }}

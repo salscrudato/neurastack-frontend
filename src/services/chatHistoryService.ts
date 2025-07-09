@@ -19,7 +19,7 @@ import {
     type Timestamp
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import type { Message } from '../store/useChatStore';
+import type { Message } from '../stores/useChatStore';
 
 /**
  * Recursively remove undefined values from an object to prevent Firebase errors

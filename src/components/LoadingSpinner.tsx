@@ -1123,7 +1123,7 @@ export const Loader = memo(({
       case 'futuristic':
         return <FuturisticLoader size={size} message={message} variant="neural" />;
       case 'spinner':
-        return <Spinner size={size} color="blue.500" thickness="3px" />;
+        return <Spinner size={size} color="#2563EB" thickness="3px" />;
       default:
         return <ModernEnsembleLoader size={size} />;
     }

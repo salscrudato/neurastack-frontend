@@ -6,13 +6,14 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
 import { setupCacheManagement } from './utils/cacheControl';
+import { mobileOptimizer } from './utils/performanceMonitor';
 import { initializeResourcePreloading } from './utils/resourcePreloader';
 
 // Import pages and auth guard
 import { AuthGuard } from './components/AuthGuard';
 import OptimizedChakraProvider from './components/OptimizedChakraProvider';
-import { ChatPage } from './pages/ChatPage';
-import { SplashPage } from './pages/SplashPage';
+import { ChatPageSimplified } from './pages/ChatPageSimplified';
+import { ModernSplashPage } from './pages/ModernSplashPage';
 import { preloadCriticalServices } from './services/lazyFirebase';
 
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
@@ -29,7 +30,7 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <AuthGuard requireAuth={false}>
-            <SplashPage />
+            <ModernSplashPage />
           </AuthGuard>
         )
       },
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
         path: 'chat',
         element: (
           <AuthGuard requireAuth={true}>
-            <ChatPage />
+            <ChatPageSimplified />
           </AuthGuard>
         )
       },
@@ -102,6 +103,15 @@ setTimeout(() => {
     console.warn('Firebase preloading failed:', error);
   }
 }, 100);
+
+// Initialize mobile performance optimizations
+setTimeout(() => {
+  try {
+    mobileOptimizer.initialize();
+  } catch (error) {
+    console.warn('Mobile optimization failed:', error);
+  }
+}, 50);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

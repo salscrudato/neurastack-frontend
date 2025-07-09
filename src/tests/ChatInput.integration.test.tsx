@@ -4,9 +4,9 @@
  */
 
 import { ChakraProvider } from '@chakra-ui/react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ChatInput from '../components/ChatInput';
 import { useChatStore } from '../store/useChatStore';
 import theme from '../theme/theme';
@@ -21,9 +21,12 @@ vi.mock('../utils/securityUtils', () => ({
   logSecurityEvent: vi.fn(),
 }));
 
-// Mock performance optimizer
-vi.mock('../utils/performanceOptimizer', () => ({
-  debounce: vi.fn((fn) => fn),
+// Mock performance manager
+vi.mock('../utils/core/performanceManager', () => ({
+  performanceManager: {
+    getMetrics: vi.fn(() => ({})),
+    updateConfig: vi.fn(),
+  },
 }));
 
 // Mock accessibility hook

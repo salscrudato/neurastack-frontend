@@ -22,8 +22,8 @@ import { nanoid } from 'nanoid';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { auth, db } from '../firebase';
+import type { Message } from '../stores/useChatStore';
 import { handleSilentError } from '../utils/errorHandler';
-import type { Message } from './useChatStore';
 
 // Safe UUID generation helper
 const generateSafeUUID = (): string => {

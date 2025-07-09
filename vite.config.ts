@@ -187,12 +187,13 @@ export default defineConfig({
     },
   },
 
-  // Optional CSS configuration
+  // Enhanced CSS configuration with Tailwind support
   css: {
     modules: {
       // Ensures CSS module class names are camelCased for consistency
       localsConvention: 'camelCase'
-    }
+    },
+    postcss: './postcss.config.js', // Explicit PostCSS config for Tailwind
   },
 
   // Preview settings used for `vite preview` (usually post-build preview)

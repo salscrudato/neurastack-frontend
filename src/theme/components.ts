@@ -35,12 +35,12 @@ export const Box = defineStyleConfig({
   },
 });
 
-// Enhanced Button component with extracted patterns
+// Enhanced Button component with modern design (aligned with Tailwind)
 export const Button = defineStyleConfig({
   baseStyle: {
-    fontWeight: 'semibold',
-    borderRadius: 'xl',
-    transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+    fontWeight: '500',
+    borderRadius: '1rem', // 16px - modern rounded corners
+    transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
     _focus: {
       outline: 'none',
       boxShadow: 'none',
@@ -49,18 +49,21 @@ export const Button = defineStyleConfig({
       opacity: 0.6,
       cursor: 'not-allowed',
     },
+    // Enhanced touch targets for mobile
+    minH: { base: '48px', md: '44px' },
+    px: { base: 6, md: 4 },
   },
   variants: {
     solid: {
-      background: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
+      background: 'linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%)',
       color: 'white',
-      boxShadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
+      boxShadow: 'var(--shadow-modern)',
       _hover: {
         transform: 'translateY(-2px)',
-        boxShadow: '0 8px 20px rgba(79, 156, 249, 0.35)',
+        boxShadow: 'var(--shadow-modern-lg)',
         _disabled: {
           transform: 'none',
-          boxShadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
+          boxShadow: 'var(--shadow-modern)',
         },
       },
       _active: {
@@ -69,46 +72,47 @@ export const Button = defineStyleConfig({
       },
     },
     outline: {
-      borderColor: '#4F9CF9',
+      borderColor: 'var(--color-primary-500)',
       borderWidth: '2px',
-      color: '#4F9CF9',
+      color: 'var(--color-primary-600)',
       bg: 'transparent',
       _hover: {
-        bg: 'rgba(79, 156, 249, 0.05)',
+        bg: 'var(--color-primary-50)',
         transform: 'translateY(-1px)',
-        boxShadow: '0 4px 12px rgba(79, 156, 249, 0.15)',
+        boxShadow: 'var(--shadow-modern)',
+        borderColor: 'var(--color-primary-600)',
       },
     },
     ghost: {
-      color: '#4F9CF9',
+      color: 'var(--color-accent)',
       bg: 'transparent',
       _hover: {
-        bg: 'rgba(79, 156, 249, 0.08)',
+        bg: 'var(--color-accent-50)',
         transform: 'translateY(-1px)',
       },
     },
     glass: {
       bg: 'rgba(255, 255, 255, 0.8)',
-      backdropFilter: 'blur(10px)',
+      backdropFilter: 'blur(20px)',
       border: '1px solid rgba(255, 255, 255, 0.2)',
       color: '#1E293B',
       _hover: {
         bg: 'rgba(255, 255, 255, 0.9)',
         transform: 'translateY(-1px)',
-        boxShadow: '0 8px 32px rgba(31, 38, 135, 0.2)',
+        boxShadow: 'var(--shadow-glass)',
       },
     },
     // NeuraFit specific variants
     'neurafit-primary': {
       ...responsivePatterns.touchTargets,
-      bg: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
+      bg: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
       color: 'white',
       borderRadius: 'xl',
       fontWeight: '600',
       transition: 'all 0.2s ease',
       _hover: {
         transform: 'translateY(-1px)',
-        boxShadow: '0 8px 20px rgba(79, 156, 249, 0.3)',
+        boxShadow: '0 8px 20px rgba(37, 99, 235, 0.3)',
       },
       _active: {
         transform: 'scale(0.98)',
@@ -171,19 +175,22 @@ export const Button = defineStyleConfig({
 export const Input = defineStyleConfig({
   baseStyle: {
     field: {
-      borderRadius: '3xl',
+      borderRadius: '1.5rem', // 24px - modern rounded corners
       borderWidth: '1px',
-      borderColor: 'rgba(203, 213, 225, 0.8)',
+      borderColor: 'rgba(226, 232, 240, 0.8)',
       bg: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(8px)',
+      backdropFilter: 'blur(20px)',
       transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+      fontSize: { base: '16px', md: '14px' }, // Prevent zoom on iOS
+      minH: { base: '48px', md: '44px' }, // Touch-friendly
       _focus: {
         outline: 'none',
-        boxShadow: 'none',
+        boxShadow: '0 0 0 3px rgba(79, 156, 249, 0.1)',
+        borderColor: 'var(--color-primary-300)',
       },
       _hover: {
         borderColor: '#94A3B8',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+        boxShadow: 'var(--shadow-modern)',
         transform: 'translateY(-1px)',
       },
       _placeholder: {
@@ -214,32 +221,34 @@ export const Input = defineStyleConfig({
   },
 });
 
-// Enhanced Card component
+// Enhanced Card component with modern design
 export const Card = defineStyleConfig({
   baseStyle: {
     container: {
-      borderRadius: '2xl',
+      borderRadius: '1.5rem', // 24px - modern rounded corners
       bg: 'white',
       border: '1px solid',
-      borderColor: 'gray.100',
-      boxShadow: 'sm',
-      transition: 'all 0.2s',
+      borderColor: 'var(--color-border-medium)',
+      boxShadow: 'var(--shadow-modern)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     },
   },
   variants: {
     glass: {
       container: {
         bg: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(10px)',
+        backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: 'var(--shadow-glass)',
       },
     },
     'neurafit': {
       container: {
-        borderRadius: '2xl',
+        borderRadius: '1.5rem',
         bg: 'white',
         border: '1px solid',
-        borderColor: 'gray.200',
+        borderColor: 'rgba(226, 232, 240, 0.8)',
+        boxShadow: 'var(--shadow-modern)',
       },
     },
   },
@@ -293,44 +302,52 @@ export const Badge = defineStyleConfig({
   },
 });
 
-// Enhanced Modal component
+// Enhanced Modal component with modern design
 export const Modal = defineStyleConfig({
   baseStyle: {
     dialog: {
-      borderRadius: '2xl',
+      borderRadius: '1.5rem', // 24px - modern rounded corners
       bg: '#FFFFFF',
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-      border: '1px solid #F1F5F9',
+      boxShadow: 'var(--shadow-modern-xl)',
+      border: '1px solid rgba(226, 232, 240, 0.6)',
+      maxH: '90vh',
+      overflow: 'hidden',
     },
     overlay: {
-      bg: 'rgba(0, 0, 0, 0.4)',
-      backdropFilter: 'blur(8px)',
+      bg: 'rgba(15, 23, 42, 0.5)',
+      backdropFilter: 'blur(4px)',
     },
     closeButton: {
       borderRadius: 'full',
+      transition: 'all 0.2s ease',
       _hover: {
-        bg: 'rgba(79, 156, 249, 0.1)',
+        bg: 'var(--color-primary-50)',
+        color: 'var(--color-primary-600)',
+        transform: 'scale(1.1)',
       },
     },
   },
 });
 
-// Enhanced Textarea component
+// Enhanced Textarea component with modern design
 export const Textarea = defineStyleConfig({
   baseStyle: {
-    borderRadius: '3xl',
+    borderRadius: '1.5rem', // 24px - modern rounded corners
     borderWidth: '1px',
-    borderColor: 'rgba(203, 213, 225, 0.8)',
+    borderColor: 'rgba(226, 232, 240, 0.8)',
     bg: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(8px)',
+    backdropFilter: 'blur(20px)',
     transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+    fontSize: { base: '16px', md: '14px' }, // Prevent zoom on iOS
+    minH: { base: '80px', md: '60px' },
     _focus: {
       outline: 'none',
-      boxShadow: 'none',
+      boxShadow: '0 0 0 3px rgba(79, 156, 249, 0.1)',
+      borderColor: 'var(--color-primary-300)',
     },
     _hover: {
       borderColor: '#94A3B8',
-      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+      boxShadow: 'var(--shadow-modern)',
       transform: 'translateY(-1px)',
     },
     _placeholder: {
@@ -341,7 +358,7 @@ export const Textarea = defineStyleConfig({
     'mobile-optimized': {
       fontSize: '16px', // Prevent zoom on iOS
       minH: '80px',
-      borderRadius: 'xl',
+      borderRadius: '1rem',
       resize: 'vertical',
     },
   },

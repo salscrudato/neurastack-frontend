@@ -1,4 +1,4 @@
-import { Text, useColorModeValue, type TextProps } from '@chakra-ui/react';
+import { Text, type TextProps } from '@chakra-ui/react';
 import { forwardRef, memo } from 'react';
 
 interface BrandLogoProps extends Omit<TextProps, 'children'> {
@@ -21,10 +21,7 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
   ...props
 }, ref) => {
   // Adapt gradient to light / dark mode for a cleaner, on‑brand look
-  const gradient = useColorModeValue(
-    'linear(135deg, #4F9CF9 0%, #6366F1 50%, #8B5CF6 100%)',   // light - blue to purple
-    'linear(135deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%)'    // dark
-  );
+
 
   const getLogoStyles = (): Record<string, any> => {
     if (variant === 'glass') {
@@ -35,14 +32,7 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
     }
 
     return {
-      bgGradient: gradient,
-      bgClip: 'text',
-      color: 'transparent',
-      sx: {
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        textRendering: 'optimizeLegibility',
-      },
+      color: '#374151',
     };
   };
 

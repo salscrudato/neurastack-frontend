@@ -15,12 +15,16 @@ export interface ErrorContext {
 }
 
 export interface ErrorInfo {
-  type: 'network' | 'firebase' | 'api' | 'validation' | 'unknown';
+  type: 'network' | 'firebase' | 'api' | 'validation' | 'authentication' | 'permission' | 'timeout' | 'unknown';
   severity: 'low' | 'medium' | 'high' | 'critical';
   userMessage: string;
   technicalMessage: string;
   shouldRetry: boolean;
   retryDelay?: number;
+  actionable?: boolean;
+  suggestedActions?: string[];
+  helpUrl?: string;
+  errorCode?: string;
 }
 
 /**
@@ -43,25 +47,91 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
     const message = error.message.toLowerCase();
     
     // Network errors
-    if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
+    if (message.includes('network') || message.includes('fetch') || message.includes('connection') || message.includes('cors')) {
       errorInfo = {
         type: 'network',
         severity: 'medium',
-        userMessage: 'Network error. Please check your connection and try again.',
+        userMessage: 'Connection issue detected. Please check your internet connection and try again.',
         technicalMessage: error.message,
         shouldRetry: true,
-        retryDelay: 2000
+        retryDelay: 2000,
+        actionable: true,
+        suggestedActions: [
+          'Check your internet connection',
+          'Try refreshing the page',
+          'Disable VPN if active',
+          'Contact support if issue persists'
+        ],
+        errorCode: 'NET_001'
       };
     }
-    
+
+    // Timeout errors
+    else if (message.includes('timeout') || message.includes('aborted')) {
+      errorInfo = {
+        type: 'timeout',
+        severity: 'medium',
+        userMessage: 'Request timed out. The server is taking longer than expected to respond.',
+        technicalMessage: error.message,
+        shouldRetry: true,
+        retryDelay: 3000,
+        actionable: true,
+        suggestedActions: [
+          'Wait a moment and try again',
+          'Check your internet speed',
+          'Try again during off-peak hours'
+        ],
+        errorCode: 'TIMEOUT_001'
+      };
+    }
+
+    // Authentication errors
+    else if (message.includes('auth') || message.includes('unauthorized') || message.includes('token')) {
+      errorInfo = {
+        type: 'authentication',
+        severity: 'high',
+        userMessage: 'Authentication required. Please sign in to continue.',
+        technicalMessage: error.message,
+        shouldRetry: false,
+        actionable: true,
+        suggestedActions: [
+          'Sign in to your account',
+          'Check if your session has expired',
+          'Clear browser cache and cookies'
+        ],
+        errorCode: 'AUTH_001'
+      };
+    }
+
+    // Permission errors
+    else if (message.includes('permission') || message.includes('forbidden') || message.includes('access denied')) {
+      errorInfo = {
+        type: 'permission',
+        severity: 'high',
+        userMessage: 'You don\'t have permission to perform this action.',
+        technicalMessage: error.message,
+        shouldRetry: false,
+        actionable: true,
+        suggestedActions: [
+          'Contact your administrator',
+          'Check if you have the required permissions',
+          'Try signing out and back in'
+        ],
+        errorCode: 'PERM_001'
+      };
+    }
+
     // Firebase errors
-    else if (message.includes('firebase') || message.includes('permission') || message.includes('insufficient')) {
+    else if (message.includes('firebase') || message.includes('firestore')) {
       errorInfo = {
         type: 'firebase',
         severity: 'low',
         userMessage: 'Data sync temporarily unavailable. Your data is saved locally.',
         technicalMessage: error.message,
-        shouldRetry: false
+        shouldRetry: true,
+        retryDelay: 5000,
+        actionable: false,
+        errorCode: 'FB_001'
       };
     }
     

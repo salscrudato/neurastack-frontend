@@ -1,7 +1,7 @@
 import type { BoxProps, ContainerProps } from '@chakra-ui/react';
 import { Box, Container } from '@chakra-ui/react';
 import { forwardRef, useMemo } from 'react';
-import { useMobileOptimization } from '../hooks/useMobileOptimization';
+import { useOptimizedDevice } from '../hooks/core/useOptimizedDevice';
 
 interface ResponsiveContainerProps extends Omit<ContainerProps, 'maxW'> {
   /** Container variant for different layouts */
@@ -45,7 +45,15 @@ export const ResponsiveContainer = forwardRef<HTMLDivElement, ResponsiveContaine
       children,
       ...restProps
     } = props;
-    const { isMobile, performanceConfig, spacing } = useMobileOptimization();
+    const { capabilities, responsive } = useOptimizedDevice();
+    const { isMobile } = capabilities;
+    const { spacing } = responsive;
+
+    // Performance configuration for mobile optimization
+    const performanceConfig = {
+      willChange: mobileOptimized && isMobile ? 'transform' : 'auto',
+      transform: 'translateZ(0)', // Force hardware acceleration
+    };
 
     // Container variant configurations
     const variantConfig = useMemo(() => {
@@ -169,7 +177,7 @@ export const ResponsiveContainer = forwardRef<HTMLDivElement, ResponsiveContaine
         ...(containerQueries && {
           containerType: 'inline-size',
         }),
-        
+
         // Safe area support
         ...(safeArea && {
           paddingLeft: 'max(env(safe-area-inset-left), var(--chakra-space-4))',
@@ -240,7 +248,8 @@ export const ResponsiveBox = forwardRef<
     children,
     ...restProps
   } = props;
-    const { isMobile, performanceConfig } = useMobileOptimization();
+    const { capabilities } = useOptimizedDevice();
+    const { isMobile } = capabilities;
 
     const enhancedStyles = useMemo(() => ({
       // Container queries support
@@ -255,14 +264,14 @@ export const ResponsiveBox = forwardRef<
       }),
 
       // Performance optimizations
-      ...(mobileOptimized && performanceConfig),
+      // ...(mobileOptimized && performanceConfig),
 
       // Mobile-specific optimizations
       ...(isMobile && {
         WebkitTapHighlightColor: 'transparent',
         touchAction: 'manipulation',
       }),
-    }), [fluidSpacing, mobileOptimized, performanceConfig, containerQueries, isMobile]);
+    }), [fluidSpacing, mobileOptimized, containerQueries, isMobile]);
 
     return (
       <Box ref={ref} sx={enhancedStyles} {...restProps}>

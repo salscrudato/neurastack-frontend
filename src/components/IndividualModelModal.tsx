@@ -12,6 +12,9 @@ import {
     AlertTitle,
     Badge,
     Box,
+    Flex,
+    HStack,
+    IconButton,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -19,17 +22,40 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
+    Tooltip,
+    useClipboard,
     useColorModeValue,
     VStack
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import {
+    PiArrowLeftBold,
+    PiArrowRightBold,
+    PiCheckBold,
+    PiCopyBold,
     PiWarningBold
 } from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ModelResponseData } from '../hooks/useModelResponses';
 import { formatModelName } from '../hooks/useModelResponses';
+
+// Modern animation keyframes for enhanced modal UX
+const modalSlideIn = {
+  from: {
+    opacity: 0,
+    transform: 'translateY(30px) scale(0.95)',
+  },
+  to: {
+    opacity: 1,
+    transform: 'translateY(0) scale(1)',
+  },
+};
+
+// const fadeIn = {
+//   from: { opacity: 0 },
+//   to: { opacity: 1 },
+// };
 
 // ============================================================================
 // Component Props
@@ -44,7 +70,105 @@ interface IndividualModelModalProps {
 
   /** Currently selected model data */
   modelData: ModelResponseData | null;
+
+  /** All available models for navigation */
+  allModels?: ModelResponseData[];
+
+  /** Navigation handlers */
+  onNavigateNext?: () => void;
+  onNavigatePrevious?: () => void;
+
+  /** Navigation state */
+  canNavigateNext?: boolean;
+  canNavigatePrevious?: boolean;
+
+  /** Current model index for display */
+  currentIndex?: number;
+  totalModels?: number;
 }
+
+// ============================================================================
+// Sub-components
+// ============================================================================
+
+// Enhanced Copy Button with modern design
+const CopyButton: React.FC<{ text: string }> = ({ text }) => {
+  const { onCopy, hasCopied } = useClipboard(text);
+
+  return (
+    <Tooltip label={hasCopied ? 'Copied!' : 'Copy response'} placement="top" hasArrow>
+      <IconButton
+        icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
+        aria-label="Copy response"
+        size="sm"
+        variant="ghost"
+        onClick={onCopy}
+        color={hasCopied ? '#10B981' : '#64748B'}
+        bg="rgba(255, 255, 255, 0.8)"
+        border="1px solid rgba(226, 232, 240, 0.6)"
+        borderRadius="lg"
+        _hover={{
+          bg: 'rgba(59, 130, 246, 0.08)',
+          color: '#3b82f6',
+          transform: 'translateY(-1px)',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
+        }}
+        transition="all 0.2s ease"
+        sx={{
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
+      />
+    </Tooltip>
+  );
+};
+
+// Navigation Button Component
+const NavigationButton: React.FC<{
+  direction: 'previous' | 'next';
+  onClick: () => void;
+  disabled: boolean;
+}> = ({ direction, onClick, disabled }) => {
+  const isPrevious = direction === 'previous';
+  const Icon = isPrevious ? PiArrowLeftBold : PiArrowRightBold;
+
+  return (
+    <Tooltip
+      label={isPrevious ? 'Previous model' : 'Next model'}
+      placement="top"
+      hasArrow
+      isDisabled={disabled}
+    >
+      <IconButton
+        icon={<Icon />}
+        aria-label={`${direction} model`}
+        size="md"
+        variant="ghost"
+        onClick={onClick}
+        isDisabled={disabled}
+        color={disabled ? '#CBD5E1' : '#64748B'}
+        bg="rgba(255, 255, 255, 0.9)"
+        border="1px solid rgba(226, 232, 240, 0.6)"
+        borderRadius="xl"
+        _hover={!disabled ? {
+          bg: 'rgba(59, 130, 246, 0.08)',
+          color: '#3b82f6',
+          transform: 'translateY(-1px)',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
+        } : undefined}
+        _disabled={{
+          opacity: 0.4,
+          cursor: 'not-allowed',
+        }}
+        transition="all 0.2s ease"
+        sx={{
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
+      />
+    </Tooltip>
+  );
+};
 
 // ============================================================================
 // Markdown Components
@@ -131,11 +255,17 @@ const MarkdownComponents = {
 export function IndividualModelModal({
   isOpen,
   onClose,
-  modelData
+  modelData,
+  // allModels = [],
+  onNavigateNext,
+  onNavigatePrevious,
+  canNavigateNext = false,
+  canNavigatePrevious = false,
+  currentIndex,
+  totalModels
 }: IndividualModelModalProps) {
-  // Modern color values - light mode only
-  const modalBg = '#FFFFFF';
-  const textColor = '#1E293B';
+  // Modern monochromatic color values
+  const textColor = '#171717';
 
   // Keyboard navigation (simplified - only Escape to close)
   useEffect(() => {
@@ -164,95 +294,324 @@ export function IndividualModelModal({
       onClose={onClose}
       size={{ base: "full", md: "lg" }}
       scrollBehavior="inside"
+      closeOnOverlayClick={true}
+      closeOnEsc={true}
+      trapFocus={true}
+      preserveScrollBarGap={true}
+      returnFocusOnClose={true}
     >
-      <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
+      <ModalOverlay
+        bg="rgba(0, 0, 0, 0.4)"
+        sx={{
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+        }}
+      />
       <ModalContent
-        bg={modalBg}
-        borderRadius={{ base: 0, md: "2xl" }}
-        maxH={{ base: "100vh", md: "80vh" }}
-        maxW={{ base: "100vw", md: "700px" }}
-        mx={{ base: 0, md: 4 }}
-        my={{ base: 0, md: "10vh" }}
-        boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
-        border="1px solid"
-        borderColor="rgba(226, 232, 240, 0.8)"
+        bg="#ffffff"
+        borderRadius={{ base: 0, md: "20px" }}
+        maxH={{ base: "100vh", md: "85vh" }}
+        maxW={{ base: "100vw", md: "750px" }}
+        mx={{ base: 0, md: 6 }}
+        my={{ base: 0, md: "7.5vh" }}
+        boxShadow="0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(59, 130, 246, 0.08)"
+        border="1px solid rgba(226, 232, 240, 0.6)"
+        overflow="hidden"
+        position="relative"
+        sx={{
+          animation: 'modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '@keyframes modalSlideIn': modalSlideIn,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, rgba(37, 99, 235, 0.01) 100%)',
+            pointerEvents: 'none',
+            zIndex: 1
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: '-2px',
+            left: '-2px',
+            right: '-2px',
+            bottom: '-2px',
+            background: 'linear-gradient(45deg, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%)',
+            borderRadius: '3xl',
+            zIndex: -1,
+            opacity: 0.6,
+            filter: 'blur(1px)'
+          }
+        }}
       >
-        {/* Header */}
+        {/* Enhanced Header with Glass Morphism */}
         <ModalHeader
-          bg="linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%)"
-          borderTopRadius={{ base: 0, md: "2xl" }}
-          borderBottom="1px solid"
-          borderColor="rgba(226, 232, 240, 0.6)"
-          pb={6}
-          pt={6}
+          bg="linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%)"
+          borderTopRadius={{ base: 0, md: "3xl" }}
+          borderBottom="1px solid rgba(255, 255, 255, 0.3)"
+          borderColor="rgba(255, 255, 255, 0.3)"
+          pb={8}
+          pt={8}
+          position="relative"
+          zIndex={2}
+          boxShadow="0 4px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)"
+          sx={{
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }}
         >
-          <VStack align="start" spacing={2}>
-            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+          {/* Navigation and Actions Bar */}
+          <Flex justify="space-between" align="center" mb={4}>
+            {/* Navigation Controls */}
+            <HStack spacing={2}>
+              {(canNavigatePrevious || canNavigateNext) && (
+                <>
+                  <NavigationButton
+                    direction="previous"
+                    onClick={onNavigatePrevious || (() => {})}
+                    disabled={!canNavigatePrevious}
+                  />
+                  <NavigationButton
+                    direction="next"
+                    onClick={onNavigateNext || (() => {})}
+                    disabled={!canNavigateNext}
+                  />
+                </>
+              )}
+
+              {/* Model Counter */}
+              {currentIndex !== undefined && totalModels && (
+                <Text
+                  fontSize="sm"
+                  color="#64748B"
+                  fontWeight="600"
+                  bg="rgba(255, 255, 255, 0.8)"
+                  px={3}
+                  py={1.5}
+                  borderRadius="full"
+                  border="1px solid rgba(226, 232, 240, 0.6)"
+                  sx={{
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                  }}
+                >
+                  {currentIndex + 1} of {totalModels}
+                </Text>
+              )}
+            </HStack>
+
+            {/* Copy Button */}
+            <CopyButton text={modelData.answer} />
+          </Flex>
+
+          {/* Model Information */}
+          <VStack spacing={3} align="center">
+            <Text
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="800"
+              color="#1E293B"
+              textAlign="center"
+              letterSpacing="-0.02em"
+              lineHeight="1.2"
+              bgGradient="linear(135deg, #4F9CF9 0%, #8B5CF6 100%)"
+              bgClip="text"
+              sx={{
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
               {formatModelName(modelData.model, modelData.role, modelData.provider).toUpperCase()}
             </Text>
-            {modelData.confidence && (
-              <Badge
-                colorScheme={
-                  modelData.confidence.level === 'high' ? 'green' :
-                  modelData.confidence.level === 'medium' ? 'yellow' : 'red'
-                }
-                variant="solid"
-                size="md"
-                borderRadius="full"
-                px={3}
-                py={1}
-              >
-                {Math.round(modelData.confidence.score * 100)}% Confidence
-              </Badge>
-            )}
+
+            {/* Confidence and Metrics */}
+            <HStack spacing={3} flexWrap="wrap" justify="center">
+              {modelData.confidence && (
+                <Badge
+                  bg={
+                    modelData.confidence.level === 'high'
+                      ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' :
+                    modelData.confidence.level === 'medium'
+                      ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' :
+                      'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
+                  }
+                  color="white"
+                  variant="solid"
+                  size="md"
+                  borderRadius="full"
+                  px={3}
+                  py={1.5}
+                  fontSize="xs"
+                  fontWeight="700"
+                  boxShadow="0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1)"
+                  border="1px solid rgba(255, 255, 255, 0.2)"
+                  sx={{
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)'
+                  }}
+                >
+                  {Math.round(modelData.confidence.score * 100)}% Confidence
+                </Badge>
+              )}
+
+              {/* Response Time */}
+              {modelData.responseTime && (
+                <Badge
+                  bg="linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)"
+                  color="#2563EB"
+                  variant="subtle"
+                  size="md"
+                  borderRadius="full"
+                  px={3}
+                  py={1.5}
+                  fontSize="xs"
+                  fontWeight="600"
+                  border="1px solid rgba(37, 99, 235, 0.2)"
+                  sx={{
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)'
+                  }}
+                >
+                  {(modelData.responseTime / 1000).toFixed(1)}s
+                </Badge>
+              )}
+
+              {/* Word Count */}
+              {modelData.wordCount && (
+                <Badge
+                  bg="linear-gradient(135deg, rgba(115, 115, 115, 0.1) 0%, rgba(115, 115, 115, 0.05) 100%)"
+                  color="#737373"
+                  variant="subtle"
+                  size="md"
+                  borderRadius="full"
+                  px={3}
+                  py={1.5}
+                  fontSize="xs"
+                  fontWeight="600"
+                  border="1px solid rgba(139, 92, 246, 0.2)"
+                  sx={{
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)'
+                  }}
+                >
+                  {modelData.wordCount} words
+                </Badge>
+              )}
+            </HStack>
           </VStack>
         </ModalHeader>
 
         <ModalCloseButton
-          color="#4F9CF9"
+          color="rgba(37, 99, 235, 0.8)"
+          bg="linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)"
+          border="1px solid rgba(255, 255, 255, 0.3)"
+          borderRadius="full"
+          w="48px"
+          h="48px"
+          fontSize="18px"
+          fontWeight="bold"
+          boxShadow="0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(37, 99, 235, 0.1)"
           _hover={{
-            bg: "rgba(79, 156, 249, 0.1)",
-            color: "#3B82F6"
+            bg: "linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.95) 100%)",
+            color: "white",
+            borderColor: "rgba(239, 68, 68, 0.4)",
+            transform: "scale(1.1)",
+            boxShadow: "0 12px 32px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(239, 68, 68, 0.3)"
           }}
           _focus={{
-            boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
+            boxShadow: "0 0 0 4px rgba(37, 99, 235, 0.3), 0 8px 24px rgba(0, 0, 0, 0.15)",
+            outline: "none"
+          }}
+          _active={{
+            transform: "scale(1.05)",
+            boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15), 0 4px 8px rgba(239, 68, 68, 0.2)"
           }}
           size="lg"
+          zIndex={9999}
+          position="absolute"
+          top={6}
+          right={6}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          sx={{
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            willChange: 'transform, box-shadow',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)'
+          }}
         />
 
-        {/* Body */}
-        <ModalBody p={6} bg="#FAFBFC">
+        {/* Enhanced Body with Glass Morphism */}
+        <ModalBody
+          p={8}
+          bg="transparent"
+          position="relative"
+          zIndex={2}
+        >
           {isFailed ? (
-            <Alert status="error" borderRadius="md">
-              <AlertIcon as={PiWarningBold} />
+            <Alert
+              status="error"
+              borderRadius="2xl"
+              bg="linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)"
+              border="1px solid rgba(239, 68, 68, 0.3)"
+              boxShadow="0 8px 32px rgba(239, 68, 68, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1)"
+              p={6}
+              sx={{
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+              }}
+            >
+              <AlertIcon as={PiWarningBold} color="#EF4444" boxSize={6} />
               <Box>
-                <AlertTitle>Model Failed</AlertTitle>
-                <AlertDescription>
+                <AlertTitle color="#DC2626" fontSize="lg" fontWeight="700" mb={2}>
+                  Model Failed
+                </AlertTitle>
+                <AlertDescription color="#7F1D1D" fontSize="md" lineHeight="1.6">
                   {modelData.errorReason || 'This model failed to generate a response.'}
                 </AlertDescription>
               </Box>
             </Alert>
           ) : (
             <Box
-              bg="white"
-              borderRadius="2xl"
-              p={6}
-              border="1px solid"
-              borderColor="rgba(226, 232, 240, 0.6)"
-              boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+              bg="linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%)"
+              borderRadius="3xl"
+              p={8}
+              border="1px solid rgba(255, 255, 255, 0.3)"
+              boxShadow="0 12px 40px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(37, 99, 235, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)"
               color={textColor}
-              lineHeight="1.7"
+              lineHeight="1.8"
+              position="relative"
+              overflow="hidden"
               sx={{
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 '& > *:first-of-type': { mt: 0 },
-                '& > *:last-child': { mb: 0 }
+                '& > *:last-child': { mb: 0 },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, rgba(37, 99, 235, 0.01) 100%)',
+                  borderRadius: '3xl',
+                  pointerEvents: 'none',
+                  zIndex: 1
+                }
               }}
             >
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={MarkdownComponents}
-              >
-                {modelData.answer}
-              </ReactMarkdown>
+              <Box position="relative" zIndex={2}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={MarkdownComponents}
+                >
+                  {modelData.answer}
+                </ReactMarkdown>
+              </Box>
             </Box>
           )}
         </ModalBody>

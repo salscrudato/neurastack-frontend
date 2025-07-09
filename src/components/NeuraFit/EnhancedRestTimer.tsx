@@ -36,7 +36,7 @@ interface EnhancedRestTimerProps {
   exerciseName?: string;
   nextExerciseName?: string;
   warningThreshold?: number; // seconds before showing warning (default: 5)
-  onHapticFeedback?: (type: 'light' | 'medium' | 'heavy') => void;
+  onHapticFeedback?: (pattern?: 'LIGHT' | 'MEDIUM' | 'HEAVY' | 'SUCCESS' | 'ERROR' | 'TAP' | 'SELECT' | number[]) => void;
 }
 
 export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
@@ -68,7 +68,7 @@ export const EnhancedRestTimer = memo<EnhancedRestTimerProps>(({
     if (shouldWarn !== isWarning) {
       setIsWarning(shouldWarn);
       if (shouldWarn && onHapticFeedback) {
-        onHapticFeedback('light');
+        onHapticFeedback('LIGHT');
       }
     }
   }, [timeRemaining, warningThreshold, isWarning, onHapticFeedback]);

@@ -2,14 +2,15 @@ import { Box, Flex } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { Header } from "./components/Header";
+import { Header } from "./components/features/navigation/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import UpdateNotification from "./components/UpdateNotification";
-import { usePerformanceOptimization } from "./hooks/usePerformanceOptimization";
+import { useOptimizedDevice } from "./hooks/core/useOptimizedDevice";
 import "./styles/global.css";
 import "./styles/utilities.css";
 import { authManager } from "./utils/authUtils";
+import { initializePerformanceOptimizations } from "./utils/core/performanceManager";
 
 // Single transition variant for all pages
 const pageVariants = {
@@ -140,22 +141,29 @@ const Fallback = () => (
 );
 
 export default function App() {
-  // Initialize performance optimizations - minimal logging
-  usePerformanceOptimization({
-    enableMetrics: false, // Disabled to reduce console noise
-    enableResourceHints: true,
-    enableImageOptimization: true,
-    enableFontOptimization: true
-  });
+  // Initialize optimized device detection and performance
+  const { capabilities } = useOptimizedDevice();
 
-  // Initialize auth manager
+  // Initialize auth manager and performance optimizations
   useEffect(() => {
     authManager.initialize();
 
+    // Initialize unified performance optimizations
+    const cleanupPerformance = initializePerformanceOptimizations({
+      enableImageOptimization: true,
+      enableFontOptimization: true,
+      enableResourcePreloading: true,
+      enableLazyLoading: true,
+      enableMemoryManagement: true,
+      enableNetworkOptimization: true,
+      enableMetricsCollection: capabilities.isMobile, // Only on mobile for better performance
+    });
+
     return () => {
       authManager.cleanup();
+      cleanupPerformance();
     };
-  }, []);
+  }, [capabilities.isMobile]);
 
   return (
     <PageContentWrapper>

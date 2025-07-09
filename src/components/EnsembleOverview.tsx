@@ -42,12 +42,12 @@ interface EnsembleOverviewProps {
 // ============================================================================
 
 export function EnsembleOverview({ data, compact = false }: EnsembleOverviewProps) {
-  // Enhanced glass design values
-  const cardBg = 'rgba(248, 250, 252, 0.9)';
-  const borderColor = 'rgba(226, 232, 240, 0.6)';
-  const textColor = '#1E293B';
-  const mutedColor = '#64748B';
-  const accentColor = '#4F9CF9';
+  // Modern monochromatic design values
+  const cardBg = 'rgba(255, 255, 255, 0.9)';
+  const borderColor = 'rgba(229, 229, 229, 0.6)';
+  const textColor = '#171717';
+  const mutedColor = '#525252';
+  const accentColor = '#2563EB';
   const glassBlur = 'blur(16px)';
 
   // Calculate success rate

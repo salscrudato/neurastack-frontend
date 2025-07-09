@@ -32,8 +32,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
 import { PiChatBold, PiChatCircleBold, PiClockBold, PiTrashBold } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
-import { useChatStore } from '../store/useChatStore';
 import { useHistoryStore } from '../store/useHistoryStore';
+import { useChatStore } from '../stores/useChatStore';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
@@ -46,12 +46,12 @@ export default function HistoryPage() {
   const { sessions, deleteSession, loadSession } = useHistoryStore();
   const { clearMessages } = useChatStore();
 
-  // Modern color scheme - light mode only
-  const bgColor = '#FAFBFC';
+  // Modern monochromatic color scheme
+  const bgColor = '#FFFFFF';
   const cardBg = '#FFFFFF';
-  const borderColor = '#E2E8F0';
-  const textColor = '#1E293B';
-  const mutedColor = '#64748B';
+  const borderColor = '#E5E5E5';
+  const textColor = '#171717';
+  const mutedColor = '#525252';
 
 
 
@@ -147,7 +147,7 @@ export default function HistoryPage() {
         }
       }}
     >
-      {/* Centered container for desktop, full width for mobile */}
+      {/* Enhanced mobile-optimized container */}
       <Flex
         direction="column"
         w="100%"
@@ -158,10 +158,25 @@ export default function HistoryPage() {
           xl: "1000px"   // Match ChatPage width
         }}
         px={{
-          base: 0,      // No additional padding on mobile (handled by parent)
+          base: "clamp(1rem, 4vw, 1.5rem)",      // Enhanced mobile padding with fluid scaling
           md: 8,        // Match ChatPage padding
           lg: 12,       // Match ChatPage padding
           xl: 16        // Match ChatPage padding
+        }}
+        className="mobile-scroll-container"
+        sx={{
+          // Enhanced mobile performance
+          '@media (max-width: 768px)': {
+            paddingTop: 'clamp(1rem, 3vw, 1.5rem)',
+            paddingBottom: 'clamp(2rem, 5vw, 3rem)',
+            // Performance optimizations
+            willChange: 'scroll-position',
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)',
+            // Enhanced touch handling
+            touchAction: 'pan-y',
+            WebkitTapHighlightColor: 'transparent',
+          }
         }}
       >
       {/* Header */}
@@ -245,16 +260,32 @@ export default function HistoryPage() {
                 bg={cardBg}
                 border="1px solid"
                 borderColor={borderColor}
-                borderRadius="lg"
-                boxShadow="0 1px 2px rgba(0, 0, 0, 0.04)"
+                borderRadius={{ base: "xl", md: "lg" }}
+                boxShadow="0 2px 4px rgba(0, 0, 0, 0.06)"
                 _hover={{
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-                  transform: "translateY(-1px)",
-                  borderColor: "#CBD5E1"
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.12)",
+                  transform: "translateY(-2px)",
+                  borderColor: "blue.200"
                 }}
-                transition="all 150ms ease"
+                _active={{
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.08)"
+                }}
+                transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
                 cursor="pointer"
                 onClick={() => handleLoadSession(session.id)}
+                className="mobile-touch-target"
+                sx={{
+                  // Enhanced mobile touch handling
+                  '@media (max-width: 768px)': {
+                    minHeight: '84px',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    '&:active': {
+                      transform: 'scale(0.98)',
+                    }
+                  }
+                }}
               >
                 <CardBody p={4}>
                   <Flex justify="space-between" align="start">

@@ -14,82 +14,198 @@ export const designTokens = {
     '4xl': '6rem',   // 96px
   },
 
-  // Typography scale
+  // Enhanced mobile touch targets (minimum 44px as per Apple/Google guidelines)
+  touchTargets: {
+    minimum: '2.75rem',    // 44px - minimum touch target
+    comfortable: '3rem',   // 48px - comfortable touch target
+    large: '3.5rem',      // 56px - large touch target
+    extraLarge: '4rem',   // 64px - extra large touch target
+  },
+
+  // Enhanced typography scale with modern font system
   typography: {
     fontSizes: {
-      xs: '0.75rem',   // 12px
-      sm: '0.875rem',  // 14px
-      md: '1rem',      // 16px
-      lg: '1.125rem',  // 18px
-      xl: '1.25rem',   // 20px
-      '2xl': '1.5rem', // 24px
+      xs: '0.75rem',     // 12px
+      sm: '0.875rem',    // 14px
+      md: '1rem',        // 16px - base size
+      lg: '1.125rem',    // 18px
+      xl: '1.25rem',     // 20px
+      '2xl': '1.5rem',   // 24px
       '3xl': '1.875rem', // 30px
       '4xl': '2.25rem',  // 36px
+      '5xl': '3rem',     // 48px
+      '6xl': '3.75rem',  // 60px
     },
     fontWeights: {
+      light: 300,
       normal: 400,
       medium: 500,
       semibold: 600,
       bold: 700,
       extrabold: 800,
+      black: 900,
     },
     lineHeights: {
+      none: 1,
       tight: 1.25,
+      snug: 1.375,
       normal: 1.5,
-      relaxed: 1.75,
+      relaxed: 1.625,
+      loose: 2,
+    },
+    letterSpacing: {
+      tighter: '-0.05em',
+      tight: '-0.025em',
+      normal: '0',
+      wide: '0.025em',
+      wider: '0.05em',
+      widest: '0.1em',
     },
   },
 
-  // Color palette with semantic meanings
+  // Modern blue hue color palette with sophisticated gradients
   colors: {
-    // Brand colors
-    brand: {
-      50: '#EBF8FF',
-      100: '#BEE3F8',
-      200: '#90CDF4',
-      300: '#63B3ED',
-      400: '#4299E1',
-      500: '#4F9CF9',  // Primary brand blue
-      600: '#3182CE',
-      700: '#2B77CB',
-      800: '#2C5282',
-      900: '#2A4365',
-    },
-    
-    // Secondary brand (purple)
-    secondary: {
-      50: '#FAF5FF',
-      100: '#E9D8FD',
-      200: '#D6BCFA',
-      300: '#B794F6',
-      400: '#9F7AEA',
-      500: '#8B5CF6',  // Secondary brand purple
-      600: '#805AD5',
-      700: '#6B46C1',
-      800: '#553C9A',
-      900: '#44337A',
+    // Enhanced neutral grays with blue undertones
+    gray: {
+      50: '#FAFBFC',
+      100: '#F8FAFC',
+      200: '#F1F5F9',
+      300: '#E2E8F0',
+      400: '#CBD5E1',
+      500: '#94A3B8',
+      600: '#64748B',
+      700: '#475569',
+      800: '#334155',
+      900: '#1E293B',
     },
 
-    // Semantic colors
+    // Primary blue system - main brand colors
+    brand: {
+      50: '#EFF6FF',
+      100: '#DBEAFE',
+      200: '#BFDBFE',
+      300: '#93C5FD',
+      400: '#60A5FA',
+      500: '#3B82F6',  // Updated main brand color
+      600: '#2563EB',
+      700: '#1D4ED8',
+      800: '#1E40AF',
+      900: '#1E3A8A',
+    },
+
+    // Secondary blue variations for depth and variety
+    blue: {
+      50: '#F0F9FF',
+      100: '#E0F2FE',
+      200: '#BAE6FD',
+      300: '#7DD3FC',
+      400: '#38BDF8',
+      500: '#0EA5E9',
+      600: '#0284C7',
+      700: '#0369A1',
+      800: '#075985',
+      900: '#0C4A6E',
+    },
+
+    // Accent blue for highlights and interactions
+    accent: {
+      50: '#F0F9FF',
+      100: '#E0F2FE',
+      200: '#BAE6FD',
+      300: '#7DD3FC',
+      400: '#38BDF8',
+      500: '#0EA5E9',
+      600: '#0284C7',
+      700: '#0369A1',
+      800: '#075985',
+      900: '#0C4A6E',
+    },
+
+    // Semantic colors - minimal and clean
     success: {
-      50: '#F0FFF4',
-      500: '#38A169',
-      600: '#2F855A',
+      50: '#F0FDF4',
+      100: '#DCFCE7',
+      500: '#16A34A',  // Clean green
+      600: '#15803D',
+      700: '#14532D',
     },
     warning: {
       50: '#FFFBEB',
-      500: '#D69E2E',
-      600: '#B7791F',
+      100: '#FEF3C7',
+      500: '#D97706',  // Clean amber
+      600: '#B45309',
+      700: '#92400E',
     },
     error: {
-      50: '#FED7D7',
-      500: '#E53E3E',
-      600: '#C53030',
+      50: '#FEF2F2',
+      100: '#FEE2E2',
+      500: '#DC2626',  // Clean red
+      600: '#B91C1C',
+      700: '#991B1B',
     },
-    info: {
-      50: '#EBF8FF',
-      500: '#3182CE',
-      600: '#2B77CB',
+
+    // Enhanced glass morphism colors with blue undertones
+    glass: {
+      white: 'rgba(255, 255, 255, 0.85)',
+      whiteLight: 'rgba(248, 250, 252, 0.8)',
+      whiteMedium: 'rgba(241, 245, 249, 0.7)',
+      whiteUltraLight: 'rgba(239, 246, 255, 0.6)',
+      accent: 'rgba(59, 130, 246, 0.1)',
+      accentLight: 'rgba(59, 130, 246, 0.05)',
+      accentMedium: 'rgba(59, 130, 246, 0.15)',
+      blue: 'rgba(14, 165, 233, 0.08)',
+      blueLight: 'rgba(14, 165, 233, 0.04)',
+    },
+
+    // Enhanced surface colors with subtle blue undertones
+    surface: {
+      primary: '#FFFFFF',
+      secondary: '#FAFBFC',
+      tertiary: '#F8FAFC',
+      quaternary: '#F1F5F9',
+      glass: 'rgba(255, 255, 255, 0.85)',
+      glassLight: 'rgba(248, 250, 252, 0.8)',
+      glassMedium: 'rgba(241, 245, 249, 0.7)',
+      overlay: 'rgba(15, 23, 42, 0.4)',
+      overlayLight: 'rgba(15, 23, 42, 0.2)',
+      overlayBlue: 'rgba(30, 41, 59, 0.5)',
+    },
+  },
+
+  // Enhanced modern gradient utilities with blue hue focus
+  gradients: {
+    brand: {
+      primary: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+      secondary: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
+      accent: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%)',
+      // Innovative liquid glass effect with blue tints
+      liquid: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.12) 50%, rgba(29, 78, 216, 0.1) 100%)',
+      // Subtle glow gradient
+      glow: 'radial-gradient(ellipse at center, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
+    },
+    glass: {
+      light: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+      medium: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.7) 100%)',
+      dark: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%)',
+      // Enhanced frosted glass with blue undertones
+      frosted: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 50%, rgba(239, 246, 255, 0.92) 100%)',
+      ultraLight: 'linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(239, 246, 255, 0.6) 100%)',
+      // Blue-tinted glass
+      blue: 'linear-gradient(135deg, rgba(239, 246, 255, 0.9) 0%, rgba(219, 234, 254, 0.8) 100%)',
+    },
+    overlay: {
+      radial: 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.9) 100%)',
+      linear: 'linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.8) 100%)',
+      // Enhanced depth overlay with blue tints
+      depth: 'radial-gradient(ellipse at center, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.9) 50%, rgba(15, 23, 42, 0.95) 100%)',
+      // Blue overlay for special effects
+      blue: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%)',
+    },
+    // Interactive hover gradients with blue focus
+    hover: {
+      blue: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.12) 50%, rgba(29, 78, 216, 0.1) 100%)',
+      accent: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(2, 132, 199, 0.12) 50%, rgba(3, 105, 161, 0.1) 100%)',
+      light: 'linear-gradient(135deg, rgba(96, 165, 250, 0.1) 0%, rgba(59, 130, 246, 0.08) 50%, rgba(37, 99, 235, 0.06) 100%)',
     },
   },
 
@@ -105,15 +221,45 @@ export const designTokens = {
     full: '9999px',
   },
 
-  // Shadow scale
+  // Enhanced shadow scale for glass morphism and modern design
   shadows: {
+    // Basic shadows
     xs: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
     sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
     '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+
+    // Enhanced glass morphism shadows with blue tints
+    glass: '0 8px 32px rgba(59, 130, 246, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)',
+    glassLight: '0 4px 20px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(59, 130, 246, 0.08)',
+    glassMedium: '0 8px 24px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1)',
+    glassStrong: '0 16px 48px rgba(59, 130, 246, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12)',
+
+    // Enhanced glow effects with blue focus
+    glow: '0 0 20px rgba(59, 130, 246, 0.25)',
+    glowLight: '0 0 15px rgba(59, 130, 246, 0.2)',
+    glowMedium: '0 0 25px rgba(59, 130, 246, 0.3)',
+    glowStrong: '0 0 30px rgba(59, 130, 246, 0.4), 0 0 60px rgba(59, 130, 246, 0.15)',
+    glowAccent: '0 0 20px rgba(14, 165, 233, 0.25)',
+    glowBlue: '0 0 20px rgba(96, 165, 250, 0.3)',
+
+    // Enhanced interactive shadows
+    hover: '0 8px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(59, 130, 246, 0.15)',
+    hoverStrong: '0 12px 32px -5px rgba(0, 0, 0, 0.15), 0 6px 16px -2px rgba(59, 130, 246, 0.2)',
+    active: '0 2px 8px -1px rgba(0, 0, 0, 0.08), 0 1px 4px -1px rgba(59, 130, 246, 0.1)',
+    focus: '0 0 0 3px rgba(59, 130, 246, 0.25)',
+    focusStrong: '0 0 0 4px rgba(59, 130, 246, 0.3)',
+
+    // Enhanced chat-specific shadows
+    chatUser: '0 4px 12px rgba(59, 130, 246, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08)',
+    chatUserHover: '0 6px 16px rgba(59, 130, 246, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1)',
+    chatAI: '0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06)',
+    chatAIHover: '0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.08)',
   },
+
+
 
   // Animation durations
   transitions: {
@@ -141,38 +287,42 @@ export const componentStyles = {
     },
     variants: {
       solid: {
-        background: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
+        background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
         color: 'white',
-        boxShadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
+        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
         _hover: {
+          background: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
           transform: 'translateY(-2px)',
-          boxShadow: '0 8px 20px rgba(79, 156, 249, 0.35)',
+          boxShadow: '0 8px 20px rgba(59, 130, 246, 0.35)',
           _disabled: {
             transform: 'none',
-            boxShadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
           },
         },
         _active: {
           transform: 'translateY(0)',
-          boxShadow: '0 2px 8px rgba(79, 156, 249, 0.3)',
+          boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
         },
       },
       outline: {
-        borderColor: '#4F9CF9',
+        borderColor: '#3B82F6',
         borderWidth: '2px',
-        color: '#4F9CF9',
+        color: '#3B82F6',
         bg: 'transparent',
         _hover: {
-          bg: 'rgba(79, 156, 249, 0.05)',
+          bg: 'rgba(59, 130, 246, 0.05)',
+          borderColor: '#2563EB',
+          color: '#2563EB',
           transform: 'translateY(-1px)',
-          boxShadow: '0 4px 12px rgba(79, 156, 249, 0.15)',
+          boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
         },
       },
       ghost: {
-        color: '#4F9CF9',
+        color: '#3B82F6',
         bg: 'transparent',
         _hover: {
-          bg: 'rgba(79, 156, 249, 0.08)',
+          bg: 'rgba(59, 130, 246, 0.08)',
+          color: '#2563EB',
           transform: 'translateY(-1px)',
         },
       },

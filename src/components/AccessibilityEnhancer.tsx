@@ -47,16 +47,36 @@ export const AccessibilityEnhancer: React.FC<AccessibilityEnhancerProps> = ({
         if (mainContent instanceof HTMLElement) {
           focusElement(mainContent);
           announce('Skipped to main content');
+          // Add visual indicator for skip action
+          mainContent.style.outline = '3px solid #4F9CF9';
+          setTimeout(() => {
+            mainContent.style.outline = '';
+          }, 2000);
         }
       }
 
       // Skip to navigation (Alt + N)
       if (event.altKey && event.key === 'n') {
         event.preventDefault();
-        const navigation = document.querySelector('nav, [role="navigation"], #navigation');
+        const navigation = document.querySelector('nav, [role="navigation"], #navigation, header');
         if (navigation instanceof HTMLElement) {
           focusElement(navigation);
           announce('Skipped to navigation');
+          // Add visual indicator
+          navigation.style.outline = '3px solid #4F9CF9';
+          setTimeout(() => {
+            navigation.style.outline = '';
+          }, 2000);
+        }
+      }
+
+      // Open chat input (Alt + C)
+      if (event.altKey && event.key === 'c') {
+        event.preventDefault();
+        const chatInput = document.querySelector('textarea[placeholder*="message"], input[placeholder*="message"], #chat-input');
+        if (chatInput instanceof HTMLElement) {
+          focusElement(chatInput);
+          announce('Chat input activated');
         }
       }
 
@@ -70,18 +90,65 @@ export const AccessibilityEnhancer: React.FC<AccessibilityEnhancerProps> = ({
         }
       }
 
-      // Escape key handling for modals and overlays
+      // Toggle high contrast mode (Alt + H)
+      if (event.altKey && event.key === 'h') {
+        event.preventDefault();
+        const body = document.body;
+        const isHighContrast = body.classList.contains('high-contrast');
+
+        if (isHighContrast) {
+          body.classList.remove('high-contrast');
+          announce('High contrast mode disabled');
+        } else {
+          body.classList.add('high-contrast');
+          announce('High contrast mode enabled');
+        }
+      }
+
+      // Increase font size (Alt + Plus)
+      if (event.altKey && (event.key === '+' || event.key === '=')) {
+        event.preventDefault();
+        const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const newSize = Math.min(currentSize + 2, 24);
+        document.documentElement.style.fontSize = `${newSize}px`;
+        announce(`Font size increased to ${newSize} pixels`);
+      }
+
+      // Decrease font size (Alt + Minus)
+      if (event.altKey && event.key === '-') {
+        event.preventDefault();
+        const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const newSize = Math.max(currentSize - 2, 12);
+        document.documentElement.style.fontSize = `${newSize}px`;
+        announce(`Font size decreased to ${newSize} pixels`);
+      }
+
+      // Enhanced Escape key handling for modals and overlays
       if (event.key === 'Escape') {
         const activeModal = document.querySelector('[role="dialog"][aria-modal="true"]');
         const activeOverlay = document.querySelector('.chakra-modal__overlay');
-        
+        const activeDropdown = document.querySelector('[aria-expanded="true"]');
+
         if (activeModal || activeOverlay) {
-          const closeButton = document.querySelector('[aria-label*="Close"], [data-testid="close-button"]');
+          const closeButton = document.querySelector('[aria-label*="Close"], [data-testid="close-button"], .chakra-modal__close-btn');
           if (closeButton instanceof HTMLElement) {
             closeButton.click();
             announce('Modal closed');
           }
+        } else if (activeDropdown) {
+          // Close dropdown menus
+          const button = activeDropdown.closest('button') || activeDropdown;
+          if (button instanceof HTMLElement) {
+            button.click();
+            announce('Menu closed');
+          }
         }
+      }
+
+      // Help shortcut (Alt + ?)
+      if (event.altKey && (event.key === '?' || event.key === '/')) {
+        event.preventDefault();
+        announce('Keyboard shortcuts: Alt+M for main content, Alt+N for navigation, Alt+C for chat, Alt+H for high contrast, Alt+Plus/Minus for font size');
       }
     };
 

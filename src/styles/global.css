@@ -3,6 +3,12 @@
    Consolidated styling system for modern, accessible, mobile-first design
    =================================================================== */
 
+/* Import Tailwind CSS first for utility-first approach */
+@import "./tailwind.css";
+
+/* Import additional styles */
+@import "./animations.css";
+
 /* ===================================================================
    CSS CUSTOM PROPERTIES (DESIGN TOKENS)
    =================================================================== */
@@ -21,71 +27,132 @@
   --letter-spacing-normal: -0.009em;
   --letter-spacing-wide: -0.008em;
 
-  /* Color Palette */
-  --color-bg-primary: #fafbfc;
+  /* Modern Monochromatic Color Palette */
+  /* Base Surfaces - Pure and clean */
+  --color-bg-primary: #ffffff;
   --color-surface-primary: #ffffff;
-  --color-surface-secondary: #f8fafc;
-  --color-surface-tertiary: #f1f5f9;
-  --color-surface-glass: rgba(255, 255, 255, 0.8);
+  --color-surface-secondary: #fafafa;
+  --color-surface-tertiary: #f5f5f5;
+  --color-surface-elevated: #ffffff;
+  --color-surface-glass: rgba(255, 255, 255, 0.85);
 
-  /* Brand Colors */
-  --color-brand-primary: #4f9cf9;
-  --color-brand-secondary: #8b5cf6;
-  --color-brand-accent: #06b6d4;
-  --gradient-primary: linear-gradient(135deg, #4f9cf9 0%, #6366f1 100%);
-  --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
-  --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+  /* Neutral Grays - Sophisticated monochromatic scale */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #d4d4d4;
+  --color-gray-400: #a3a3a3;
+  --color-gray-500: #737373;
+  --color-gray-600: #525252;
+  --color-gray-700: #404040;
+  --color-gray-800: #262626;
+  --color-gray-900: #171717;
+
+  /* Enhanced Blue Hue System - Primary brand colors */
+  --color-primary: #3b82f6;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Secondary blue variations */
+  --color-blue-50: #f0f9ff;
+  --color-blue-100: #e0f2fe;
+  --color-blue-200: #bae6fd;
+  --color-blue-300: #7dd3fc;
+  --color-blue-400: #38bdf8;
+  --color-blue-500: #0ea5e9;
+  --color-blue-600: #0284c7;
+  --color-blue-700: #0369a1;
+  --color-blue-800: #075985;
+  --color-blue-900: #0c4a6e;
+
+  /* Legacy accent mapping for compatibility */
+  --color-accent: var(--color-primary-500);
+  --color-accent-light: var(--color-primary-400);
+  --color-accent-dark: var(--color-primary-700);
+
+  /* Enhanced Modern Gradients with Blue Focus */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-secondary: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  --gradient-accent: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
   --gradient-glass: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.25) 0%,
-    rgba(255, 255, 255, 0.1) 100%
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.9) 100%
   );
-  --gradient-iridescent: linear-gradient(
+  --gradient-glass-blue: linear-gradient(
     135deg,
-    #4f9cf9 0%,
-    #8b5cf6 25%,
-    #06b6d4 50%,
-    #10b981 75%,
-    #f59e0b 100%
+    rgba(239, 246, 255, 0.9) 0%,
+    rgba(219, 234, 254, 0.8) 100%
   );
-  --gradient-text-primary: linear-gradient(135deg, #4f9cf9 0%, #8b5cf6 100%);
-  --gradient-text-secondary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-
-  /* Text Colors */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748b;
-  --color-text-muted: #94a3b8;
+  --gradient-surface: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  --gradient-glow: radial-gradient(
+    ellipse at center,
+    rgba(59, 130, 246, 0.15) 0%,
+    transparent 70%
+  );
+  /* Text Colors - Monochromatic hierarchy */
+  --color-text-primary: #171717;
+  --color-text-secondary: #525252;
+  --color-text-tertiary: #737373;
+  --color-text-muted: #a3a3a3;
   --color-text-inverse: #ffffff;
+  --color-text-accent: #2563eb;
 
-  /* Border Colors */
-  --color-border-light: #f1f5f9;
-  --color-border-medium: #e2e8f0;
-  --color-border-strong: #cbd5e1;
+  /* Border Colors - Clean and minimal */
+  --color-border-light: #f5f5f5;
+  --color-border-medium: #e5e5e5;
+  --color-border-strong: #d4d4d4;
+  --color-border-accent: #2563eb;
 
-  /* Semantic Colors */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
+  /* Semantic Colors - Minimal and clean */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
 
-  /* Enhanced Shadows with Glass Effects */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  --shadow-glass-light: 0 4px 16px 0 rgba(31, 38, 135, 0.15);
-  --shadow-glow: 0 0 20px rgba(79, 156, 249, 0.3);
-  --shadow-glow-strong: 0 0 40px rgba(79, 156, 249, 0.4);
-  --shadow-user-bubble: 0 4px 12px rgba(79, 156, 249, 0.25);
-  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.12),
-    0 4px 8px rgba(0, 0, 0, 0.08);
+  /* Enhanced Modern Shadows with Blue Tints */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+
+  /* Enhanced glass morphism shadows */
+  --shadow-glass: 0 8px 32px rgba(59, 130, 246, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-glass-light: 0 4px 20px rgba(0, 0, 0, 0.06),
+    0 2px 12px rgba(59, 130, 246, 0.08);
+  --shadow-glass-lg: 0 16px 48px rgba(59, 130, 246, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* Modern shadow system */
+  --shadow-modern: 0 4px 20px rgba(0, 0, 0, 0.08),
+    0 2px 12px rgba(59, 130, 246, 0.08);
+  --shadow-modern-lg: 0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(59, 130, 246, 0.12);
+
+  /* Glow effects */
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.25);
+  --shadow-glow-lg: 0 0 40px rgba(59, 130, 246, 0.3);
+
+  /* Chat-specific shadows */
+  --shadow-chat-user: 0 4px 12px rgba(59, 130, 246, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-chat-ai: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  /* Legacy shadows for compatibility */
+  --shadow-accent: var(--shadow-modern);
+  --shadow-accent-strong: var(--shadow-modern-lg);
+  --shadow-floating: var(--shadow-glass);
 
   /* Backdrop Blur Values */
   --blur-xs: blur(4px);
@@ -433,20 +500,70 @@ select {
     /* Improve mobile scrolling performance */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    /* Enhanced mobile keyboard handling */
+    transition: padding-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Enhanced mobile performance */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    /* Better text rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Ensure fixed header stays on top with proper safe area handling */
-  header[role="banner"] {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 9999 !important;
-    padding-top: env(safe-area-inset-top, 0px) !important;
-    padding-left: env(safe-area-inset-left, 0px) !important;
-    padding-right: env(safe-area-inset-right, 0px) !important;
+  /* Keyboard visible state adjustments */
+  body.keyboard-visible {
+    padding-bottom: 0;
+    /* Prevent viewport jumping when keyboard appears */
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
 
+  /* Input focused state for better mobile UX */
+  body.input-focused {
+    /* Ensure proper scrolling when input is focused */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Enhanced mobile input handling */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    border-radius: 0; /* Remove iOS default styling */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Enhanced mobile button styling */
+  button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+}
+
+/* Ensure fixed header stays on top with proper safe area handling */
+header[role="banner"] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10000 !important;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+  padding-left: calc(env(safe-area-inset-left, 0px) + 16px) !important;
+  padding-right: calc(env(safe-area-inset-right, 0px) + 16px) !important;
+  padding-bottom: 12px !important;
+  min-height: 60px !important;
+  height: 60px !important;
+}
+
+/* Enhanced mobile-specific optimizations */
+@media (max-width: 768px) {
   /* Prevent page scrolling - only content containers should scroll */
   html,
   body {
@@ -586,6 +703,184 @@ select {
   -webkit-transform: translateZ(0);
 }
 
+/* Enhanced mobile touch targets */
+.mobile-touch-target {
+  min-height: 48px;
+  min-width: 48px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Chat page scroll locking */
+.chat-page-container {
+  overflow: hidden !important;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Ensure only chat messages area is scrollable */
+.chat-messages-container {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Prevent any unwanted scrolling on chat page */
+body.chat-page-active {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Ensure root container doesn't scroll */
+#root.chat-page {
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Enhanced mobile-specific CSS custom properties */
+:root {
+  --mobile-header-height: 64px;
+  --mobile-input-height: 130px;
+  --mobile-nav-height: 80px;
+  --mobile-safe-area-top: env(safe-area-inset-top, 0px);
+  --mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-safe-area-left: env(safe-area-inset-left, 0px);
+  --mobile-safe-area-right: env(safe-area-inset-right, 0px);
+  --mobile-viewport-height: 100vh;
+  --keyboard-visible: 0;
+  --keyboard-height: 0px;
+}
+
+/* Mobile keyboard adjustments */
+@media (max-width: 768px) {
+  /* Ensure chat input stays above keyboard */
+  .chat-input-container {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    transform: translateY(calc(-1 * var(--keyboard-height)));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Adjust main content when keyboard is visible */
+  body.keyboard-visible .chat-messages-container {
+    padding-bottom: calc(130px + var(--keyboard-height));
+  }
+
+  /* Prevent body scroll when keyboard is open */
+  body.keyboard-visible {
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Ensure proper input behavior */
+  body.input-focused textarea {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+  }
+}
+
+/* Enhanced mobile layout utilities */
+.mobile-full-height {
+  height: calc(
+    var(--mobile-viewport-height) - var(--mobile-header-height) -
+      var(--mobile-input-height)
+  );
+  min-height: calc(
+    var(--mobile-viewport-height) - var(--mobile-header-height) -
+      var(--mobile-input-height)
+  );
+}
+
+.mobile-safe-padding {
+  padding-top: var(--mobile-safe-area-top);
+  padding-bottom: var(--mobile-safe-area-bottom);
+  padding-left: var(--mobile-safe-area-left);
+  padding-right: var(--mobile-safe-area-right);
+}
+
+.mobile-keyboard-adjust {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-keyboard-adjust.keyboard-visible {
+  transform: translateY(-20px);
+}
+
+/* Enhanced mobile scrolling */
+.mobile-scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Enhanced mobile animations */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-animate {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-animate {
+    transition: none;
+  }
+}
+
+/* Enhanced mobile input styling */
+.mobile-input {
+  font-size: 16px; /* Prevent zoom on iOS */
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced mobile button styling */
+.mobile-button {
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-button:active {
+  transform: scale(0.98);
+}
+
+/* Enhanced mobile card styling */
+.mobile-card {
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
 /* GPU acceleration for animations */
 .gpu-accelerated {
   transform: translateZ(0);
@@ -657,4 +952,43 @@ img[loading="lazy"].loaded {
   font-family: "Inter";
   font-display: swap;
   src: local("Inter");
+}
+
+/* ===================================================================
+   SPLASH PAGE MOBILE OPTIMIZATIONS
+   =================================================================== */
+
+/* Mobile-first responsive button stacking for splash page */
+@media (max-width: 480px) {
+  .splash-button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .splash-button-container button {
+    width: 100%;
+    min-width: 320px;
+    margin-top: 0 !important;
+  }
+
+  /* Ensure proper spacing between buttons on mobile */
+  .splash-button-container button:not(:last-child) {
+    margin-bottom: 8px;
+  }
+
+  /* Optimize card padding for mobile */
+  .splash-card-mobile {
+    padding: 24px 20px !important;
+    margin: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+
+  /* Ensure minimum width support for 320px devices */
+  .splash-container-mobile {
+    min-width: 320px;
+    width: 100%;
+    padding: 0 16px;
+  }
 }

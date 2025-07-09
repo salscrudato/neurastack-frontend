@@ -1,6 +1,6 @@
 /**
  * Enhanced Mobile Navigation Component
- * 
+ *
  * Provides optimized mobile navigation with:
  * - Bottom tab bar for better thumb reach
  * - Haptic feedback
@@ -9,23 +9,23 @@
  */
 
 import {
-  Box,
-  Button,
-  Flex,
-  Icon,
-  Text,
-  useColorModeValue,
-  VStack
+    Box,
+    Button,
+    Flex,
+    Icon,
+    Text,
+    useColorModeValue,
+    VStack
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { memo, useCallback } from 'react';
 import {
-  PiChatCircleBold,
-  PiClockCounterClockwiseBold,
-  PiHeartBold
+    PiChatCircleBold,
+    PiClockCounterClockwiseBold,
+    PiHeartBold
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useMobileOptimization } from '../hooks/useMobileOptimization';
+import { useOptimizedDevice } from '../hooks/core/useOptimizedDevice';
 import { useAuthStore } from '../store/useAuthStore';
 
 const MotionBox = motion(Box);
@@ -44,12 +44,14 @@ interface NavItem {
 export const MobileNavigation = memo(function MobileNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isMobile, triggerHaptic, touchTargets } = useMobileOptimization();
+  const { capabilities, triggerHaptic, responsive } = useOptimizedDevice();
+  const { touchTargets } = responsive;
+  const { isMobile } = capabilities;
   const user = useAuthStore(s => s.user);
 
   // Theme colors
-  const bg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(26, 32, 44, 0.95)');
-  const borderColor = useColorModeValue('rgba(79, 156, 249, 0.1)', 'rgba(79, 156, 249, 0.2)');
+  // const bg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(26, 32, 44, 0.95)');
+  // const borderColor = useColorModeValue('rgba(79, 156, 249, 0.1)', 'rgba(79, 156, 249, 0.2)');
   const activeColor = useColorModeValue('#4F9CF9', '#4F9CF9');
   const inactiveColor = useColorModeValue('#64748B', '#A0AEC0');
 
@@ -76,11 +78,11 @@ export const MobileNavigation = memo(function MobileNavigation() {
   // Handle navigation with haptic feedback
   const handleNavigation = useCallback((path: string, disabled?: boolean) => {
     if (disabled) {
-      triggerHaptic('warning');
+      triggerHaptic('ERROR');
       return;
     }
 
-    triggerHaptic('light');
+    triggerHaptic('LIGHT');
     navigate(path);
   }, [navigate, triggerHaptic]);
 
@@ -96,18 +98,32 @@ export const MobileNavigation = memo(function MobileNavigation() {
       left={0}
       right={0}
       zIndex={1000}
-      bg={bg}
+      bg="linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)"
       borderTop="1px solid"
-      borderColor={borderColor}
-      backdropFilter="blur(20px)"
+      borderColor="rgba(226, 232, 240, 0.8)"
+      backdropFilter="blur(30px)"
+      WebkitBackdropFilter="blur(30px)"
       initial={{ y: 100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       sx={{
-        // Safe area support for devices with home indicator
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)',
+        // Enhanced safe area support for devices with home indicator
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 4px)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 4px)',
+        paddingTop: '8px',
+        // Enhanced mobile performance
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        willChange: 'transform',
+        // Enhanced touch handling
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        // Performance optimizations
+        contain: 'layout style paint',
+        isolation: 'isolate',
+        // Enhanced shadow for better visual separation using CSS custom properties
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08), 0 -1px 3px rgba(0, 0, 0, 0.05)',
       }}
     >
       <MotionFlex
@@ -133,11 +149,17 @@ export const MobileNavigation = memo(function MobileNavigation() {
               opacity={isDisabled ? 0.4 : 1}
               cursor={isDisabled ? 'not-allowed' : 'pointer'}
               _hover={{
-                bg: isActive ? 'transparent' : 'rgba(79, 156, 249, 0.1)',
+                bg: isActive
+                  ? 'var(--color-primary-100)'
+                  : 'var(--color-primary-50)',
                 transform: isDisabled ? 'none' : 'translateY(-1px)',
+                boxShadow: isDisabled ? 'none' : 'var(--shadow-modern)',
               }}
               _active={{
-                transform: isDisabled ? 'none' : 'translateY(0px)',
+                transform: isDisabled ? 'none' : 'scale(0.95)',
+                bg: isActive
+                  ? 'linear-gradient(135deg, rgba(79, 156, 249, 0.2) 0%, rgba(99, 102, 241, 0.15) 100%)'
+                  : 'linear-gradient(135deg, rgba(79, 156, 249, 0.15) 0%, rgba(99, 102, 241, 0.12) 100%)',
               }}
               transition="all 0.2s ease"
               sx={{
