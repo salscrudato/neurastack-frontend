@@ -104,12 +104,12 @@ const StyleGuide = memo(function StyleGuide() {
             </CardBody>
           </Card>
           
-          <Card variant="neurafit">
+          <Card variant="grok">
             <CardHeader>
-              <Heading size="sm">NeuraFit Card</Heading>
+              <Heading size="sm">Grok Card</Heading>
             </CardHeader>
             <CardBody>
-              <Text>NeuraFit specific card styling</Text>
+              <Text>Grok-inspired card styling with teal accents</Text>
             </CardBody>
           </Card>
         </SimpleGrid>

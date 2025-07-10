@@ -8,25 +8,25 @@ import { useOptimizedDevice } from '../../../hooks/core/useOptimizedDevice';
 
 export interface CardProps extends Omit<BoxProps, 'variant'> {
   /** Card variant */
-  variant?: 'default' | 'glass' | 'elevated' | 'outlined' | 'gradient';
-  
+  variant?: 'default' | 'glass' | 'elevated' | 'outlined' | 'gradient' | 'grok';
+
   /** Enable hover effects */
   hoverable?: boolean;
-  
+
   /** Enable click effects */
   clickable?: boolean;
-  
+
   /** Padding size */
   padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
-  
+
   /** Border radius size */
   borderRadius?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
-  
+
   /** Enable glass morphism effect */
   glassEffect?: boolean;
-  
+
   /** Enable gradient background */
-  gradientDirection?: 'primary' | 'secondary' | 'accent';
+  gradientDirection?: 'primary' | 'secondary' | 'accent' | 'teal';
 }
 
 // ============================================================================
@@ -43,10 +43,17 @@ const getVariantStyles = (variant: CardProps['variant'], glassEffect: boolean, g
   switch (variant) {
     case 'glass':
       return {
-        bg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%)',
+        bg: 'linear-gradient(135deg, rgba(245, 245, 245, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%)',
         border: '1px solid rgba(255, 255, 255, 0.3)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(79, 156, 249, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
+        boxShadow: '0 8px 32px rgba(0, 196, 180, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)',
         ...baseGlass,
+      };
+    case 'grok':
+      return {
+        bg: '#F5F5F5',
+        border: '1px solid #E5E5E5',
+        boxShadow: '0 4px 20px rgba(0, 196, 180, 0.08), 0 2px 12px rgba(0, 0, 0, 0.06)',
+        borderRadius: '12px',
       };
 
     case 'elevated':
@@ -70,6 +77,7 @@ const getVariantStyles = (variant: CardProps['variant'], glassEffect: boolean, g
         primary: 'linear-gradient(135deg, rgba(79, 156, 249, 0.05) 0%, rgba(99, 102, 241, 0.03) 100%)',
         secondary: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(168, 85, 247, 0.03) 100%)',
         accent: 'linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(14, 165, 233, 0.03) 100%)',
+        teal: 'linear-gradient(135deg, rgba(0, 196, 180, 0.05) 0%, rgba(0, 168, 154, 0.03) 100%)',
       };
       return {
         bg: gradients[gradientDirection || 'primary'],

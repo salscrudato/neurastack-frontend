@@ -1,0 +1,237 @@
+/**
+ * GROK-INSPIRED DESIGN SYSTEM VARIABLES
+ * 
+ * Futuristic, minimalist, and user-centric design tokens
+ * inspired by Grok's interface aesthetic
+ */
+
+:root {
+  /* ===================================================================
+     TYPOGRAPHY SYSTEM
+     =================================================================== */
+  
+  /* Font Families - Inter for clean, geometric look */
+  --font-family-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-family-text: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-family-mono: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace;
+  
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  
+  /* ===================================================================
+     COLOR PALETTE - GROK INSPIRED
+     =================================================================== */
+  
+  /* Primary Background - Dark charcoal for sleek backdrop */
+  --color-bg-primary: #1A1A1A;
+  --color-bg-secondary: #2A2A2A;
+  --color-bg-tertiary: #3A3A3A;
+  
+  /* Secondary Background - Soft off-white for contrast areas */
+  --color-surface-primary: #F5F5F5;
+  --color-surface-secondary: #FFFFFF;
+  --color-surface-tertiary: #FAFAFA;
+  --color-surface-elevated: #FFFFFF;
+  
+  /* Accent Color - Vibrant teal for interactive elements */
+  --color-accent-primary: #00C4B4;
+  --color-accent-secondary: #00A89A;
+  --color-accent-tertiary: #008C80;
+  --color-accent-light: #33D1C5;
+  --color-accent-lighter: #66DDD6;
+  
+  /* Text Colors */
+  --color-text-primary-dark: #FFFFFF;      /* Bright white on dark backgrounds */
+  --color-text-secondary-dark: #E0E0E0;    /* Light gray on dark backgrounds */
+  --color-text-tertiary-dark: #A0A0A0;     /* Muted gray on dark backgrounds */
+  
+  --color-text-primary-light: #333333;     /* Dark gray on light backgrounds */
+  --color-text-secondary-light: #666666;   /* Medium gray on light backgrounds */
+  --color-text-tertiary-light: #A0A0A0;    /* Muted gray on light backgrounds */
+  
+  /* Semantic Colors */
+  --color-success: #16A34A;
+  --color-success-light: #22C55E;
+  --color-warning: #FFB84C;
+  --color-warning-light: #FFC973;
+  --color-error: #FF6B6B;
+  --color-error-light: #FF8E8E;
+  --color-info: #00C4B4;
+  --color-info-light: #33D1C5;
+  
+  /* Border Colors */
+  --color-border-light: #E5E5E5;
+  --color-border-medium: #D1D1D1;
+  --color-border-strong: #B0B0B0;
+  --color-border-accent: #00C4B4;
+  --color-border-dark: #404040;
+  
+  /* ===================================================================
+     SPACING SYSTEM - 8px base unit
+     =================================================================== */
+  
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+  
+  /* ===================================================================
+     BORDER RADIUS SYSTEM
+     =================================================================== */
+  
+  --radius-none: 0;
+  --radius-sm: 0.125rem;   /* 2px */
+  --radius-base: 0.25rem;  /* 4px */
+  --radius-md: 0.375rem;   /* 6px */
+  --radius-lg: 0.5rem;     /* 8px */
+  --radius-xl: 0.75rem;    /* 12px */
+  --radius-2xl: 1rem;      /* 16px */
+  --radius-3xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+  
+  /* ===================================================================
+     SHADOW SYSTEM - Enhanced with teal tints
+     =================================================================== */
+  
+  /* Basic Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+  
+  /* Glow Effects with Teal */
+  --shadow-glow: 0 0 20px rgba(0, 196, 180, 0.25), 0 0 40px rgba(0, 196, 180, 0.1);
+  --shadow-glow-strong: 0 0 30px rgba(0, 196, 180, 0.4), 0 0 60px rgba(0, 196, 180, 0.15);
+  
+  /* Interactive Shadows */
+  --shadow-hover: 0 8px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 196, 180, 0.15);
+  --shadow-focus: 0 0 0 3px rgba(0, 196, 180, 0.25), 0 0 0 1px rgba(0, 196, 180, 0.5);
+  
+  /* ===================================================================
+     BACKDROP BLUR VALUES
+     =================================================================== */
+  
+  --blur-xs: blur(4px);
+  --blur-sm: blur(8px);
+  --blur-md: blur(12px);
+  --blur-lg: blur(16px);
+  --blur-xl: blur(24px);
+  --blur-2xl: blur(32px);
+  
+  /* ===================================================================
+     TRANSITION SYSTEM
+     =================================================================== */
+  
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ===================================================================
+     Z-INDEX SCALE
+     =================================================================== */
+  
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+  
+  /* ===================================================================
+     COMPONENT-SPECIFIC VARIABLES
+     =================================================================== */
+  
+  /* Button Variables */
+  --button-height-sm: 36px;
+  --button-height-md: 44px;
+  --button-height-lg: 52px;
+  --button-min-width: 120px;
+  
+  /* Input Variables */
+  --input-height: 44px;
+  --input-padding: 12px 16px;
+  
+  /* Card Variables */
+  --card-padding: 24px;
+  --card-padding-sm: 16px;
+  
+  /* Modal Variables */
+  --modal-max-width: 600px;
+  --modal-padding: 24px;
+  
+  /* ===================================================================
+     RESPONSIVE BREAKPOINTS
+     =================================================================== */
+  
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  
+  /* ===================================================================
+     MOBILE-SPECIFIC VARIABLES
+     =================================================================== */
+  
+  --mobile-header-height: 64px;
+  --mobile-nav-height: 80px;
+  --mobile-safe-area-top: env(safe-area-inset-top, 0px);
+  --mobile-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-safe-area-left: env(safe-area-inset-left, 0px);
+  --mobile-safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* ===================================================================
+   DARK MODE OVERRIDES (Default theme is dark)
+   =================================================================== */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Override for users who prefer light mode */
+    --color-bg-primary: #FFFFFF;
+    --color-bg-secondary: #F5F5F5;
+    --color-bg-tertiary: #FAFAFA;
+    
+    --color-surface-primary: #1A1A1A;
+    --color-surface-secondary: #2A2A2A;
+    --color-surface-tertiary: #3A3A3A;
+  }
+}

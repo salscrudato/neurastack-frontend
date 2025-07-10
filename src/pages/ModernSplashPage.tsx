@@ -8,7 +8,6 @@ import { GoogleAuthProvider, signInAnonymously, signInWithPopup } from "firebase
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from "../assets/icons/logo.svg";
-import howItWorksImage from "../assets/img/how-it-works.png";
 import { auth } from "../firebase";
 import { useReducedMotion } from "../hooks/useAccessibility";
 import { useAuthStore } from "../store/useAuthStore";
@@ -216,11 +215,11 @@ export function ModernSplashPage() {
         Skip to main content
       </a>
 
-      {/* Subtle glow overlay */}
+      {/* Subtle teal glow overlay - Grok-inspired */}
       <div
         className={`absolute inset-0 pointer-events-none opacity-70 ${!prefersReducedMotion ? 'animate-glow-pulse' : ''}`}
         style={{
-          background: 'radial-gradient(ellipse 600px 400px at 50% 45%, rgba(59, 130, 246, 0.08) 0%, transparent 60%)'
+          background: 'radial-gradient(ellipse 600px 400px at 50% 45%, rgba(0, 196, 180, 0.08) 0%, transparent 60%)'
         }}
       />
 
@@ -235,7 +234,7 @@ export function ModernSplashPage() {
         <h1
           className="text-6xl md:text-7xl lg:text-8xl font-bold text-center"
           style={{
-            color: '#0A192F',
+            color: '#1A1A1A',  // Dark charcoal for Grok aesthetic
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             fontWeight: 700,
             letterSpacing: '-0.02em',
@@ -255,16 +254,16 @@ export function ModernSplashPage() {
         style={{
           background: `
             linear-gradient(135deg,
-              #E6F0FA 0%,
+              #F5F5F5 0%,
               rgba(255, 255, 255, 0.95) 50%,
-              #E6F0FA 100%
+              #FAFAFA 100%
             )
           `,
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
           borderRadius: '36px',
-          border: '1px solid rgba(30, 144, 255, 0.25)',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(0, 196, 180, 0.25)',  // Teal border
+          boxShadow: '0 4px 20px rgba(0, 196, 180, 0.08), 0 2px 12px rgba(0, 0, 0, 0.06)',
           willChange: 'transform',
           transform: 'translateZ(0)',
           touchAction: 'manipulation',
@@ -282,8 +281,8 @@ export function ModernSplashPage() {
             className="w-56 h-56 mb-3 md:w-60 md:h-60 lg:w-64 lg:h-64"
             style={{
               filter: `
-                drop-shadow(0 0 24px rgba(59, 130, 246, 0.4))
-                drop-shadow(0 0 48px rgba(37, 99, 235, 0.2))
+                drop-shadow(0 0 24px rgba(0, 196, 180, 0.4))
+                drop-shadow(0 0 48px rgba(0, 168, 154, 0.2))
                 drop-shadow(0 8px 32px rgba(0, 0, 0, 0.3))
               `,
               backfaceVisibility: 'hidden',
@@ -326,7 +325,7 @@ export function ModernSplashPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full h-12 px-5 border-2 rounded-2xl font-medium cursor-pointer transition-all duration-300 ease-out flex items-center justify-center relative overflow-hidden hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full h-12 px-5 border-2 rounded-2xl font-medium cursor-pointer transition-all duration-300 ease-out flex items-center justify-center relative overflow-hidden hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             aria-label="Sign in with Google account"
             style={{
               touchAction: 'manipulation',
@@ -335,17 +334,17 @@ export function ModernSplashPage() {
               willChange: 'transform',
               fontSize: '16px',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              backgroundColor: '#ffffff !important',
-              borderColor: '#1E90FF !important',
-              color: '#1E90FF !important',
+              background: 'linear-gradient(135deg, #00C4B4 0%, #00A89A 100%)',  // Teal gradient background
+              borderColor: '#00C4B4 !important',
+              color: '#ffffff !important',  // White text on teal background
               borderWidth: '2px',
               borderStyle: 'solid'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f0f9ff';
+              e.currentTarget.style.background = 'linear-gradient(135deg, #1AFFE8 0%, #00C4B4 100%)';  // Lighter teal on hover
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffffff';
+              e.currentTarget.style.background = 'linear-gradient(135deg, #00C4B4 0%, #00A89A 100%)';
             }}
           >
             {isLoading ? (
@@ -371,7 +370,7 @@ export function ModernSplashPage() {
             type="button"
             onClick={handleGuestLogin}
             disabled={isLoading}
-            className="w-full h-12 px-5 border-2 rounded-2xl font-medium cursor-pointer transition-all duration-300 ease-out flex items-center justify-center relative overflow-hidden hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full h-12 px-5 border-2 rounded-2xl font-medium cursor-pointer transition-all duration-300 ease-out flex items-center justify-center relative overflow-hidden hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             aria-label="Continue as guest user without account"
             style={{
               touchAction: 'manipulation',
@@ -381,13 +380,13 @@ export function ModernSplashPage() {
               fontSize: '16px',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               backgroundColor: '#ffffff !important',
-              borderColor: '#1E90FF !important',
-              color: '#1E90FF !important',
+              borderColor: '#00C4B4 !important',  // Teal border
+              color: '#00C4B4 !important',        // Teal text
               borderWidth: '2px',
               borderStyle: 'solid'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f0f9ff';
+              e.currentTarget.style.backgroundColor = '#f0fdfc';  // Light teal background on hover
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = '#ffffff';
@@ -408,7 +407,7 @@ export function ModernSplashPage() {
             type="button"
             onClick={handleInfoClick}
             disabled={isLoading}
-            className="w-full h-12 px-5 border-2 rounded-2xl font-medium cursor-pointer transition-all duration-300 ease-out flex items-center justify-center relative overflow-hidden hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mt-2"
+            className="w-full h-12 px-5 border-2 rounded-2xl font-medium cursor-pointer transition-all duration-300 ease-out flex items-center justify-center relative overflow-hidden hover:scale-105 active:scale-100 focus:outline-none focus:ring-2 focus:ring-teal-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mt-2"
             aria-label="Learn more about NeuraStack"
             aria-expanded={showModal}
             aria-haspopup="dialog"
@@ -420,13 +419,13 @@ export function ModernSplashPage() {
               fontSize: '16px',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               backgroundColor: '#ffffff !important',
-              borderColor: '#1E90FF !important',
-              color: '#1E90FF !important',
+              borderColor: '#00C4B4 !important',  // Teal border
+              color: '#00C4B4 !important',        // Teal text
               borderWidth: '2px',
               borderStyle: 'solid'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f0f9ff';
+              e.currentTarget.style.backgroundColor = '#f0fdfc';  // Light teal background on hover
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = '#ffffff';
@@ -476,18 +475,63 @@ export function ModernSplashPage() {
             >
               <XMarkIcon className="w-5 h-5 transition-transform duration-300 hover:rotate-90" />
             </button>
-            <img 
-              src={howItWorksImage} 
-              alt="Detailed diagram showing how NeuraStack works with AI models and user interactions" 
-              loading="lazy"
-              className="w-auto h-auto max-w-full max-h-[82vh] object-contain rounded-4xl"
+            <div
+              className="max-w-2xl mx-auto p-8 bg-white/95 backdrop-blur-md rounded-2xl"
               style={{
-                filter: 'drop-shadow(0 8px 24px rgba(0, 0, 0, 0.3)) drop-shadow(0 4px 12px rgba(59, 130, 246, 0.1))'
+                boxShadow: '0 8px 32px rgba(0, 196, 180, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)'
               }}
               id="modal-description"
-            />
-            <div id="modal-title" className="absolute -left-[9999px]">
-              How NeuraStack Works
+            >
+              <h2
+                id="modal-title"
+                className="text-3xl font-bold mb-6 text-center"
+                style={{ color: '#1A1A1A' }}
+              >
+                How NeuraStack Works
+              </h2>
+              <div className="space-y-4 text-left">
+                <p className="text-lg" style={{ color: '#333333' }}>
+                  NeuraStack is an AI-powered platform that provides intelligent responses through advanced language models.
+                </p>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-3">
+                    <div
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold mt-0.5"
+                      style={{ background: '#00C4B4' }}
+                    >
+                      1
+                    </div>
+                    <p style={{ color: '#666666' }}>
+                      <strong style={{ color: '#333333' }}>Ask Questions:</strong> Type your questions or requests in natural language
+                    </p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold mt-0.5"
+                      style={{ background: '#00C4B4' }}
+                    >
+                      2
+                    </div>
+                    <p style={{ color: '#666666' }}>
+                      <strong style={{ color: '#333333' }}>AI Processing:</strong> Our advanced AI models analyze and understand your request
+                    </p>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div
+                      className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-white text-sm font-bold mt-0.5"
+                      style={{ background: '#00C4B4' }}
+                    >
+                      3
+                    </div>
+                    <p style={{ color: '#666666' }}>
+                      <strong style={{ color: '#333333' }}>Get Responses:</strong> Receive intelligent, contextual answers and assistance
+                    </p>
+                  </div>
+                </div>
+                <p className="text-center mt-6 text-sm" style={{ color: '#A0A0A0' }}>
+                  Start chatting to experience the power of AI assistance
+                </p>
+              </div>
             </div>
           </div>
         </div>

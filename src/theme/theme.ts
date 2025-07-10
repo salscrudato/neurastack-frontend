@@ -7,27 +7,27 @@ import { components as enhancedComponents } from './components';
 import { componentStyles, designSystemTheme } from './designSystem';
 
 /*─────────────────────────────────────────────*/
-/* Modern Monochromatic Design System          */
-/* Clean, minimal, and sophisticated           */
+/* GROK-INSPIRED DESIGN SYSTEM                 */
+/* Futuristic, minimalist, and user-centric    */
 /*─────────────────────────────────────────────*/
-const modernColors = {
-  // Primary background - pure white for maximum cleanliness
-  bg: "#FFFFFF",
+const grokColors = {
+  // Primary background - dark charcoal for sleek backdrop
+  bg: "#1A1A1A",
 
-  // Clean surface colors - monochromatic
+  // Surface colors for contrast areas
   surface: {
-    primary: "#FFFFFF",
-    secondary: "#FAFAFA",
-    tertiary: "#F5F5F5",
-    quaternary: "#E5E5E5",
-    // Modern glass morphism
-    glass: "rgba(255, 255, 255, 0.85)",
-    glassLight: "rgba(255, 255, 255, 0.7)",
-    glassMedium: "rgba(255, 255, 255, 0.6)",
-    glassUltraLight: "rgba(255, 255, 255, 0.5)",
+    primary: "#F5F5F5",      // Soft off-white for cards/modals
+    secondary: "#FFFFFF",     // Pure white for elevated content
+    tertiary: "#FAFAFA",      // Light gray for subtle backgrounds
+    dark: "#2A2A2A",          // Dark surface for dark mode elements
+    // Modern glass morphism with dark theme
+    glass: "rgba(245, 245, 245, 0.9)",
+    glassLight: "rgba(255, 255, 255, 0.8)",
+    glassMedium: "rgba(245, 245, 245, 0.7)",
+    glassUltraLight: "rgba(255, 255, 255, 0.6)",
   },
 
-  // Neutral gray scale - sophisticated monochromatic
+  // Neutral gray scale for text and borders
   gray: {
     50: "#FAFAFA",
     100: "#F5F5F5",
@@ -41,106 +41,109 @@ const modernColors = {
     900: "#171717",
   },
 
-  // Single strategic accent - modern blue
+  // Vibrant teal accent - main interactive color
   accent: {
-    50: "#EFF6FF",
-    100: "#DBEAFE",
-    200: "#BFDBFE",
-    300: "#93C5FD",
-    400: "#60A5FA",
-    500: "#2563EB", // Main accent color
-    600: "#1D4ED8",
-    700: "#1E40AF",
-    800: "#1E3A8A",
-    900: "#172554",
+    50: "#E6FFFC",
+    100: "#B3FFF7",
+    200: "#80FFF2",
+    300: "#4DFFED",
+    400: "#1AFFE8",
+    500: "#00C4B4", // Main teal accent
+    600: "#00A89A",
+    700: "#008C80",
+    800: "#007066",
+    900: "#00544C",
   },
 
-  // Modern chat bubbles - clean and minimal
+  // Modern chat bubbles with Grok-inspired styling
   bubble: {
     user: {
-      // Clean accent gradient
-      bg: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
-      bgHover: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
+      // Teal gradient for user messages
+      bg: "linear-gradient(135deg, #00C4B4 0%, #00A89A 100%)",
+      bgHover: "linear-gradient(135deg, #1AFFE8 0%, #00C4B4 100%)",
       text: "#FFFFFF",
       textSecondary: "rgba(255, 255, 255, 0.9)",
-      // Subtle shadow
-      shadow: "0 4px 12px rgba(37, 99, 235, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08)",
-      shadowHover: "0 6px 16px rgba(37, 99, 235, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1)"
+      // Enhanced shadow with teal tint
+      shadow: "0 4px 12px rgba(0, 196, 180, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08)",
+      shadowHover: "0 6px 16px rgba(0, 196, 180, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1)"
     },
     ai: {
-      // Clean white background
-      bg: "#FFFFFF",
-      bgHover: "#FAFAFA",
-      text: "#171717",
-      textSecondary: "#525252",
-      textTertiary: "#737373",
+      // Clean off-white background for AI responses
+      bg: "#F5F5F5",
+      bgHover: "#FFFFFF",
+      text: "#333333",
+      textSecondary: "#666666",
+      textTertiary: "#A0A0A0",
       border: "#E5E5E5",
-      borderHover: "#D4D4D4",
-      // Minimal shadow
+      borderHover: "#D1D1D1",
+      // Subtle shadow
       shadow: "0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06)",
       shadowHover: "0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.08)"
     },
   },
 
-  // Modern brand colors - minimal and clean
+  // Grok-inspired brand colors with teal focus
   brand: {
     gradient: {
-      // Single accent gradient
-      accent: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
-      accentLight: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
-      accentDark: "linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)",
-      // Clean glass morphism
-      glass: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%)",
-      glassAccent: "linear-gradient(135deg, rgba(37,99,235,0.1) 0%, rgba(37,99,235,0.05) 100%)",
+      // Teal accent gradients
+      accent: "linear-gradient(135deg, #00C4B4 0%, #00A89A 100%)",
+      accentLight: "linear-gradient(135deg, #1AFFE8 0%, #00C4B4 100%)",
+      accentDark: "linear-gradient(135deg, #00A89A 0%, #008C80 100%)",
+      // Glass morphism with light theme
+      glass: "linear-gradient(135deg, rgba(245,245,245,0.9) 0%, rgba(255,255,255,0.7) 100%)",
+      glassAccent: "linear-gradient(135deg, rgba(0,196,180,0.1) 0%, rgba(0,196,180,0.05) 100%)",
     },
-    // Single strategic accent color
-    accent: "#2563EB",
-    accentDark: "#1D4ED8",
-    accentLight: "#3B82F6",
+    // Teal as primary brand color
+    accent: "#00C4B4",
+    accentDark: "#00A89A",
+    accentLight: "#1AFFE8",
   },
 
-  // Clean semantic colors
+  // Grok-inspired semantic colors
   semantic: {
     success: "#16A34A",
     successLight: "#22C55E",
     successDark: "#15803D",
-    warning: "#D97706",
-    warningLight: "#F59E0B",
-    warningDark: "#B45309",
-    error: "#DC2626",
-    errorLight: "#EF4444",
-    errorDark: "#B91C1C",
-    info: "#2563EB",
-    infoLight: "#3B82F6",
-    infoDark: "#1D4ED8",
+    warning: "#FFB84C",      // Warm yellow as specified
+    warningLight: "#FFC973",
+    warningDark: "#E6A43A",
+    error: "#FF6B6B",        // Soft red as specified
+    errorLight: "#FF8E8E",
+    errorDark: "#E55555",
+    info: "#00C4B4",         // Use teal for info
+    infoLight: "#1AFFE8",
+    infoDark: "#00A89A",
   },
 
-  // Monochromatic text hierarchy
+  // Text hierarchy for both light and dark contexts
   text: {
-    primary: "#171717",
-    secondary: "#525252",
-    tertiary: "#737373",
-    quaternary: "#A3A3A3",
-    muted: "#D4D4D4",
-    inverse: "#FFFFFF",
-    inverseSecondary: "rgba(255, 255, 255, 0.9)",
-    inverseTertiary: "rgba(255, 255, 255, 0.7)",
+    // For light backgrounds
+    primary: "#333333",      // Dark gray on light backgrounds
+    secondary: "#666666",    // Medium gray
+    tertiary: "#A0A0A0",     // Muted gray (placeholders, captions)
+    quaternary: "#D1D1D1",   // Very light gray
+    muted: "#E5E5E5",        // Subtle text
+    // For dark backgrounds
+    inverse: "#FFFFFF",      // Bright white on dark backgrounds
+    inverseSecondary: "#E0E0E0", // Light gray on dark backgrounds
+    inverseTertiary: "#A0A0A0",  // Muted gray on dark backgrounds
   },
 
-  // Enhanced border colors with subtle gradients
+  // Border colors with teal accents
   border: {
-    light: "#F1F5F9",
-    medium: "#E2E8F0",
-    strong: "#CBD5E1",
-    accent: "rgba(79, 156, 249, 0.2)",
-    accentStrong: "rgba(79, 156, 249, 0.4)",
+    light: "#F5F5F5",
+    medium: "#E5E5E5",
+    strong: "#D1D1D1",
+    accent: "rgba(0, 196, 180, 0.2)",
+    accentStrong: "rgba(0, 196, 180, 0.4)",
     glass: "rgba(255, 255, 255, 0.3)",
     glassStrong: "rgba(255, 255, 255, 0.5)",
+    dark: "#404040",         // For dark theme elements
   }
 };
 
 const config: ThemeConfig = {
-  initialColorMode: "light",
+  initialColorMode: "light",  // Default to light mode with dark accents
   useSystemColorMode: false,
 };
 
@@ -148,69 +151,70 @@ const theme = extendTheme(
   {
     config,
     colors: {
-      // Background colors
-      bg: modernColors.bg,
-      surface: modernColors.surface,
+      // Background colors - Grok-inspired
+      bg: grokColors.bg,
+      surface: grokColors.surface,
 
-      // Modern color scales
-      gray: modernColors.gray,
-      accent: modernColors.accent,
+      // Color scales
+      gray: grokColors.gray,
+      accent: grokColors.accent,
 
-      // Chat bubble colors
-      bubbleUserBg: modernColors.bubble.user.bg,
-      bubbleUserBgHover: modernColors.bubble.user.bgHover,
-      bubbleUserText: modernColors.bubble.user.text,
-      bubbleUserTextSecondary: modernColors.bubble.user.textSecondary,
-      bubbleAiBg: modernColors.bubble.ai.bg,
-      bubbleAiBgHover: modernColors.bubble.ai.bgHover,
-      bubbleAiText: modernColors.bubble.ai.text,
-      bubbleAiTextSecondary: modernColors.bubble.ai.textSecondary,
-      bubbleAiTextTertiary: modernColors.bubble.ai.textTertiary,
-      bubbleAiBorder: modernColors.bubble.ai.border,
-      bubbleAiBorderHover: modernColors.bubble.ai.borderHover,
+      // Chat bubble colors - Grok-inspired
+      bubbleUserBg: grokColors.bubble.user.bg,
+      bubbleUserBgHover: grokColors.bubble.user.bgHover,
+      bubbleUserText: grokColors.bubble.user.text,
+      bubbleUserTextSecondary: grokColors.bubble.user.textSecondary,
+      bubbleAiBg: grokColors.bubble.ai.bg,
+      bubbleAiBgHover: grokColors.bubble.ai.bgHover,
+      bubbleAiText: grokColors.bubble.ai.text,
+      bubbleAiTextSecondary: grokColors.bubble.ai.textSecondary,
+      bubbleAiTextTertiary: grokColors.bubble.ai.textTertiary,
+      bubbleAiBorder: grokColors.bubble.ai.border,
+      bubbleAiBorderHover: grokColors.bubble.ai.borderHover,
 
-      // Brand colors - simplified
-      brandAccent: modernColors.brand.accent,
-      brandAccentDark: modernColors.brand.accentDark,
-      brandAccentLight: modernColors.brand.accentLight,
+      // Brand colors - teal focus
+      brandAccent: grokColors.brand.accent,
+      brandAccentDark: grokColors.brand.accentDark,
+      brandAccentLight: grokColors.brand.accentLight,
 
-      // Enhanced text colors
-      textPrimary: modernColors.text.primary,
-      textSecondary: modernColors.text.secondary,
-      textTertiary: modernColors.text.tertiary,
-      textQuaternary: modernColors.text.quaternary,
-      textMuted: modernColors.text.muted,
-      textInverse: modernColors.text.inverse,
-      textInverseSecondary: modernColors.text.inverseSecondary,
-      textInverseTertiary: modernColors.text.inverseTertiary,
+      // Text colors - Grok-inspired hierarchy
+      textPrimary: grokColors.text.primary,
+      textSecondary: grokColors.text.secondary,
+      textTertiary: grokColors.text.tertiary,
+      textQuaternary: grokColors.text.quaternary,
+      textMuted: grokColors.text.muted,
+      textInverse: grokColors.text.inverse,
+      textInverseSecondary: grokColors.text.inverseSecondary,
+      textInverseTertiary: grokColors.text.inverseTertiary,
 
-      // Enhanced semantic colors
-      success: modernColors.semantic.success,
-      successLight: modernColors.semantic.successLight,
-      successDark: modernColors.semantic.successDark,
-      warning: modernColors.semantic.warning,
-      warningLight: modernColors.semantic.warningLight,
-      warningDark: modernColors.semantic.warningDark,
-      error: modernColors.semantic.error,
-      errorLight: modernColors.semantic.errorLight,
-      errorDark: modernColors.semantic.errorDark,
-      info: modernColors.semantic.info,
-      infoLight: modernColors.semantic.infoLight,
-      infoDark: modernColors.semantic.infoDark,
+      // Semantic colors with Grok palette
+      success: grokColors.semantic.success,
+      successLight: grokColors.semantic.successLight,
+      successDark: grokColors.semantic.successDark,
+      warning: grokColors.semantic.warning,
+      warningLight: grokColors.semantic.warningLight,
+      warningDark: grokColors.semantic.warningDark,
+      error: grokColors.semantic.error,
+      errorLight: grokColors.semantic.errorLight,
+      errorDark: grokColors.semantic.errorDark,
+      info: grokColors.semantic.info,
+      infoLight: grokColors.semantic.infoLight,
+      infoDark: grokColors.semantic.infoDark,
 
-      // Enhanced border colors
-      borderLight: modernColors.border.light,
-      borderMedium: modernColors.border.medium,
-      borderStrong: modernColors.border.strong,
-      borderAccent: modernColors.border.accent,
-      borderAccentStrong: modernColors.border.accentStrong,
-      borderGlass: modernColors.border.glass,
-      borderGlassStrong: modernColors.border.glassStrong,
+      // Border colors with teal accents
+      borderLight: grokColors.border.light,
+      borderMedium: grokColors.border.medium,
+      borderStrong: grokColors.border.strong,
+      borderAccent: grokColors.border.accent,
+      borderAccentStrong: grokColors.border.accentStrong,
+      borderGlass: grokColors.border.glass,
+      borderGlassStrong: grokColors.border.glassStrong,
+      borderDark: grokColors.border.dark,
     },
     fonts: {
-      heading: 'var(--font-family-display)',
-      body: 'var(--font-family-text)',
-      mono: 'var(--font-family-mono)',
+      heading: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+      body: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+      mono: '"SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Source Code Pro", monospace',
     },
     fontSizes: {
       xs: "0.75rem",    // 12px
@@ -236,8 +240,8 @@ const theme = extendTheme(
           scrollBehavior: "smooth",
         },
         "html, body": {
-          bg: modernColors.bg,
-          color: modernColors.text.primary,
+          bg: grokColors.bg,
+          color: grokColors.text.primary,
           fontFeatureSettings: '"cv02", "cv03", "cv04", "cv11", "ss01", "ss02"',
           fontVariantNumeric: "proportional-nums",
           letterSpacing: "-0.009em",
@@ -247,7 +251,7 @@ const theme = extendTheme(
           MozOsxFontSmoothing: "grayscale",
         },
         "*, *::before, *::after": {
-          borderColor: modernColors.border.light,
+          borderColor: grokColors.border.light,
         },
         // Enhanced focus styles
         "*:focus": {
@@ -265,40 +269,39 @@ const theme = extendTheme(
       xl: "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03)",
       "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.2)",
 
-      // Enhanced glass morphism shadows with blue tints (using CSS custom properties)
-      glass: "var(--shadow-glass)",
-      glassLight: "0 4px 20px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(79, 156, 249, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3)",
-      glassMedium: "var(--shadow-glass-lg)",
-      glassStrong: "0 16px 48px rgba(79, 156, 249, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6)",
+      // Glass morphism shadows with teal tints
+      glass: "0 8px 32px rgba(0, 196, 180, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08)",
+      glassLight: "0 4px 20px rgba(0, 0, 0, 0.06), 0 2px 12px rgba(0, 196, 180, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.3)",
+      glassMedium: "0 16px 48px rgba(0, 196, 180, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12)",
+      glassStrong: "0 16px 48px rgba(0, 196, 180, 0.2), 0 8px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.6)",
 
-      // Sophisticated glow effects
-      glow: "0 0 20px rgba(79, 156, 249, 0.25), 0 0 40px rgba(79, 156, 249, 0.1)",
-      glowStrong: "0 0 30px rgba(79, 156, 249, 0.4), 0 0 60px rgba(79, 156, 249, 0.15), 0 0 90px rgba(79, 156, 249, 0.05)",
-      glowPurple: "0 0 20px rgba(139, 92, 246, 0.25), 0 0 40px rgba(139, 92, 246, 0.1)",
-      glowCyan: "0 0 20px rgba(6, 182, 212, 0.25), 0 0 40px rgba(6, 182, 212, 0.1)",
-      glowSuccess: "0 0 20px rgba(16, 185, 129, 0.25), 0 0 40px rgba(16, 185, 129, 0.1)",
-      glowWarning: "0 0 20px rgba(245, 158, 11, 0.25), 0 0 40px rgba(245, 158, 11, 0.1)",
-      glowError: "0 0 20px rgba(239, 68, 68, 0.25), 0 0 40px rgba(239, 68, 68, 0.1)",
+      // Grok-inspired glow effects with teal
+      glow: "0 0 20px rgba(0, 196, 180, 0.25), 0 0 40px rgba(0, 196, 180, 0.1)",
+      glowStrong: "0 0 30px rgba(0, 196, 180, 0.4), 0 0 60px rgba(0, 196, 180, 0.15), 0 0 90px rgba(0, 196, 180, 0.05)",
+      glowTeal: "0 0 20px rgba(0, 196, 180, 0.25), 0 0 40px rgba(0, 196, 180, 0.1)",
+      glowSuccess: "0 0 20px rgba(22, 163, 74, 0.25), 0 0 40px rgba(22, 163, 74, 0.1)",
+      glowWarning: "0 0 20px rgba(255, 184, 76, 0.25), 0 0 40px rgba(255, 184, 76, 0.1)",
+      glowError: "0 0 20px rgba(255, 107, 107, 0.25), 0 0 40px rgba(255, 107, 107, 0.1)",
 
-      // Enhanced interactive shadows
-      hover: "0 8px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(79, 156, 249, 0.15), 0 2px 8px rgba(79, 156, 249, 0.1)",
-      hoverStrong: "0 12px 32px -5px rgba(0, 0, 0, 0.15), 0 6px 16px -2px rgba(79, 156, 249, 0.2), 0 3px 12px rgba(79, 156, 249, 0.15)",
+      // Interactive shadows with teal accents
+      hover: "0 8px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 196, 180, 0.15), 0 2px 8px rgba(0, 196, 180, 0.1)",
+      hoverStrong: "0 12px 32px -5px rgba(0, 0, 0, 0.15), 0 6px 16px -2px rgba(0, 196, 180, 0.2), 0 3px 12px rgba(0, 196, 180, 0.15)",
       active: "0 2px 8px -1px rgba(0, 0, 0, 0.08), 0 1px 4px -1px rgba(0, 0, 0, 0.04)",
-      focus: "0 0 0 3px rgba(79, 156, 249, 0.25), 0 0 0 1px rgba(79, 156, 249, 0.5)",
-      focusStrong: "0 0 0 4px rgba(79, 156, 249, 0.3), 0 0 0 2px rgba(79, 156, 249, 0.6)",
+      focus: "0 0 0 3px rgba(0, 196, 180, 0.25), 0 0 0 1px rgba(0, 196, 180, 0.5)",
+      focusStrong: "0 0 0 4px rgba(0, 196, 180, 0.3), 0 0 0 2px rgba(0, 196, 180, 0.6)",
 
-      // Chat-specific shadows with enhanced depth
-      chatUser: modernColors.bubble.user.shadow,
-      chatUserHover: modernColors.bubble.user.shadowHover,
-      chatAI: modernColors.bubble.ai.shadow,
-      chatAIHover: modernColors.bubble.ai.shadowHover,
+      // Chat-specific shadows with teal enhancement
+      chatUser: grokColors.bubble.user.shadow,
+      chatUserHover: grokColors.bubble.user.shadowHover,
+      chatAI: grokColors.bubble.ai.shadow,
+      chatAIHover: grokColors.bubble.ai.shadowHover,
 
-      // Input and button shadows
-      input: "0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(79, 156, 249, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5)",
-      inputFocus: "0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(79, 156, 249, 0.12), 0 0 0 3px rgba(79, 156, 249, 0.15)",
-      button: "0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(79, 156, 249, 0.1)",
-      buttonHover: "0 6px 16px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(79, 156, 249, 0.15), 0 1px 4px rgba(79, 156, 249, 0.1)",
-      buttonActive: "0 2px 6px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(79, 156, 249, 0.08)",
+      // Input and button shadows with teal accents
+      input: "0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 196, 180, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5)",
+      inputFocus: "0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 196, 180, 0.12), 0 0 0 3px rgba(0, 196, 180, 0.15)",
+      button: "0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 196, 180, 0.1)",
+      buttonHover: "0 6px 16px rgba(0, 0, 0, 0.1), 0 3px 8px rgba(0, 196, 180, 0.15), 0 1px 4px rgba(0, 196, 180, 0.1)",
+      buttonActive: "0 2px 6px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 196, 180, 0.08)",
     },
     // Enhanced component styles with extracted patterns
     components: {
@@ -311,7 +314,7 @@ const theme = extendTheme(
           'page-container': {
             w: "100%",
             minH: "100%",
-            bg: modernColors.bg,
+            bg: grokColors.bg,
             position: "relative",
             overflowX: "hidden",
             overflowY: "auto",
@@ -332,9 +335,9 @@ const theme = extendTheme(
           },
           'chat-container': {
             w: "full",
-            bg: modernColors.bg,
+            bg: grokColors.surface.secondary,
             borderTopWidth: "1px",
-            borderColor: modernColors.border.medium,
+            borderColor: grokColors.border.medium,
             position: "sticky",
             bottom: 0,
             zIndex: 100,
@@ -366,14 +369,14 @@ const theme = extendTheme(
         }
       },
 
-      // Enhanced Progress component
+      // Enhanced Progress component with teal accent
       Progress: {
         baseStyle: {
           track: {
-            bg: modernColors.surface.tertiary,
+            bg: grokColors.surface.tertiary,
           },
           filledTrack: {
-            background: modernColors.brand.gradient.accent,
+            background: grokColors.brand.gradient.accent,
           }
         }
       }
@@ -384,5 +387,5 @@ const theme = extendTheme(
 
 export default theme;
 
-/* Convenience export for modern colors */
-export const colors = modernColors;
+/* Convenience export for Grok-inspired colors */
+export const colors = grokColors;
