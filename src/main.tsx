@@ -17,7 +17,6 @@ import { ModernSplashPage } from './pages/ModernSplashPage';
 import { preloadCriticalServices } from './services/lazyFirebase';
 
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
-// const NeuraFitPage = React.lazy(() => import('./pages/NeuraFitPage'));
 
 // Create router with Chat and History routes
 const router = createBrowserRouter([

@@ -1,10 +1,13 @@
 /* ===================================================================
-   NEURASTACK GLOBAL STYLES
+   GROK-INSPIRED GLOBAL STYLES
    Consolidated styling system for modern, accessible, mobile-first design
    =================================================================== */
 
 /* Import Tailwind CSS first for utility-first approach */
 @import "./tailwind.css";
+
+/* Import Grok-inspired theme system */
+@import "../themes/global.css";
 
 /* Import additional styles */
 @import "./animations.css";

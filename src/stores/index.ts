@@ -17,4 +17,3 @@ export type { Message, ChatState } from './useChatStore';
 // Legacy stores (still in use)
 export { useAuthStore } from '../store/useAuthStore';
 export { useHistoryStore } from '../store/useHistoryStore';
-export { useFitnessStore } from '../store/useFitnessStore';

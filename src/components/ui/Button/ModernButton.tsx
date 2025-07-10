@@ -25,7 +25,7 @@ export interface ModernButtonProps extends Omit<ChakraButtonProps, 'variant'> {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   
   /** Button color scheme */
-  colorScheme?: 'primary' | 'secondary' | 'success' | 'error' | 'warning';
+  colorScheme?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'teal';
   
   /** Enable glow effect */
   glowEffect?: boolean;
@@ -50,7 +50,7 @@ export interface ModernButtonProps extends Omit<ChakraButtonProps, 'variant'> {
 export const ModernButton = forwardRef<ModernButtonProps, 'button'>(({
   variant = 'solid',
   size = 'md',
-  colorScheme = 'primary',
+  colorScheme = 'teal',  // Default to teal for Grok aesthetic
   glowEffect = false,
   icon,
   iconPosition = 'left',
@@ -197,6 +197,55 @@ export const ModernButton = forwardRef<ModernButtonProps, 'button'>(({
           bg: '#b45309',
         },
         boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08)',
+      },
+    },
+    teal: {
+      solid: {
+        bg: '#00C4B4',
+        color: 'white',
+        _hover: {
+          bg: '#00A89A',
+          transform: shouldDisableAnimations ? 'none' : 'translateY(-1px)',
+          boxShadow: glowEffect
+            ? '0 8px 20px rgba(0, 196, 180, 0.35), 0 4px 12px rgba(0, 0, 0, 0.1)'
+            : '0 6px 16px rgba(0, 196, 180, 0.2), 0 3px 8px rgba(0, 0, 0, 0.1)',
+        },
+        _active: {
+          transform: shouldDisableAnimations ? 'none' : 'translateY(0)',
+          bg: '#008C80',
+        },
+        boxShadow: glowEffect
+          ? '0 4px 12px rgba(0, 196, 180, 0.25), 0 0 20px rgba(0, 196, 180, 0.15)'
+          : '0 4px 12px rgba(0, 196, 180, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08)',
+      },
+      outline: {
+        bg: 'transparent',
+        color: '#00C4B4',
+        border: '2px solid #00C4B4',
+        _hover: {
+          bg: 'rgba(0, 196, 180, 0.05)',
+          borderColor: '#00A89A',
+          color: '#00A89A',
+          transform: shouldDisableAnimations ? 'none' : 'translateY(-1px)',
+          boxShadow: '0 4px 12px rgba(0, 196, 180, 0.15)',
+        },
+        _active: {
+          transform: shouldDisableAnimations ? 'none' : 'translateY(0)',
+          bg: 'rgba(0, 196, 180, 0.1)',
+        },
+      },
+      ghost: {
+        bg: 'transparent',
+        color: '#00C4B4',
+        _hover: {
+          bg: 'rgba(0, 196, 180, 0.08)',
+          color: '#00A89A',
+          transform: shouldDisableAnimations ? 'none' : 'translateY(-1px)',
+        },
+        _active: {
+          transform: shouldDisableAnimations ? 'none' : 'translateY(0)',
+          bg: 'rgba(0, 196, 180, 0.12)',
+        },
       },
     },
   };
