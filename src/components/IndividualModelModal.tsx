@@ -245,50 +245,55 @@ export function IndividualModelModal({
         </ModalHeader>
 
         {/* Custom Close Button - More visible on mobile */}
-        <IconButton
-          aria-label="Close modal"
-          icon={<Text fontSize="20px" fontWeight="bold" color="#FFFFFF">×</Text>}
-          onClick={onClose}
+        <Box
           position="absolute"
           top={{ base: "16px", md: "20px" }}
           right={{ base: "16px", md: "20px" }}
-          w={{ base: "48px", md: "44px" }}
-          h={{ base: "48px", md: "44px" }}
-          borderRadius="full"
-          bg="#4F9CF9"
-          border="2px solid #FFFFFF"
-          boxShadow="0 4px 16px rgba(79, 156, 249, 0.3)"
           zIndex={1500}
-          _hover={{
-            bg: "#3B82F6",
-            transform: "scale(1.1)",
-            boxShadow: "0 6px 20px rgba(79, 156, 249, 0.4)"
-          }}
-          _focus={{
-            boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.5)",
-            outline: "none"
-          }}
-          _active={{
-            transform: "scale(0.95)",
-            bg: "#2563EB"
-          }}
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent',
             // Ensure it's always visible on mobile
             '@media (max-width: 768px)': {
               position: 'fixed',
-              top: '16px',
-              right: '16px',
-              zIndex: 9999,
+              top: 'calc(16px + env(safe-area-inset-top, 0px))',
+              right: 'calc(16px + env(safe-area-inset-right, 0px))',
+              zIndex: 10000,
             }
           }}
-        />
+        >
+          <IconButton
+            aria-label="Close modal"
+            icon={<Text fontSize="20px" fontWeight="bold" color="#FFFFFF">×</Text>}
+            onClick={onClose}
+            w={{ base: "48px", md: "44px" }}
+            h={{ base: "48px", md: "44px" }}
+            borderRadius="full"
+            bg="#4F9CF9"
+            border="2px solid #FFFFFF"
+            boxShadow="0 4px 16px rgba(79, 156, 249, 0.3)"
+            _hover={{
+              bg: "#3B82F6",
+              transform: "scale(1.1)",
+              boxShadow: "0 6px 20px rgba(79, 156, 249, 0.4)"
+            }}
+            _focus={{
+              boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.5)",
+              outline: "none"
+            }}
+            _active={{
+              transform: "scale(0.95)",
+              bg: "#2563EB"
+            }}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent'
+            }}
+          />
+        </Box>
 
         {/* Body */}
         <ModalBody
