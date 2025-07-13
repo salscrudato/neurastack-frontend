@@ -248,41 +248,80 @@ export function EnsembleInfoModal({
                 onClose={onClose}
                 size={{ base: "full", md: "2xl" }}
                 scrollBehavior="inside"
+                isCentered={true}
+                closeOnOverlayClick={true}
+                closeOnEsc={true}
+                trapFocus={true}
+                blockScrollOnMount={true}
                 aria-labelledby="ensemble-modal-title"
                 aria-describedby="ensemble-modal-description"
             >
-            <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
+            <ModalOverlay
+                bg="blackAlpha.600"
+                backdropFilter="blur(4px)"
+                sx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 1400,
+                }}
+            />
             <ModalContent
                 bg={modalBg}
                 borderRadius={{ base: 0, md: "2xl" }}
-                maxH={{
-                    base: "100vh",
-                    md: "85vh"
-                }}
+                maxH={{ base: "100vh", md: "85vh" }}
                 maxW={{ base: "100vw", md: "900px" }}
                 mx={{ base: 0, md: 4 }}
-                my={{ base: 0, md: "7.5vh" }}
-                pt={{ base: "env(safe-area-inset-top, 0px)", md: 0 }}
-                pb={{ base: "env(safe-area-inset-bottom, 0px)", md: 0 }}
+                my={{ base: 0, md: "auto" }}
+                position={{ base: "fixed", md: "relative" }}
+                top={{ base: 0, md: "auto" }}
+                left={{ base: 0, md: "auto" }}
+                right={{ base: 0, md: "auto" }}
+                bottom={{ base: 0, md: "auto" }}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
                 overflow="hidden"
+                sx={{
+                    zIndex: 1401,
+                    '@media (max-width: 768px)': {
+                        margin: 0,
+                        borderRadius: 0,
+                        height: '100vh',
+                        width: '100vw',
+                    }
+                }}
             >
                 <ModalCloseButton
                     color="#4F9CF9"
+                    size={{ base: "lg", md: "lg" }}
+                    top={{ base: 4, md: 6 }}
+                    right={{ base: 4, md: 6 }}
+                    minW={{ base: "44px", md: "40px" }}
+                    minH={{ base: "44px", md: "40px" }}
+                    borderRadius="full"
+                    bg="rgba(255, 255, 255, 0.9)"
+                    backdropFilter="blur(8px)"
+                    border="1px solid rgba(79, 156, 249, 0.2)"
                     _hover={{
                         bg: "rgba(79, 156, 249, 0.1)",
-                        color: "#3B82F6"
+                        color: "#3B82F6",
+                        transform: "scale(1.05)"
                     }}
                     _focus={{
-                        boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
+                        boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
+                        outline: "none"
                     }}
-                    size="lg"
-                    zIndex={9999}
-                    position="absolute"
-                    top={4}
-                    right={4}
+                    _active={{
+                        transform: "scale(0.95)"
+                    }}
+                    sx={{
+                        zIndex: 1402,
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent',
+                    }}
                 />
 
                 {/* Body */}

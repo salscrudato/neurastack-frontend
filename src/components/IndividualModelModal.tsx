@@ -6,25 +6,25 @@
  */
 
 import {
-    Alert,
-    AlertDescription,
-    AlertIcon,
-    AlertTitle,
-    Badge,
-    Box,
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalHeader,
-    ModalOverlay,
-    Text,
-    useColorModeValue,
-    VStack
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Badge,
+  Box,
+  IconButton,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useColorModeValue,
+  VStack
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import {
-    PiWarningBold
+  PiWarningBold
 } from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -164,21 +164,54 @@ export function IndividualModelModal({
       onClose={onClose}
       size={{ base: "full", md: "lg" }}
       scrollBehavior="inside"
+      isCentered={true}
+      closeOnOverlayClick={true}
+      closeOnEsc={true}
+      trapFocus={true}
+      blockScrollOnMount={true}
     >
-      <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
+      <ModalOverlay
+        bg="blackAlpha.600"
+        backdropFilter="blur(4px)"
+        onClick={onClose}
+        sx={{
+          // Ensure overlay covers full screen on mobile
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 1400,
+          cursor: 'pointer'
+        }}
+      />
       <ModalContent
         bg={modalBg}
         borderRadius={{ base: 0, md: "2xl" }}
-        maxH={{ base: "100vh", md: "80vh" }}
+        maxH={{ base: "100vh", md: "85vh" }}
         maxW={{ base: "100vw", md: "700px" }}
         mx={{ base: 0, md: 4 }}
-        my={{ base: 0, md: "10vh" }}
-        pt={{ base: "env(safe-area-inset-top, 0px)", md: 0 }}
-        pb={{ base: "env(safe-area-inset-bottom, 0px)", md: 0 }}
+        my={{ base: 0, md: "auto" }}
+        position={{ base: "fixed", md: "relative" }}
+        top={{ base: 0, md: "auto" }}
+        left={{ base: 0, md: "auto" }}
+        right={{ base: 0, md: "auto" }}
+        bottom={{ base: 0, md: "auto" }}
         overflow="hidden"
         boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
         border="1px solid"
         borderColor="rgba(226, 232, 240, 0.8)"
+        sx={{
+          // Ensure proper z-index and positioning
+          zIndex: 1401,
+          // Mobile-specific styles
+          '@media (max-width: 768px)': {
+            margin: 0,
+            borderRadius: 0,
+            height: '100vh',
+            width: '100vw',
+          }
+        }}
       >
         {/* Header */}
         <ModalHeader
@@ -211,16 +244,50 @@ export function IndividualModelModal({
           </VStack>
         </ModalHeader>
 
-        <ModalCloseButton
-          color="#4F9CF9"
+        {/* Custom Close Button - More visible on mobile */}
+        <IconButton
+          aria-label="Close modal"
+          icon={<Text fontSize="20px" fontWeight="bold" color="#FFFFFF">×</Text>}
+          onClick={onClose}
+          position="absolute"
+          top={{ base: "16px", md: "20px" }}
+          right={{ base: "16px", md: "20px" }}
+          w={{ base: "48px", md: "44px" }}
+          h={{ base: "48px", md: "44px" }}
+          borderRadius="full"
+          bg="#4F9CF9"
+          border="2px solid #FFFFFF"
+          boxShadow="0 4px 16px rgba(79, 156, 249, 0.3)"
+          zIndex={1500}
           _hover={{
-            bg: "rgba(79, 156, 249, 0.1)",
-            color: "#3B82F6"
+            bg: "#3B82F6",
+            transform: "scale(1.1)",
+            boxShadow: "0 6px 20px rgba(79, 156, 249, 0.4)"
           }}
           _focus={{
-            boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
+            boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.5)",
+            outline: "none"
           }}
-          size="lg"
+          _active={{
+            transform: "scale(0.95)",
+            bg: "#2563EB"
+          }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+            // Ensure it's always visible on mobile
+            '@media (max-width: 768px)': {
+              position: 'fixed',
+              top: '16px',
+              right: '16px',
+              zIndex: 9999,
+            }
+          }}
         />
 
         {/* Body */}

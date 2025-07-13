@@ -321,9 +321,9 @@ export default function ChatInput() {
         textareaRef.current.style.height = "auto";
       }
 
-      // Success haptic feedback
+      // Enhanced success haptic feedback
       if (isMobile && 'vibrate' in navigator) {
-        navigator.vibrate([50, 50, 50]); // Success pattern
+        navigator.vibrate([50, 30, 50]); // Refined success pattern
       }
     } catch (error) {
       // Enhanced error handling with haptic feedback
@@ -701,14 +701,11 @@ export default function ChatInput() {
               minH={inputConfig.sendButton}
               maxW={inputConfig.sendButton}
               maxH={inputConfig.sendButton}
-              bg={txt.trim() ?
-                "linear-gradient(135deg, #4F9CF9 0%, #6366F1 50%, #8B5CF6 100%)" :
-                "rgba(148, 163, 184, 0.1)"
-              }
-              color={txt.trim() ? "white" : "rgba(148, 163, 184, 0.6)"}
+              bg={txt.trim() ? "white" : "rgba(248, 250, 252, 0.8)"}
+              color={txt.trim() ? "#4F9CF9" : "rgba(148, 163, 184, 0.6)"}
               border={txt.trim() ?
-                "1px solid rgba(255, 255, 255, 0.2)" :
-                "1px solid rgba(148, 163, 184, 0.2)"
+                "1px solid #4F9CF9" :
+                "1px solid rgba(148, 163, 184, 0.3)"
               }
               borderRadius="full"
               transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -718,8 +715,8 @@ export default function ChatInput() {
               position="relative"
               overflow="hidden"
               boxShadow={txt.trim() ?
-                "0 4px 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)" :
-                "none"
+                "0 2px 8px rgba(79, 156, 249, 0.2)" :
+                "0 1px 3px rgba(0, 0, 0, 0.1)"
               }
               _before={txt.trim() ? {
                 content: '""',
@@ -728,31 +725,32 @@ export default function ChatInput() {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: 'conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+                background: 'conic-gradient(from 0deg, transparent, rgba(79, 156, 249, 0.1), transparent)',
                 borderRadius: 'full',
                 animation: 'rotate 3s linear infinite',
-                opacity: 0.6
+                opacity: 0.8
               } : {}}
               _hover={{
                 bg: txt.trim() ?
-                  "linear-gradient(135deg, #3B82F6 0%, #5B21B6 50%, #7C3AED 100%)" :
-                  "rgba(148, 163, 184, 0.15)",
+                  "rgba(79, 156, 249, 0.05)" :
+                  "rgba(148, 163, 184, 0.1)",
+                borderColor: txt.trim() ? "#3B82F6" : "rgba(148, 163, 184, 0.4)",
+                color: txt.trim() ? "#3B82F6" : "rgba(148, 163, 184, 0.8)",
                 transform: txt.trim() ? "scale(1.05) translateY(-1px)" : "none",
                 boxShadow: txt.trim() ?
-                  "0 8px 25px rgba(79, 156, 249, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)" :
-                  "0 2px 8px rgba(0, 0, 0, 0.08)"
+                  "0 4px 12px rgba(79, 156, 249, 0.25)" :
+                  "0 2px 6px rgba(0, 0, 0, 0.1)"
               }}
               _focus={{
                 boxShadow: txt.trim()
-                  ? "0 0 0 3px rgba(79, 156, 249, 0.4), 0 8px 25px rgba(79, 156, 249, 0.2)"
-                  : "0 0 0 2px rgba(148, 163, 184, 0.4)",
-                outline: "none",
-                outlineOffset: "2px"
+                  ? "0 0 0 3px rgba(79, 156, 249, 0.3)"
+                  : "0 0 0 2px rgba(148, 163, 184, 0.3)",
+                outline: "none"
               }}
               _active={{
-                transform: prefersReducedMotion ? 'none' : "scale(0.95)",
-                bg: txt.trim() ? "#3B82F6" : "#E2E8F0",
-                boxShadow: txt.trim() ? "0 4px 15px rgba(79, 156, 249, 0.4)" : "0 1px 4px rgba(0, 0, 0, 0.1)"
+                transform: "scale(0.95)",
+                bg: txt.trim() ? "rgba(79, 156, 249, 0.1)" : "rgba(148, 163, 184, 0.1)",
+                boxShadow: txt.trim() ? "0 1px 4px rgba(79, 156, 249, 0.3)" : "0 1px 2px rgba(0, 0, 0, 0.1)"
               }}
               _disabled={{
                 bg: colorSystem.button.disabled.bg,

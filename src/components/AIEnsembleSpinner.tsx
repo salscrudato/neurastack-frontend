@@ -32,12 +32,12 @@ export const AIEnsembleSpinner = memo(({
 
   const config = sizeConfig[size];
 
-  // AI Models configuration with unique colors
+  // AI Models configuration with muted colors
   const aiModels = [
-    { name: 'GPT-4o', color: '#10B981', position: { x: 0.2, y: 0.3 } },
-    { name: 'Claude', color: '#8B5CF6', position: { x: 0.8, y: 0.3 } },
-    { name: 'Gemini', color: '#F59E0B', position: { x: 0.5, y: 0.1 } },
-    { name: 'Synthesis', color: '#4F9CF9', position: { x: 0.5, y: 0.7 } }
+    { name: 'GPT-4o', color: '#6EE7B7', position: { x: 0.2, y: 0.3 } },
+    { name: 'Claude', color: '#C4B5FD', position: { x: 0.8, y: 0.3 } },
+    { name: 'Gemini', color: '#FCD34D', position: { x: 0.5, y: 0.1 } },
+    { name: 'Synthesis', color: '#93C5FD', position: { x: 0.5, y: 0.7 } }
   ];
 
   useEffect(() => {
@@ -80,10 +80,10 @@ export const AIEnsembleSpinner = memo(({
           bottom="0"
           opacity="0.1"
           background={`
-            radial-gradient(circle at 20% 30%, #4F9CF9 1px, transparent 1px),
-            radial-gradient(circle at 80% 30%, #4F9CF9 1px, transparent 1px),
-            radial-gradient(circle at 50% 10%, #4F9CF9 1px, transparent 1px),
-            radial-gradient(circle at 50% 70%, #4F9CF9 1px, transparent 1px)
+            radial-gradient(circle at 20% 30%, #CBD5E1 1px, transparent 1px),
+            radial-gradient(circle at 80% 30%, #CBD5E1 1px, transparent 1px),
+            radial-gradient(circle at 50% 10%, #CBD5E1 1px, transparent 1px),
+            radial-gradient(circle at 50% 70%, #CBD5E1 1px, transparent 1px)
           `}
           backgroundSize="100% 100%"
           animation="neuralGrid 3s ease-in-out infinite"
@@ -112,9 +112,9 @@ export const AIEnsembleSpinner = memo(({
                 y1={`${model.position.y * 100}%`}
                 x2={`${nextModel.position.x * 100}%`}
                 y2={`${nextModel.position.y * 100}%`}
-                stroke={isActive ? model.color : 'rgba(79, 156, 249, 0.2)'}
-                strokeWidth={isActive ? "2" : "1"}
-                opacity={isActive ? 1 : 0.4}
+                stroke={isActive ? model.color : 'rgba(203, 213, 225, 0.4)'}
+                strokeWidth={isActive ? "1.5" : "1"}
+                opacity={isActive ? 0.8 : 0.3}
                 style={{
                   transition: 'all 0.3s ease',
                   filter: isActive ? `drop-shadow(0 0 4px ${model.color})` : 'none'
@@ -131,9 +131,9 @@ export const AIEnsembleSpinner = memo(({
               y1={`${model.position.y * 100}%`}
               x2="50%"
               y2="70%"
-              stroke={activeModel === index ? model.color : 'rgba(79, 156, 249, 0.15)'}
-              strokeWidth={activeModel === index ? "2" : "1"}
-              opacity={activeModel === index ? 0.8 : 0.3}
+              stroke={activeModel === index ? model.color : 'rgba(203, 213, 225, 0.3)'}
+              strokeWidth={activeModel === index ? "1.5" : "1"}
+              opacity={activeModel === index ? 0.7 : 0.2}
               style={{
                 transition: 'all 0.4s ease',
                 filter: activeModel === index ? `drop-shadow(0 0 3px ${model.color})` : 'none'
@@ -228,17 +228,17 @@ export const AIEnsembleSpinner = memo(({
           width="4px"
           height="4px"
           borderRadius="full"
-          bg="#4F9CF9"
-          animation="centralPulse 1.5s ease-in-out infinite"
+          bg="#94A3B8"
+          animation="centralPulse 2s ease-in-out infinite"
           sx={{
             '@keyframes centralPulse': {
-              '0%, 100%': { 
+              '0%, 100%': {
                 transform: 'translate(-50%, -50%) scale(1)',
-                boxShadow: '0 0 0 0 rgba(79, 156, 249, 0.7)'
+                boxShadow: '0 0 0 0 rgba(148, 163, 184, 0.5)'
               },
-              '50%': { 
-                transform: 'translate(-50%, -50%) scale(1.5)',
-                boxShadow: '0 0 0 8px rgba(79, 156, 249, 0)'
+              '50%': {
+                transform: 'translate(-50%, -50%) scale(1.3)',
+                boxShadow: '0 0 0 6px rgba(148, 163, 184, 0)'
               }
             }
           }}

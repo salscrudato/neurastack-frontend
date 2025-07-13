@@ -234,8 +234,8 @@ export function Header() {
       top={0}
       left={0}
       right={0}
-      zIndex={1100}
-      w="100%"
+      zIndex={1000}
+      w="100vw"
       // Enhanced glass theme design
       bg={headerBg}
       backdropFilter="blur(32px)"
@@ -246,16 +246,19 @@ export function Header() {
         WebkitTapHighlightColor: 'transparent',
         // Enhanced glass shadow
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)',
-        // Mobile optimizations - ensure header stays fixed at top
+        // Ensure consistent width and positioning
+        margin: 0,
+        padding: 0,
+        // Mobile optimizations
         '@media (max-width: 768px)': {
-          position: 'fixed !important',
-          top: '0 !important',
-          left: '0 !important',
-          right: '0 !important',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          width: '100vw',
           borderBottom: '1px solid rgba(79, 156, 249, 0.08)',
           backdropFilter: 'blur(24px)',
-          // Ensure header is always on top above everything
-          zIndex: 10000,
+          zIndex: 1000,
           // Add safe area support for devices with notches
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
@@ -270,7 +273,8 @@ export function Header() {
         align="center"
         justify="center"
         position="relative"
-        maxW="1200px"
+        w="100%"
+        maxW={{ base: "100%", md: "1200px" }}
         mx="auto"
         px={{ base: 4, md: 6, lg: 8 }}
         py={0}
@@ -286,17 +290,20 @@ export function Header() {
           icon={<PiListBold size={20} />}
           onClick={onOpen}
           variant="ghost"
-          size="md"
+          size={{ base: "lg", md: "md" }} // Larger touch target on mobile
           color={primaryColor}
           bg="rgba(79, 156, 249, 0.1)"
           borderRadius="12px"
-          minH="40px"
-          minW="40px"
+          minH={{ base: "44px", md: "40px" }} // Minimum touch target
+          minW={{ base: "44px", md: "40px" }}
           position="absolute"
           left="3"
           sx={{
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
+            // Mobile-first touch optimization
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
           }}
           border="1px solid rgba(79, 156, 249, 0.2)"
           boxShadow="0 2px 8px rgba(79, 156, 249, 0.1)"
@@ -339,36 +346,53 @@ export function Header() {
           isOpen={isOpen}
           placement="left"
           onClose={onClose}
-          size="sm"
+          size="xs"
+          closeOnOverlayClick={true}
+          closeOnEsc={true}
         >
           <DrawerOverlay
-            bg="rgba(0, 0, 0, 0.4)"
-            backdropFilter="blur(8px)"
+            bg="rgba(0, 0, 0, 0.3)"
+            backdropFilter="blur(12px)"
             transition="all 0.3s ease"
+            onClick={onClose}
           />
           <DrawerContent
-            bg="linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 251, 252, 0.95) 100%)"
-            backdropFilter="blur(24px)"
+            bg="rgba(255, 255, 255, 0.95)"
+            backdropFilter="blur(20px)"
             borderRight="none"
-            boxShadow="0 32px 64px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
-            borderRadius="0 24px 24px 0"
+            boxShadow="0 20px 40px -12px rgba(0, 0, 0, 0.2)"
             maxW="320px"
+            mt={{ base: "56px", md: "60px" }} // Position below header
+            borderRadius="0 24px 24px 0"
           >
             <DrawerCloseButton
               color="#64748B"
+              size={{ base: "lg", md: "lg" }}
+              minW={{ base: "44px", md: "40px" }}
+              minH={{ base: "44px", md: "40px" }}
               _hover={{
                 color: "#374151",
                 bg: "rgba(100, 116, 139, 0.08)",
-                transform: "scale(1.1)"
+                transform: "scale(1.05)"
+              }}
+              _active={{
+                transform: "scale(0.95)"
+              }}
+              _focus={{
+                boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
+                outline: "none"
               }}
               borderRadius="16px"
-              size="lg"
               top={6}
               right={6}
               transition="all 0.2s ease"
               bg="rgba(255, 255, 255, 0.8)"
               backdropFilter="blur(12px)"
               boxShadow="0 4px 12px rgba(0, 0, 0, 0.1)"
+              sx={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             />
 
             <DrawerHeader

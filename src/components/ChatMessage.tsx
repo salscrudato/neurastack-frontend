@@ -56,24 +56,32 @@ const CopyButton = memo(({ text }: { text: string }) => {
       <IconButton
         aria-label="Copy message"
         icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
-        size="sm"
+        size={{ base: "md", md: "sm" }} // Larger touch target on mobile
         variant="ghost"
         onClick={onCopy}
         color="#94A3B8"
-        boxShadow="none" // Remove shadow
+        boxShadow="none"
         _hover={{
           color: "#475569",
           bg: "#F8FAFC",
-          boxShadow: "none", // Ensure no shadow on hover
+          transform: "translateY(-1px)",
+          boxShadow: "0 2px 8px rgba(148, 163, 184, 0.15)",
         }}
         _focus={{
-          boxShadow: "none", // Remove focus shadow
+          boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)", // Better focus indicator
+          outline: "none"
         }}
         _active={{
-          boxShadow: "none", // Remove active shadow
+          transform: "scale(0.95)",
+          boxShadow: "none",
         }}
-        minW="32px"
-        h="32px"
+        minW={{ base: "44px", md: "32px" }} // Minimum touch target
+        minH={{ base: "44px", md: "32px" }}
+        // Mobile-first touch optimization
+        sx={{
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent',
+        }}
       />
     </Tooltip>
   );
@@ -150,6 +158,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const onEnsembleInfoOpen = () => setIsEnsembleInfoOpen(true);
   const onEnsembleInfoClose = () => setIsEnsembleInfoOpen(false);
 
+
+
   // Enhanced modern color scheme - clean, minimal design
   const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)";
   const bgAi = "#FFFFFF";
@@ -174,9 +184,12 @@ export const ChatMessage = memo<ChatMessageProps>(({
           fontSize={fontSizes.micro}
           color={timestampColor}
           fontWeight="500"
-          bg="#FAFBFC"
+          bg="rgba(248, 250, 252, 0.8)"
+          backdropFilter="blur(8px)"
           borderRadius="full"
           py={0.5}
+          border="1px solid"
+          borderColor="rgba(226, 232, 240, 0.3)"
         >
           {formatTimestamp(message.timestamp)}
         </Text>
@@ -210,6 +223,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
         borderColor={isUser ? "transparent" : borderAi}
         backdropFilter={isUser ? "none" : "blur(8px)"}
         transition="all 250ms cubic-bezier(0.4, 0, 0.2, 1)"
+        // Mobile-first touch optimization
+        minH={{ base: "44px", md: "auto" }} // Minimum touch target size
         _hover={{
           transform: isUser ? "translateY(-2px) scale(1.01)" : "translateY(-1px)",
           boxShadow: isUser
@@ -217,6 +232,12 @@ export const ChatMessage = memo<ChatMessageProps>(({
             : "0 4px 12px rgba(0, 0, 0, 0.05)",
         }}
         sx={{
+          // Optimize for touch interactions
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent',
+          // Better text rendering on mobile
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
           // Enhanced user message styling with glass effects
           ...(isUser && {
             background: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
@@ -236,6 +257,18 @@ export const ChatMessage = memo<ChatMessageProps>(({
           ...(!isUser && !isError && {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)',
+              borderRadius: '2xl',
+              pointerEvents: 'none',
+              zIndex: 1
+            }
           }),
           '@media (max-width: 768px)': {
             minHeight: '44px',
@@ -251,12 +284,12 @@ export const ChatMessage = memo<ChatMessageProps>(({
                 justify="space-between"
                 align="center"
                 p={{ base: 3, md: 4 }}
-                bg="linear-gradient(135deg, rgba(79, 156, 249, 0.08) 0%, rgba(99, 102, 241, 0.12) 50%, rgba(139, 92, 246, 0.08) 100%)"
-                borderRadius="2xl"
+                bg="linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.9) 50%, rgba(248, 250, 252, 0.8) 100%)"
+                borderRadius="xl"
                 border="1px solid"
-                borderColor="rgba(79, 156, 249, 0.2)"
+                borderColor="rgba(226, 232, 240, 0.6)"
                 position="relative"
-                backdropFilter="blur(16px)"
+                backdropFilter="blur(12px)"
                 overflow="hidden"
                 _before={{
                   content: '""',
@@ -265,54 +298,63 @@ export const ChatMessage = memo<ChatMessageProps>(({
                   left: 0,
                   right: 0,
                   height: '1px',
-                  background: 'linear-gradient(90deg, transparent 0%, rgba(79, 156, 249, 0.6) 50%, transparent 100%)',
-                  animation: 'shimmer 3s ease-in-out infinite'
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.3) 50%, transparent 100%)',
+                  animation: 'shimmer 4s ease-in-out infinite'
                 }}
                 sx={{
                   '@keyframes shimmer': {
-                    '0%, 100%': { opacity: 0.3 },
-                    '50%': { opacity: 1 }
+                    '0%, 100%': { opacity: 0.2 },
+                    '50%': { opacity: 0.4 }
                   }
                 }}
               >
                 <HStack justify="space-between" align="center" w="100%" spacing={4}>
                   <HStack spacing={3}>
                     <Box
-                      w="8px"
-                      h="8px"
+                      w="6px"
+                      h="6px"
                       borderRadius="full"
-                      bg="linear-gradient(45deg, #4F9CF9, #6366F1)"
-                      boxShadow="0 0 12px rgba(79, 156, 249, 0.6)"
-                      animation="pulse 2s ease-in-out infinite"
+                      bg="linear-gradient(45deg, #94A3B8, #64748B)"
+                      boxShadow="0 0 6px rgba(148, 163, 184, 0.3)"
+                      animation="pulse 3s ease-in-out infinite"
                       sx={{
                         '@keyframes pulse': {
-                          '0%, 100%': { transform: 'scale(1)', opacity: 1 },
-                          '50%': { transform: 'scale(1.2)', opacity: 0.8 }
+                          '0%, 100%': { transform: 'scale(1)', opacity: 0.7 },
+                          '50%': { transform: 'scale(1.1)', opacity: 0.9 }
                         }
                       }}
                     />
                     <Text
                       fontSize={{ base: "sm", md: "md" }}
-                      fontWeight="700"
-                      bgGradient="linear(to-r, #1E293B, #4F9CF9)"
-                      bgClip="text"
+                      fontWeight="600"
+                      color="#475569"
                       letterSpacing="-0.025em"
-                      textShadow="0 1px 2px rgba(0, 0, 0, 0.1)"
                     >
-                      AI Ensemble Analytics
+                      AI Ensemble
                     </Text>
                   </HStack>
                   <Button
                     size="sm"
                     onClick={onEnsembleInfoOpen}
-                    bg="linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)"
-                    color="white"
-                    fontWeight="700"
+                    bg="rgba(255, 255, 255, 0.8)"
+                    color="#64748B"
+                    fontWeight="600"
                     fontSize="xs"
-                    border="1px solid rgba(255, 255, 255, 0.2)"
-                    boxShadow="0 4px 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                    border="1px solid rgba(100, 116, 139, 0.3)"
+                    boxShadow="0 4px 16px rgba(0, 0, 0, 0.1)"
                     position="relative"
                     overflow="hidden"
+                    minH="32px"
+                    px={5}
+                    py={2}
+                    h="auto"
+                    borderRadius="lg"
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                    letterSpacing="0.025em"
+                    sx={{
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                    }}
                     _before={{
                       content: '""',
                       position: 'absolute',
@@ -320,61 +362,42 @@ export const ChatMessage = memo<ChatMessageProps>(({
                       left: '-100%',
                       width: '100%',
                       height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                      transition: 'left 0.6s ease'
+                      background: 'linear-gradient(90deg, transparent, rgba(100, 116, 139, 0.05), transparent)',
+                      transition: 'left 0.8s ease'
                     }}
                     _hover={{
-                      bg: "linear-gradient(135deg, #3B82F6 0%, #5B21B6 100%)",
+                      bg: "rgba(255, 255, 255, 0.9)",
+                      borderColor: "rgba(100, 116, 139, 0.5)",
+                      color: "#475569",
                       transform: "translateY(-1px)",
-                      boxShadow: "0 6px 20px rgba(79, 156, 249, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
                       _before: {
                         left: '100%'
                       }
                     }}
                     _active={{
                       transform: "translateY(0) scale(0.98)",
-                      boxShadow: "0 2px 8px rgba(79, 156, 249, 0.3)"
+                      bg: "rgba(255, 255, 255, 0.95)",
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
                     }}
                     _focus={{
-                      boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.3)",
+                      boxShadow: "0 0 0 2px rgba(100, 116, 139, 0.3)",
                       outline: "none"
                     }}
-                    px={6}
-                    py={2}
-                    h="auto"
-                    minH="36px"
-                    borderRadius="full"
-                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                    letterSpacing="0.025em"
                   >
-                    <HStack spacing={2}>
-                      <Text>Details</Text>
-                      <Box
-                        w="4px"
-                        h="4px"
-                        borderRadius="full"
-                        bg="rgba(255, 255, 255, 0.8)"
-                        animation="glow 2s ease-in-out infinite"
-                        sx={{
-                          '@keyframes glow': {
-                            '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
-                            '50%': { opacity: 1, transform: 'scale(1.2)' }
-                          }
-                        }}
-                      />
-                    </HStack>
+                    <Text>Details</Text>
                   </Button>
                 </HStack>
               </Flex>
 
-              {/* Individual Model Buttons - Neural Network Style */}
-              <HStack spacing={3} wrap="wrap" justify="flex-start">
+              {/* Individual Model Buttons - Consistent Blue Theme */}
+              <HStack spacing={2} wrap="wrap" justify="center" w="100%">
                 {availableModels.map((model, index) => {
                   const modelColors = {
-                    openai: { from: '#10B981', to: '#059669', glow: 'rgba(16, 185, 129, 0.3)' },
-                    gemini: { from: '#F59E0B', to: '#D97706', glow: 'rgba(245, 158, 11, 0.3)' },
-                    claude: { from: '#8B5CF6', to: '#7C3AED', glow: 'rgba(139, 92, 246, 0.3)' },
-                    default: { from: '#6B7280', to: '#4B5563', glow: 'rgba(107, 114, 128, 0.3)' }
+                    openai: { border: '#4F9CF9', text: '#4F9CF9', hover: 'rgba(79, 156, 249, 0.05)' },
+                    gemini: { border: '#3B82F6', text: '#3B82F6', hover: 'rgba(59, 130, 246, 0.05)' },
+                    claude: { border: '#2563EB', text: '#2563EB', hover: 'rgba(37, 99, 235, 0.05)' },
+                    default: { border: '#6366F1', text: '#6366F1', hover: 'rgba(99, 102, 241, 0.05)' }
                   };
 
                   const colors = modelColors[model.provider as keyof typeof modelColors] || modelColors.default;
@@ -384,46 +407,53 @@ export const ChatMessage = memo<ChatMessageProps>(({
                       key={model.model}
                       size="sm"
                       onClick={() => openModelModal(model)}
-                      bg={`linear-gradient(135deg, ${colors.from} 0%, ${colors.to} 100%)`}
-                      color="white"
-                      fontWeight="600"
+                      bg="white"
+                      color={colors.text}
+                      fontWeight="700"
                       fontSize="xs"
-                      border="1px solid rgba(255, 255, 255, 0.15)"
-                      boxShadow={`0 2px 8px ${colors.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`}
+                      border={`1px solid ${colors.border}`}
+                      boxShadow="none"
                       position="relative"
                       overflow="hidden"
+                      minH="36px"
+                      flex="1"
+                      maxW="120px"
+                      px={4}
+                      py={2}
+                      h="auto"
+                      borderRadius="lg"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
                       _before={{
                         content: '""',
                         position: 'absolute',
                         top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)',
-                        transform: 'translateX(-100%)',
-                        transition: 'transform 0.6s ease'
+                        left: '-100%',
+                        width: '100%',
+                        height: '100%',
+                        background: `linear-gradient(90deg, transparent, ${colors.hover}, transparent)`,
+                        transition: 'left 0.6s ease'
                       }}
                       _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: `0 4px 16px ${colors.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`,
+                        bg: colors.hover,
+                        borderColor: colors.border,
+                        transform: "translateY(-1px)",
+                        boxShadow: `0 2px 8px ${colors.border}30`,
                         _before: {
-                          transform: 'translateX(100%)'
+                          left: '100%'
                         }
                       }}
                       _active={{
-                        transform: "translateY(0) scale(0.95)",
-                        boxShadow: `0 1px 4px ${colors.glow}`
+                        transform: "translateY(0) scale(0.98)",
+                        bg: colors.hover,
+                        boxShadow: "none"
                       }}
                       _focus={{
-                        boxShadow: `0 0 0 3px ${colors.glow}`,
+                        boxShadow: `0 0 0 2px ${colors.border}50`,
                         outline: "none"
                       }}
-                      px={4}
-                      py={2}
-                      h="auto"
-                      minH="32px"
-                      borderRadius="lg"
-                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                       style={{
                         animationDelay: `${index * 0.1}s`,
                         animation: 'fadeInUp 0.6s ease-out forwards'
@@ -435,21 +465,11 @@ export const ChatMessage = memo<ChatMessageProps>(({
                         }
                       }}
                     >
-                      <HStack spacing={2}>
-                        <Box
-                          w="6px"
-                          h="6px"
-                          borderRadius="full"
-                          bg="rgba(255, 255, 255, 0.8)"
-                          animation="pulse 2s ease-in-out infinite"
-                          style={{ animationDelay: `${index * 0.3}s` }}
-                        />
-                        <Text letterSpacing="0.025em">
-                          {model.provider === 'openai' ? 'GPT-4o' :
-                           model.provider === 'gemini' ? 'Gemini' :
-                           model.provider === 'claude' ? 'Claude' : (model.provider || 'Unknown').toUpperCase()}
-                        </Text>
-                      </HStack>
+                      <Text letterSpacing="0.025em">
+                        {model.provider === 'openai' ? 'GPT-4o' :
+                         model.provider === 'gemini' ? 'Gemini' :
+                         model.provider === 'claude' ? 'Claude' : (model.provider || 'Unknown').toUpperCase()}
+                      </Text>
                     </Button>
                   );
                 })}
@@ -496,6 +516,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
             />
           )}
         </Box>
+
+
 
 
 
