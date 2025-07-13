@@ -1,15 +1,12 @@
 import {
     CheckCircleIcon,
-    ExclamationCircleIcon,
-    InformationCircleIcon,
-    XMarkIcon
+    ExclamationCircleIcon
 } from '@heroicons/react/24/solid';
 import { GoogleAuthProvider, signInAnonymously, signInWithPopup } from "firebase/auth";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { css, keyframes } from 'styled-components';
 import logo from "../assets/icons/logo.svg";
-import howItWorksImage from "../assets/img/how-it-works.png";
 import { auth } from "../firebase";
 import { useReducedMotion } from "../hooks/useAccessibility";
 import { useAuthStore } from "../store/useAuthStore";
@@ -554,69 +551,6 @@ const GuestButton = styled.button`
   }
 `;
 
-/* ---------- Info Button ---------- */
-const InfoButton = styled.button`
-  width: 100%;
-  height: 46px;
-  padding: 0 24px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 500;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 16px;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg,
-      transparent,
-      rgba(255, 255, 255, 0.08),
-      transparent
-    );
-    transition: left 0.5s ease;
-  }
-
-  &:hover:not(:disabled) {
-    border-color: rgba(59, 130, 246, 0.4);
-    background: rgba(59, 130, 246, 0.08);
-    color: rgba(255, 255, 255, 0.9);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
-
-    &::before {
-      left: 100%;
-    }
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0px);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  }
-
-  svg {
-    margin-right: 8px;
-    flex-shrink: 0;
-  }
-`;
 
 /* ---------- Divider ---------- */
 const Divider = styled.div`
@@ -701,70 +635,7 @@ const Message = styled.div<MessageProps>`
   }
 `;
 
-/* ---------- Modal Components ---------- */
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-  animation: ${fadeInUp} 0.3s ease-out;
-`;
 
-const ModalContent = styled.div`
-  position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-  background: transparent;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-`;
-
-const ModalImage = styled.img`
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 80vh;
-  object-fit: contain;
-  border-radius: 24px;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 1001;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.9);
-    transform: scale(1.1);
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-  }
-`;
 
 /* ---------- Google Icon Component ---------- */
 const GoogleIcon = () => (
@@ -808,7 +679,7 @@ export function SplashPage() {
   const [err, setErr] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+
 
   // Performance and accessibility hooks
   const prefersReducedMotion = useReducedMotion();
@@ -870,54 +741,11 @@ export function SplashPage() {
     }
   }, [navigate, setUser]);
 
-  const handleModalClose = useCallback(() => {
-    setShowModal(false);
-  }, []);
 
-  const handleInfoClick = useCallback(() => {
-    setShowModal(true);
-  }, []);
 
-  // Enhanced keyboard navigation
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape' && showModal) {
-      setShowModal(false);
-    }
-  }, [showModal]);
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
 
-  // Focus management for accessibility
-  useEffect(() => {
-    if (showModal) {
-      const focusableElements = document.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      const firstElement = focusableElements[0] as HTMLElement;
-      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
-      const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key === 'Tab') {
-          if (e.shiftKey) {
-            if (document.activeElement === firstElement) {
-              lastElement.focus();
-              e.preventDefault();
-            }
-          } else {
-            if (document.activeElement === lastElement) {
-              firstElement.focus();
-              e.preventDefault();
-            }
-          }
-        }
-      };
-      document.addEventListener('keydown', handleTabKey);
-      firstElement?.focus();
-      return () => document.removeEventListener('keydown', handleTabKey);
-    }
-  }, [showModal]);
+
 
   return (
     <Page>
@@ -994,26 +822,10 @@ export function SplashPage() {
           )}
         </GuestButton>
 
-        <InfoButton type="button" onClick={handleInfoClick} disabled={isLoading} aria-label="Learn more about NeuraStack" aria-expanded={showModal} aria-haspopup="dialog">
-          <InformationCircleIcon width={18} />
-          What is NeuraStack?
-        </InfoButton>
+
       </Card>
 
-      {/* Enhanced How it Works Modal */}
-      {showModal && (
-        <ModalOverlay onClick={handleModalClose} role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description">
-          <ModalContent onClick={e => e.stopPropagation()}>
-            <CloseButton onClick={handleModalClose} aria-label="Close information modal" autoFocus>
-              <XMarkIcon width={20} />
-            </CloseButton>
-            <ModalImage src={howItWorksImage} alt="Detailed diagram showing how NeuraStack works with AI models and user interactions" loading="lazy" id="modal-description" />
-            <div id="modal-title" style={{ position: 'absolute', left: '-9999px' }}>
-              How NeuraStack Works
-            </div>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+
     </Page>
   );
 }

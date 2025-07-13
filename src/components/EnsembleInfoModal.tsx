@@ -28,7 +28,6 @@ import {
     PiBrainBold,
     PiChartBarBold,
     PiCheckCircleBold,
-    PiLightningBold,
     PiScalesBold,
     PiShieldCheckBold,
     PiWarningCircleBold
@@ -141,13 +140,7 @@ export function EnsembleInfoModal({
         }
     };
 
-    // Helper function to format entropy (0-1 scale, higher = more distributed)
-    const getEntropyDescription = (entropy: number) => {
-        if (entropy >= 0.8) return { level: 'High Diversity', color: '#8B5CF6' };
-        if (entropy >= 0.6) return { level: 'Moderate Diversity', color: '#F59E0B' };
-        if (entropy >= 0.4) return { level: 'Low Diversity', color: '#10B981' };
-        return { level: 'Very Low Diversity', color: '#6B7280' };
-    };
+
 
     // Debug: Log the ensemble data structure
     if (import.meta.env.DEV && ensembleData && isOpen) {
@@ -192,8 +185,8 @@ export function EnsembleInfoModal({
     const totalModels = Math.max(roles.length, metadata?.totalRoles || 1); // Prevent division by zero
 
     // Response time from metadata (primary source)
-    const processingTimeMs = metadata?.processingTimeMs || 0;
-    const responseTimeSeconds = Math.max(0, Math.round(processingTimeMs / 1000));
+
+
 
     // Overall confidence from confidence analysis (primary source)
     const overallConfidence = Math.round(Math.max(0, Math.min(100,
@@ -224,12 +217,12 @@ export function EnsembleInfoModal({
 
     // Voting analysis metrics
     const consensusStrength = votingAnalysis?.consensusStrength || 'unknown';
-    const distributionEntropy = votingAnalysis?.distributionEntropy || 0;
+
 
     // Synthesis metadata
     const synthesisMetadata = synthesis?.metadata || {};
     const basedOnResponses = synthesisMetadata?.basedOnResponses || totalModels;
-    const averageConfidence = Math.round((synthesisMetadata?.averageConfidence || 0) * 100);
+
     const consensusLevel = synthesisMetadata?.consensusLevel || 'unknown';
 
 
@@ -311,21 +304,21 @@ export function EnsembleInfoModal({
                             </HStack>
                         </Box>
 
-                        {/* Core Metrics Grid - Redesigned */}
-                        <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
-                            {/* Overall Confidence */}
+                        {/* Enhanced Metrics Grid - Following Integration Guide (2-column layout) */}
+                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                            {/* Row 1: Confidence Metrics */}
+                            {/* 1. Overall Confidence */}
                             <Tooltip
-                                label="Primary reliability indicator based on model consensus and response quality"
+                                label="Final confidence score combining synthesis quality with voting consensus"
                                 isDisabled={isMobile}
                             >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={4}
+                                    p={5}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
@@ -333,33 +326,36 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
-                                        "Confidence",
-                                        "Primary reliability indicator based on model consensus and response quality"
+                                        "Overall Confidence",
+                                        "Final confidence score combining synthesis quality with voting consensus"
                                     )}
                                 >
-                                    <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(overallConfidence / 100)} mb={2} />
-                                    <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {overallConfidence}%
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Confidence
-                                    </Text>
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(overallConfidence / 100)} />
+                                        <VStack align="start" spacing={1} flex={1}>
+                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                                Overall Confidence
+                                            </Text>
+                                            <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+                                                {overallConfidence}%
+                                            </Text>
+                                        </VStack>
+                                    </HStack>
                                 </Box>
                             </Tooltip>
 
-                            {/* Model Agreement */}
+                            {/* 2. Model Agreement */}
                             <Tooltip
-                                label="Level of agreement between different AI models in their responses"
+                                label="Similarity between different AI model responses"
                                 isDisabled={isMobile}
                             >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={4}
+                                    p={5}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
@@ -367,33 +363,37 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
-                                        "Agreement",
-                                        "Level of agreement between different AI models in their responses"
+                                        "Model Agreement",
+                                        "Similarity between different AI model responses"
                                     )}
                                 >
-                                    <Icon as={PiScalesBold} boxSize={6} color={getConfidenceColor(modelAgreement / 100)} mb={2} />
-                                    <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {modelAgreement}%
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Agreement
-                                    </Text>
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={PiScalesBold} boxSize={6} color={getConfidenceColor(modelAgreement / 100)} />
+                                        <VStack align="start" spacing={1} flex={1}>
+                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                                Model Agreement
+                                            </Text>
+                                            <Text fontSize="2xl" fontWeight="bold" color={textColor}>
+                                                {modelAgreement}%
+                                            </Text>
+                                        </VStack>
+                                    </HStack>
                                 </Box>
                             </Tooltip>
 
-                            {/* Response Speed */}
+                            {/* Row 2: Consensus Metrics */}
+                            {/* 3. Consensus Strength */}
                             <Tooltip
-                                label="Total processing time for ensemble response generation"
+                                label="Voting agreement strength: strong (>60%), moderate (>45%), weak (<45%)"
                                 isDisabled={isMobile}
                             >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={4}
+                                    p={5}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
@@ -401,71 +401,48 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
-                                        "Response Time",
-                                        "Total processing time for ensemble response generation"
+                                        "Consensus Strength",
+                                        "Voting agreement strength: strong (>60%), moderate (>45%), weak (<45%)"
                                     )}
                                 >
-                                    <Icon as={PiLightningBold} boxSize={6} color="#F59E0B" mb={2} />
-                                    <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                        {responseTimeSeconds}s
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Response Time
-                                    </Text>
-                                </Box>
-                            </Tooltip>
-
-
-
-                            {/* Consensus Strength */}
-                            <Tooltip
-                                label="How strongly the AI models agree on the response approach and content"
-                                isDisabled={isMobile}
-                            >
-                                <Box
-                                    bg="white"
-                                    borderRadius="xl"
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
-                                    cursor={isMobile ? "pointer" : "help"}
-                                    _hover={{
-                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                        transform: "translateY(-2px)"
-                                    }}
-                                    transition="all 0.2s ease"
-                                    onClick={() => handleMobileMetricClick(
-                                        "Consensus",
-                                        "How strongly the AI models agree on the response approach and content"
-                                    )}
-                                >
-                                    <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={5} color={getConsensusInfo(consensusStrength).color} mb={2} />
-                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                        {getConsensusInfo(consensusStrength).description}
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Consensus
-                                    </Text>
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={6} color={getConsensusInfo(consensusStrength).color} />
+                                        <VStack align="start" spacing={1} flex={1}>
+                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                                Consensus Strength
+                                            </Text>
+                                            <Badge
+                                                colorScheme={
+                                                    consensusStrength === 'strong' ? 'green' :
+                                                    consensusStrength === 'moderate' ? 'yellow' : 'red'
+                                                }
+                                                variant="solid"
+                                                fontSize="sm"
+                                                px={3}
+                                                py={1}
+                                                borderRadius="full"
+                                            >
+                                                {getConsensusInfo(consensusStrength).description}
+                                            </Badge>
+                                        </VStack>
+                                    </HStack>
                                 </Box>
                             </Tooltip>
 
 
 
-                            {/* Response Diversity */}
+                            {/* 4. Response Quality */}
                             <Tooltip
-                                label="How diverse the AI model responses were (higher = more varied approaches)"
+                                label="Overall quality assessment of the synthesized response"
                                 isDisabled={isMobile}
                             >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={4}
+                                    p={5}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
@@ -473,33 +450,37 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
-                                        "Diversity",
-                                        "How diverse the AI model responses were (higher = more varied approaches)"
+                                        "Response Quality",
+                                        "Overall quality assessment of the synthesized response"
                                     )}
                                 >
-                                    <Icon as={PiBrainBold} boxSize={5} color={getEntropyDescription(distributionEntropy).color} mb={2} />
-                                    <Text fontSize="sm" fontWeight="bold" color={textColor}>
-                                        {getEntropyDescription(distributionEntropy).level}
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Diversity
-                                    </Text>
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={PiChartBarBold} boxSize={6} color="#8B5CF6" />
+                                        <VStack align="start" spacing={1} flex={1}>
+                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                                Response Quality
+                                            </Text>
+                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
+                                                {Math.round((metadata?.responseQuality || 0.8) * 100)}%
+                                            </Text>
+                                        </VStack>
+                                    </HStack>
                                 </Box>
                             </Tooltip>
 
-                            {/* Average Model Confidence */}
+                            {/* Row 3: Model Analytics */}
+                            {/* 5. Successful Models */}
                             <Tooltip
-                                label="Average confidence score across all contributing AI models"
+                                label="Number of AI models that successfully contributed responses"
                                 isDisabled={isMobile}
                             >
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={4}
+                                    p={5}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
                                     boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    textAlign="center"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
@@ -507,17 +488,58 @@ export function EnsembleInfoModal({
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
-                                        "Avg Confidence",
-                                        "Average confidence score across all contributing AI models"
+                                        "Successful Models",
+                                        "Number of AI models that successfully contributed responses"
                                     )}
                                 >
-                                    <Icon as={PiShieldCheckBold} boxSize={5} color={getConfidenceColor(averageConfidence / 100)} mb={2} />
-                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                        {averageConfidence}%
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor} fontWeight="600" textTransform="uppercase">
-                                        Avg Confidence
-                                    </Text>
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={PiCheckCircleBold} boxSize={6} color="#10B981" />
+                                        <VStack align="start" spacing={1} flex={1}>
+                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                                Successful Models
+                                            </Text>
+                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
+                                                {metadata?.successfulRoles || 0}/{totalModels}
+                                            </Text>
+                                        </VStack>
+                                    </HStack>
+                                </Box>
+                            </Tooltip>
+
+                            {/* 6. Synthesis Strategy */}
+                            <Tooltip
+                                label="Method used to combine individual model responses"
+                                isDisabled={isMobile}
+                            >
+                                <Box
+                                    bg="white"
+                                    borderRadius="xl"
+                                    p={5}
+                                    border="1px solid"
+                                    borderColor="rgba(226, 232, 240, 0.6)"
+                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    cursor={isMobile ? "pointer" : "help"}
+                                    _hover={{
+                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
+                                        transform: "translateY(-2px)"
+                                    }}
+                                    transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Synthesis Strategy",
+                                        "Method used to combine individual model responses"
+                                    )}
+                                >
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={PiBrainBold} boxSize={6} color="#6366F1" />
+                                        <VStack align="start" spacing={1} flex={1}>
+                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                                Synthesis Strategy
+                                            </Text>
+                                            <Text fontSize="lg" fontWeight="bold" color={textColor} textTransform="capitalize">
+                                                {synthesis?.synthesisStrategy || 'consensus'}
+                                            </Text>
+                                        </VStack>
+                                    </HStack>
                                 </Box>
                             </Tooltip>
                         </SimpleGrid>

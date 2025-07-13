@@ -222,39 +222,102 @@ export function IndividualModelModal({
 
         {/* Body */}
         <ModalBody p={6} bg="#FAFBFC">
-          {isFailed ? (
-            <Alert status="error" borderRadius="md">
-              <AlertIcon as={PiWarningBold} />
-              <Box>
-                <AlertTitle>Model Failed</AlertTitle>
-                <AlertDescription>
-                  {modelData.errorReason || 'This model failed to generate a response.'}
-                </AlertDescription>
-              </Box>
-            </Alert>
-          ) : (
-            <Box
-              bg="white"
-              borderRadius="2xl"
-              p={6}
-              border="1px solid"
-              borderColor="rgba(226, 232, 240, 0.6)"
-              boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-              color={textColor}
-              lineHeight="1.7"
-              sx={{
-                '& > *:first-of-type': { mt: 0 },
-                '& > *:last-child': { mb: 0 }
-              }}
-            >
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={MarkdownComponents}
-              >
-                {modelData.answer}
-              </ReactMarkdown>
-            </Box>
-          )}
+          <VStack spacing={6} align="stretch">
+            {isFailed ? (
+              <Alert status="error" borderRadius="md">
+                <AlertIcon as={PiWarningBold} />
+                <Box>
+                  <AlertTitle>Model Failed</AlertTitle>
+                  <AlertDescription>
+                    {modelData.errorReason || 'This model failed to generate a response.'}
+                  </AlertDescription>
+                </Box>
+              </Alert>
+            ) : (
+              <>
+                {/* 3 Key Metrics Section - Following Integration Guide */}
+                <Box
+                  bg="white"
+                  borderRadius="2xl"
+                  p={6}
+                  border="1px solid"
+                  borderColor="rgba(226, 232, 240, 0.6)"
+                  boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+                >
+                  <Text fontSize="lg" fontWeight="bold" color={textColor} mb={4}>
+                    Key Performance Metrics
+                  </Text>
+
+                  <VStack spacing={4} align="stretch">
+                    {/* Metric 1: Response Quality */}
+                    <Box p={4} bg="rgba(248, 250, 252, 0.8)" borderRadius="xl" border="1px solid rgba(226, 232, 240, 0.4)">
+                      <Text fontSize="sm" fontWeight="600" color="#64748B" mb={1}>
+                        Response Quality
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color={textColor} mb={1}>
+                        {typeof modelData.quality === 'object' && modelData.quality?.complexity || 'medium'}
+                      </Text>
+                      <Text fontSize="xs" color="#64748B">
+                        Assessment of response structure and depth
+                      </Text>
+                    </Box>
+
+                    {/* Metric 2: Semantic Confidence */}
+                    <Box p={4} bg="rgba(248, 250, 252, 0.8)" borderRadius="xl" border="1px solid rgba(226, 232, 240, 0.4)">
+                      <Text fontSize="sm" fontWeight="600" color="#64748B" mb={1}>
+                        Semantic Confidence
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color={textColor} mb={1}>
+                        {Math.round((modelData.confidence?.score || 0) * 100)}%
+                      </Text>
+                      <Text fontSize="xs" color="#64748B">
+                        AI model's confidence in semantic accuracy and relevance
+                      </Text>
+                    </Box>
+
+                    {/* Metric 3: Word Efficiency */}
+                    <Box p={4} bg="rgba(248, 250, 252, 0.8)" borderRadius="xl" border="1px solid rgba(226, 232, 240, 0.4)">
+                      <Text fontSize="sm" fontWeight="600" color="#64748B" mb={1}>
+                        Word Efficiency
+                      </Text>
+                      <Text fontSize="lg" fontWeight="bold" color={textColor} mb={1}>
+                        {modelData.wordCount || 0} words in {modelData.responseTime || 0}ms
+                      </Text>
+                      <Text fontSize="xs" color="#64748B">
+                        Response length and generation speed efficiency
+                      </Text>
+                    </Box>
+                  </VStack>
+                </Box>
+
+                {/* Model Response Content */}
+                <Box
+                  bg="white"
+                  borderRadius="2xl"
+                  p={6}
+                  border="1px solid"
+                  borderColor="rgba(226, 232, 240, 0.6)"
+                  boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+                  color={textColor}
+                  lineHeight="1.7"
+                  sx={{
+                    '& > *:first-of-type': { mt: 0 },
+                    '& > *:last-child': { mb: 0 }
+                  }}
+                >
+                  <Text fontSize="lg" fontWeight="bold" color={textColor} mb={4}>
+                    Model Response
+                  </Text>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={MarkdownComponents}
+                  >
+                    {modelData.answer}
+                  </ReactMarkdown>
+                </Box>
+              </>
+            )}
+          </VStack>
         </ModalBody>
       </ModalContent>
     </Modal>

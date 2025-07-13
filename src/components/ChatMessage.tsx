@@ -20,7 +20,6 @@ import type { Message } from "../store/useChatStore";
 import { EnsembleInfoModal } from "./EnsembleInfoModal";
 import { IndividualModelModal } from "./IndividualModelModal";
 import { Loader } from "./LoadingSpinner";
-import { ModelResponseGrid } from "./ModelResponseGrid";
 import { UnifiedAIResponse } from "./UnifiedAIResponse";
 
 interface ChatMessageProps {
@@ -144,7 +143,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
   );
 
   const availableModels = getAvailableModels();
-  const hasIndividualResponses = availableModels.length > 0;
+
 
   // Ensemble info modal state
   const [isEnsembleInfoOpen, setIsEnsembleInfoOpen] = useState(false);
@@ -243,52 +242,95 @@ export const ChatMessage = memo<ChatMessageProps>(({
           }
         }}
       >
-        {/* Clean AI Response Header - Minimalistic Design */}
+        {/* Enhanced AI Ensemble Info Section - Following Integration Guide */}
         {!isUser && !isError && !isLoading && message.metadata?.metadata && (
-          <Box mb={3}>
-            <Flex
-              justify="space-between"
-              align="center"
-              p={{ base: 2, md: 3 }}
-              bg="rgba(248, 250, 252, 0.6)"
-              borderRadius="xl"
-              border="1px solid rgba(226, 232, 240, 0.4)"
-              position="relative"
-              backdropFilter="blur(8px)"
-            >
-              {/* Clean Provider Label */}
-              <Text
-                fontSize={{ base: "sm", md: "md" }}
-                fontWeight="600"
-                color="#1E293B"
-                letterSpacing="-0.025em"
+          <Box mb={4}>
+            <VStack spacing={3} align="stretch">
+              {/* AI Ensemble Header */}
+              <Flex
+                justify="space-between"
+                align="center"
+                p={{ base: 2, md: 3 }}
+                bg="rgba(248, 250, 252, 0.6)"
+                borderRadius="xl"
+                border="1px solid rgba(226, 232, 240, 0.4)"
+                position="relative"
+                backdropFilter="blur(8px)"
               >
-                AI ENSEMBLE
-              </Text>
+                <HStack spacing={2}>
+                  <Text
+                    fontSize={{ base: "sm", md: "md" }}
+                    fontWeight="600"
+                    color="#1E293B"
+                    letterSpacing="-0.025em"
+                  >
+                    🤖 AI Ensemble Info
+                  </Text>
+                </HStack>
+              </Flex>
 
-              {/* Details Button - Clean & Modern */}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={onEnsembleInfoOpen}
-                color="#64748B"
-                fontSize="xs"
-                fontWeight="500"
-                _hover={{
-                  color: "#4F9CF9",
-                  bg: "rgba(79, 156, 249, 0.1)",
-                }}
-                _focus={{
-                  boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
-                }}
-                borderRadius="lg"
-                px={3}
-                py={1}
-                h="auto"
-              >
-                Details
-              </Button>
-            </Flex>
+              {/* Individual Model Buttons + Ensemble Details Button */}
+              <HStack spacing={2} wrap="wrap" justify="flex-start">
+                {availableModels.map((model) => (
+                  <Button
+                    key={model.model}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openModelModal(model)}
+                    borderColor="rgba(79, 156, 249, 0.3)"
+                    color="#4F9CF9"
+                    bg="rgba(79, 156, 249, 0.05)"
+                    fontWeight="500"
+                    fontSize="xs"
+                    _hover={{
+                      bg: "rgba(79, 156, 249, 0.1)",
+                      borderColor: "rgba(79, 156, 249, 0.5)",
+                      transform: "translateY(-1px)"
+                    }}
+                    _active={{
+                      bg: "rgba(79, 156, 249, 0.15)"
+                    }}
+                    px={3}
+                    py={1}
+                    h="auto"
+                    minH="32px"
+                    borderRadius="lg"
+                    transition="all 0.2s ease"
+                  >
+                    {model.provider === 'openai' ? 'GPT-4o' :
+                     model.provider === 'gemini' ? 'Gemini' :
+                     model.provider === 'claude' ? 'Claude' : (model.provider || 'Unknown').toUpperCase()}
+                  </Button>
+                ))}
+
+                {/* Ensemble Details Button */}
+                <Button
+                  size="sm"
+                  variant="solid"
+                  onClick={onEnsembleInfoOpen}
+                  bg="#4F9CF9"
+                  color="white"
+                  fontWeight="500"
+                  fontSize="xs"
+                  _hover={{
+                    bg: "#3B82F6",
+                    transform: "translateY(-1px)"
+                  }}
+                  _active={{
+                    bg: "#2563EB"
+                  }}
+                  px={3}
+                  py={1}
+                  h="auto"
+                  minH="32px"
+                  borderRadius="lg"
+                  transition="all 0.2s ease"
+                  leftIcon={<Text fontSize="xs">📊</Text>}
+                >
+                  Details
+                </Button>
+              </HStack>
+            </VStack>
           </Box>
         )}
 
@@ -328,16 +370,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
             />
           )}
         </Box>
-        {/* Individual Model Responses - Clean & Minimal */}
-        {!isUser && !isError && !isLoading && hasIndividualResponses && (
-          <Box mt={4}>
-            <ModelResponseGrid
-              models={availableModels}
-              onModelClick={openModelModal}
-              compact={true}
-            />
-          </Box>
-        )}
+
 
 
 
