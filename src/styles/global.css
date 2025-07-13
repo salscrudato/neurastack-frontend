@@ -428,31 +428,9 @@ select {
 /* Enhanced mobile viewport fixes for better mobile experience */
 @media (max-width: 768px) {
   body {
-    /* Remove body padding-top to prevent conflicts with fixed header */
-    padding-top: 0;
     /* Improve mobile scrolling performance */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-  }
-
-  /* Ensure fixed header stays on top with proper safe area handling */
-  header[role="banner"],
-  .chakra-box[role="banner"] {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 10000 !important;
-    padding-top: env(safe-area-inset-top, 0px) !important;
-    padding-left: env(safe-area-inset-left, 0px) !important;
-    padding-right: env(safe-area-inset-right, 0px) !important;
-    /* Ensure minimum height for header */
-    min-height: calc(56px + env(safe-area-inset-top, 0px)) !important;
-    /* Prevent any transforms that might affect positioning */
-    transform: none !important;
-    /* Ensure backdrop filter works */
-    backdrop-filter: blur(24px) !important;
-    -webkit-backdrop-filter: blur(24px) !important;
   }
 
   /* Prevent page scrolling - only content containers should scroll */
@@ -501,13 +479,6 @@ select {
   .keyboard-visible {
     height: 100vh;
     height: 100dvh; /* Dynamic viewport height for better keyboard handling */
-  }
-
-  /* Ensure fixed elements stay in position during keyboard transitions */
-  .keyboard-visible header[role="banner"] {
-    position: fixed !important;
-    top: 0 !important;
-    z-index: 10000 !important;
   }
 
   /* Enhanced input positioning during keyboard visibility */
@@ -579,37 +550,6 @@ select {
 /* Content offset for fixed header */
 .content-with-header {
   padding-top: calc(56px + env(safe-area-inset-top, 0px));
-}
-
-/* Force header visibility on mobile - nuclear option */
-@media (max-width: 768px) {
-  /* Target all possible header selectors */
-  header,
-  [role="banner"],
-  .chakra-box[role="banner"],
-  div[role="banner"] {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw !important;
-    z-index: 10001 !important;
-    padding-top: env(safe-area-inset-top, 0px) !important;
-    margin: 0 !important;
-    transform: translateY(0) !important;
-    /* Ensure it's above everything */
-    isolation: isolate !important;
-  }
-
-  /* Ensure header content is visible */
-  header *,
-  [role="banner"] * {
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
 }
 
 /* Mobile-first responsive containers */

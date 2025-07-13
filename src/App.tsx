@@ -48,29 +48,13 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
         // Safe area support with enhanced padding
         paddingLeft: 'max(env(safe-area-inset-left), 0px)',
         paddingRight: 'max(env(safe-area-inset-right), 0px)',
-        paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
         // Performance optimizations
         contain: 'layout style paint',
         willChange: 'auto',
       }}
     >
-      {!isSplashPage && (
-        <Box
-          position="fixed"
-          top={0}
-          left={0}
-          right={0}
-          zIndex={1000}
-          w="100%"
-          bg="white"
-          borderBottom="1px solid rgba(226, 232, 240, 0.8)"
-          boxShadow="0 1px 3px rgba(0, 0, 0, 0.05)"
-          flexShrink={0}
-        >
-          <Header />
-        </Box>
-      )}
+      {!isSplashPage && <Header />}
       <Box
         flex="1"
         position="relative"

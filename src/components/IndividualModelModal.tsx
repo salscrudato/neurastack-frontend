@@ -244,7 +244,13 @@ export function IndividualModelModal({
           position="absolute"
           top={{ base: "16px", md: "20px" }}
           right={{ base: "16px", md: "20px" }}
-          zIndex={1500}
+          zIndex={1600} // Higher z-index to ensure visibility
+          sx={{
+            // Force visibility
+            display: 'block !important',
+            visibility: 'visible !important',
+            opacity: '1 !important',
+          }}
         >
           <IconButton
             aria-label="Close modal"
@@ -256,6 +262,19 @@ export function IndividualModelModal({
             bg="#4F9CF9"
             border="2px solid #FFFFFF"
             boxShadow="0 4px 16px rgba(79, 156, 249, 0.3)"
+            sx={{
+              // Force visibility and positioning
+              display: 'flex !important',
+              visibility: 'visible !important',
+              opacity: '1 !important',
+              position: 'relative !important',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent'
+            }}
             _hover={{
               bg: "#3B82F6",
               transform: "scale(1.1)",
@@ -268,15 +287,6 @@ export function IndividualModelModal({
             _active={{
               transform: "scale(0.95)",
               bg: "#2563EB"
-            }}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              pointerEvents: 'auto',
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent'
             }}
           />
         </Box>

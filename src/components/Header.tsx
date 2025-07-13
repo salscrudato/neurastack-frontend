@@ -235,39 +235,12 @@ export function Header() {
       left={0}
       right={0}
       zIndex={1000}
-      w="100vw"
-      // Enhanced glass theme design
+      w="100%"
+      h={{ base: "56px", md: "60px" }}
       bg={headerBg}
       backdropFilter="blur(32px)"
       borderBottom={headerBorder}
-      // Modern glass styling with mobile fixes
-      sx={{
-        touchAction: 'manipulation',
-        WebkitTapHighlightColor: 'transparent',
-        // Enhanced glass shadow
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)',
-        // Ensure consistent width and positioning
-        margin: 0,
-        padding: 0,
-        // Mobile optimizations
-        '@media (max-width: 768px)': {
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          width: '100vw',
-          borderBottom: '1px solid rgba(79, 156, 249, 0.08)',
-          backdropFilter: 'blur(24px)',
-          zIndex: 1000,
-          // Add safe area support for devices with notches
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          paddingLeft: 'env(safe-area-inset-left, 0px)',
-          paddingRight: 'env(safe-area-inset-right, 0px)',
-          // Prevent any layout shifts
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-        }
-      }}
+      boxShadow="0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)"
     >
       <Flex
         align="center"
