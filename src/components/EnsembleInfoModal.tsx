@@ -255,15 +255,19 @@ export function EnsembleInfoModal({
             <ModalContent
                 bg={modalBg}
                 borderRadius={{ base: 0, md: "2xl" }}
-                maxH={{ base: "calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))", md: "85vh" }}
+                maxH={{
+                    base: "100vh",
+                    md: "85vh"
+                }}
                 maxW={{ base: "100vw", md: "900px" }}
                 mx={{ base: 0, md: 4 }}
                 my={{ base: 0, md: "7.5vh" }}
-                pt={{ base: "env(safe-area-inset-top)", md: 0 }}
-                pb={{ base: "env(safe-area-inset-bottom)", md: 0 }}
+                pt={{ base: "env(safe-area-inset-top, 0px)", md: 0 }}
+                pb={{ base: "env(safe-area-inset-bottom, 0px)", md: 0 }}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
+                overflow="hidden"
             >
                 <ModalCloseButton
                     color="#4F9CF9"
@@ -282,7 +286,24 @@ export function EnsembleInfoModal({
                 />
 
                 {/* Body */}
-                <ModalBody p={{ base: 3, md: 4 }} bg="#FAFBFC">
+                <ModalBody
+                    p={{ base: 3, md: 4 }}
+                    bg="#FAFBFC"
+                    overflowY="auto"
+                    maxH="100%"
+                    css={{
+                        '&::-webkit-scrollbar': {
+                            width: '4px',
+                        },
+                        '&::-webkit-scrollbar-track': {
+                            background: 'transparent',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                            background: 'rgba(0, 0, 0, 0.2)',
+                            borderRadius: '2px',
+                        },
+                    }}
+                >
                     {isLoading ? (
                         <Flex
                             justify="center"
