@@ -180,7 +180,7 @@ body {
   min-height: 100dvh; /* Dynamic viewport height */
   min-height: 100svh; /* Small viewport height */
 
-  /* Support for safe areas on notched devices */
+  /* Support for safe areas on notched devices - only left/right, top handled by header */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 
@@ -428,8 +428,8 @@ select {
 /* Enhanced mobile viewport fixes for better mobile experience */
 @media (max-width: 768px) {
   body {
-    /* Prevent content from scrolling behind fixed header */
-    padding-top: env(safe-area-inset-top, 0px);
+    /* Remove body padding-top to prevent conflicts with fixed header */
+    padding-top: 0;
     /* Improve mobile scrolling performance */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -526,6 +526,23 @@ select {
   padding-right: env(safe-area-inset-right);
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Mobile header safe area fix */
+.mobile-header-safe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Content offset for fixed header */
+.content-with-header {
+  padding-top: calc(56px + env(safe-area-inset-top, 0px));
 }
 
 /* Mobile-first responsive containers */

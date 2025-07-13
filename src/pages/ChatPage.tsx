@@ -226,8 +226,14 @@ export function ChatPage() {
       <Box
         ref={messagesContainerRef}
         position="absolute"
-        top={{ base: "calc(56px + env(safe-area-inset-top, 0px))", md: "60px" }}
-        bottom={{ base: "calc(120px + env(safe-area-inset-bottom, 0px))", md: "140px" }}
+        top={{
+          base: "calc(56px + env(safe-area-inset-top, 0px))",
+          md: "60px"
+        }}
+        bottom={{
+          base: "calc(120px + env(safe-area-inset-bottom, 0px))",
+          md: "140px"
+        }}
         left="0"
         right="0"
         w="100%"
