@@ -160,16 +160,16 @@ export const ChatMessage = memo<ChatMessageProps>(({
 
 
 
-  // Enhanced modern color scheme - clean, minimal design
+  // Enhanced modern color scheme with glass morphism - clean, minimal design
   const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)";
-  const bgAi = "#FFFFFF";
+  const bgAi = "rgba(255, 255, 255, 0.95)";
   const textAi = "#1E293B";
-  const bgErr = "#FEF2F2";
+  const bgErr = "rgba(254, 242, 242, 0.95)";
   const textErr = "#DC2626";
   const timestampColor = "#94A3B8";
-  const borderAi = "#E2E8F0";
-  const shadowUser = "0 2px 12px rgba(79, 156, 249, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)";
-  const shadowAi = "0 1px 4px rgba(0, 0, 0, 0.03)";
+  const borderAi = "rgba(226, 232, 240, 0.3)";
+  const shadowUser = "0 4px 16px rgba(79, 156, 249, 0.2), 0 2px 8px rgba(79, 156, 249, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
+  const shadowAi = "0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.8)";
 
   const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
@@ -221,15 +221,15 @@ export const ChatMessage = memo<ChatMessageProps>(({
         boxShadow={isUser ? shadowUser : shadowAi}
         border={isUser ? "none" : "1px solid"}
         borderColor={isUser ? "transparent" : borderAi}
-        backdropFilter={isUser ? "none" : "blur(8px)"}
+        backdropFilter={isUser ? "none" : "blur(16px)"}
         transition="all 250ms cubic-bezier(0.4, 0, 0.2, 1)"
         // Mobile-first touch optimization
         minH={{ base: "44px", md: "auto" }} // Minimum touch target size
         _hover={{
           transform: isUser ? "translateY(-2px) scale(1.01)" : "translateY(-1px)",
           boxShadow: isUser
-            ? "0 8px 32px rgba(79, 156, 249, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)"
-            : "0 4px 12px rgba(0, 0, 0, 0.05)",
+            ? "0 12px 40px rgba(79, 156, 249, 0.35), 0 4px 16px rgba(79, 156, 249, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)"
+            : "0 6px 20px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
         }}
         sx={{
           // Optimize for touch interactions
@@ -255,8 +255,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
           }),
           // Enhanced AI message glass effects
           ...(!isUser && !isError && {
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             '&::after': {
               content: '""',
               position: 'absolute',
@@ -264,8 +264,8 @@ export const ChatMessage = memo<ChatMessageProps>(({
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)',
-              borderRadius: '2xl',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+              borderRadius: 'xl',
               pointerEvents: 'none',
               zIndex: 1
             }
@@ -284,12 +284,19 @@ export const ChatMessage = memo<ChatMessageProps>(({
                 justify="space-between"
                 align="center"
                 p={{ base: 3, md: 4 }}
-                bg="linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.9) 50%, rgba(248, 250, 252, 0.8) 100%)"
+                bg="rgba(255, 255, 255, 0.9)"
                 borderRadius="xl"
                 border="1px solid"
-                borderColor="rgba(226, 232, 240, 0.6)"
+                borderColor="rgba(226, 232, 240, 0.4)"
                 position="relative"
-                backdropFilter="blur(12px)"
+                backdropFilter="blur(20px)"
+                sx={{
+                  WebkitBackdropFilter: 'blur(20px)',
+                  '@keyframes shimmer': {
+                    '0%, 100%': { opacity: 0.2 },
+                    '50%': { opacity: 0.4 }
+                  }
+                }}
                 overflow="hidden"
                 _before={{
                   content: '""',
@@ -300,12 +307,6 @@ export const ChatMessage = memo<ChatMessageProps>(({
                   height: '1px',
                   background: 'linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.3) 50%, transparent 100%)',
                   animation: 'shimmer 4s ease-in-out infinite'
-                }}
-                sx={{
-                  '@keyframes shimmer': {
-                    '0%, 100%': { opacity: 0.2 },
-                    '50%': { opacity: 0.4 }
-                  }
                 }}
               >
                 <HStack justify="space-between" align="center" w="100%" spacing={4}>
@@ -336,15 +337,15 @@ export const ChatMessage = memo<ChatMessageProps>(({
                   <Button
                     size="sm"
                     onClick={onEnsembleInfoOpen}
-                    bg="rgba(255, 255, 255, 0.8)"
+                    bg="rgba(255, 255, 255, 0.95)"
                     color="#64748B"
                     fontWeight="600"
                     fontSize="xs"
-                    border="1px solid rgba(100, 116, 139, 0.3)"
-                    boxShadow="0 4px 16px rgba(0, 0, 0, 0.1)"
+                    border="1px solid rgba(100, 116, 139, 0.2)"
+                    boxShadow="0 2px 8px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
                     position="relative"
                     overflow="hidden"
-                    minH="32px"
+                    minH="36px"
                     px={5}
                     py={2}
                     h="auto"

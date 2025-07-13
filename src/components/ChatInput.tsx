@@ -80,14 +80,14 @@ export default function ChatInput() {
       xl: "clamp(1.375rem, 1.5vw, 1.625rem)"
     },
     // Enhanced ultra-rounded edges for premium modern design
-    borderRadius: "clamp(24px, 6vw, 32px)", // Increased fluid border radius
+    borderRadius: "clamp(28px, 7vw, 36px)", // Increased fluid border radius for modern look
     // Enhanced circular send button sizes for optimal touch targets
     sendButton: {
-      base: "48px",  // Enhanced mobile touch target (48px for better accessibility)
-      sm: "50px",
-      md: "52px",
-      lg: "54px",
-      xl: "56px"
+      base: "52px",  // Enhanced mobile touch target (52px for better accessibility)
+      sm: "54px",
+      md: "56px",
+      lg: "58px",
+      xl: "60px"
     }
   }), []);
 
@@ -574,12 +574,12 @@ export default function ChatInput() {
             borderWidth="1.5px"
             borderColor={isFocused ? "#4F9CF9" : "rgba(226, 232, 240, 0.8)"}
             borderRadius={inputConfig.borderRadius} // Fluid border radius
-            bg="rgba(255, 255, 255, 0.98)" // Enhanced glass background
-            backdropFilter="blur(32px)" // Enhanced blur for premium glass effect
+            bg="rgba(255, 255, 255, 0.95)" // Enhanced glass background with subtle transparency
+            backdropFilter="blur(40px)" // Enhanced blur for premium glass effect
             lineHeight={inputConfig.lineHeight} // Consistent line height for proper 3-line calculation
             boxShadow={isFocused
-              ? "0 0 0 2px rgba(79, 156, 249, 0.2), 0 12px 40px rgba(79, 156, 249, 0.12), 0 6px 20px rgba(79, 156, 249, 0.06)" // Enhanced focus shadow
-              : "0 4px 16px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.04)" // Enhanced glass shadow
+              ? "0 0 0 2px rgba(79, 156, 249, 0.25), 0 16px 48px rgba(79, 156, 249, 0.15), 0 8px 24px rgba(79, 156, 249, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)" // Enhanced focus shadow with inset highlight
+              : "0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6)" // Enhanced glass shadow with inset highlight
             }
             _placeholder={{
               color: colorSystem.text.placeholder,
@@ -611,6 +611,7 @@ export default function ChatInput() {
             sx={{
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent',
+              WebkitBackdropFilter: 'blur(40px)', // Safari support for backdrop filter
               // Enhanced typography features
               fontFeatureSettings: "'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss02'",
               // Prevent zoom on iOS
@@ -701,22 +702,23 @@ export default function ChatInput() {
               minH={inputConfig.sendButton}
               maxW={inputConfig.sendButton}
               maxH={inputConfig.sendButton}
-              bg={txt.trim() ? "white" : "rgba(248, 250, 252, 0.8)"}
+              bg={txt.trim() ? "rgba(255, 255, 255, 0.98)" : "rgba(248, 250, 252, 0.85)"}
               color={txt.trim() ? "#4F9CF9" : "rgba(148, 163, 184, 0.6)"}
               border={txt.trim() ?
-                "1px solid #4F9CF9" :
-                "1px solid rgba(148, 163, 184, 0.3)"
+                "1px solid rgba(79, 156, 249, 0.3)" :
+                "1px solid rgba(148, 163, 184, 0.25)"
               }
               borderRadius="full"
-              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
               cursor={txt.trim() ? "pointer" : "not-allowed"}
               flexShrink={0}
               flexGrow={0}
               position="relative"
               overflow="hidden"
+              backdropFilter="blur(20px)"
               boxShadow={txt.trim() ?
-                "0 2px 8px rgba(79, 156, 249, 0.2)" :
-                "0 1px 3px rgba(0, 0, 0, 0.1)"
+                "0 4px 16px rgba(79, 156, 249, 0.25), 0 2px 8px rgba(79, 156, 249, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)" :
+                "0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)"
               }
               _before={txt.trim() ? {
                 content: '""',
@@ -732,14 +734,14 @@ export default function ChatInput() {
               } : {}}
               _hover={{
                 bg: txt.trim() ?
-                  "rgba(79, 156, 249, 0.05)" :
-                  "rgba(148, 163, 184, 0.1)",
-                borderColor: txt.trim() ? "#3B82F6" : "rgba(148, 163, 184, 0.4)",
+                  "rgba(255, 255, 255, 1)" :
+                  "rgba(248, 250, 252, 0.9)",
+                borderColor: txt.trim() ? "rgba(79, 156, 249, 0.4)" : "rgba(148, 163, 184, 0.35)",
                 color: txt.trim() ? "#3B82F6" : "rgba(148, 163, 184, 0.8)",
-                transform: txt.trim() ? "scale(1.05) translateY(-1px)" : "none",
+                transform: txt.trim() ? "scale(1.05) translateY(-2px)" : "none",
                 boxShadow: txt.trim() ?
-                  "0 4px 12px rgba(79, 156, 249, 0.25)" :
-                  "0 2px 6px rgba(0, 0, 0, 0.1)"
+                  "0 8px 24px rgba(79, 156, 249, 0.3), 0 4px 12px rgba(79, 156, 249, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9)" :
+                  "0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7)"
               }}
               _focus={{
                 boxShadow: txt.trim()

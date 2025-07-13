@@ -360,29 +360,33 @@ const LoadingSpinner = styled.div`
 /* ---------- Google Button ---------- */
 const GoogleButton = styled.button`
   width: 100%;
-  height: 50px;
+  height: 56px;
   padding: 0 24px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  color: #374151;
-  font-weight: 500;
-  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
   /* Enhanced accessibility */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  min-height: 48px; /* WCAG touch target size */
+  min-height: 56px; /* Enhanced touch target size */
 
   &::before {
     content: '';
@@ -393,18 +397,21 @@ const GoogleButton = styled.button`
     height: 100%;
     background: linear-gradient(90deg,
       transparent,
-      rgba(255, 255, 255, 0.3),
+      rgba(79, 156, 249, 0.1),
       transparent
     );
-    transition: left 0.5s ease;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:hover:not(:disabled) {
-    border-color: rgba(59, 130, 246, 0.3);
+    border-color: rgba(79, 156, 249, 0.25);
     background: rgba(255, 255, 255, 1);
-    color: #1f2937;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15);
+    color: #0f172a;
+    transform: translateY(-2px);
+    box-shadow:
+      0 12px 40px rgba(79, 156, 249, 0.2),
+      0 4px 12px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
     &::before {
       left: 100%;
@@ -412,24 +419,32 @@ const GoogleButton = styled.button`
   }
 
   &:active:not(:disabled) {
-    transform: translateY(0px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow:
+      0 6px 20px rgba(79, 156, 249, 0.15),
+      0 2px 8px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    box-shadow:
+      0 0 0 3px rgba(79, 156, 249, 0.3),
+      0 8px 32px rgba(0, 0, 0, 0.12),
+      0 2px 8px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   &:focus-visible {
-    outline: 2px solid rgba(59, 130, 246, 0.8);
-    outline-offset: 2px;
+    outline: 2px solid rgba(79, 156, 249, 0.8);
+    outline-offset: 3px;
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    background: rgba(255, 255, 255, 0.7);
 
     &::before {
       display: none;
@@ -443,23 +458,26 @@ const GoogleButton = styled.button`
 
   /* Responsive adjustments */
   @media (max-width: ${breakpoints.xs}) {
-    height: 48px;
+    height: 52px;
     padding: 0 20px;
-    font-size: 0.9rem;
-    border-radius: 14px;
+    font-size: 0.95rem;
+    border-radius: 18px;
+    margin-top: 12px;
   }
 
   @media (max-width: ${breakpoints.sm}) {
-    height: 49px;
+    height: 54px;
     padding: 0 22px;
-    border-radius: 15px;
+    border-radius: 19px;
+    margin-top: 14px;
   }
 
   @media (min-width: ${breakpoints.lg}) {
-    height: 52px;
-    padding: 0 28px;
-    font-size: 1rem;
-    border-radius: 18px;
+    height: 60px;
+    padding: 0 32px;
+    font-size: 1.05rem;
+    border-radius: 22px;
+    margin-top: 20px;
   }
 
   /* Reduced motion support */
@@ -485,23 +503,33 @@ const GoogleButton = styled.button`
 /* ---------- Guest Button ---------- */
 const GuestButton = styled.button`
   width: 100%;
-  height: 50px;
+  height: 56px;
   padding: 0 24px;
-  border: 2px solid Placesrgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  color: rgbaರೀಕರಣ: rgba(255, 255, 255, 0.8); /* Default color with 80% opacity */
-  font-weight: 500;
-  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 16px;
   position: relative;
   overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+  /* Enhanced accessibility */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
 
   &::before {
     content: '';
@@ -512,18 +540,21 @@ const GuestButton = styled.button`
     height: 100%;
     background: linear-gradient(90deg,
       transparent,
-      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.15),
       transparent
     );
-    transition: left 0.5s ease;
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 1);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow:
+      0 12px 40px rgba(255, 255, 255, 0.15),
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
 
     &::before {
       left: 100%;
@@ -531,19 +562,32 @@ const GuestButton = styled.button`
   }
 
   &:active:not(:disabled) {
-    transform: translateY(0px);
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    box-shadow:
+      0 6px 20px rgba(255, 255, 255, 0.1),
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.3),
+      0 8px 32px rgba(0, 0, 0, 0.15),
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 3px;
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    background: rgba(255, 255, 255, 0.04);
 
     &::before {
       display: none;

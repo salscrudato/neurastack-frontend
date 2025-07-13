@@ -56,14 +56,7 @@ export function Header() {
   // Semantic color tokens with dark-mode support
   const primaryColor = useColorModeValue('blue.500', 'blue.300');
 
-  const headerBg = useColorModeValue(
-    'linear-gradient(135deg, rgba(79,156,249,0.06) 0%, rgba(99,102,241,0.08) 100%)',
-    'linear-gradient(135deg, rgba(79,156,249,0.12) 0%, rgba(99,102,241,0.16) 100%)'
-  );
-  const headerBorder = useColorModeValue(
-    '1px solid rgba(79,156,249,0.12)',
-    '1px solid rgba(79,156,249,0.2)'
-  );
+  // Removed unused variables - using inline styles for glass morphism
 
 
   // Navigation menu items configuration
@@ -237,10 +230,17 @@ export function Header() {
       zIndex={1000}
       w="100%"
       h={{ base: "56px", md: "60px" }}
-      bg={headerBg}
-      backdropFilter="blur(32px)"
-      borderBottom={headerBorder}
-      boxShadow="0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(79, 156, 249, 0.08)"
+      bg="rgba(255, 255, 255, 0.95)"
+      backdropFilter="blur(40px)"
+      borderBottom="1px solid rgba(79, 156, 249, 0.08)"
+      boxShadow="0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+      sx={{
+        WebkitBackdropFilter: 'blur(40px)',
+        // Safe area support
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+      }}
     >
       <Flex
         align="center"
@@ -265,35 +265,37 @@ export function Header() {
           variant="ghost"
           size={{ base: "lg", md: "md" }} // Larger touch target on mobile
           color={primaryColor}
-          bg="rgba(79, 156, 249, 0.1)"
-          borderRadius="12px"
-          minH={{ base: "44px", md: "40px" }} // Minimum touch target
-          minW={{ base: "44px", md: "40px" }}
+          bg="rgba(255, 255, 255, 0.9)"
+          borderRadius="16px"
+          minH={{ base: "48px", md: "44px" }} // Enhanced touch target
+          minW={{ base: "48px", md: "44px" }}
           position="absolute"
           left="3"
           sx={{
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             // Mobile-first touch optimization
             touchAction: 'manipulation',
             WebkitTapHighlightColor: 'transparent',
           }}
-          border="1px solid rgba(79, 156, 249, 0.2)"
-          boxShadow="0 2px 8px rgba(79, 156, 249, 0.1)"
+          border="1px solid rgba(79, 156, 249, 0.15)"
+          boxShadow="0 4px 12px rgba(79, 156, 249, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
           transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
           _hover={{
-            bg: "rgba(79, 156, 249, 0.15)",
+            bg: "rgba(255, 255, 255, 1)",
             color: "#3B82F6",
-            transform: "translateY(-1px)",
-            boxShadow: "0 4px 12px rgba(79, 156, 249, 0.2)"
+            transform: "translateY(-2px)",
+            boxShadow: "0 8px 20px rgba(79, 156, 249, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)",
+            borderColor: "rgba(79, 156, 249, 0.25)"
           }}
           _active={{
-            transform: "translateY(0)",
-            bg: "rgba(79, 156, 249, 0.2)"
+            transform: "translateY(-1px)",
+            bg: "rgba(255, 255, 255, 0.95)",
+            boxShadow: "0 4px 12px rgba(79, 156, 249, 0.2), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
           }}
           _focus={{
             outline: "none",
-            boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
+            boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.3), 0 4px 12px rgba(79, 156, 249, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
           }}
         />
 
@@ -324,19 +326,25 @@ export function Header() {
           closeOnEsc={true}
         >
           <DrawerOverlay
-            bg="rgba(0, 0, 0, 0.3)"
-            backdropFilter="blur(12px)"
-            transition="all 0.3s ease"
+            bg="rgba(0, 0, 0, 0.25)"
+            backdropFilter="blur(16px)"
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             onClick={onClose}
+            sx={{
+              WebkitBackdropFilter: 'blur(16px)',
+            }}
           />
           <DrawerContent
-            bg="rgba(255, 255, 255, 0.95)"
-            backdropFilter="blur(20px)"
+            bg="rgba(255, 255, 255, 0.98)"
+            backdropFilter="blur(32px)"
             borderRight="none"
-            boxShadow="0 20px 40px -12px rgba(0, 0, 0, 0.2)"
+            boxShadow="0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
             maxW="320px"
             mt={{ base: "56px", md: "60px" }} // Position below header
-            borderRadius="0 24px 24px 0"
+            borderRadius="0 28px 28px 0"
+            sx={{
+              WebkitBackdropFilter: 'blur(32px)',
+            }}
           >
             <DrawerCloseButton
               color="#64748B"

@@ -10,6 +10,7 @@ import { usePerformanceOptimization } from "./hooks/usePerformanceOptimization";
 import "./styles/global.css";
 import "./styles/utilities.css";
 import { authManager } from "./utils/authUtils";
+import "./utils/mobileInit"; // Initialize mobile optimizations
 
 // Single transition variant for all pages
 const pageVariants = {

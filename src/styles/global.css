@@ -365,10 +365,36 @@ button:active {
   justify-content: center;
 }
 
+/* Enhanced mobile optimizations with accessibility */
 @media (max-width: 768px) {
   .touch-target {
     min-height: 48px;
     min-width: 48px;
+  }
+
+  /* Enhanced mobile accessibility */
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* Improved focus indicators for mobile */
+  *:focus-visible {
+    outline: 3px solid rgba(79, 156, 249, 0.8);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Enhanced tap targets for links */
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px;
+    margin: -8px;
   }
 }
 

@@ -37,7 +37,7 @@ export const useAccessibility = (options: AccessibilityOptions = {}) => {
   const announcementRef = useRef<HTMLDivElement>(null);
   const focusHistoryRef = useRef<HTMLElement[]>([]);
 
-  // Enhanced screen reader detection with mobile support
+  // Enhanced screen reader detection with comprehensive mobile support
   useEffect(() => {
     const detectScreenReader = () => {
       const hasScreenReader =
@@ -46,10 +46,18 @@ export const useAccessibility = (options: AccessibilityOptions = {}) => {
         navigator.userAgent.includes('VoiceOver') ||
         navigator.userAgent.includes('TalkBack') ||
         navigator.userAgent.includes('Voice Assistant') ||
+        navigator.userAgent.includes('Select-to-Speak') ||
         window.speechSynthesis?.getVoices().length > 0 ||
-        // Mobile accessibility detection
+        // Enhanced mobile accessibility detection
         (window as any).accessibility?.isEnabled ||
-        document.documentElement.getAttribute('data-a11y-animated') === 'false';
+        (window as any).speechSynthesis?.speaking ||
+        document.documentElement.getAttribute('data-a11y-animated') === 'false' ||
+        // iOS VoiceOver detection
+        (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) &&
+        (window as any).speechSynthesis?.getVoices().some((voice: any) => voice.name.includes('Alex')) ||
+        // Android TalkBack detection
+        navigator.userAgent.includes('Android') &&
+        (window as any).speechSynthesis?.getVoices().some((voice: any) => voice.name.includes('Google'));
 
       setState(prev => ({ ...prev, isScreenReaderActive: hasScreenReader }));
     };
