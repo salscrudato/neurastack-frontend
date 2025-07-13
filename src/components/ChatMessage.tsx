@@ -159,7 +159,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
   const timestampColor = "#94A3B8";
   const borderAi = "#E2E8F0";
   const shadowUser = "0 2px 12px rgba(79, 156, 249, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)";
-  const shadowAi = "0 1px 6px rgba(0, 0, 0, 0.06)";
+  const shadowAi = "0 1px 4px rgba(0, 0, 0, 0.03)";
 
   const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
@@ -214,7 +214,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
           transform: isUser ? "translateY(-2px) scale(1.01)" : "translateY(-1px)",
           boxShadow: isUser
             ? "0 8px 32px rgba(79, 156, 249, 0.3), 0 2px 8px rgba(0, 0, 0, 0.1)"
-            : "0 6px 20px rgba(0, 0, 0, 0.08)",
+            : "0 4px 12px rgba(0, 0, 0, 0.05)",
         }}
         sx={{
           // Enhanced user message styling with glass effects
@@ -257,45 +257,79 @@ export const ChatMessage = memo<ChatMessageProps>(({
                 position="relative"
                 backdropFilter="blur(8px)"
               >
-                <HStack spacing={2}>
+                <HStack justify="space-between" align="center" w="100%">
                   <Text
                     fontSize={{ base: "sm", md: "md" }}
                     fontWeight="600"
                     color="#1E293B"
                     letterSpacing="-0.025em"
                   >
-                    🤖 AI Ensemble Info
+                    AI Ensemble Info
                   </Text>
+                  <Button
+                    size="sm"
+                    onClick={onEnsembleInfoOpen}
+                    bg="#007BFF"
+                    color="white"
+                    fontWeight="600"
+                    fontSize="xs"
+                    border="none"
+                    boxShadow="none"
+                    _hover={{
+                      bg: "#0056B3",
+                      transform: "none"
+                    }}
+                    _active={{
+                      bg: "#004085",
+                      transform: "scale(0.98)"
+                    }}
+                    _focus={{
+                      boxShadow: "none",
+                      outline: "none"
+                    }}
+                    px={4}
+                    py={2}
+                    h="auto"
+                    minH="32px"
+                    borderRadius="8px"
+                    transition="all 0.15s ease"
+                  >
+                    Details
+                  </Button>
                 </HStack>
               </Flex>
 
-              {/* Individual Model Buttons + Ensemble Details Button */}
+              {/* Individual Model Buttons */}
               <HStack spacing={2} wrap="wrap" justify="flex-start">
                 {availableModels.map((model) => (
                   <Button
                     key={model.model}
                     size="sm"
-                    variant="outline"
                     onClick={() => openModelModal(model)}
-                    borderColor="rgba(79, 156, 249, 0.3)"
-                    color="#4F9CF9"
-                    bg="rgba(79, 156, 249, 0.05)"
-                    fontWeight="500"
+                    bg="#007BFF"
+                    color="white"
+                    fontWeight="600"
                     fontSize="xs"
+                    border="none"
+                    boxShadow="none"
                     _hover={{
-                      bg: "rgba(79, 156, 249, 0.1)",
-                      borderColor: "rgba(79, 156, 249, 0.5)",
-                      transform: "translateY(-1px)"
+                      bg: "#0056B3",
+                      transform: "none"
                     }}
                     _active={{
-                      bg: "rgba(79, 156, 249, 0.15)"
+                      bg: "#004085",
+                      transform: "scale(0.98)"
                     }}
-                    px={3}
-                    py={1}
+                    _focus={{
+                      boxShadow: "none",
+                      outline: "none"
+                    }}
+                    px={4}
+                    py={2}
                     h="auto"
                     minH="32px"
-                    borderRadius="lg"
-                    transition="all 0.2s ease"
+                    borderRadius="8px"
+                    transition="all 0.15s ease"
                   >
                     {model.provider === 'openai' ? 'GPT-4o' :
                      model.provider === 'gemini' ? 'Gemini' :
@@ -303,32 +337,7 @@ export const ChatMessage = memo<ChatMessageProps>(({
                   </Button>
                 ))}
 
-                {/* Ensemble Details Button */}
-                <Button
-                  size="sm"
-                  variant="solid"
-                  onClick={onEnsembleInfoOpen}
-                  bg="#4F9CF9"
-                  color="white"
-                  fontWeight="500"
-                  fontSize="xs"
-                  _hover={{
-                    bg: "#3B82F6",
-                    transform: "translateY(-1px)"
-                  }}
-                  _active={{
-                    bg: "#2563EB"
-                  }}
-                  px={3}
-                  py={1}
-                  h="auto"
-                  minH="32px"
-                  borderRadius="lg"
-                  transition="all 0.2s ease"
-                  leftIcon={<Text fontSize="xs">📊</Text>}
-                >
-                  Details
-                </Button>
+
               </HStack>
             </VStack>
           </Box>

@@ -21,6 +21,7 @@ const pageVariants = {
 const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isSplashPage = location.pathname === '/';
+  const isChatPage = location.pathname === '/chat';
 
   return (
     <Flex
@@ -82,25 +83,24 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           contain: 'layout style',
           willChange: 'auto',
           // Enhanced responsive padding with fluid values - account for fixed header
-          paddingTop: !isSplashPage ? 'clamp(64px, 15vw, 72px)' : 0,
-          minHeight: !isSplashPage
+          // Chat page handles its own layout, so no padding needed
+          paddingTop: (!isSplashPage && !isChatPage) ? 'clamp(64px, 15vw, 72px)' : 0,
+          minHeight: (!isSplashPage && !isChatPage)
             ? 'calc(100vh - clamp(64px, 15vw, 72px))'
             : '100vh',
           // Modern viewport support
           '@supports (height: 100dvh)': {
-            minHeight: !isSplashPage
+            minHeight: (!isSplashPage && !isChatPage)
               ? 'calc(100dvh - clamp(64px, 15vw, 72px))'
               : '100dvh',
           },
           // Enhanced mobile optimizations - account for fixed header and safe areas
           '@media (max-width: 768px)': {
-            paddingTop: !isSplashPage ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
-            minHeight: !isSplashPage
+            paddingTop: (!isSplashPage && !isChatPage) ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
+            minHeight: (!isSplashPage && !isChatPage)
               ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px)'
               : '100vh',
             touchAction: 'pan-y',
-            // Ensure content doesn't get cut off by keyboard
-            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
           },
         }}
       >

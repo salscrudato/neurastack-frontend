@@ -19,11 +19,12 @@ import {
     ModalOverlay,
     Progress,
     SimpleGrid,
+    Spinner,
     Text,
     Tooltip,
     VStack
 } from "@chakra-ui/react";
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     PiBrainBold,
     PiChartBarBold,
@@ -32,6 +33,7 @@ import {
     PiShieldCheckBold,
     PiWarningCircleBold
 } from "react-icons/pi";
+import { useMobileOptimization } from '../hooks/useMobileOptimization';
 
 // ============================================================================
 // Component Props
@@ -82,8 +84,57 @@ export function EnsembleInfoModal({
         content: ''
     });
 
-    // Check if mobile
-    const isMobile = window.innerWidth < 768;
+    // Mobile optimization hook
+    const { isMobile } = useMobileOptimization();
+
+    // Loading and error states
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (ensembleData) {
+            setIsLoading(false);
+        }
+    }, [ensembleData]);
+
+    // Error state for missing data
+    const hasError = !isLoading && !ensembleData;
+
+    // Memoized computed values for performance - Updated to match actual API structure
+    const computedMetrics = useMemo(() => {
+        if (!ensembleData) return null;
+
+        // Handle both direct metadata structure and nested data structure
+        const synthesis = ensembleData.synthesis || ensembleData.data?.synthesis;
+        const metadata = ensembleData.metadata || ensembleData.data?.metadata || ensembleData;
+        const voting = ensembleData.voting || ensembleData.data?.voting;
+
+        return {
+            synthesis,
+            voting,
+            // Updated paths to match actual API structure
+            overallConfidence: metadata?.confidenceAnalysis?.overallConfidence || 0,
+            modelAgreement: metadata?.confidenceAnalysis?.modelAgreement || 0,
+            consensusStrength: metadata?.confidenceAnalysis?.votingAnalysis?.consensusStrength || 'unknown',
+            votingWinner: voting?.winner || 'N/A',
+            totalModels: metadata?.totalRoles || 0,
+            successfulModels: metadata?.successfulRoles || 0,
+            processingTime: metadata?.averageResponseTime || 0,
+            costEstimate: metadata?.costEstimate?.totalCost || 0,
+            responseQuality: metadata?.confidenceAnalysis?.qualityDistribution?.averageScore || 0,
+            // Additional missing variables
+            qualityDistribution: metadata?.confidenceAnalysis?.qualityDistribution || {
+                high: 0,
+                medium: 0,
+                low: 0,
+                veryLow: 0,
+                averageScore: 0,
+                scoreRange: { min: 0, max: 0 }
+            },
+            responseConsistency: metadata?.confidenceAnalysis?.responseConsistency || 0,
+            basedOnResponses: metadata?.totalRoles || 0,
+            consensusLevel: synthesis?.metadata?.consensusLevel || 'unknown'
+        };
+    }, [ensembleData]);
 
     // Handle mobile metric click
     const handleMobileMetricClick = (title: string, content: string) => {
@@ -171,66 +222,24 @@ export function EnsembleInfoModal({
 
 
 
-    // Enhanced data extraction with comprehensive null/undefined handling for new API structure
-    // The ensembleData contains the full metadata structure from the API response
-    // Structure: { ...data.metadata, synthesis: data.synthesis }
-    const synthesis = ensembleData?.synthesis || {};
-    const voting = ensembleData?.voting || {}; // voting is at the top level of metadata
-    const metadata = ensembleData || {};
-    const roles = Array.isArray(ensembleData?.roles) ? ensembleData.roles : [];
-    const confidenceAnalysis = ensembleData?.confidenceAnalysis || {};
-    const votingAnalysis = confidenceAnalysis?.votingAnalysis || {};
-
-    // Extract metrics with proper fallbacks and type safety
-    const totalModels = Math.max(roles.length, metadata?.totalRoles || 1); // Prevent division by zero
-
-    // Response time from metadata (primary source)
-
-
-
-    // Overall confidence from confidence analysis (primary source)
-    const overallConfidence = Math.round(Math.max(0, Math.min(100,
-        (confidenceAnalysis?.overallConfidence || synthesis?.confidence?.score || 0) * 100
-    )));
-
-    // Model agreement from confidence analysis
-    const modelAgreement = Math.round(Math.max(0, Math.min(100,
-        (confidenceAnalysis?.modelAgreement || 0) * 100
-    )));
-
-    // Response consistency from confidence analysis
-    const responseConsistency = Math.round(Math.max(0, Math.min(100,
-        (confidenceAnalysis?.responseConsistency || 0) * 100
-    )));
-
-
-
-    // Quality distribution from confidence analysis
-    const qualityDistribution = confidenceAnalysis?.qualityDistribution || {
-        high: 0,
-        medium: 0,
-        low: 0,
-        veryLow: 0,
-        averageScore: 0,
-        totalResponses: totalModels
-    };
-
-    // Voting analysis metrics
-    const consensusStrength = votingAnalysis?.consensusStrength || 'unknown';
-
-
-    // Synthesis metadata
-    const synthesisMetadata = synthesis?.metadata || {};
-    const basedOnResponses = synthesisMetadata?.basedOnResponses || totalModels;
-
-    const consensusLevel = synthesisMetadata?.consensusLevel || 'unknown';
-
-
-
-    // Don't render if no ensemble data is available
-    if (!ensembleData) {
-        return null;
+    // Use computed metrics for clean data access
+    if (!computedMetrics) {
+        return null; // This will be handled by the loading/error states
     }
+
+    const {
+        synthesis,
+        voting,
+        overallConfidence,
+        modelAgreement,
+        consensusStrength,
+        totalModels,
+        successfulModels,
+        processingTime,
+        responseQuality,
+        qualityDistribution,
+        responseConsistency
+    } = computedMetrics;
 
     return (
         <>
@@ -239,15 +248,19 @@ export function EnsembleInfoModal({
                 onClose={onClose}
                 size={{ base: "full", md: "2xl" }}
                 scrollBehavior="inside"
+                aria-labelledby="ensemble-modal-title"
+                aria-describedby="ensemble-modal-description"
             >
             <ModalOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
             <ModalContent
                 bg={modalBg}
                 borderRadius={{ base: 0, md: "2xl" }}
-                maxH={{ base: "90vh", md: "85vh" }}
-                maxW={{ base: "95vw", md: "900px" }}
+                maxH={{ base: "calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))", md: "85vh" }}
+                maxW={{ base: "100vw", md: "900px" }}
                 mx={{ base: 0, md: 4 }}
                 my={{ base: 0, md: "7.5vh" }}
+                pt={{ base: "env(safe-area-inset-top)", md: 0 }}
+                pb={{ base: "env(safe-area-inset-bottom)", md: 0 }}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
@@ -269,14 +282,65 @@ export function EnsembleInfoModal({
                 />
 
                 {/* Body */}
-                <ModalBody p={4} bg="#FAFBFC">
-                    <VStack spacing={6} align="stretch">
+                <ModalBody p={{ base: 3, md: 4 }} bg="#FAFBFC">
+                    {isLoading ? (
+                        <Flex
+                            justify="center"
+                            align="center"
+                            minH="400px"
+                            direction="column"
+                            gap={4}
+                        >
+                            <Spinner
+                                size="xl"
+                                color="#4F9CF9"
+                                thickness="4px"
+                            />
+                            <Text
+                                fontSize="lg"
+                                color="gray.600"
+                                fontWeight="500"
+                            >
+                                Loading ensemble data...
+                            </Text>
+                        </Flex>
+                    ) : hasError ? (
+                        <Flex
+                            justify="center"
+                            align="center"
+                            minH="400px"
+                            direction="column"
+                            gap={4}
+                            textAlign="center"
+                        >
+                            <Icon
+                                as={PiWarningCircleBold}
+                                boxSize={12}
+                                color="orange.400"
+                            />
+                            <Text
+                                fontSize="xl"
+                                color="gray.700"
+                                fontWeight="600"
+                            >
+                                No Ensemble Data Available
+                            </Text>
+                            <Text
+                                fontSize="md"
+                                color="gray.500"
+                                maxW="md"
+                            >
+                                The ensemble information could not be loaded. This might be because the response is still being processed or there was an issue with the data.
+                            </Text>
+                        </Flex>
+                    ) : (
+                    <VStack spacing={{ base: 4, md: 6 }} align="stretch">
 
                         {/* Intelligence Overview - Hero Section */}
                         <Box
                             bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                            borderRadius="2xl"
-                            p={6}
+                            borderRadius={{ base: "xl", md: "2xl" }}
+                            p={{ base: 4, md: 6 }}
                             color="white"
                             position="relative"
                             overflow="hidden"
@@ -285,27 +349,39 @@ export function EnsembleInfoModal({
                                 position="absolute"
                                 top="0"
                                 right="0"
-                                w="100px"
-                                h="100px"
+                                w={{ base: "60px", md: "100px" }}
+                                h={{ base: "60px", md: "100px" }}
                                 bg="rgba(255, 255, 255, 0.1)"
                                 borderRadius="full"
-                                transform="translate(30px, -30px)"
+                                transform={{ base: "translate(20px, -20px)", md: "translate(30px, -30px)" }}
                             />
-                            <HStack spacing={4} align="center">
-                                <Icon as={PiBrainBold} boxSize={8} />
+                            <HStack spacing={{ base: 3, md: 4 }} align="center">
+                                <Icon as={PiBrainBold} boxSize={{ base: 6, md: 8 }} />
                                 <VStack align="start" spacing={1}>
-                                    <Text fontSize="xl" fontWeight="bold">
+                                    <Text
+                                        id="ensemble-modal-title"
+                                        fontSize={{ base: "lg", md: "xl" }}
+                                        fontWeight="bold"
+                                    >
                                         AI Intelligence Analysis
                                     </Text>
-                                    <Text fontSize="sm" opacity={0.9}>
+                                    <Text
+                                        id="ensemble-modal-description"
+                                        fontSize={{ base: "xs", md: "sm" }}
+                                        opacity={0.9}
+                                    >
                                         Multi-model synthesis performance
                                     </Text>
                                 </VStack>
                             </HStack>
                         </Box>
 
-                        {/* Enhanced Metrics Grid - Following Integration Guide (2-column layout) */}
-                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                        {/* Enhanced Metrics Grid - Single column layout */}
+                        <SimpleGrid
+                            columns={{ base: 1, md: 1 }}
+                            spacing={{ base: 2, md: 3 }}
+                            maxW="100%"
+                        >
                             {/* Row 1: Confidence Metrics */}
                             {/* 1. Overall Confidence */}
                             <Tooltip
@@ -314,16 +390,21 @@ export function EnsembleInfoModal({
                             >
                                 <Box
                                     bg="white"
-                                    borderRadius="xl"
-                                    p={5}
+                                    borderRadius="lg"
+                                    p={{ base: 3, md: 4 }}
+                                    minH={{ base: "80px", md: "auto" }}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
+                                    _active={isMobile ? {
+                                        transform: "scale(0.98)",
+                                        bg: "gray.50"
+                                    } : {}}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
                                         "Overall Confidence",
@@ -331,13 +412,13 @@ export function EnsembleInfoModal({
                                     )}
                                 >
                                     <HStack spacing={3} align="center">
-                                        <Icon as={PiShieldCheckBold} boxSize={6} color={getConfidenceColor(overallConfidence / 100)} />
-                                        <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                        <Icon as={PiShieldCheckBold} boxSize={5} color={getConfidenceColor(overallConfidence)} />
+                                        <VStack align="start" spacing={0} flex={1}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
                                                 Overall Confidence
                                             </Text>
-                                            <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                                {overallConfidence}%
+                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
+                                                {Math.round(overallConfidence * 100)}%
                                             </Text>
                                         </VStack>
                                     </HStack>
@@ -351,16 +432,21 @@ export function EnsembleInfoModal({
                             >
                                 <Box
                                     bg="white"
-                                    borderRadius="xl"
-                                    p={5}
+                                    borderRadius="lg"
+                                    p={{ base: 3, md: 4 }}
+                                    minH={{ base: "80px", md: "auto" }}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
+                                    _active={isMobile ? {
+                                        transform: "scale(0.98)",
+                                        bg: "gray.50"
+                                    } : {}}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
                                         "Model Agreement",
@@ -368,13 +454,13 @@ export function EnsembleInfoModal({
                                     )}
                                 >
                                     <HStack spacing={3} align="center">
-                                        <Icon as={PiScalesBold} boxSize={6} color={getConfidenceColor(modelAgreement / 100)} />
-                                        <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                        <Icon as={PiScalesBold} boxSize={5} color={getConfidenceColor(modelAgreement)} />
+                                        <VStack align="start" spacing={0} flex={1}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
                                                 Model Agreement
                                             </Text>
-                                            <Text fontSize="2xl" fontWeight="bold" color={textColor}>
-                                                {modelAgreement}%
+                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
+                                                {Math.round(modelAgreement * 100)}%
                                             </Text>
                                         </VStack>
                                     </HStack>
@@ -389,16 +475,21 @@ export function EnsembleInfoModal({
                             >
                                 <Box
                                     bg="white"
-                                    borderRadius="xl"
-                                    p={5}
+                                    borderRadius="lg"
+                                    p={{ base: 3, md: 4 }}
+                                    minH={{ base: "80px", md: "auto" }}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
                                         boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
                                         transform: "translateY(-2px)"
                                     }}
+                                    _active={isMobile ? {
+                                        transform: "scale(0.98)",
+                                        bg: "gray.50"
+                                    } : {}}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
                                         "Consensus Strength",
@@ -406,9 +497,9 @@ export function EnsembleInfoModal({
                                     )}
                                 >
                                     <HStack spacing={3} align="center">
-                                        <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={6} color={getConsensusInfo(consensusStrength).color} />
-                                        <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                        <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={5} color={getConsensusInfo(consensusStrength).color} />
+                                        <VStack align="start" spacing={0} flex={1}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
                                                 Consensus Strength
                                             </Text>
                                             <Badge
@@ -431,7 +522,57 @@ export function EnsembleInfoModal({
 
 
 
-                            {/* 4. Response Quality */}
+
+
+                            {/* Row 3: Performance Metrics */}
+                            {/* 5. Processing Time */}
+                            <Tooltip
+                                label="Total time to generate and synthesize all responses"
+                                isDisabled={isMobile}
+                            >
+                                <Box
+                                    bg="white"
+                                    borderRadius="lg"
+                                    p={{ base: 3, md: 4 }}
+                                    minH={{ base: "80px", md: "auto" }}
+                                    border="1px solid"
+                                    borderColor="rgba(226, 232, 240, 0.6)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
+                                    cursor={isMobile ? "pointer" : "help"}
+                                    _hover={{
+                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
+                                        transform: "translateY(-2px)"
+                                    }}
+                                    _active={isMobile ? {
+                                        transform: "scale(0.98)",
+                                        bg: "gray.50"
+                                    } : {}}
+                                    transition="all 0.2s ease"
+                                    onClick={() => handleMobileMetricClick(
+                                        "Processing Time",
+                                        "Total time to generate and synthesize all responses"
+                                    )}
+                                >
+                                    <HStack spacing={3} align="center">
+                                        <Icon as={PiChartBarBold} boxSize={5} color="#8B5CF6" />
+                                        <VStack align="start" spacing={0} flex={1}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
+                                                Processing Time
+                                            </Text>
+                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
+                                                {(processingTime / 1000).toFixed(1)}s
+                                            </Text>
+                                        </VStack>
+                                    </HStack>
+                                </Box>
+                            </Tooltip>
+
+
+                        </SimpleGrid>
+
+                        {/* Additional Metrics - Row 4: Quality & Model Analytics */}
+                        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                            {/* Response Quality */}
                             <Tooltip
                                 label="Overall quality assessment of the synthesized response"
                                 isDisabled={isMobile}
@@ -439,14 +580,14 @@ export function EnsembleInfoModal({
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={5}
+                                    p={4}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
-                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                        transform: "translateY(-2px)"
+                                        boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.1)",
+                                        transform: "translateY(-1px)"
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
@@ -455,21 +596,20 @@ export function EnsembleInfoModal({
                                     )}
                                 >
                                     <HStack spacing={3} align="center">
-                                        <Icon as={PiChartBarBold} boxSize={6} color="#8B5CF6" />
+                                        <Icon as={PiChartBarBold} boxSize={5} color="#8B5CF6" />
                                         <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
                                                 Response Quality
                                             </Text>
-                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
-                                                {Math.round((metadata?.responseQuality || 0.8) * 100)}%
+                                            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                                {Math.round(responseQuality * 100)}%
                                             </Text>
                                         </VStack>
                                     </HStack>
                                 </Box>
                             </Tooltip>
 
-                            {/* Row 3: Model Analytics */}
-                            {/* 5. Successful Models */}
+                            {/* Successful Models */}
                             <Tooltip
                                 label="Number of AI models that successfully contributed responses"
                                 isDisabled={isMobile}
@@ -477,14 +617,14 @@ export function EnsembleInfoModal({
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={5}
+                                    p={4}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
-                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                        transform: "translateY(-2px)"
+                                        boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.1)",
+                                        transform: "translateY(-1px)"
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
@@ -493,20 +633,20 @@ export function EnsembleInfoModal({
                                     )}
                                 >
                                     <HStack spacing={3} align="center">
-                                        <Icon as={PiCheckCircleBold} boxSize={6} color="#10B981" />
+                                        <Icon as={PiCheckCircleBold} boxSize={5} color="#10B981" />
                                         <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
                                                 Successful Models
                                             </Text>
-                                            <Text fontSize="xl" fontWeight="bold" color={textColor}>
-                                                {metadata?.successfulRoles || 0}/{totalModels}
+                                            <Text fontSize="lg" fontWeight="bold" color={textColor}>
+                                                {successfulModels}/{totalModels}
                                             </Text>
                                         </VStack>
                                     </HStack>
                                 </Box>
                             </Tooltip>
 
-                            {/* 6. Synthesis Strategy */}
+                            {/* Synthesis Strategy */}
                             <Tooltip
                                 label="Method used to combine individual model responses"
                                 isDisabled={isMobile}
@@ -514,14 +654,14 @@ export function EnsembleInfoModal({
                                 <Box
                                     bg="white"
                                     borderRadius="xl"
-                                    p={5}
+                                    p={4}
                                     border="1px solid"
                                     borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
                                     cursor={isMobile ? "pointer" : "help"}
                                     _hover={{
-                                        boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                        transform: "translateY(-2px)"
+                                        boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.1)",
+                                        transform: "translateY(-1px)"
                                     }}
                                     transition="all 0.2s ease"
                                     onClick={() => handleMobileMetricClick(
@@ -530,12 +670,12 @@ export function EnsembleInfoModal({
                                     )}
                                 >
                                     <HStack spacing={3} align="center">
-                                        <Icon as={PiBrainBold} boxSize={6} color="#6366F1" />
+                                        <Icon as={PiBrainBold} boxSize={5} color="#6366F1" />
                                         <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="sm" fontWeight="600" color={mutedColor}>
+                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
                                                 Synthesis Strategy
                                             </Text>
-                                            <Text fontSize="lg" fontWeight="bold" color={textColor} textTransform="capitalize">
+                                            <Text fontSize="sm" fontWeight="bold" color={textColor} textTransform="capitalize">
                                                 {synthesis?.synthesisStrategy || 'consensus'}
                                             </Text>
                                         </VStack>
@@ -648,14 +788,14 @@ export function EnsembleInfoModal({
                                             <Flex justify="space-between" align="center">
                                                 <Text fontSize="sm" color={mutedColor}>Response Consistency</Text>
                                                 <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                    {responseConsistency}%
+                                                    {Math.round(responseConsistency * 100)}%
                                                 </Text>
                                             </Flex>
                                             <Progress
-                                                value={responseConsistency}
+                                                value={responseConsistency * 100}
                                                 colorScheme={
-                                                    responseConsistency > 80 ? "green" :
-                                                    responseConsistency > 60 ? "yellow" : "red"
+                                                    (responseConsistency * 100) > 80 ? "green" :
+                                                    (responseConsistency * 100) > 60 ? "yellow" : "red"
                                                 }
                                                 size="sm"
                                                 borderRadius="full"
@@ -664,14 +804,14 @@ export function EnsembleInfoModal({
                                             <Flex justify="space-between" align="center">
                                                 <Text fontSize="sm" color={mutedColor}>Synthesis Confidence</Text>
                                                 <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                    {formatPercentage(synthesis.confidence?.score || synthesis.overallConfidence || 0)}
+                                                    {formatPercentage(synthesis?.confidence?.score || synthesis?.overallConfidence || 0)}
                                                 </Text>
                                             </Flex>
                                             <Progress
-                                                value={(synthesis.confidence?.score || synthesis.overallConfidence || 0) * 100}
+                                                value={(synthesis?.confidence?.score || synthesis?.overallConfidence || 0) * 100}
                                                 colorScheme={
-                                                    (synthesis.confidence?.score || synthesis.overallConfidence || 0) > 0.8 ? "green" :
-                                                    (synthesis.confidence?.score || synthesis.overallConfidence || 0) > 0.6 ? "yellow" : "red"
+                                                    (synthesis?.confidence?.score || synthesis?.overallConfidence || 0) > 0.8 ? "green" :
+                                                    (synthesis?.confidence?.score || synthesis?.overallConfidence || 0) > 0.6 ? "yellow" : "red"
                                                 }
                                                 size="sm"
                                                 borderRadius="full"
@@ -682,75 +822,10 @@ export function EnsembleInfoModal({
                             </Box>
                         </Box>
 
-                        {/* Synthesis Insights */}
-                        <Box
-                            bg="white"
-                            borderRadius="xl"
-                            p={6}
-                            border="1px solid"
-                            borderColor="rgba(226, 232, 240, 0.6)"
-                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                        >
-                            <HStack spacing={3} mb={4}>
-                                <Icon as={PiBrainBold} boxSize={6} color="#6366F1" />
-                                <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                    Synthesis Intelligence
-                                </Text>
-                            </HStack>
 
-                            <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-                                <Box textAlign="center" p={4} bg="blue.50" borderRadius="lg">
-                                    <Text fontSize="xl" fontWeight="bold" color="#4F9CF9">
-                                        {basedOnResponses}
-                                    </Text>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                        Models Used
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor}>
-                                        Contributing
-                                    </Text>
-                                </Box>
-
-                                <Box textAlign="center" p={4} bg="purple.50" borderRadius="lg">
-                                    <Text fontSize="xl" fontWeight="bold" color="#8B5CF6">
-                                        {synthesis?.synthesisStrategy?.toUpperCase() || 'UNKNOWN'}
-                                    </Text>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                        Strategy
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor}>
-                                        Synthesis
-                                    </Text>
-                                </Box>
-
-                                <Box textAlign="center" p={4} bg="green.50" borderRadius="lg">
-                                    <Text fontSize="xl" fontWeight="bold" color="#10B981">
-                                        {Math.round((synthesis?.qualityScore || 0) * 100)}%
-                                    </Text>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                        Quality
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor}>
-                                        Synthesis
-                                    </Text>
-                                </Box>
-
-                                <Box textAlign="center" p={4} bg="orange.50" borderRadius="lg">
-                                    <Badge colorScheme={consensusLevel === 'high' ? 'green' : consensusLevel === 'medium' ? 'yellow' : 'red'} variant="solid">
-                                        {consensusLevel.toUpperCase()}
-                                    </Badge>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor} mt={1}>
-                                        Consensus
-                                    </Text>
-                                    <Text fontSize="xs" color={mutedColor}>
-                                        Level
-                                    </Text>
-                                </Box>
-                            </SimpleGrid>
-                        </Box>
 
                         {/* Actionable Insights & Recommendations */}
-                        {voting.recommendation && (
+                        {voting?.recommendation && (
                             <Box
                                 bg={
                                     overallConfidence > 80 ? 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)' :
@@ -814,7 +889,7 @@ export function EnsembleInfoModal({
                                     </HStack>
 
                                     <Text fontSize="sm" color={textColor} lineHeight="1.6">
-                                        {voting.recommendation}
+                                        {voting?.recommendation}
                                     </Text>
                                 </VStack>
                             </Box>
@@ -832,7 +907,7 @@ export function EnsembleInfoModal({
                             <HStack justify="center" spacing={2}>
                                 <Icon as={PiScalesBold} boxSize={5} color="#F59E0B" />
                                 <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                    {responseConsistency}% CONSISTENCY
+                                    {Math.round(responseConsistency * 100)}% CONSISTENCY
                                 </Text>
                             </HStack>
                             <Text fontSize="sm" color={mutedColor} mt={1}>
@@ -841,6 +916,7 @@ export function EnsembleInfoModal({
                         </Box>
 
                     </VStack>
+                    )}
                 </ModalBody>
             </ModalContent>
         </Modal>

@@ -1,8 +1,8 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  Text,
+    Box,
+    Flex,
+    IconButton,
+    Text
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -36,8 +36,7 @@ export function ChatPage() {
   const scrollButtonBg = "#FFFFFF";
   const scrollButtonColor = "#4F9CF9";
   const scrollButtonHoverBg = "#F8FAFC";
-  const heroTextColor = "#1E293B";
-  const heroSubTextColor = "#64748B";
+
 
   // Responsive configuration
   const chatConfig = useMemo(
@@ -206,12 +205,9 @@ export function ChatPage() {
   }, [handleKeyDown]);
 
   return (
-    <Flex
-      direction="column"
+    <Box
       h="100vh"
-      minH="100vh"
-      maxH="100vh"
-      p="0px"
+      w="100%"
       bg={bgColor}
       position="relative"
       data-testid="chat-page"
@@ -219,128 +215,41 @@ export function ChatPage() {
       sx={{
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
-        "@media (max-width: 768px)": {
-          // Full viewport height - no scrolling on page level
-          height: "100vh",
-          minHeight: "100vh",
-          maxHeight: "100vh",
-          overflow: "hidden",
-          // Prevent any page-level scrolling
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          // Ensure content doesn't go behind fixed elements
-          zIndex: 1,
-        },
         "@media (min-width: 769px)": {
-          height: "100vh",
-          minHeight: "100vh",
-          maxHeight: "100vh",
           background: "#FAFBFC",
-          overflow: "hidden",
-        },
-        "@supports (-webkit-touch-callout: none)": {
-          "@media (max-width: 768px)": {
-            height: "calc(-webkit-fill-available - 56px)",
-            minHeight: "calc(-webkit-fill-available - 56px)",
-            maxHeight: "calc(-webkit-fill-available - 56px)",
-          },
-          "@media (min-width: 769px)": {
-            height: "calc(-webkit-fill-available - 64px)",
-            minHeight: "calc(-webkit relentless-available - 64px)",
-            maxHeight: "calc(-webkit-fill-available - 64px)",
-          },
         },
       }}
     >
-      {/* Hero Section */}
-      {msgs.length === 0 && (
-        <Flex flex={1} align="center" justify="center" w="100%" role="main" aria-label="Welcome message">
-          <Box w="100%" maxW={chatConfig.container.maxWidth} px={chatConfig.container.centerPadding} py={chatConfig.hero.padding}>
-            <Box textAlign="center" maxW={{ base: "sm", sm: "md", md: "2xl", lg: "3xl" }} mx="auto">
-              <Text
-                fontSize={chatConfig.hero.fontSize}
-                lineHeight="shorter"
-                fontWeight="bold"
-                color={heroTextColor}
-                mb={4}
-                as="h1"
-                role="heading"
-                aria-level={1}
-              >
-                What do you want to know?
-              </Text>
-              <Text
-                fontSize={chatConfig.hero.subFontSize}
-                color={heroSubTextColor}
-                fontWeight="medium"
-                opacity={0.8}
-                lineHeight="normal"
-                as="p"
-                role="text"
-                maxW="2xl"
-                mx="auto"
-              >
-                The team will look into it...
-              </Text>
-            </Box>
-          </Box>
-        </Flex>
-      )}
+
 
       {/* Messages Container - Only Scrollable Area */}
       <Box
         ref={messagesContainerRef}
-        flex="1"
+        position="absolute"
+        top={{ base: "calc(56px + env(safe-area-inset-top, 0px))", md: "60px" }}
+        bottom={{ base: "calc(120px + env(safe-area-inset-bottom, 0px))", md: "140px" }}
+        left="0"
+        right="0"
         w="100%"
         bg={containerBg}
         overflowY="auto"
         overflowX="hidden"
+        px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }}
+        py={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 3vw, 1.5rem)" }}
         sx={{
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
+          scrollBehavior: "smooth",
+          scrollSnapType: "y proximity",
+          touchAction: "pan-y",
           "@media (max-width: 768px)": {
-            paddingX: "clamp(0.5rem, 2vw, 1rem)",
-            paddingY: "clamp(0.5rem, 2vw, 1rem)",
-            paddingBottom: "clamp(0.5rem, 2vw, 1rem)",
-            // Precise height: full viewport minus header and input
-            height: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
-            minHeight: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
-            maxHeight: "calc(100vh - 56px - env(safe-area-inset-top, 0px) - 120px - env(safe-area-inset-bottom, 0px))",
-            // Position to account for fixed header
-            marginTop: "calc(56px + env(safe-area-inset-top, 0px))",
-            marginBottom: "calc(120px + env(safe-area-inset-bottom, 0px))",
-            scrollBehavior: "smooth",
-            scrollSnapType: "y proximity",
-            touchAction: "pan-y",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
             "&::-webkit-scrollbar": { display: "none" },
-            // Ensure this is the only scrollable area
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 2,
           },
           "@media (min-width: 769px)": {
-            // Desktop: account for header height and input area
-            height: "calc(100vh - 64px - 140px)",
-            minHeight: "calc(100vh - 64px - 140px)",
-            maxHeight: "calc(100vh - 64px - 140px)",
-            marginTop: "64px",
-            marginBottom: "140px",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 2,
             display: "flex",
             justifyContent: "center",
-            paddingX: "clamp(1rem, 4vw, 2rem)",
-            paddingY: "clamp(1rem, 3vw, 1.5rem)",
             "&::-webkit-scrollbar": { width: "6px" },
             "&::-webkit-scrollbar-track": { background: "rgba(0, 0, 0, 0.05)", borderRadius: "3px" },
             "&::-webkit-scrollbar-thumb": {
@@ -455,6 +364,6 @@ export function ChatPage() {
 
       {/* Chat Input */}
       <ChatInput />
-    </Flex>
+    </Box>
   );
 }

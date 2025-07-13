@@ -445,9 +445,11 @@ export default function ChatInput() {
       w="full"
       bg="transparent" // Remove white background
       borderTopWidth="0"
-      position="sticky"
+      position="fixed"
       bottom={0}
-      zIndex={100}
+      left={0}
+      right={0}
+      zIndex={1000}
       flexShrink={0}
       // Enhanced mobile support with performance optimization
       sx={{
@@ -470,7 +472,7 @@ export default function ChatInput() {
           paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
           paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
           maxHeight: '120px',
-          zIndex: 9999, // Ensure it stays above content but below header
+          zIndex: 1000, // Ensure it stays above content but below header
           // Enhanced background for better visibility
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
