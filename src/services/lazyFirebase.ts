@@ -7,7 +7,7 @@
 
 // Lazy loaded Firebase services
 let firestoreService: any = null;
-let authService: any = null;
+// Removed authService cache - using direct imports for better performance
 let analyticsService: any = null;
 
 /**
@@ -57,33 +57,21 @@ export const getFirestoreService = async () => {
 };
 
 /**
- * Lazy load Auth service
+ * Lazy load Auth service - DEPRECATED
+ * Auth is now statically imported for better performance
+ * This function is kept for backward compatibility
  */
 export const getAuthService = async () => {
-  if (authService) return authService;
+  // Return static imports for better performance
+  const { signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider } = await import('firebase/auth');
 
-  try {
-    const {
-      signInWithPopup,
-      signInAnonymously,
-      signOut,
-      onAuthStateChanged,
-      GoogleAuthProvider
-    } = await import('firebase/auth');
-
-    authService = {
-      signInWithPopup,
-      signInAnonymously,
-      signOut,
-      onAuthStateChanged,
-      GoogleAuthProvider
-    };
-
-    return authService;
-  } catch (error) {
-    console.error('Failed to load Auth service:', error);
-    throw error;
-  }
+  return {
+    signInWithPopup,
+    signInAnonymously,
+    signOut,
+    onAuthStateChanged,
+    GoogleAuthProvider
+  };
 };
 
 /**

@@ -1,8 +1,8 @@
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  InformationCircleIcon,
-  XMarkIcon
+    CheckCircleIcon,
+    ExclamationCircleIcon,
+    InformationCircleIcon,
+    XMarkIcon
 } from '@heroicons/react/24/solid';
 import { GoogleAuthProvider, signInAnonymously, signInWithPopup } from "firebase/auth";
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import howItWorksImage from "../assets/img/how-it-works.png";
 import { auth } from "../firebase";
 import { useReducedMotion } from "../hooks/useAccessibility";
 import { useAuthStore } from "../store/useAuthStore";
+import { analyzeError } from "../utils/errorHandler";
 
 const provider = new GoogleAuthProvider();
 
@@ -854,13 +855,17 @@ export function SplashPage() {
     setErr('');
     setSuccess('');
     setIsLoading(true);
+
     try {
-      const cred = await signInAnonymously(auth);
-      setUser(cred.user);
+      // Simple, fast guest login
+      const credential = await signInAnonymously(auth);
+      setUser(credential.user);
+
+      // Navigate immediately
       navigate("/chat", { replace: true });
     } catch (error: any) {
-      setErr(prettyError(error?.code || 'guest-login-failed'));
-    } finally {
+      const errorInfo = analyzeError(error);
+      setErr(errorInfo.userMessage);
       setIsLoading(false);
     }
   }, [navigate, setUser]);

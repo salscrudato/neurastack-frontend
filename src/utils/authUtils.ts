@@ -34,7 +34,7 @@ export class AuthManager {
   }
 
   /**
-   * Initialize authentication state listener
+   * Initialize authentication state listener with optimized performance
    */
   initialize(): void {
     if (this.unsubscribe) {
@@ -42,6 +42,7 @@ export class AuthManager {
     }
 
     this.unsubscribe = onAuthStateChanged(auth, (user) => {
+      // Update auth store immediately
       useAuthStore.getState().setUser(user);
 
       if (user) {
@@ -49,6 +50,10 @@ export class AuthManager {
       } else {
         this.clearSessionManagement();
       }
+    }, (error) => {
+      // Handle auth errors gracefully
+      console.warn('Auth state change error:', error);
+      useAuthStore.getState().setUser(null);
     });
   }
 
@@ -139,8 +144,6 @@ export class AuthManager {
     
     // Define permission checks
     switch (permission) {
-      case 'neurafit':
-        return user.email === 'sal.scrudato@gmail.com';
       case 'admin':
         return user.email === 'sal.scrudato@gmail.com';
       case 'chat':
@@ -177,7 +180,6 @@ export class AuthManager {
     const permissions: string[] = [];
     if (this.hasPermission('chat')) permissions.push('chat');
     if (this.hasPermission('history')) permissions.push('history');
-    if (this.hasPermission('neurafit')) permissions.push('neurafit');
     if (this.hasPermission('admin')) permissions.push('admin');
 
     return {

@@ -1,219 +1,111 @@
 /**
- * Comprehensive Cache Control Utility
- * Ensures users always see the latest version of the app
+ * Simplified Cache Control for MVP
+ * Basic cache management without aggressive clearing
  */
 
-// App version for cache busting with safe fallbacks
-const APP_VERSION = (() => {
-  try {
-    return typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '3.0.0';
-  } catch {
-    return '3.0.0';
-  }
-})();
-
-const BUILD_TIME = (() => {
-  try {
-    return typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : Date.now().toString();
-  } catch {
-    return Date.now().toString();
-  }
-})();
-
-// Storage keys
+const APP_VERSION = '3.0.0';
 const VERSION_KEY = 'neurastack-app-version';
-const LAST_CLEAR_KEY = 'neurastack-last-cache-clear';
 
 /**
- * Clear all application caches and storage
+ * Simple cache clear for debugging only
  */
 export async function clearAllAppCaches(): Promise<void> {
-  console.log('🧹 Clearing all application caches...');
+  console.log('🧹 Clearing caches...');
 
   try {
-    // 1. Clear localStorage (keep only essential auth data)
-    const authKeys = ['firebase:authUser', 'firebase:host'];
-    const localStorageBackup: Record<string, string> = {};
-    
-    // Backup essential auth data
-    authKeys.forEach(key => {
+    // Only clear non-essential data
+    const keysToKeep = [
+      'firebase:authUser',
+      'firebase:host',
+      'neurastack-auth-storage',
+      'neurastack-chat-storage'
+    ];
+
+    // Clear localStorage except essential keys
+    const backup: Record<string, string> = {};
+    keysToKeep.forEach(key => {
       const value = localStorage.getItem(key);
-      if (value) {
-        localStorageBackup[key] = value;
-      }
+      if (value) backup[key] = value;
     });
 
-    // Clear all localStorage
     localStorage.clear();
-
-    // Restore essential auth data
-    Object.entries(localStorageBackup).forEach(([key, value]) => {
+    Object.entries(backup).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
 
-    // 2. Clear sessionStorage completely
-    sessionStorage.clear();
-
-    // 3. Clear browser caches if available
-    if ('caches' in window) {
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(cacheName => caches.delete(cacheName))
-      );
-      console.log('🗑️ Browser caches cleared');
-    }
-
-    // 4. Clear IndexedDB if used by Firebase
-    if ('indexedDB' in window) {
-      try {
-        // Clear Firebase IndexedDB
-        const databases = ['firebaseLocalStorageDb'];
-        for (const dbName of databases) {
-          const deleteReq = indexedDB.deleteDatabase(dbName);
-          await new Promise((resolve, reject) => {
-            deleteReq.onsuccess = () => resolve(void 0);
-            deleteReq.onerror = () => reject(deleteReq.error);
-          });
-        }
-        console.log('🗑️ IndexedDB cleared');
-      } catch (error) {
-        console.warn('⚠️ IndexedDB clear failed:', error);
-      }
-    }
-
-    // 5. Record cache clear timestamp
-    localStorage.setItem(LAST_CLEAR_KEY, Date.now().toString());
     localStorage.setItem(VERSION_KEY, APP_VERSION);
-
-    console.log('✅ All caches cleared successfully');
+    console.log('✅ Cache cleared');
   } catch (error) {
-    console.error('❌ Cache clearing failed:', error);
-    throw error;
+    console.warn('⚠️ Cache clear failed:', error);
   }
 }
 
 /**
- * Check if app version has changed and clear caches if needed
+ * Simple version check - no automatic clearing
  */
 export function checkVersionAndClearCache(): boolean {
   try {
     const storedVersion = localStorage.getItem(VERSION_KEY);
-    const lastClear = localStorage.getItem(LAST_CLEAR_KEY);
-    const now = Date.now();
-    const oneHour = 60 * 60 * 1000;
 
-    // Clear cache if:
-    // 1. Version changed
-    // 2. No version stored (first visit)
-    // 3. Last clear was more than 1 hour ago (safety measure)
-    const shouldClear = 
-      !storedVersion || 
-      storedVersion !== APP_VERSION ||
-      !lastClear ||
-      (now - parseInt(lastClear)) > oneHour;
+    if (!storedVersion) {
+      localStorage.setItem(VERSION_KEY, APP_VERSION);
+      return false;
+    }
 
-    if (shouldClear) {
-      console.log('🔄 Version change detected or cache expired, clearing caches...');
-      clearAllAppCaches().catch(console.error);
+    if (storedVersion !== APP_VERSION) {
+      console.log('🔄 Version changed:', storedVersion, '->', APP_VERSION);
+      localStorage.setItem(VERSION_KEY, APP_VERSION);
       return true;
     }
 
     return false;
   } catch (error) {
-    console.error('❌ Version check failed:', error);
+    console.warn('⚠️ Version check failed:', error);
     return false;
   }
 }
 
 /**
- * Force refresh the application with cache bypass
+ * Simple app refresh
  */
 export function forceRefreshApp(): void {
-  console.log('🔄 Force refreshing application...');
-  
-  // Clear all caches first
-  clearAllAppCaches()
-    .then(() => {
-      // Force reload with cache bypass
-      window.location.reload();
-    })
-    .catch(() => {
-      // Fallback: just reload
-      window.location.reload();
-    });
+  window.location.reload();
 }
 
 /**
- * Add cache-busting parameters to URLs
+ * No cache busting for MVP - keep it simple
  */
 export function addCacheBuster(url: string): string {
-  const separator = url.includes('?') ? '&' : '?';
-  const timestamp = Date.now();
-  const version = APP_VERSION.replace(/\./g, '');
-  const random = Math.random().toString(36).substr(2, 9);
-  const buildTime = BUILD_TIME.substr(-8);
-  return `${url}${separator}v=${version}&t=${timestamp}&r=${random}&b=${buildTime}`;
+  return url;
 }
 
 /**
- * Get cache-busting headers for API requests (Backend-approved headers only)
- *
- * Only the following headers are allowed by the backend:
- * - Content-Type, Authorization, X-Requested-With, X-User-Id, X-Session-Id, X-Correlation-ID
- *
- * Since X-Correlation-ID is already used for request tracking, we rely entirely on:
- * 1. URL parameters for cache busting
- * 2. fetch cache: 'no-store' option for browser-level cache control
- *
- * This function returns an empty object to avoid header conflicts.
+ * No special headers needed for MVP
  */
 export function getCacheBustingHeaders(): Record<string, string> {
-  return {
-    // No additional headers - rely on URL parameters and fetch cache option
-  };
+  return {};
 }
 
 /**
- * Setup automatic cache management
+ * Simple setup - just check version once
  */
 export function setupCacheManagement(): () => void {
-  // Check version on app start
+  // Just check version once on startup
   checkVersionAndClearCache();
 
-  // Check version when app regains focus
-  const handleFocus = () => {
-    checkVersionAndClearCache();
-  };
-
-  // Check version periodically (every 5 minutes)
-  const intervalId = setInterval(() => {
-    checkVersionAndClearCache();
-  }, 5 * 60 * 1000);
-
-  // Setup event listeners
-  window.addEventListener('focus', handleFocus);
-  window.addEventListener('pageshow', handleFocus);
-
-  // Cleanup function
-  return () => {
-    clearInterval(intervalId);
-    window.removeEventListener('focus', handleFocus);
-    window.removeEventListener('pageshow', handleFocus);
-  };
+  // Return empty cleanup function
+  return () => {};
 }
 
 /**
- * Add global cache management functions for debugging
+ * Debug functions for development
  */
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
   (window as any).clearNeuraStackCaches = clearAllAppCaches;
   (window as any).forceRefreshNeuraStack = forceRefreshApp;
-  (window as any).checkNeuraStackVersion = checkVersionAndClearCache;
 }
 
-// Export version info for debugging
 export const versionInfo = {
   version: APP_VERSION,
-  buildTime: BUILD_TIME,
   timestamp: Date.now(),
 };

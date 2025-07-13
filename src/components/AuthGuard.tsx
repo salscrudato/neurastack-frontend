@@ -1,15 +1,13 @@
 /**
  * Authentication Guard Component
- * 
- * Provides route protection and authentication state management.
- * Handles Firebase auth state changes and redirects unauthenticated users.
+ *
+ * Optimized for fast authentication checks with minimal delays.
+ * Uses centralized auth state management to prevent race conditions.
  */
 
 import { Box } from '@chakra-ui/react';
-import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { auth } from '../firebase';
 import { useAuthStore } from '../store/useAuthStore';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -20,7 +18,8 @@ interface AuthGuardProps {
 }
 
 /**
- * AuthGuard component that protects routes and manages authentication state
+ * AuthGuard component that protects routes using centralized auth state
+ * No longer sets up its own auth listener to prevent conflicts
  */
 export function AuthGuard({
   children,
@@ -28,61 +27,47 @@ export function AuthGuard({
   redirectTo = '/'
 }: AuthGuardProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const setUser = useAuthStore(s => s.setUser);
+  const user = useAuthStore(s => s.user);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Set a maximum timeout for auth check to prevent infinite loading
-    const authTimeout = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-        setIsAuthenticated(false);
-      }
-    }, 2000); // Reduced to 2 seconds for better UX
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Clear timeout since we got a response
-      clearTimeout(authTimeout);
-
-      setUser(user);
-      setIsAuthenticated(!!user);
+    // Quick timeout to allow auth state to initialize
+    const quickTimeout = setTimeout(() => {
       setIsLoading(false);
+    }, 100); // Very short timeout for fast loading
 
-      // Handle authentication requirements with minimal delay to prevent race conditions
-      setTimeout(() => {
-        if (requireAuth && !user) {
-          navigate(redirectTo, {
-            replace: true,
-            state: { from: location.pathname }
-          });
-        } else if (!requireAuth && user && location.pathname === '/') {
-          // User is authenticated but on splash page, redirect to chat
-          navigate('/chat', { replace: true });
-        }
-      }, 50); // Reduced delay for faster transitions
-    });
+    return () => clearTimeout(quickTimeout);
+  }, []);
 
-    return () => {
-      unsubscribe();
-      clearTimeout(authTimeout);
-    };
-  }, [setUser, navigate, location.pathname, requireAuth, redirectTo, isLoading]);
+  useEffect(() => {
+    // Handle navigation based on auth state changes
+    if (!isLoading) {
+      if (requireAuth && !user) {
+        navigate(redirectTo, {
+          replace: true,
+          state: { from: location.pathname }
+        });
+      } else if (!requireAuth && user && location.pathname === '/') {
+        // User is authenticated but on splash page, redirect to chat immediately
+        navigate('/chat', { replace: true });
+      }
+    }
+  }, [user, isLoading, requireAuth, navigate, redirectTo, location.pathname]);
 
-  // Show loading spinner while checking auth state
+  // Show minimal loading for very short time
   if (isLoading) {
     return (
-      <Box 
-        display="flex" 
-        alignItems="center" 
-        justifyContent="center" 
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
         minH="100vh"
         bg="white"
       >
-        <LoadingSpinner 
-          size="lg" 
-          message="Checking authentication..." 
+        <LoadingSpinner
+          size="lg"
+          message="Loading..."
           fullScreen={false}
         />
       </Box>
@@ -90,7 +75,7 @@ export function AuthGuard({
   }
 
   // If auth is required but user is not authenticated, don't render children
-  if (requireAuth && !isAuthenticated) {
+  if (requireAuth && !user) {
     return null;
   }
 
@@ -114,24 +99,15 @@ export function withAuthGuard<P extends object>(
 }
 
 /**
- * Hook for checking authentication status
+ * Hook for checking authentication status using centralized state
  */
 export function useAuthGuard() {
   const user = useAuthStore(s => s.user);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, () => {
-      setIsLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   return {
     isAuthenticated: !!user,
     isAnonymous: user?.isAnonymous ?? false,
     user,
-    isLoading
+    isLoading: false // No loading since we use centralized auth state
   };
 }
