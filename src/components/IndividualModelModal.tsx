@@ -6,25 +6,25 @@
  */
 
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  Badge,
-  Box,
-  IconButton,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-  useColorModeValue,
-  VStack
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Badge,
+    Box,
+    IconButton,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+    useColorModeValue,
+    VStack
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import {
-  PiWarningBold
+    PiWarningBold
 } from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -162,7 +162,7 @@ export function IndividualModelModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size={{ base: "full", md: "lg" }}
+      size={{ base: "xl", md: "lg" }}
       scrollBehavior="inside"
       isCentered={true}
       closeOnOverlayClick={true}
@@ -171,32 +171,24 @@ export function IndividualModelModal({
       blockScrollOnMount={true}
     >
       <ModalOverlay
-        bg="blackAlpha.600"
-        backdropFilter="blur(4px)"
+        bg="blackAlpha.700"
+        backdropFilter="blur(8px)"
         onClick={onClose}
         sx={{
-          // Ensure overlay covers full screen on mobile
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1400,
-          cursor: 'pointer'
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            bg: 'blackAlpha.750'
+          }
         }}
       />
       <ModalContent
         bg={modalBg}
-        borderRadius={{ base: 0, md: "2xl" }}
-        maxH={{ base: "100vh", md: "85vh" }}
-        maxW={{ base: "100vw", md: "700px" }}
-        mx={{ base: 0, md: 4 }}
-        my={{ base: 0, md: "auto" }}
-        position={{ base: "fixed", md: "relative" }}
-        top={{ base: 0, md: "auto" }}
-        left={{ base: 0, md: "auto" }}
-        right={{ base: 0, md: "auto" }}
-        bottom={{ base: 0, md: "auto" }}
+        borderRadius={{ base: "xl", md: "2xl" }}
+        maxH={{ base: "85vh", md: "85vh" }}
+        maxW={{ base: "90vw", md: "700px" }}
+        mx={{ base: 4, md: 4 }}
+        my={{ base: "auto", md: "auto" }}
         overflow="hidden"
         boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
         border="1px solid"
@@ -204,19 +196,22 @@ export function IndividualModelModal({
         sx={{
           // Ensure proper z-index and positioning
           zIndex: 1401,
-          // Mobile-specific styles
+          // Mobile-specific styles for compact design
           '@media (max-width: 768px)': {
-            margin: 0,
-            borderRadius: 0,
-            height: '100vh',
-            width: '100vw',
+            margin: '16px',
+            borderRadius: '16px',
+            maxHeight: '85vh',
+            maxWidth: 'calc(100vw - 32px)',
+            // Add safe area padding
+            marginTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+            marginBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
           }
         }}
       >
         {/* Header */}
         <ModalHeader
           bg="linear-gradient(135deg, #F8FAFC 0%, #FFFFFF 100%)"
-          borderTopRadius={{ base: 0, md: "2xl" }}
+          borderTopRadius={{ base: "xl", md: "2xl" }}
           borderBottom="1px solid"
           borderColor="rgba(226, 232, 240, 0.6)"
           pb={6}
@@ -244,21 +239,12 @@ export function IndividualModelModal({
           </VStack>
         </ModalHeader>
 
-        {/* Custom Close Button - More visible on mobile */}
+        {/* Custom Close Button - Compact modal design */}
         <Box
           position="absolute"
           top={{ base: "16px", md: "20px" }}
           right={{ base: "16px", md: "20px" }}
           zIndex={1500}
-          sx={{
-            // Ensure it's always visible on mobile
-            '@media (max-width: 768px)': {
-              position: 'fixed',
-              top: 'calc(16px + env(safe-area-inset-top, 0px))',
-              right: 'calc(16px + env(safe-area-inset-right, 0px))',
-              zIndex: 10000,
-            }
-          }}
         >
           <IconButton
             aria-label="Close modal"
