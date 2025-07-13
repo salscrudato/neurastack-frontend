@@ -246,96 +246,213 @@ export const ChatMessage = memo<ChatMessageProps>(({
         {!isUser && !isError && !isLoading && message.metadata?.metadata && (
           <Box mb={4}>
             <VStack spacing={3} align="stretch">
-              {/* AI Ensemble Header */}
+              {/* AI Ensemble Header - Futuristic Design */}
               <Flex
                 justify="space-between"
                 align="center"
-                p={{ base: 2, md: 3 }}
-                bg="rgba(248, 250, 252, 0.6)"
-                borderRadius="xl"
-                border="1px solid rgba(226, 232, 240, 0.4)"
+                p={{ base: 3, md: 4 }}
+                bg="linear-gradient(135deg, rgba(79, 156, 249, 0.08) 0%, rgba(99, 102, 241, 0.12) 50%, rgba(139, 92, 246, 0.08) 100%)"
+                borderRadius="2xl"
+                border="1px solid"
+                borderColor="rgba(79, 156, 249, 0.2)"
                 position="relative"
-                backdropFilter="blur(8px)"
+                backdropFilter="blur(16px)"
+                overflow="hidden"
+                _before={{
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '1px',
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(79, 156, 249, 0.6) 50%, transparent 100%)',
+                  animation: 'shimmer 3s ease-in-out infinite'
+                }}
+                sx={{
+                  '@keyframes shimmer': {
+                    '0%, 100%': { opacity: 0.3 },
+                    '50%': { opacity: 1 }
+                  }
+                }}
               >
-                <HStack justify="space-between" align="center" w="100%">
-                  <Text
-                    fontSize={{ base: "sm", md: "md" }}
-                    fontWeight="600"
-                    color="#1E293B"
-                    letterSpacing="-0.025em"
-                  >
-                    AI Ensemble Info
-                  </Text>
+                <HStack justify="space-between" align="center" w="100%" spacing={4}>
+                  <HStack spacing={3}>
+                    <Box
+                      w="8px"
+                      h="8px"
+                      borderRadius="full"
+                      bg="linear-gradient(45deg, #4F9CF9, #6366F1)"
+                      boxShadow="0 0 12px rgba(79, 156, 249, 0.6)"
+                      animation="pulse 2s ease-in-out infinite"
+                      sx={{
+                        '@keyframes pulse': {
+                          '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                          '50%': { transform: 'scale(1.2)', opacity: 0.8 }
+                        }
+                      }}
+                    />
+                    <Text
+                      fontSize={{ base: "sm", md: "md" }}
+                      fontWeight="700"
+                      bgGradient="linear(to-r, #1E293B, #4F9CF9)"
+                      bgClip="text"
+                      letterSpacing="-0.025em"
+                      textShadow="0 1px 2px rgba(0, 0, 0, 0.1)"
+                    >
+                      AI Ensemble Analytics
+                    </Text>
+                  </HStack>
                   <Button
                     size="sm"
                     onClick={onEnsembleInfoOpen}
-                    bg="#007BFF"
+                    bg="linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)"
                     color="white"
-                    fontWeight="600"
+                    fontWeight="700"
                     fontSize="xs"
-                    border="none"
-                    boxShadow="none"
+                    border="1px solid rgba(255, 255, 255, 0.2)"
+                    boxShadow="0 4px 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+                    position="relative"
+                    overflow="hidden"
+                    _before={{
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: '-100%',
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                      transition: 'left 0.6s ease'
+                    }}
                     _hover={{
-                      bg: "#0056B3",
-                      transform: "none"
+                      bg: "linear-gradient(135deg, #3B82F6 0%, #5B21B6 100%)",
+                      transform: "translateY(-1px)",
+                      boxShadow: "0 6px 20px rgba(79, 156, 249, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)",
+                      _before: {
+                        left: '100%'
+                      }
                     }}
                     _active={{
-                      bg: "#004085",
-                      transform: "scale(0.98)"
+                      transform: "translateY(0) scale(0.98)",
+                      boxShadow: "0 2px 8px rgba(79, 156, 249, 0.3)"
                     }}
                     _focus={{
-                      boxShadow: "none",
+                      boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.3)",
                       outline: "none"
                     }}
-                    px={4}
+                    px={6}
                     py={2}
                     h="auto"
-                    minH="32px"
-                    borderRadius="8px"
-                    transition="all 0.15s ease"
+                    minH="36px"
+                    borderRadius="full"
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                    letterSpacing="0.025em"
                   >
-                    Details
+                    <HStack spacing={2}>
+                      <Text>Details</Text>
+                      <Box
+                        w="4px"
+                        h="4px"
+                        borderRadius="full"
+                        bg="rgba(255, 255, 255, 0.8)"
+                        animation="glow 2s ease-in-out infinite"
+                        sx={{
+                          '@keyframes glow': {
+                            '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
+                            '50%': { opacity: 1, transform: 'scale(1.2)' }
+                          }
+                        }}
+                      />
+                    </HStack>
                   </Button>
                 </HStack>
               </Flex>
 
-              {/* Individual Model Buttons */}
-              <HStack spacing={2} wrap="wrap" justify="flex-start">
-                {availableModels.map((model) => (
-                  <Button
-                    key={model.model}
-                    size="sm"
-                    onClick={() => openModelModal(model)}
-                    bg="#007BFF"
-                    color="white"
-                    fontWeight="600"
-                    fontSize="xs"
-                    border="none"
-                    boxShadow="none"
-                    _hover={{
-                      bg: "#0056B3",
-                      transform: "none"
-                    }}
-                    _active={{
-                      bg: "#004085",
-                      transform: "scale(0.98)"
-                    }}
-                    _focus={{
-                      boxShadow: "none",
-                      outline: "none"
-                    }}
-                    px={4}
-                    py={2}
-                    h="auto"
-                    minH="32px"
-                    borderRadius="8px"
-                    transition="all 0.15s ease"
-                  >
-                    {model.provider === 'openai' ? 'GPT-4o' :
-                     model.provider === 'gemini' ? 'Gemini' :
-                     model.provider === 'claude' ? 'Claude' : (model.provider || 'Unknown').toUpperCase()}
-                  </Button>
-                ))}
+              {/* Individual Model Buttons - Neural Network Style */}
+              <HStack spacing={3} wrap="wrap" justify="flex-start">
+                {availableModels.map((model, index) => {
+                  const modelColors = {
+                    openai: { from: '#10B981', to: '#059669', glow: 'rgba(16, 185, 129, 0.3)' },
+                    gemini: { from: '#F59E0B', to: '#D97706', glow: 'rgba(245, 158, 11, 0.3)' },
+                    claude: { from: '#8B5CF6', to: '#7C3AED', glow: 'rgba(139, 92, 246, 0.3)' },
+                    default: { from: '#6B7280', to: '#4B5563', glow: 'rgba(107, 114, 128, 0.3)' }
+                  };
+
+                  const colors = modelColors[model.provider as keyof typeof modelColors] || modelColors.default;
+
+                  return (
+                    <Button
+                      key={model.model}
+                      size="sm"
+                      onClick={() => openModelModal(model)}
+                      bg={`linear-gradient(135deg, ${colors.from} 0%, ${colors.to} 100%)`}
+                      color="white"
+                      fontWeight="600"
+                      fontSize="xs"
+                      border="1px solid rgba(255, 255, 255, 0.15)"
+                      boxShadow={`0 2px 8px ${colors.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`}
+                      position="relative"
+                      overflow="hidden"
+                      _before={{
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)',
+                        transform: 'translateX(-100%)',
+                        transition: 'transform 0.6s ease'
+                      }}
+                      _hover={{
+                        transform: "translateY(-2px)",
+                        boxShadow: `0 4px 16px ${colors.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`,
+                        _before: {
+                          transform: 'translateX(100%)'
+                        }
+                      }}
+                      _active={{
+                        transform: "translateY(0) scale(0.95)",
+                        boxShadow: `0 1px 4px ${colors.glow}`
+                      }}
+                      _focus={{
+                        boxShadow: `0 0 0 3px ${colors.glow}`,
+                        outline: "none"
+                      }}
+                      px={4}
+                      py={2}
+                      h="auto"
+                      minH="32px"
+                      borderRadius="lg"
+                      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                      style={{
+                        animationDelay: `${index * 0.1}s`,
+                        animation: 'fadeInUp 0.6s ease-out forwards'
+                      }}
+                      sx={{
+                        '@keyframes fadeInUp': {
+                          '0%': { opacity: 0, transform: 'translateY(10px)' },
+                          '100%': { opacity: 1, transform: 'translateY(0)' }
+                        }
+                      }}
+                    >
+                      <HStack spacing={2}>
+                        <Box
+                          w="6px"
+                          h="6px"
+                          borderRadius="full"
+                          bg="rgba(255, 255, 255, 0.8)"
+                          animation="pulse 2s ease-in-out infinite"
+                          style={{ animationDelay: `${index * 0.3}s` }}
+                        />
+                        <Text letterSpacing="0.025em">
+                          {model.provider === 'openai' ? 'GPT-4o' :
+                           model.provider === 'gemini' ? 'Gemini' :
+                           model.provider === 'claude' ? 'Claude' : (model.provider || 'Unknown').toUpperCase()}
+                        </Text>
+                      </HStack>
+                    </Button>
+                  );
+                })}
 
 
               </HStack>

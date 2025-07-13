@@ -8,9 +8,10 @@ import {
     useColorModeValue
 } from '@chakra-ui/react';
 import { memo, useEffect, useState } from 'react';
+import AIEnsembleSpinner from './AIEnsembleSpinner';
 
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern';
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
@@ -1113,6 +1114,8 @@ export const Loader = memo(({
 
   const renderLoader = () => {
     switch (variant) {
+      case 'ensemble':
+        return <AIEnsembleSpinner size={size} message={message} showModels={true} />;
       case 'dots':
       case 'modern':
         return <ModernEnsembleLoader size={size} />;
@@ -1125,7 +1128,7 @@ export const Loader = memo(({
       case 'spinner':
         return <Spinner size={size} color="blue.500" thickness="3px" />;
       default:
-        return <ModernEnsembleLoader size={size} />;
+        return <AIEnsembleSpinner size={size} message={message} showModels={true} />;
     }
   };
 

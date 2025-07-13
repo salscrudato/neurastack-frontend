@@ -321,10 +321,14 @@ export function ChatPage() {
               );
             })}
 
-            {/* Loading Indicator */}
+            {/* AI Ensemble Loading Indicator */}
             {isLoading && (
-              <Box px={4} py={2}>
-                <Loader variant="team" />
+              <Box px={4} py={6}>
+                <Loader
+                  variant="ensemble"
+                  size="lg"
+                  message="AI models collaborating on your response..."
+                />
               </Box>
             )}
 

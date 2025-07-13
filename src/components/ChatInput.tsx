@@ -651,11 +651,47 @@ export default function ChatInput() {
             right={0}
             zIndex={2}
           >
-            {/* Enhanced Modern Send Button - Optimized Positioning */}
+            {/* Futuristic AI Send Button with Neural Animation */}
             <IconButton
               aria-label={txt.trim() ? "Send message" : "Enter a message to send"}
               aria-disabled={busy || !txt.trim()}
-              icon={<PiArrowUpBold size={txt.trim() ? (isMobile ? 18 : 20) : (isMobile ? 16 : 18)} />}
+              icon={
+                <Box position="relative">
+                  <PiArrowUpBold
+                    size={txt.trim() ? (isMobile ? 18 : 20) : (isMobile ? 16 : 18)}
+                    style={{
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: txt.trim() ? 'scale(1.1) rotate(0deg)' : 'scale(1) rotate(-10deg)',
+                      filter: txt.trim() ? 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))' : 'none'
+                    }}
+                  />
+                  {txt.trim() && (
+                    <Box
+                      position="absolute"
+                      top="50%"
+                      left="50%"
+                      transform="translate(-50%, -50%)"
+                      w="24px"
+                      h="24px"
+                      borderRadius="full"
+                      border="2px solid rgba(255, 255, 255, 0.3)"
+                      animation="neuralPulse 2s ease-in-out infinite"
+                      sx={{
+                        '@keyframes neuralPulse': {
+                          '0%, 100%': {
+                            transform: 'translate(-50%, -50%) scale(0.8)',
+                            opacity: 0.3
+                          },
+                          '50%': {
+                            transform: 'translate(-50%, -50%) scale(1.2)',
+                            opacity: 0.1
+                          }
+                        }
+                      }}
+                    />
+                  )}
+                </Box>
+              }
               onClick={handleSend}
               isLoading={busy}
               size="sm"
@@ -665,20 +701,46 @@ export default function ChatInput() {
               minH={inputConfig.sendButton}
               maxW={inputConfig.sendButton}
               maxH={inputConfig.sendButton}
-              bg={txt.trim() ? colorSystem.button.bg : "rgba(148, 163, 184, 0.1)"}
-              color={txt.trim() ? colorSystem.button.color : "rgba(148, 163, 184, 0.6)"}
-              border={txt.trim() ? colorSystem.button.border : "1px solid rgba(148, 163, 184, 0.2)"}
+              bg={txt.trim() ?
+                "linear-gradient(135deg, #4F9CF9 0%, #6366F1 50%, #8B5CF6 100%)" :
+                "rgba(148, 163, 184, 0.1)"
+              }
+              color={txt.trim() ? "white" : "rgba(148, 163, 184, 0.6)"}
+              border={txt.trim() ?
+                "1px solid rgba(255, 255, 255, 0.2)" :
+                "1px solid rgba(148, 163, 184, 0.2)"
+              }
               borderRadius="full"
-              transition={animationConfig.transition}
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
               cursor={txt.trim() ? "pointer" : "not-allowed"}
               flexShrink={0}
               flexGrow={0}
               position="relative"
+              overflow="hidden"
+              boxShadow={txt.trim() ?
+                "0 4px 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)" :
+                "none"
+              }
+              _before={txt.trim() ? {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
+                borderRadius: 'full',
+                animation: 'rotate 3s linear infinite',
+                opacity: 0.6
+              } : {}}
               _hover={{
-                bg: txt.trim() ? colorSystem.button.hover.bg : "rgba(148, 163, 184, 0.15)",
-                borderColor: txt.trim() ? colorSystem.button.hover.border : "rgba(148, 163, 184, 0.3)",
-                transform: txt.trim() && !prefersReducedMotion ? "scale(1.05)" : "none",
-                boxShadow: txt.trim() ? "0 8px 25px rgba(79, 156, 249, 0.35)" : "0 2px 8px rgba(0, 0, 0, 0.08)"
+                bg: txt.trim() ?
+                  "linear-gradient(135deg, #3B82F6 0%, #5B21B6 50%, #7C3AED 100%)" :
+                  "rgba(148, 163, 184, 0.15)",
+                transform: txt.trim() ? "scale(1.05) translateY(-1px)" : "none",
+                boxShadow: txt.trim() ?
+                  "0 8px 25px rgba(79, 156, 249, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)" :
+                  "0 2px 8px rgba(0, 0, 0, 0.08)"
               }}
               _focus={{
                 boxShadow: txt.trim()
@@ -705,28 +767,39 @@ export default function ChatInput() {
               sx={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent',
-                // Enhanced button positioning
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                // Prevent button from being cut off
                 overflow: 'visible',
-                // Enhanced mobile touch target
                 '@media (max-width: 768px)': {
                   minWidth: inputConfig.sendButton.base,
                   minHeight: inputConfig.sendButton.base,
                 },
-                  // Enhanced icon visibility and animation
-                  '& svg': {
-                    color: 'currentColor !important',
-                    filter: txt.trim() ? 'none' : 'contrast(1.1)',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: txt.trim() ? 'scale(1.05)' : 'scale(1)'
+                '@keyframes rotate': {
+                  '0%': { transform: 'rotate(0deg)' },
+                  '100%': { transform: 'rotate(360deg)' }
+                },
+                '@keyframes sendPulse': {
+                  '0%': {
+                    boxShadow: '0 0 0 0 rgba(79, 156, 249, 0.7)',
+                    transform: 'scale(1)'
                   },
-                  // Performance optimization
-                  willChange: 'transform, box-shadow',
-                  backfaceVisibility: 'hidden'
-                }}
+                  '70%': {
+                    boxShadow: '0 0 0 10px rgba(79, 156, 249, 0)',
+                    transform: 'scale(1.05)'
+                  },
+                  '100%': {
+                    boxShadow: '0 0 0 0 rgba(79, 156, 249, 0)',
+                    transform: 'scale(1)'
+                  }
+                },
+                willChange: 'transform, box-shadow',
+                backfaceVisibility: 'hidden',
+                // Trigger send animation on click
+                '&:active': {
+                  animation: txt.trim() ? 'sendPulse 0.6s ease-out' : 'none'
+                }
+              }}
               />
           </InputRightElement>
           </InputGroup>
