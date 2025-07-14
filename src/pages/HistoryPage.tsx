@@ -79,23 +79,28 @@ export default function HistoryPage() {
   return (
     <Box
       w="100%"
-      minH="100%"
+      minH="100vh"
       bg={bgColor}
       sx={{
         overflowY: 'auto',
         overflowX: 'hidden',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
+        // Add top padding to account for fixed header
+        paddingTop: {
+          base: 'calc(env(safe-area-inset-top, 0px) + 56px + 16px)',
+          md: 'calc(60px + 24px)'
+        },
         '@media (max-width: 768px)': {
-          minHeight: '100%',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          padding: '16px'
+          minHeight: '100vh',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          paddingX: '16px'
         },
         '@media (min-width: 769px)': {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'flex-start',
-          paddingY: '24px',
+          paddingBottom: '24px',
           paddingX: '16px'
         },
         '@supports (-webkit-touch-callout: none)': {

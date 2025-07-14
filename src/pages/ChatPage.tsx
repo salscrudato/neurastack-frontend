@@ -127,30 +127,27 @@ export function ChatPage() {
     >
       <Box
         ref={messagesContainerRef}
+        flex="1"
         w="100%"
         bg={containerBg}
         overflowY="auto"
         overflowX="hidden"
         px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }}
-        py={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 3vw, 1.5rem)" }}
         sx={{
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
           scrollBehavior: "smooth",
           scrollSnapType: "y proximity",
           touchAction: "pan-y",
-          // Calculate exact height between fixed header and input
-          height: {
-            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px - env(safe-area-inset-bottom, 0px))',
-            md: 'calc(100vh - 60px - 140px)'
+          // Add top padding to account for fixed header
+          paddingTop: {
+            base: 'calc(env(safe-area-inset-top, 0px) + 56px + 1rem)',
+            md: 'calc(60px + 1.5rem)'
           },
-          marginTop: {
-            base: 'calc(env(safe-area-inset-top, 0px) + 56px)',
-            md: '60px'
-          },
-          marginBottom: {
-            base: 'calc(120px + env(safe-area-inset-bottom, 0px))',
-            md: '140px'
+          // Add bottom padding to account for fixed chat input
+          paddingBottom: {
+            base: 'calc(120px + env(safe-area-inset-bottom, 0px) + 1rem)',
+            md: 'calc(140px + 1.5rem)'
           },
           "@media (max-width: 768px)": {
             scrollbarWidth: "none",

@@ -364,6 +364,7 @@ export function EnsembleInfoModal({
                 {/* Body */}
                 <ModalBody
                     p={{ base: 3, md: 4 }}
+                    pt={{ base: "calc(env(safe-area-inset-top, 0px) + 56px + 12px)", md: 4 }}
                     bg="#FAFBFC"
                     overflowY="auto"
                     maxH="100%"

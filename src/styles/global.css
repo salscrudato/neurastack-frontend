@@ -561,6 +561,56 @@ select {
     contain: none !important;
   }
 
+  /* Navigation drawer positioning fixes */
+  .chakra-drawer__overlay {
+    z-index: 1500 !important;
+  }
+
+  .chakra-drawer__content {
+    z-index: 1501 !important;
+  }
+
+  /* Ensure header stays above navigation drawer */
+  header[role="banner"] {
+    z-index: 9999 !important;
+  }
+
+  /* Fix modal content positioning to account for header */
+  .chakra-modal__content {
+    margin-top: calc(56px + 16px) !important;
+  }
+
+  @media (min-width: 769px) {
+    .chakra-modal__content {
+      margin-top: calc(60px + 16px) !important;
+    }
+  }
+
+  /* Ensure full-screen modals on mobile account for header */
+  @media (max-width: 768px) {
+    .chakra-modal__content[data-size="full"] {
+      margin-top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+      height: calc(100vh - 56px - env(safe-area-inset-top, 0px)) !important;
+      max-height: calc(100vh - 56px - env(safe-area-inset-top, 0px)) !important;
+    }
+  }
+
+  /* Chat page specific fixes */
+  [data-testid="chat-page"] {
+    padding-top: 0 !important;
+  }
+
+  /* Ensure chat messages container accounts for header */
+  [role="log"][aria-label="Chat messages"] {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 56px + 1rem) !important;
+  }
+
+  @media (min-width: 769px) {
+    [role="log"][aria-label="Chat messages"] {
+      padding-top: calc(60px + 1.5rem) !important;
+    }
+  }
+
   /* Optimize touch interactions and prevent unwanted behaviors */
   * {
     -webkit-tap-highlight-color: transparent;

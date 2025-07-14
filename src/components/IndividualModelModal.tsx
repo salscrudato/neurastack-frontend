@@ -200,10 +200,10 @@ export function IndividualModelModal({
           '@media (max-width: 768px)': {
             margin: '16px',
             borderRadius: '16px',
-            maxHeight: '85vh',
+            maxHeight: 'calc(100vh - 56px - 32px)',
             maxWidth: 'calc(100vw - 32px)',
-            // Add safe area padding
-            marginTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+            // Add safe area padding and account for fixed header
+            marginTop: 'calc(56px + env(safe-area-inset-top, 0px) + 16px)',
             marginBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
           }
         }}

@@ -1,28 +1,28 @@
 import {
-  Avatar,
-  Box,
-  Button,
-  Drawer, DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  Flex,
-  HStack, Icon,
-  IconButton,
-  Text,
-  useDisclosure,
-  useToast,
-  VStack
+    Avatar,
+    Box,
+    Button,
+    Drawer, DrawerBody,
+    DrawerCloseButton,
+    DrawerContent,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerOverlay,
+    Flex,
+    HStack, Icon,
+    IconButton,
+    Text,
+    useDisclosure,
+    useToast,
+    VStack
 } from '@chakra-ui/react';
 import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
-  PiChatCircleBold, PiClockCounterClockwiseBold,
-  PiListBold,
-  PiSignOutBold,
-  PiUserLight
+    PiChatCircleBold, PiClockCounterClockwiseBold,
+    PiListBold,
+    PiSignOutBold,
+    PiUserLight
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -136,7 +136,7 @@ export function Header() {
       top="env(safe-area-inset-top, 0px)"
       left={0}
       right={0}
-      zIndex={1001}
+      zIndex={9999}
       w="100%"
       h={{ base: "56px", md: "60px" }}
       bg="rgba(255, 255, 255, 0.95)"
@@ -150,7 +150,7 @@ export function Header() {
         '@media (max-width: 768px)': {
           position: 'fixed !important',
           top: 'env(safe-area-inset-top, 0px) !important',
-          zIndex: 1001,
+          zIndex: 9999,
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
           willChange: 'auto'
@@ -174,8 +174,33 @@ export function Header() {
           <BrandLogo size="sm" variant="header" text={brandText} />
         </Box>
         <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs" closeOnOverlayClick={true} closeOnEsc={true}>
-          <DrawerOverlay bg="rgba(0, 0, 0, 0.25)" backdropFilter="blur(16px)" transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)" onClick={onClose} sx={{ WebkitBackdropFilter: 'blur(16px)' }} />
-          <DrawerContent bg="rgba(255, 255, 255, 0.98)" backdropFilter="blur(32px)" borderRight="none" boxShadow="0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)" maxW="320px" mt={{ base: "56px", md: "60px" }} borderRadius="0 28px 28px 0" sx={{ WebkitBackdropFilter: 'blur(32px)' }}>
+          <DrawerOverlay
+            bg="rgba(0, 0, 0, 0.25)"
+            backdropFilter="blur(16px)"
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+            onClick={onClose}
+            sx={{
+              WebkitBackdropFilter: 'blur(16px)',
+              // Position overlay below header to prevent header overlap
+              top: { base: "56px", md: "60px" },
+              height: { base: "calc(100vh - 56px)", md: "calc(100vh - 60px)" }
+            }}
+          />
+          <DrawerContent
+            bg="rgba(255, 255, 255, 0.98)"
+            backdropFilter="blur(32px)"
+            borderRight="none"
+            boxShadow="0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+            maxW="320px"
+            mt={{ base: "56px", md: "60px" }}
+            borderRadius="0 28px 28px 0"
+            sx={{
+              WebkitBackdropFilter: 'blur(32px)',
+              // Ensure drawer content doesn't overlap header
+              height: { base: "calc(100vh - 56px)", md: "calc(100vh - 60px)" },
+              maxHeight: { base: "calc(100vh - 56px)", md: "calc(100vh - 60px)" }
+            }}
+          >
             <DrawerCloseButton color="#64748B" size={{ base: "lg", md: "lg" }} minW={{ base: "44px", md: "40px" }} minH={{ base: "44px", md: "40px" }} _hover={{ color: "#374151", bg: "rgba(100, 116, 139, 0.08)", transform: "scale(1.05)" }} _active={{ transform: "scale(0.95)" }} _focus={{ boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)", outline: "none" }} borderRadius="16px" top={6} right={6} transition="all 0.2s ease" bg="rgba(255, 255, 255, 0.8)" backdropFilter="blur(12px)" boxShadow="0 4px 12px rgba(0, 0, 0, 0.1)" sx={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }} />
             <DrawerHeader borderBottomWidth="1px" borderColor="rgba(79, 156, 249, 0.1)" pb={8} pt={8} px={8} bg="rgba(255, 255, 255, 0.8)" sx={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
               <VStack spacing={4} align="start">
