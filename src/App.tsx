@@ -31,21 +31,24 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
       overflowX="hidden"
       position="relative"
       sx={{
-        minHeight: ['100vh', '100dvh', '100svh'],
+        minHeight: ['100vh', '100dvh'],
         height: ['100vh', '100dvh'],
+        maxHeight: ['100vh', '100dvh'],
         '@supports (-webkit-touch-callout: none)': {
           minHeight: '-webkit-fill-available',
           height: '-webkit-fill-available',
+          maxHeight: '-webkit-fill-available',
         },
         overflow: 'hidden',
         '@media (max-width: 768px)': {
-          minHeight: 'max(100vh, 100dvh)',
-          height: 'max(100vh, 100dvh)',
-          maxHeight: 'max(100vh, 100dvh)',
+          minHeight: '100vh',
+          height: '100vh',
+          maxHeight: '100vh',
+          // Ensure no scrolling on the main container
+          overflowY: 'hidden',
         },
         paddingLeft: 'max(env(safe-area-inset-left), 0px)',
         paddingRight: 'max(env(safe-area-inset-right), 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
         contain: 'layout style paint',
         willChange: 'auto',
       }}
@@ -61,27 +64,34 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           overscrollBehavior: 'contain',
           contain: 'layout style',
           willChange: 'auto',
-          // For non-splash pages, add padding for header
+          // For non-splash pages, calculate exact space between header and input
           paddingTop: !isSplashPage ? {
             base: 'calc(env(safe-area-inset-top, 0px) + 56px)',
             md: '60px'
           } : 0,
-          minHeight: !isSplashPage ? {
-            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px)',
-            md: 'calc(100vh - 60px)'
+          paddingBottom: !isSplashPage ? {
+            base: '120px', // Space for chat input
+            md: '140px'
+          } : 0,
+          height: !isSplashPage ? {
+            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px)',
+            md: 'calc(100vh - 60px - 140px)'
           } : '100vh',
-          '@supports (height: 100dvh)': {
-            minHeight: !isSplashPage ? {
-              base: 'calc(100dvh - env(safe-area-inset-top, 0px) - 56px)',
-              md: 'calc(100dvh - 60px)'
-            } : '100dvh',
-          },
+          maxHeight: !isSplashPage ? {
+            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px)',
+            md: 'calc(100vh - 60px - 140px)'
+          } : '100vh',
           '@media (max-width: 768px)': {
             touchAction: 'pan-y',
-            // Ensure proper spacing for mobile header
+            overflow: 'hidden', // Prevent page scrolling
+            // Exact space calculation for mobile
             paddingTop: !isSplashPage ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
-            minHeight: !isSplashPage
-              ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px)'
+            paddingBottom: !isSplashPage ? 'calc(120px + env(safe-area-inset-bottom, 0px))' : 0,
+            height: !isSplashPage
+              ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px - env(safe-area-inset-bottom, 0px))'
+              : '100vh',
+            maxHeight: !isSplashPage
+              ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px - env(safe-area-inset-bottom, 0px))'
               : '100vh',
           },
         }}

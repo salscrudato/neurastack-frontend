@@ -7,6 +7,12 @@
    CSS CUSTOM PROPERTIES (DESIGN TOKENS)
    =================================================================== */
 :root {
+  /* Layout Constants */
+  --header-height-mobile: 56px;
+  --header-height-desktop: 60px;
+  --chat-input-height-mobile: 120px;
+  --chat-input-height-desktop: 140px;
+
   /* Modern Typography Stack */
   --font-display: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont,
     "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
@@ -459,27 +465,31 @@ select {
     overscroll-behavior: contain;
   }
 
-  /* Allow proper layout flow for fixed header and input */
+  /* Constrain layout to viewport for proper mobile behavior */
   html,
   body {
-    overflow-x: hidden; /* Only prevent horizontal scrolling */
+    overflow: hidden; /* Prevent all scrolling at document level */
     max-width: 100vw;
     /* Prevent zoom on input focus */
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    /* Enhanced viewport handling for mobile */
+    /* Fixed viewport height for mobile */
     height: 100vh;
     height: -webkit-fill-available;
     min-height: 100vh;
     min-height: -webkit-fill-available;
+    max-height: 100vh;
+    max-height: -webkit-fill-available;
   }
 
-  /* Ensure root container allows proper layout */
+  /* Ensure root container is constrained to viewport */
   #root {
     height: 100vh;
     height: -webkit-fill-available;
-    overflow-x: hidden; /* Only prevent horizontal scrolling */
+    max-height: 100vh;
+    max-height: -webkit-fill-available;
+    overflow: hidden; /* Prevent scrolling at root level */
   }
 
   /* Ensure header is always visible on mobile */
@@ -493,13 +503,15 @@ select {
     visibility: visible !important;
   }
 
-  /* Ensure chat input stays at bottom */
+  /* Ensure chat input stays at bottom with consistent height */
   [data-chat-input] {
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
     z-index: 1000 !important;
+    height: 120px !important; /* Consistent height for layout calculations */
+    max-height: 120px !important;
   }
 
   /* Optimize touch interactions and prevent unwanted behaviors */

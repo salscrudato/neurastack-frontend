@@ -121,8 +121,9 @@ export function ChatPage() {
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
         "@media (min-width: 769px)": { background: "#FAFBFC" },
-        // Ensure full height without header overlap
-        minHeight: "100%",
+        // Use full available height without scrolling
+        height: "100%",
+        maxHeight: "100%",
         display: "flex",
         flexDirection: "column"
       }}
@@ -142,8 +143,9 @@ export function ChatPage() {
           scrollBehavior: "smooth",
           scrollSnapType: "y proximity",
           touchAction: "pan-y",
-          // Account for fixed chat input at bottom
-          paddingBottom: { base: "calc(120px + env(safe-area-inset-bottom, 0px))", md: "140px" },
+          // Use full available height - no extra padding needed since layout is constrained
+          height: "100%",
+          maxHeight: "100%",
           "@media (max-width: 768px)": {
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -185,8 +187,8 @@ export function ChatPage() {
         <IconButton
           aria-label="Scroll to bottom of chat"
           icon={<PiArrowUpBold />}
-          position="fixed"
-          bottom={{ base: "calc(140px + env(safe-area-inset-bottom, 0px))", md: "160px" }}
+          position="absolute"
+          bottom={{ base: "16px", md: "20px" }}
           right={{ base: 4, md: 6 }}
           size={{ base: "md", md: "lg" }}
           borderRadius="full"
