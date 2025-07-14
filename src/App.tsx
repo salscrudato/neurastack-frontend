@@ -1,4 +1,4 @@
-import { Box, Flex } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
@@ -23,42 +23,28 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   const isSplashPage = location.pathname === '/';
 
   return (
-    <Flex
-      direction="column"
-      h="100vh"
-      w="100%"
-      overflowX="hidden"
-      position="relative"
-      sx={{
-        minHeight: ['100vh', '100dvh'],
-        height: ['100vh', '100dvh'],
-        maxHeight: ['100vh', '100dvh'],
-        '@supports (-webkit-touch-callout: none)': {
-          minHeight: '-webkit-fill-available',
-          height: '-webkit-fill-available',
-          maxHeight: '-webkit-fill-available',
-        },
-        overflow: 'hidden',
-        '@media (max-width: 768px)': {
+    <>
+      {/* Header - Always rendered outside main container for proper positioning */}
+      {!isSplashPage && <Header />}
+
+      {/* Main Content Container */}
+      <Box
+        w="100%"
+        h="100vh"
+        position="relative"
+        sx={{
           minHeight: '100vh',
           height: '100vh',
           maxHeight: '100vh',
-          // Ensure no scrolling on the main container
-          overflowY: 'hidden',
-        },
-        paddingLeft: 'max(env(safe-area-inset-left), 0px)',
-        paddingRight: 'max(env(safe-area-inset-right), 0px)',
-        contain: 'layout style paint',
-        willChange: 'auto',
-      }}
-    >
-      {!isSplashPage && <Header />}
-      <Box
-        flex="1"
-        position="relative"
-        w="100%"
-        h="100%"
-        overflow="hidden"
+          '@supports (-webkit-touch-callout: none)': {
+            minHeight: '-webkit-fill-available',
+            height: '-webkit-fill-available',
+            maxHeight: '-webkit-fill-available',
+          },
+          overflow: 'hidden',
+          paddingLeft: 'max(env(safe-area-inset-left), 0px)',
+          paddingRight: 'max(env(safe-area-inset-right), 0px)',
+        }}
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -73,17 +59,15 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
             }}
             style={{
               width: "100%",
-              minHeight: "100%",
+              height: "100%",
               backfaceVisibility: "hidden"
             }}
           >
-            <Box w="100%" minH="100%">
-              {children}
-            </Box>
+            {children}
           </motion.div>
         </AnimatePresence>
       </Box>
-    </Flex>
+    </>
   );
 };
 

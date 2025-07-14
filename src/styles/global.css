@@ -492,15 +492,47 @@ select {
     overflow: hidden; /* Prevent scrolling at root level */
   }
 
-  /* Ensure header is always visible on mobile */
+  /* Ensure header is always visible on mobile - ROBUST FIX */
   header[role="banner"] {
     position: fixed !important;
     top: env(safe-area-inset-top, 0px) !important;
     left: 0 !important;
     right: 0 !important;
-    z-index: 1001 !important;
+    width: 100% !important;
+    z-index: 9999 !important;
     display: block !important;
     visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    will-change: auto !important;
+    pointer-events: auto !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(40px) !important;
+    -webkit-backdrop-filter: blur(40px) !important;
+    border-bottom: 1px solid rgba(79, 156, 249, 0.08) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+    height: 56px !important;
+  }
+
+  /* Mobile specific header fixes */
+  @media (max-width: 768px) {
+    header[role="banner"] {
+      position: fixed !important;
+      top: env(safe-area-inset-top, 0px) !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100vw !important;
+      z-index: 9999 !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      transform: translateZ(0) !important;
+      height: 56px !important;
+      min-height: 56px !important;
+      max-height: 56px !important;
+    }
   }
 
   /* Ensure chat input stays at bottom with consistent height */
@@ -510,6 +542,23 @@ select {
     left: 0 !important;
     right: 0 !important;
     z-index: 1000 !important;
+    width: 100% !important;
+  }
+
+  /* Additional header visibility enforcement */
+  header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Ensure header is never hidden by any parent container */
+  * {
+    contain: none !important;
+  }
+
+  header[role="banner"] * {
+    contain: none !important;
   }
 
   /* Optimize touch interactions and prevent unwanted behaviors */
