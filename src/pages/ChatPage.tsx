@@ -1,8 +1,8 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  Text
+    Box,
+    Flex,
+    IconButton,
+    Text
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -110,8 +110,58 @@ export function ChatPage() {
   }, [prefersReducedMotion, scrollToBottom]);
 
   return (
-    <Box h="100vh" w="100%" bg={bgColor} position="relative" data-testid="chat-page" overflow="hidden" sx={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent", "@media (min-width: 769px)": { background: "#FAFBFC" } }}>
-      <Box ref={messagesContainerRef} position="absolute" top={{ base: "calc(56px + env(safe-area-inset-top, 0px))", md: "60px" }} bottom={{ base: "calc(120px + env(safe-area-inset-bottom, 0px))", md: "140px" }} left="0" right="0" w="100%" bg={containerBg} overflowY="auto" overflowX="hidden" px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }} py={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 3vw, 1.5rem)" }} sx={{ WebkitOverflowScrolling: "touch", overscrollBehavior: "contain", scrollBehavior: "smooth", scrollSnapType: "y proximity", touchAction: "pan-y", "@media (max-width: 768px)": { scrollbarWidth: "none", msOverflowStyle: "none", "&::-webkit-scrollbar": { display: "none" } }, "@media (min-width: 769px)": { display: "flex", justifyContent: "center", "&::-webkit-scrollbar": { width: "6px" }, "&::-webkit-scrollbar-track": { background: "rgba(0, 0, 0, 0.05)", borderRadius: "3px" }, "&::-webkit-scrollbar-thumb": { background: "rgba(79, 156, 249, 0.3)", borderRadius: "3px", "&:hover": { background: "rgba(79, 156, 249, 0.5)" } } } }} role="log" aria-label="Chat messages" aria-live="polite" aria-atomic="false">
+    <Box
+      h="100%"
+      w="100%"
+      bg={bgColor}
+      position="relative"
+      data-testid="chat-page"
+      overflow="hidden"
+      sx={{
+        touchAction: "manipulation",
+        WebkitTapHighlightColor: "transparent",
+        "@media (min-width: 769px)": { background: "#FAFBFC" },
+        // Ensure full height without header overlap
+        minHeight: "100%",
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
+      <Box
+        ref={messagesContainerRef}
+        flex="1"
+        w="100%"
+        bg={containerBg}
+        overflowY="auto"
+        overflowX="hidden"
+        px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }}
+        py={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 3vw, 1.5rem)" }}
+        sx={{
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
+          scrollBehavior: "smooth",
+          scrollSnapType: "y proximity",
+          touchAction: "pan-y",
+          // Account for fixed chat input at bottom
+          paddingBottom: { base: "calc(120px + env(safe-area-inset-bottom, 0px))", md: "140px" },
+          "@media (max-width: 768px)": {
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            "&::-webkit-scrollbar": { display: "none" }
+          },
+          "@media (min-width: 769px)": {
+            display: "flex",
+            justifyContent: "center",
+            "&::-webkit-scrollbar": { width: "6px" },
+            "&::-webkit-scrollbar-track": { background: "rgba(0, 0, 0, 0.05)", borderRadius: "3px" },
+            "&::-webkit-scrollbar-thumb": { background: "rgba(79, 156, 249, 0.3)", borderRadius: "3px", "&:hover": { background: "rgba(79, 156, 249, 0.5)" } }
+          }
+        }}
+        role="log"
+        aria-label="Chat messages"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         <Box w="100%" maxW={chatConfig.container.maxWidth} px={chatConfig.container.centerPadding}>
           <Flex direction="column" align="stretch" gap={chatConfig.container.gap}>
             {msgs.length === 0 && !isLoading && (
@@ -132,7 +182,44 @@ export function ChatPage() {
         </Box>
       </Box>
       {showScrollToBottom && (
-        <IconButton aria-label="Scroll to bottom of chat" icon={<PiArrowUpBold />} position="absolute" bottom={chatConfig.scrollButton.bottom} right={chatConfig.scrollButton.right} size={chatConfig.scrollButton.size} borderRadius="full" bg={scrollButtonBg} color={scrollButtonColor} boxShadow="0 4px 20px rgba(79, 156, 249, 0.15)" transition={animationConfig.transition} border="1px solid rgba(79, 156, 249, 0.1)" minW={{ base: "44px", sm: "46px", md: "48px", lg: "52px" }} h={{ base: "44px", sm: "46px", md: "48px", lg: "52px" }} _hover={{ bg: scrollButtonHoverBg, transform: animationConfig.transform, boxShadow: "0 8px 32px rgba(79, 156, 249, 0.2)", borderColor: "rgba(79, 156, 249, 0.2)" }} _focus={{ outline: "2px solid #4F9CF9", outlineOffset: "2px", bg: scrollButtonHoverBg }} _active={{ transform: prefersReducedMotion ? "none" : "scale(0.95)", bg: scrollButtonHoverBg }} onClick={scrollToBottom} zIndex={10} transform="rotate(180deg)" sx={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }} />
+        <IconButton
+          aria-label="Scroll to bottom of chat"
+          icon={<PiArrowUpBold />}
+          position="fixed"
+          bottom={{ base: "calc(140px + env(safe-area-inset-bottom, 0px))", md: "160px" }}
+          right={{ base: 4, md: 6 }}
+          size={{ base: "md", md: "lg" }}
+          borderRadius="full"
+          bg={scrollButtonBg}
+          color={scrollButtonColor}
+          boxShadow="0 4px 20px rgba(79, 156, 249, 0.15)"
+          transition={animationConfig.transition}
+          border="1px solid rgba(79, 156, 249, 0.1)"
+          minW={{ base: "44px", sm: "46px", md: "48px", lg: "52px" }}
+          h={{ base: "44px", sm: "46px", md: "48px", lg: "52px" }}
+          _hover={{
+            bg: scrollButtonHoverBg,
+            transform: animationConfig.transform,
+            boxShadow: "0 8px 32px rgba(79, 156, 249, 0.2)",
+            borderColor: "rgba(79, 156, 249, 0.2)"
+          }}
+          _focus={{
+            outline: "2px solid #4F9CF9",
+            outlineOffset: "2px",
+            bg: scrollButtonHoverBg
+          }}
+          _active={{
+            transform: prefersReducedMotion ? "none" : "scale(0.95)",
+            bg: scrollButtonHoverBg
+          }}
+          onClick={scrollToBottom}
+          zIndex={999}
+          transform="rotate(180deg)"
+          sx={{
+            touchAction: "manipulation",
+            WebkitTapHighlightColor: "transparent"
+          }}
+        />
       )}
       <ChatInput />
     </Box>

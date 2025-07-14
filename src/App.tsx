@@ -22,7 +22,6 @@ const pageVariants = {
 const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isSplashPage = location.pathname === '/';
-  const isChatPage = location.pathname === '/chat';
 
   return (
     <Flex
@@ -62,21 +61,28 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           overscrollBehavior: 'contain',
           contain: 'layout style',
           willChange: 'auto',
-          paddingTop: (!isSplashPage && !isChatPage) ? 'clamp(64px, 15vw, 72px)' : 0,
-          minHeight: (!isSplashPage && !isChatPage)
-            ? 'calc(100vh - clamp(64px, 15vw, 72px))'
-            : '100vh',
+          // For non-splash pages, add padding for header
+          paddingTop: !isSplashPage ? {
+            base: 'calc(env(safe-area-inset-top, 0px) + 56px)',
+            md: '60px'
+          } : 0,
+          minHeight: !isSplashPage ? {
+            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px)',
+            md: 'calc(100vh - 60px)'
+          } : '100vh',
           '@supports (height: 100dvh)': {
-            minHeight: (!isSplashPage && !isChatPage)
-              ? 'calc(100dvh - clamp(64px, 15vw, 72px))'
-              : '100dvh',
+            minHeight: !isSplashPage ? {
+              base: 'calc(100dvh - env(safe-area-inset-top, 0px) - 56px)',
+              md: 'calc(100dvh - 60px)'
+            } : '100dvh',
           },
           '@media (max-width: 768px)': {
-            paddingTop: (!isSplashPage && !isChatPage) ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
-            minHeight: (!isSplashPage && !isChatPage)
+            touchAction: 'pan-y',
+            // Ensure proper spacing for mobile header
+            paddingTop: !isSplashPage ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
+            minHeight: !isSplashPage
               ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px)'
               : '100vh',
-            touchAction: 'pan-y',
           },
         }}
       >

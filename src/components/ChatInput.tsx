@@ -1,11 +1,11 @@
 import {
-  Box,
-  IconButton,
-  InputGroup,
-  InputRightElement,
-  ScaleFade,
-  Textarea,
-  useToast
+    Box,
+    IconButton,
+    InputGroup,
+    InputRightElement,
+    ScaleFade,
+    Textarea,
+    useToast
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -201,7 +201,56 @@ export default function ChatInput() {
   }), [isFocused, txt]);
 
   return (
-    <Box ref={containerRef} w="full" bg="transparent" borderTopWidth="0" position="fixed" bottom={0} left={0} right={0} zIndex={1000} flexShrink={0} sx={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)', willChange: isFocused ? 'transform' : 'auto', backfaceVisibility: 'hidden', '@media (max-width: 768px)': { paddingX: 2, paddingY: 1, position: 'fixed !important', bottom: '0 !important', left: '0 !important', right: '0 !important', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)', paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)', paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)', maxHeight: '120px', zIndex: 1000, background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(79, 156, 249, 0.08)', transform: 'translateZ(0)', backfaceVisibility: 'hidden', willChange: 'transform', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }, '@media (min-width: 769px)': { maxHeight: '140px', display: 'flex', justifyContent: 'center', paddingY: 0, paddingX: 2, background: 'transparent' } }}>
+    <Box
+      ref={containerRef}
+      w="full"
+      bg="transparent"
+      borderTopWidth="0"
+      position="fixed"
+      bottom={0}
+      left={0}
+      right={0}
+      zIndex={1000}
+      flexShrink={0}
+      sx={{
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        willChange: isFocused ? 'transform' : 'auto',
+        backfaceVisibility: 'hidden',
+        '@media (max-width: 768px)': {
+          paddingX: 2,
+          paddingY: 1,
+          position: 'fixed !important',
+          bottom: '0 !important',
+          left: '0 !important',
+          right: '0 !important',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
+          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
+          maxHeight: '120px',
+          zIndex: 1000,
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(79, 156, 249, 0.08)',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          willChange: 'transform',
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          // Ensure it stays above other content
+          WebkitTransform: 'translateZ(0)',
+          isolation: 'isolate'
+        },
+        '@media (min-width: 769px)': {
+          maxHeight: '140px',
+          display: 'flex',
+          justifyContent: 'center',
+          paddingY: 0,
+          paddingX: 2,
+          background: 'transparent'
+        }
+      }}
+    >
       <Box w="100%" maxW={{ base: "100%", md: "850px", lg: "950px", xl: "1050px" }} px={{ base: "clamp(0.75rem, 2vw, 1rem)", sm: "clamp(1rem, 2.5vw, 1.25rem)", md: "clamp(1.5rem, 4vw, 2rem)", lg: "clamp(2rem, 5vw, 3rem)", xl: "clamp(2.5rem, 6vw, 4rem)" }} position="relative" overflow="visible">
         <ScaleFade in={true} initialScale={0.95}>
           <InputGroup w="full" bg="transparent" borderWidth="0" borderColor="transparent" borderRadius={inputConfig.borderRadius} px={{ base: 2, sm: 2, md: 0 }} py={{ base: 0, sm: 0, md: 1, lg: 1, xl: 1 }} alignItems="center" transition={animationConfig.transition} boxShadow="none" position="relative" overflow="visible" role="group" aria-label="Message input area" aria-expanded={isFocused} aria-busy={busy}>

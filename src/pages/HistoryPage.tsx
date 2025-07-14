@@ -1,25 +1,25 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Card,
-  CardBody,
-  Divider,
-  Flex,
-  HStack,
-  IconButton,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-  Tooltip,
-  useDisclosure,
-  useToast,
-  VStack,
+    Badge,
+    Box,
+    Button,
+    Card,
+    CardBody,
+    Divider,
+    Flex,
+    HStack,
+    IconButton,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+    Tooltip,
+    useDisclosure,
+    useToast,
+    VStack,
 } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
@@ -77,7 +77,32 @@ export default function HistoryPage() {
   const getMessageCount = (messageCount: number) => `${messageCount} message${messageCount !== 1 ? 's' : ''}`;
 
   return (
-    <Box w="100%" minH="100%" bg={bgColor} sx={{ overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', '@media (max-width: 768px)': { minHeight: ['100vh', '100dvh'], paddingBottom: 'env(safe-area-inset-bottom, 0px)', padding: '16px' }, '@media (min-width: 769px)': { display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingY: '24px', paddingX: '16px' }, '@supports (-webkit-touch-callout: none)': { minHeight: '-webkit-fill-available' } }}>
+    <Box
+      w="100%"
+      minH="100%"
+      bg={bgColor}
+      sx={{
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        '@media (max-width: 768px)': {
+          minHeight: '100%',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          padding: '16px'
+        },
+        '@media (min-width: 769px)': {
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start',
+          paddingY: '24px',
+          paddingX: '16px'
+        },
+        '@supports (-webkit-touch-callout: none)': {
+          minHeight: '-webkit-fill-available'
+        }
+      }}
+    >
       <Flex direction="column" w="100%" maxW={{ base: "100%", md: "800px", lg: "900px", xl: "1000px" }} px={{ base: 0, md: 8, lg: 12, xl: 16 }}>
         <VStack spacing={4} align="stretch" mb={6}>
           <HStack justify="space-between" align="center">
