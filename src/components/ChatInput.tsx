@@ -97,12 +97,12 @@ export default function ChatInput() {
           const viewport = window.visualViewport;
           const keyboardHeight = window.innerHeight - viewport.height;
           if (keyboardHeight > 150) {
-            containerRef.current.style.transform = `translateY(-${keyboardHeight}px)`;
-            containerRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            // Keep the input fixed at bottom, don't move it up
+            containerRef.current.style.bottom = `${keyboardHeight}px`;
+            containerRef.current.style.transition = 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
           }
-        } else {
-          textareaRef.current.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' });
         }
+        // Remove scrollIntoView to prevent jumping to top
       };
       handleKeyboardPosition();
       if (window.visualViewport) window.visualViewport.addEventListener('resize', handleKeyboardPosition);
@@ -116,8 +116,8 @@ export default function ChatInput() {
     if (isMobile) {
       document.body.classList.remove('keyboard-visible');
       if (containerRef.current) {
-        containerRef.current.style.transform = 'translateY(0)';
-        containerRef.current.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        containerRef.current.style.bottom = '0px';
+        containerRef.current.style.transition = 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
       }
       const cleanup = (textareaRef.current as any)?._keyboardCleanup;
       if (cleanup) {
@@ -203,6 +203,7 @@ export default function ChatInput() {
   return (
     <Box
       ref={containerRef}
+      data-chat-input
       w="full"
       bg="transparent"
       borderTopWidth="0"

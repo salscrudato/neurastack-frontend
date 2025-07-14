@@ -133,24 +133,23 @@ export function Header() {
       as="header"
       role="banner"
       position="fixed"
-      top={0}
+      top="env(safe-area-inset-top, 0px)"
       left={0}
       right={0}
       zIndex={1001}
       w="100%"
-      h={{ base: "calc(56px + env(safe-area-inset-top, 0px))", md: "60px" }}
+      h={{ base: "56px", md: "60px" }}
       bg="rgba(255, 255, 255, 0.95)"
       backdropFilter="blur(40px)"
       borderBottom="1px solid rgba(79, 156, 249, 0.08)"
       boxShadow="0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
       sx={{
         WebkitBackdropFilter: 'blur(40px)',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
         '@media (max-width: 768px)': {
           position: 'fixed !important',
-          top: '0 !important',
+          top: 'env(safe-area-inset-top, 0px) !important',
           zIndex: 1001,
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
