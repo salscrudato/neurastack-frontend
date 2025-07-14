@@ -121,8 +121,10 @@ export function ChatPage() {
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
         "@media (min-width: 769px)": { background: "#FAFBFC" },
+        height: ["100vh", "100dvh"],
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
+        overflow: "hidden"
       }}
     >
       <Box
@@ -139,16 +141,6 @@ export function ChatPage() {
           scrollBehavior: "smooth",
           scrollSnapType: "y proximity",
           touchAction: "pan-y",
-          // Add top padding to account for fixed header
-          paddingTop: {
-            base: 'calc(env(safe-area-inset-top, 0px) + 56px + 1rem)',
-            md: 'calc(60px + 1.5rem)'
-          },
-          // Add bottom padding to account for fixed chat input
-          paddingBottom: {
-            base: 'calc(120px + env(safe-area-inset-bottom, 0px) + 1rem)',
-            md: 'calc(140px + 1.5rem)'
-          },
           "@media (max-width: 768px)": {
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -180,7 +172,7 @@ export function ChatPage() {
                 <ChatMessage message={m} isHighlighted={false} />
               </Box>
             ))}
-            {isLoading && <Box px={4} py={6}><Loader variant="ensemble" size="lg" message="AI models collaborating on your response..." /></Box>}
+            {isLoading && <Box px={4} py={6}><Loader variant="innovative" size="lg" message="AI models collaborating on your response..." /></Box>}
             {msgs.length > 0 && !isLoading && <SaveSessionButton />}
             <div ref={bottomRef} />
           </Flex>

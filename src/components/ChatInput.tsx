@@ -211,39 +211,33 @@ export default function ChatInput() {
       bottom={0}
       left={0}
       right={0}
-      zIndex={1000}
+      zIndex="var(--z-chat-input)"
       flexShrink={0}
       sx={{
         touchAction: 'manipulation',
         WebkitTapHighlightColor: 'transparent',
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
+        transform: 'translateZ(0)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
+        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
+        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
         '@media (max-width: 768px)': {
           paddingX: 2,
           paddingY: 1,
-          position: 'fixed !important',
-          bottom: '0 !important',
-          left: '0 !important',
-          right: '0 !important',
           paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
           paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
           paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
-          maxHeight: '120px',
-          zIndex: 1000,
+          maxHeight: 'var(--chat-input-height-mobile)',
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(79, 156, 249, 0.08)',
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          willChange: 'transform',
           transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          // Ensure it stays above other content
-          WebkitTransform: 'translateZ(0)',
+          WebkitBackdropFilter: 'blur(20px)',
           isolation: 'isolate'
         },
         '@media (min-width: 769px)': {
-          maxHeight: '140px',
+          maxHeight: 'var(--chat-input-height-desktop)',
           display: 'flex',
           justifyContent: 'center',
           paddingY: 0,

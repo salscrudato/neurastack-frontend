@@ -87,9 +87,15 @@ export default function App() {
 
   return (
     <PageContentWrapper>
+      {/* Skip link for accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <UpdateNotification />
       <Suspense fallback={<Fallback />}>
-        <Outlet />
+        <div id="main-content" role="main">
+          <Outlet />
+        </div>
       </Suspense>
     </PageContentWrapper>
   );

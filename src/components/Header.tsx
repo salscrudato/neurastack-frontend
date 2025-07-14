@@ -1,28 +1,28 @@
 import {
-    Avatar,
-    Box,
-    Button,
-    Drawer, DrawerBody,
-    DrawerCloseButton,
-    DrawerContent,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerOverlay,
-    Flex,
-    HStack, Icon,
-    IconButton,
-    Text,
-    useDisclosure,
-    useToast,
-    VStack
+  Avatar,
+  Box,
+  Button,
+  Drawer, DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  Flex,
+  HStack, Icon,
+  IconButton,
+  Text,
+  useDisclosure,
+  useToast,
+  VStack
 } from '@chakra-ui/react';
 import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
-    PiChatCircleBold, PiClockCounterClockwiseBold,
-    PiListBold,
-    PiSignOutBold,
-    PiUserLight
+  PiChatCircleBold, PiClockCounterClockwiseBold,
+  PiListBold,
+  PiSignOutBold,
+  PiUserLight
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -81,7 +81,7 @@ export function Header() {
     if (!user) return 'Guest';
     if (user.displayName) return user.displayName;
     if (user.email) return user.email.split('@')[0];
-    return 'Guest User';
+    return 'Pam Guest';
   }, [user]);
 
   const drawerContent = useMemo(() => (
@@ -133,28 +133,24 @@ export function Header() {
       as="header"
       role="banner"
       position="fixed"
-      top="env(safe-area-inset-top, 0px)"
+      top={0}
       left={0}
       right={0}
-      zIndex={9999}
-      w="100%"
-      h={{ base: "56px", md: "60px" }}
+      zIndex="var(--z-header)"
+      w="100vw"
+      h={{ base: "var(--header-height-mobile)", md: "var(--header-height-desktop)" }}
       bg="rgba(255, 255, 255, 0.95)"
       backdropFilter="blur(40px)"
       borderBottom="1px solid rgba(79, 156, 249, 0.08)"
       boxShadow="0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
       sx={{
         WebkitBackdropFilter: 'blur(40px)',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
         paddingLeft: 'env(safe-area-inset-left, 0px)',
         paddingRight: 'env(safe-area-inset-right, 0px)',
-        '@media (max-width: 768px)': {
-          position: 'fixed !important',
-          top: 'env(safe-area-inset-top, 0px) !important',
-          zIndex: 9999,
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          willChange: 'auto'
-        }
+        transform: 'translateZ(0)',
+        backfaceVisibility: 'hidden',
+        willChange: 'auto'
       }}
     >
       <Flex
@@ -181,9 +177,7 @@ export function Header() {
             onClick={onClose}
             sx={{
               WebkitBackdropFilter: 'blur(16px)',
-              // Position overlay below header to prevent header overlap
-              top: { base: "56px", md: "60px" },
-              height: { base: "calc(100vh - 56px)", md: "calc(100vh - 60px)" }
+              zIndex: 'var(--z-drawer-overlay)'
             }}
           />
           <DrawerContent
@@ -192,13 +186,10 @@ export function Header() {
             borderRight="none"
             boxShadow="0 24px 48px -12px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
             maxW="320px"
-            mt={{ base: "56px", md: "60px" }}
             borderRadius="0 28px 28px 0"
             sx={{
               WebkitBackdropFilter: 'blur(32px)',
-              // Ensure drawer content doesn't overlap header
-              height: { base: "calc(100vh - 56px)", md: "calc(100vh - 60px)" },
-              maxHeight: { base: "calc(100vh - 56px)", md: "calc(100vh - 60px)" }
+              zIndex: 'var(--z-drawer-content)'
             }}
           >
             <DrawerCloseButton color="#64748B" size={{ base: "lg", md: "lg" }} minW={{ base: "44px", md: "40px" }} minH={{ base: "44px", md: "40px" }} _hover={{ color: "#374151", bg: "rgba(100, 116, 139, 0.08)", transform: "scale(1.05)" }} _active={{ transform: "scale(0.95)" }} _focus={{ boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)", outline: "none" }} borderRadius="16px" top={6} right={6} transition="all 0.2s ease" bg="rgba(255, 255, 255, 0.8)" backdropFilter="blur(12px)" boxShadow="0 4px 12px rgba(0, 0, 0, 0.1)" sx={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }} />
@@ -225,7 +216,7 @@ export function Header() {
             <DrawerFooter borderTopWidth="1px" borderColor="rgba(0, 0, 0, 0.06)" pt={6} pb={8} px={8} bg="rgba(255, 255, 255, 0.5)" backdropFilter="blur(16px)">
               <VStack spacing={4} w="full">
                 <Button leftIcon={<PiSignOutBold size={18} />} onClick={handleSignOut} variant="ghost" w="full" justifyContent="flex-start" fontWeight="600" borderRadius="16px" h="48px" color="#EF4444" bg="rgba(239, 68, 68, 0.05)" border="1px solid rgba(239, 68, 68, 0.1)" transition="all 0.2s ease" _hover={{ bg: "rgba(239, 68, 68, 0.1)", borderColor: "rgba(239, 68, 68, 0.2)", transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)" }} _active={{ transform: "translateY(0)" }}>Sign Out</Button>
-                <Text fontSize="2xs" color="#94A3B8" textAlign="center" lineHeight="1.4">neurastack v5.16 • hackensack.ai</Text>
+                <Text fontSize="xs" color="#94A3B8" textAlign="center" lineHeight="1.4">v5.16 • hackensack.ai</Text>
               </VStack>
             </DrawerFooter>
           </DrawerContent>

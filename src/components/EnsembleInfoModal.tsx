@@ -302,7 +302,7 @@ export function EnsembleInfoModal({
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    zIndex: 1400,
+                    zIndex: 'var(--z-modal-backdrop)',
                 }}
             />
             <ModalContent

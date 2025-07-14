@@ -1,15 +1,16 @@
 import {
-  Box,
-  Flex,
-  SkeletonText,
-  Spinner,
-  Text,
-  useColorModeValue
+    Box,
+    Flex,
+    SkeletonText,
+    Spinner,
+    Text,
+    useColorModeValue
 } from '@chakra-ui/react';
 import { memo, useEffect, useState } from 'react';
+import { InnovativeSpinner } from './InnovativeSpinner';
 
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble';
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble' | 'innovative';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
@@ -104,6 +105,7 @@ export const Loader = memo(({ variant = 'spinner', size = 'md', message, fullScr
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const renderLoader = () => {
     switch (variant) {
+      case 'innovative': return <InnovativeSpinner size={size} />;
       case 'ensemble': case 'modern': return <ModernEnsembleLoader size={size} />;
       case 'team': return <WaveAnimation size={size} />;
       case 'skeleton': return <SkeletonLoader lines={lines} />;
