@@ -145,64 +145,7 @@ export async function handleErrorGracefully<T>(
   return { success: false, error: errorInfo };
 }
 
-/**
- * Create a user-friendly error message for toasts
- */
-export function createErrorToast(error: unknown, context?: ErrorContext) {
-  const errorInfo = analyzeError(error, context);
-  
-  return {
-    title: getErrorTitle(errorInfo.type),
-    description: errorInfo.userMessage,
-    status: getErrorStatus(errorInfo.severity),
-    duration: getErrorDuration(errorInfo.severity),
-    isClosable: true
-  };
-}
 
-function getErrorTitle(type: ErrorInfo['type']): string {
-  switch (type) {
-    case 'network':
-      return 'Connection Issue';
-    case 'firebase':
-      return 'Sync Notice';
-    case 'api':
-      return 'Service Issue';
-    case 'validation':
-      return 'Input Error';
-    default:
-      return 'Error';
-  }
-}
-
-function getErrorStatus(severity: ErrorInfo['severity']): 'error' | 'warning' | 'info' {
-  switch (severity) {
-    case 'critical':
-    case 'high':
-      return 'error';
-    case 'medium':
-      return 'warning';
-    case 'low':
-      return 'info';
-    default:
-      return 'error';
-  }
-}
-
-function getErrorDuration(severity: ErrorInfo['severity']): number {
-  switch (severity) {
-    case 'critical':
-      return 8000;
-    case 'high':
-      return 6000;
-    case 'medium':
-      return 4000;
-    case 'low':
-      return 3000;
-    default:
-      return 4000;
-  }
-}
 
 /**
  * Silently handle errors that shouldn't be shown to users

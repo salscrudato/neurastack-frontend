@@ -342,7 +342,7 @@ function extractProviderFromModel(model: string): string {
 /**
  * Format model name for display without provider (just model name)
  */
-export function formatModelName(modelKey: string, _role?: string, _provider?: string): string {
+export function formatModelName(modelKey: string): string {
   // Get display info for consistent formatting
   const info = getModelDisplayInfo(modelKey);
 

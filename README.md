@@ -6,7 +6,7 @@
 [![PWA Ready](https://img.shields.io/badge/PWA-ready-purple)](https://web.dev/progressive-web-apps/)
 [![API Integration](https://img.shields.io/badge/API-latest%20backend-orange)](docs/NEURASTACK_API_INTEGRATION.md)
 
-**NeuraStack** is a streamlined AI-powered application ecosystem featuring enterprise-grade chat interfaces, fitness tracking, trip planning, task management, and more. Built with modern web technologies and optimized for simplicity, performance, and maintainability.
+**NeuraStack** is a streamlined AI-powered application ecosystem featuring enterprise-grade chat interfaces, trip planning, task management, and more. Built with modern web technologies and optimized for simplicity, performance, and maintainability.
 
 ## 🎯 **Quick Start**
 
@@ -183,13 +183,6 @@ const typography = {
 - **Drag & Drop**: Intuitive task organization with sortable lists
 - **Progress Tracking**: Visual progress indicators and completion tracking
 
-### **🔄 Progressive Web App (PWA)**
-
-- **Offline Support**: Full functionality without internet connection
-- **Install Prompts**: Add to home screen on mobile and desktop
-- **Smart Updates**: User-controlled update notifications
-- **Background Sync**: Queue actions when offline, sync when online
-
 ---
 
 ## 🏗️ **Architecture Overview**
@@ -296,15 +289,15 @@ communityPrompts (collection)              shared prompts
 | `src/components/Header.tsx`   | Main navigation header with app switcher            |
 | `src/pages/SplashPage.tsx`    | Landing page with authentication                    |
 | `src/pages/ChatPage.tsx`      | Enhanced AI chat interface with mobile optimization |
-| `src/pages/NeuraFitPage.tsx`  | AI-powered fitness tracking with full functionality |
-| `src/store/`                  | Streamlined Zustand stores (Chat, Auth, Fitness)    |
-| `src/lib/api.ts`              | Multi-AI backend integration                        |
-| `src/lib/travelApi.ts`        | Travel booking API integrations                     |
-| `src/firebase.tsx`            | Firebase configuration and exports                  |
-| `src/theme/`                  | Chakra UI theme and styling                         |
-| `src/components/`             | Reusable UI components                              |
-| `src/hooks/`                  | Custom React hooks                                  |
-| `src/services/`               | Business logic and API services                     |
+
+| `src/store/` | Streamlined Zustand stores (Chat, Auth, History) |
+| `src/lib/api.ts` | Multi-AI backend integration |
+| `src/lib/travelApi.ts` | Travel booking API integrations |
+| `src/firebase.tsx` | Firebase configuration and exports |
+| `src/theme/` | Chakra UI theme and styling |
+| `src/components/` | Reusable UI components |
+| `src/hooks/` | Custom React hooks |
+| `src/services/` | Business logic and API services |
 
 ---
 
@@ -371,13 +364,13 @@ const ensembleResponse = {
 
 ### AI Features by App
 
-| App              | AI Capabilities                        | Enhanced Features                      |
-| ---------------- | -------------------------------------- | -------------------------------------- |
-| **Chat**         | Multi-model ensemble, memory context   | Session continuity, token optimization |
-| **NeuraFit**     | Workout planning, progress tracking    | Personalized memory, fitness history   |
-| **Neuraplanner** | Trip planning, booking integration     | Travel preferences memory              |
-| **NeuraPrompts** | Prompt optimization, community sharing | Usage analytics, trending              |
-| **Neuratask**    | Task breakdown, priority analysis      | Project memory, context awareness      |
+| App      | AI Capabilities                      | Enhanced Features                      |
+| -------- | ------------------------------------ | -------------------------------------- |
+| **Chat** | Multi-model ensemble, memory context | Session continuity, token optimization |
+
+| **Neuraplanner** | Trip planning, booking integration | Travel preferences memory |
+| **NeuraPrompts** | Prompt optimization, community sharing | Usage analytics, trending |
+| **Neuratask** | Task breakdown, priority analysis | Project memory, context awareness |
 
 ### Response Processing
 
@@ -476,39 +469,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
 ---
 
-## 8. Progressive Web App Features
-
-### PWA Capabilities
-
-- **Installable**: Add to home screen on mobile and desktop with custom install prompts
-- **Offline Support**: Intelligent service worker caching with version-aware updates
-- **Smart Caching**: NetworkFirst for APIs, CacheFirst for fonts, fresh HTML always
-- **Auto-Updates**: Seamless background updates with user-friendly notifications
-- **App-like Experience**: Standalone display mode with app shortcuts
-- **Performance**: Aggressive compression (Gzip + Brotli) and optimized caching
-
-### Service Worker Configuration
-
-```typescript
-// Intelligent caching strategy
-VitePWA({
-  registerType: "autoUpdate",
-  workbox: {
-    runtimeCaching: [
-      // Google Fonts - Cache first (1 year)
-      { urlPattern: /fonts\.googleapis\.com/, handler: "CacheFirst" },
-      // API calls - Network first (5 min cache)
-      { urlPattern: /\/api\//, handler: "NetworkFirst" },
-    ],
-    skipWaiting: true,
-    clientsClaim: true,
-  },
-});
-```
-
----
-
-## 9. Performance Optimization
+## 8. Performance Optimization
 
 ### Code Splitting Strategy
 
@@ -546,7 +507,7 @@ export const usePerformanceAlerts = () => {
 
 ---
 
-## 10. Development Workflow
+## 9. Development Workflow
 
 ### Branch Strategy
 
@@ -589,7 +550,7 @@ VITE_AFFILIATE_ID=your_affiliate_id
 
 ---
 
-## 11. Deployment & Hosting
+## 10. Deployment & Hosting
 
 ### Firebase Hosting (Recommended)
 
@@ -637,7 +598,7 @@ vercel env add VITE_BACKEND_URL
 
 ---
 
-## 12. Security & Privacy
+## 11. Security & Privacy
 
 ### Data Protection
 
@@ -665,7 +626,7 @@ const auth = getAuth(app);
 
 ---
 
-## 13. Monitoring & Analytics
+## 12. Monitoring & Analytics
 
 ### Performance Monitoring
 
@@ -695,7 +656,7 @@ const usePerformanceLogger = (enabled: boolean) => {
 
 ---
 
-## 14. Testing Strategy
+## 13. Testing Strategy
 
 ### Testing Pyramid
 
@@ -722,7 +683,7 @@ tests/e2e/               # Full application testing
 
 ---
 
-## 15. Troubleshooting FAQ
+## 14. Troubleshooting FAQ
 
 ### Common Issues
 
@@ -920,7 +881,6 @@ function sanitizeForFirebase(obj: any): any {
 - ✅ TypeScript compilation: **0 errors**
 - ✅ Production build: **Successful**
 - ✅ Bundle optimization: **Maintained**
-- ✅ PWA functionality: **Working**
 
 ## 18. CHANGE LOG
 
@@ -929,9 +889,9 @@ function sanitizeForFirebase(obj: any): any {
 | **3.0.1** | 2024‑12‑04        | AI Assistant | **CRITICAL FIXES**: Firebase data sanitization, React Hooks compliance, Router future flags, build stability                                                          |
 | **3.0.0** | 2024‑12‑20        | AI Assistant | **MAJOR SIMPLIFICATION**: Comprehensive codebase review and optimization, component consolidation, performance streamlining, AI-optimized README                      |
 | **2.2.0** | 2024‑12‑20        | AI Assistant | **LATEST BACKEND API INTEGRATION**: Enhanced NeuraStack API with memory system, session tracking, improved type safety, backward compatibility                        |
-| **2.1.1** | 2024‑12‑20        | AI Assistant | **MOBILE SCROLLING FIX**: Robust solution for NeuraFit onboarding scrolling issues, dynamic layout system, enhanced mobile support                                    |
+| **2.1.1** | 2024‑12‑20        | AI Assistant | **MOBILE SCROLLING FIX**: Robust solution for mobile scrolling issues, dynamic layout system, enhanced mobile support                                                 |
 | **2.1.0** | 2024‑12‑20        | AI Assistant | **MAJOR UI/UX RELEASE**: Beautiful gradient branding, advanced performance optimization, superior mobile experience, enhanced accessibility, design system excellence |
-| **2.0.0** | 2024‑12‑20        | AI Assistant | **MAJOR RELEASE**: Complete NeuraFit flow, testing infrastructure, performance optimizations, enhanced UX                                                             |
+| **2.0.0** | 2024‑12‑20        | AI Assistant | **MAJOR RELEASE**: Enhanced chat flow, testing infrastructure, performance optimizations, enhanced UX                                                                 |
 
 ---
 

@@ -34,6 +34,7 @@ import {
     PiWarningCircleBold
 } from "react-icons/pi";
 import { useMobileOptimization } from '../hooks/useMobileOptimization';
+import { commonModalProps, commonOverlayStyles, modalSizes } from './shared/modalConfig';
 
 // ============================================================================
 // Component Props
@@ -283,19 +284,14 @@ export function EnsembleInfoModal({
             <Modal
                 isOpen={isOpen}
                 onClose={onClose}
-                size={{ base: "full", md: "2xl" }}
-                scrollBehavior="inside"
-                isCentered={true}
-                closeOnOverlayClick={true}
-                closeOnEsc={true}
-                trapFocus={true}
-                blockScrollOnMount={true}
+                size={modalSizes.large}
+                {...commonModalProps}
                 aria-labelledby="ensemble-modal-title"
                 aria-describedby="ensemble-modal-description"
             >
             <ModalOverlay
                 bg="blackAlpha.600"
-                backdropFilter="blur(4px)"
+                {...commonOverlayStyles}
                 sx={{
                     position: 'fixed',
                     top: 0,

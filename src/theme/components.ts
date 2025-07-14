@@ -5,21 +5,7 @@
 
 import { defineStyleConfig } from '@chakra-ui/styled-system';
 
-// Common responsive patterns
-const responsivePatterns = {
-  mobileFirst: {
-    base: { fontSize: 'sm', p: 3 },
-    md: { fontSize: 'md', p: 4 },
-  },
-  touchTargets: {
-    base: { minH: '48px', minW: '48px' },
-    md: { minH: '44px', minW: '44px' },
-  },
-  spacing: {
-    base: { gap: 3, p: 3 },
-    md: { gap: 4, p: 4 },
-  }
-};
+
 
 // Enhanced Box component to remove focus outlines
 export const Box = defineStyleConfig({
@@ -96,34 +82,6 @@ export const Button = defineStyleConfig({
         bg: 'rgba(255, 255, 255, 0.9)',
         transform: 'translateY(-1px)',
         boxShadow: '0 8px 32px rgba(31, 38, 135, 0.2)',
-      },
-    },
-    // NeuraFit specific variants
-    'neurafit-primary': {
-      ...responsivePatterns.touchTargets,
-      bg: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)',
-      color: 'white',
-      borderRadius: 'xl',
-      fontWeight: '600',
-      transition: 'all 0.2s ease',
-      _hover: {
-        transform: 'translateY(-1px)',
-        boxShadow: '0 8px 20px rgba(79, 156, 249, 0.3)',
-      },
-      _active: {
-        transform: 'scale(0.98)',
-      },
-    },
-    'neurafit-secondary': {
-      ...responsivePatterns.touchTargets,
-      bg: 'transparent',
-      border: '2px solid',
-      borderColor: 'gray.300',
-      color: 'gray.700',
-      borderRadius: 'xl',
-      _hover: {
-        borderColor: 'gray.400',
-        bg: 'gray.50',
       },
     },
   },
@@ -234,14 +192,6 @@ export const Card = defineStyleConfig({
         border: '1px solid rgba(255, 255, 255, 0.2)',
       },
     },
-    'neurafit': {
-      container: {
-        borderRadius: '2xl',
-        bg: 'white',
-        border: '1px solid',
-        borderColor: 'gray.200',
-      },
-    },
   },
 });
 
@@ -257,16 +207,7 @@ export const Progress = defineStyleConfig({
       borderRadius: 'full',
     },
   },
-  variants: {
-    'neurafit': {
-      track: {
-        bg: 'gray.100',
-      },
-      filledTrack: {
-        background: 'linear-gradient(90deg, #4299E1 0%, #667EEA 100%)',
-      },
-    },
-  },
+  variants: {},
 });
 
 // Enhanced Badge component
@@ -284,11 +225,6 @@ export const Badge = defineStyleConfig({
       color: '#1E293B',
       backdropFilter: 'blur(10px)',
       border: '1px solid rgba(255, 255, 255, 0.2)',
-    },
-    'neurafit-status': {
-      ...responsivePatterns.mobileFirst,
-      borderRadius: 'full',
-      fontWeight: 'bold',
     },
   },
 });

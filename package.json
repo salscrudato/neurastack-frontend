@@ -22,8 +22,7 @@
     "analyze": "npm run build && node scripts/bundle-analysis.js",
     "analyze:visual": "npm run build && npx vite-bundle-analyzer dist/stats.html",
     "build:analyze": "npm run build",
-    "delete-firestore-data": "tsx scripts/delete-firestore-data.ts",
-    "test-api": "tsx scripts/test-flexible-api.ts"
+    "delete-firestore-data": "tsx scripts/delete-firestore-data.ts"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -31,7 +30,6 @@
     "@chakra-ui/theme-tools": "^2.2.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@heroicons/react": "^2.2.0",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
     "firebase": "^11.8.1",
@@ -44,8 +42,6 @@
     "react-router-dom": "^6.23.0",
     "remark-gfm": "^4.0.1",
     "styled-components": "^6.1.19",
-    "vite-plugin-pwa": "^1.0.1",
-    "workbox-window": "^7.3.0",
     "zustand": "^5.0.5"
   },
   "devDependencies": {

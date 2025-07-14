@@ -18,7 +18,6 @@ import {
     Text,
     Tooltip,
     useDisclosure,
-    useToast,
     VStack,
 } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,7 +29,6 @@ import { useHistoryStore } from '../store/useHistoryStore';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
-  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { sessions, deleteSession, loadSession } = useHistoryStore();
@@ -46,9 +44,9 @@ export default function HistoryPage() {
     if (deleteId) {
       try {
         await deleteSession(deleteId);
-        toast({ title: 'Session deleted', status: 'success', duration: 2000, isClosable: true });
+        console.log('Session deleted successfully');
       } catch (error) {
-        toast({ title: 'Failed to delete session', status: 'error', duration: 3000, isClosable: true });
+        console.error('Failed to delete session:', error);
       }
     }
     setDeleteId(null);
@@ -60,9 +58,9 @@ export default function HistoryPage() {
       clearMessages();
       await loadSession(sessionId);
       navigate('/chat');
-      toast({ title: 'Session loaded', status: 'success', duration: 2000, isClosable: true });
+      console.log('Session loaded successfully');
     } catch (error) {
-      toast({ title: 'Failed to load session', status: 'error', duration: 3000, isClosable: true });
+      console.error('Failed to load session:', error);
     }
   };
 

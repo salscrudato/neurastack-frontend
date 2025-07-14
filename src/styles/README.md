@@ -32,6 +32,7 @@ src/theme/
 All design tokens are now centralized in `global.css` using CSS custom properties:
 
 ### Colors
+
 ```css
 --color-brand-primary: #4F9CF9
 --color-surface-glass: rgba(255, 255, 255, 0.8)
@@ -39,6 +40,7 @@ All design tokens are now centralized in `global.css` using CSS custom propertie
 ```
 
 ### Spacing (4px grid)
+
 ```css
 --space-xs: 0.25rem    /* 4px */
 --space-sm: 0.5rem     /* 8px */
@@ -47,6 +49,7 @@ All design tokens are now centralized in `global.css` using CSS custom propertie
 ```
 
 ### Shadows & Effects
+
 ```css
 --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37)
 --shadow-glow: 0 0 20px rgba(79, 156, 249, 0.3)
@@ -55,43 +58,816 @@ All design tokens are now centralized in `global.css` using CSS custom propertie
 ## 🧩 Utility Classes
 
 ### Glass Morphism
+
 ```css
 .glass-card          /* Glass card with backdrop blur */
-.glass-button        /* Glass button with hover effects */
+
+/* Glass card with backdrop blur */
+
+.glass-button; /* Glass button with hover effects */
 ```
 
 ### Gradients
+
 ```css
 .gradient-primary    /* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
+/* Primary brand gradient */
 .gradient-secondary  /* Secondary gradient */
-.text-gradient       /* Gradient text effect */
+.text-gradient; /* Gradient text effect */
 ```
 
 ### Animations
+
 ```css
 .animate-slide-up    /* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
+/* Slide up entrance animation */
 .animate-float       /* Floating animation */
 .hover-lift          /* Lift on hover */
-.button-press-feedback /* Press feedback animation */
+.button-press-feedback; /* Press feedback animation */
 ```
 
 ### Loading States
+
 ```css
 .loading-shimmer     /* Shimmer loading effect */
-.loading-dots-enhanced /* Enhanced loading dots */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+/* Shimmer loading effect */
+.loading-dots-enhanced; /* Enhanced loading dots */
 ```
 
 ## 🎭 Component Variants
 
 ### Button Variants
+
 ```tsx
 <Button variant="solid">Primary Button</Button>
 <Button variant="glass">Glass Button</Button>
-<Button variant="neurafit-primary">NeuraFit Primary</Button>
 <Button size="mobile-lg">Mobile Large</Button>
 ```
 
 ### Layout Variants
+
 ```tsx
 <Box variant="page-container">Page Container</Box>
 <Box variant="fixed-header">Fixed Header</Box>
@@ -100,6 +876,7 @@ All design tokens are now centralized in `global.css` using CSS custom propertie
 ```
 
 ### Form Variants
+
 ```tsx
 <Input variant="glass" />
 <Input variant="mobile-optimized" />
@@ -107,9 +884,9 @@ All design tokens are now centralized in `global.css` using CSS custom propertie
 ```
 
 ### Card Variants
+
 ```tsx
 <Card variant="glass">Glass Card</Card>
-<Card variant="neurafit">NeuraFit Card</Card>
 ```
 
 ## 📱 Mobile Optimizations
@@ -125,6 +902,7 @@ All mobile optimizations are consolidated in `utilities.css`:
 ## 🚀 Usage Examples
 
 ### Using CSS Custom Properties
+
 ```css
 .my-component {
   background: var(--color-surface-glass);
@@ -135,6 +913,7 @@ All mobile optimizations are consolidated in `utilities.css`:
 ```
 
 ### Using Utility Classes
+
 ```tsx
 <Box className="glass-card animate-slide-up">
   <Text className="text-gradient">Gradient Text</Text>
@@ -143,6 +922,7 @@ All mobile optimizations are consolidated in `utilities.css`:
 ```
 
 ### Using Theme Variants
+
 ```tsx
 <Flex variant="page-wrapper">
   <Box variant="fixed-header">
@@ -150,7 +930,7 @@ All mobile optimizations are consolidated in `utilities.css`:
   </Box>
   <Box variant="page-container">
     <Card variant="glass">
-      <Button variant="neurafit-primary" size="mobile-lg">
+      <Button variant="solid" size="mobile-lg">
         Action Button
       </Button>
     </Card>
@@ -161,6 +941,7 @@ All mobile optimizations are consolidated in `utilities.css`:
 ## 🔧 Migration Guide
 
 ### Before (Fragmented)
+
 ```tsx
 // Multiple CSS imports
 import "./styles/optimized-styles.css";
@@ -182,6 +963,7 @@ import "./styles/modern-enhancements.css";
 ```
 
 ### After (Consolidated)
+
 ```tsx
 // Single imports
 import "./styles/global.css";
@@ -207,6 +989,7 @@ A comprehensive style guide component is available at `src/components/StyleGuide
 ## 🔍 Debugging
 
 Use browser dev tools to inspect CSS custom properties:
+
 ```css
 /* In dev tools console */
 getComputedStyle(document.documentElement).getPropertyValue('--color-brand-primary')
@@ -215,6 +998,7 @@ getComputedStyle(document.documentElement).getPropertyValue('--color-brand-prima
 ## 🚀 Performance
 
 The consolidated system provides:
+
 - **Faster initial load**: Fewer HTTP requests
 - **Better caching**: Larger, more stable cache units
 - **Reduced runtime**: Fewer style recalculations

@@ -1,9 +1,9 @@
 /**
  * Delete Existing Firebase Firestore Data Script
- * 
- * This script deletes all existing NeuraFit-related data from Firebase Firestore
- * to prepare for the new flexible workout API integration.
- * 
+ *
+ * This script deletes all existing user data from Firebase Firestore
+ * for cleanup purposes.
+ *
  * WARNING: This will permanently delete all user data. Use with caution.
  */
 
@@ -80,12 +80,9 @@ async function deleteUserSubcollections(userId: string): Promise<number> {
 
   // List of subcollections to delete
   const subcollections = [
-    'fitness',
-    'workouts', 
     'analytics',
     'chatMessages',
     'chatHistory',
-    'workoutSessions',
     'prompts'
   ];
 
@@ -168,10 +165,9 @@ async function confirmDeletion(): Promise<boolean> {
       output: process.stdout
     });
 
-    console.log('⚠️  WARNING: This will permanently delete ALL NeuraFit data from Firestore!');
+    console.log('⚠️  WARNING: This will permanently delete ALL user data from Firestore!');
     console.log('   This includes:');
-    console.log('   • All user profiles and fitness data');
-    console.log('   • All workout plans and history');
+    console.log('   • All user profiles');
     console.log('   • All analytics and session data');
     console.log('   • All chat history');
     console.log('   • Community prompts');
@@ -189,7 +185,7 @@ async function confirmDeletion(): Promise<boolean> {
  */
 async function main() {
   try {
-    console.log('🔥 NeuraFit Firestore Data Deletion Script');
+    console.log('🔥 NeuraStack Firestore Data Deletion Script');
     console.log('==========================================\n');
 
     // Safety confirmation

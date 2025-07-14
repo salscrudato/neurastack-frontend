@@ -21,7 +21,7 @@ const generateSafeUUID = (): string => {
   try {
     return crypto.randomUUID();
   } catch {
-    return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    return 'session-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
   }
 };
 
@@ -129,14 +129,30 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
  * Sanitize user input to prevent XSS and other security issues
  */
 const sanitizeInput = (input: string): string => {
-  if (!input || typeof input !== 'string') return '';
+  // Debug logging to check input
+  if (import.meta.env.DEV) {
+    console.log('🔍 sanitizeInput called with:', { input, type: typeof input });
+  }
 
-  return input
+  if (!input || typeof input !== 'string') {
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ sanitizeInput: Invalid input type or empty input');
+    }
+    return '';
+  }
+
+  const result = input
     .trim()
     .slice(0, PERFORMANCE_CONFIG.MAX_MESSAGE_LENGTH)
     .replace(/[<>]/g, '') // Basic XSS prevention
     .replace(/javascript:/gi, '') // Prevent javascript: URLs
     .replace(/data:/gi, ''); // Prevent data: URLs
+
+  if (import.meta.env.DEV) {
+    console.log('🧹 sanitizeInput result:', { result, type: typeof result });
+  }
+
+  return result;
 };
 
 /**
@@ -192,11 +208,21 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       sendMessage: async (text: string) => {
         const startTime = Date.now();
 
+        // Debug logging to check what's being passed
+        if (import.meta.env.DEV) {
+          console.log('🔍 sendMessage called with:', { text, type: typeof text });
+        }
+
         // Production-ready input validation and sanitization
         const sanitizedText = sanitizeInput(text);
         if (!sanitizedText) {
           set({ error: 'Please enter a valid message' });
           return;
+        }
+
+        // Debug logging after sanitization
+        if (import.meta.env.DEV) {
+          console.log('🧹 After sanitization:', { sanitizedText, type: typeof sanitizedText });
         }
 
         // Rate limiting check
@@ -273,17 +299,9 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             // Update performance metrics
             get().updatePerformanceMetrics(responseTime, true);
 
-            // Track monitoring metrics
-            try {
-              const { productionMonitoringService } = await import('../services/productionMonitoringService');
-              productionMonitoringService.trackPerformance('chat_response_time', responseTime);
-              productionMonitoringService.incrementChatCounter('messagesReceived');
-              productionMonitoringService.trackUserInteraction('message_sent', 'chat', {
-                messageLength: sanitizedText.length,
-                retryCount
-              });
-            } catch (error) {
-              // Silently fail monitoring
+            // Simplified logging for MVP
+            if (import.meta.env.DEV) {
+              console.log(`Chat response time: ${responseTime}ms`);
             }
 
             // Production logging (minimal in production)
@@ -375,21 +393,9 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             // Update performance metrics for failure
             get().updatePerformanceMetrics(Date.now() - startTime, false);
 
-            // Track error in monitoring
-            try {
-              const { productionMonitoringService } = await import('../services/productionMonitoringService');
-              productionMonitoringService.trackError({
-                message: error instanceof Error ? error.message : 'Chat request failed',
-                component: 'chat_store',
-                severity: retryCount > PERFORMANCE_CONFIG.MAX_RETRIES ? 'high' : 'medium',
-                metadata: {
-                  retryCount,
-                  statusCode: error?.statusCode,
-                  correlationId: error?.correlationId
-                }
-              });
-            } catch (monitoringError) {
-              // Silently fail monitoring
+            // Simplified error logging for MVP
+            if (import.meta.env.DEV) {
+              console.error('Chat request failed:', error);
             }
 
             // Enhanced error logging with correlation ID per API spec
@@ -535,7 +541,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           // Strip large metadata from older messages
           const optimizedMessage = { ...message };
           if (optimizedMessage.metadata) {
-            const { individualResponses, ...lightMetadata } = optimizedMessage.metadata;
+            const { individualResponses: _individualResponses, ...lightMetadata } = optimizedMessage.metadata;
             optimizedMessage.metadata = lightMetadata;
           }
           return optimizedMessage;

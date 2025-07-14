@@ -15,11 +15,11 @@ import {
     Box,
     Button,
     HStack,
-    useDisclosure,
-    useToast
+    useDisclosure
 } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 import { PiCheckBold, PiFloppyDiskBold, PiTrashBold } from 'react-icons/pi';
+import { useAuthStore } from '../store/useAuthStore';
 import { useChatStore } from '../store/useChatStore';
 import { useHistoryStore } from '../store/useHistoryStore';
 
@@ -32,16 +32,19 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
   const [isSaved, setIsSaved] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const toast = useToast();
 
+  const user = useAuthStore(s => s.user);
   const { messages, clearMessages } = useChatStore();
   const { saveSession } = useHistoryStore();
 
   // Don't show if no messages or only system messages
-  const hasMessagesToSave = messages.length > 0 && 
+  const hasMessagesToSave = messages.length > 0 &&
     messages.some(msg => msg.role === 'user' || msg.role === 'assistant');
 
-  if (!hasMessagesToSave) {
+  // Don't show for guest users (anonymous users)
+  const isGuestUser = !user || user.isAnonymous;
+
+  if (!hasMessagesToSave || isGuestUser) {
     return null;
   }
 
@@ -59,14 +62,7 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
 
       // Show success state
       setIsSaved(true);
-
-      toast({
-        title: 'Session saved',
-        description: 'Your conversation has been saved to history',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
+      console.log('Session saved successfully');
 
       // Call callback if provided
       onSaved?.();
@@ -78,14 +74,6 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
 
     } catch (error) {
       console.error('Failed to save session:', error);
-
-      toast({
-        title: 'Failed to save session',
-        description: 'Please try again',
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
-      });
     } finally {
       setIsSaving(false);
     }
@@ -94,14 +82,7 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
   const handleClearSession = () => {
     clearMessages();
     onClose();
-
-    toast({
-      title: 'Session cleared',
-      description: 'Started a new conversation',
-      status: 'info',
-      duration: 2000,
-      isClosable: true,
-    });
+    console.log('Session cleared - started new conversation');
 
     // Call callback if provided
     onSaved?.();
@@ -124,33 +105,42 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             onClick={handleSave}
             isLoading={isSaving}
             loadingText="Saving..."
-            variant="solid"
+            variant="outline"
             size="sm"
-            borderRadius="lg"
-            fontWeight="500"
-            px={3}
-            py={1}
+            borderRadius="xl"
+            fontWeight="600"
+            px={4}
+            py={2}
             h="auto"
-            minH="32px"
+            minH={{ base: "44px", md: "40px" }}
+            minW="80px"
             fontSize="xs"
-            bg={isSaved ? "#10B981" : "#4F9CF9"}
-            color="white"
-            border="none"
+            bg="white"
+            color={isSaved ? "#10B981" : "#4F9CF9"}
+            border="1px solid"
+            borderColor={isSaved ? "#10B981" : "#4F9CF9"}
             boxShadow="none"
+            sx={{
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent'
+            }}
             _hover={{
-              bg: isSaved ? "#059669" : "#3B82F6",
+              bg: isSaved ? "rgba(16, 185, 129, 0.05)" : "rgba(79, 156, 249, 0.05)",
+              borderColor: isSaved ? "#059669" : "#3B82F6",
+              color: isSaved ? "#059669" : "#3B82F6",
               transform: "translateY(-1px)",
-              boxShadow: isSaved ? "0 2px 8px rgba(16, 185, 129, 0.2)" : "0 2px 8px rgba(79, 156, 249, 0.2)",
+              boxShadow: isSaved ? "0 2px 8px rgba(16, 185, 129, 0.15)" : "0 2px 8px rgba(79, 156, 249, 0.15)",
             }}
             _active={{
               transform: "translateY(0) scale(0.98)",
+              bg: isSaved ? "rgba(16, 185, 129, 0.1)" : "rgba(79, 156, 249, 0.1)",
               boxShadow: "none",
             }}
             _focus={{
               outline: "none",
               boxShadow: isSaved ? "0 0 0 2px rgba(16, 185, 129, 0.3)" : "0 0 0 2px rgba(79, 156, 249, 0.3)",
             }}
-            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             disabled={isSaving || isSaved}
             _disabled={{
               opacity: 0.6,
@@ -165,18 +155,23 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
             onClick={onOpen}
             variant="outline"
             size="sm"
-            borderRadius="lg"
-            fontWeight="500"
-            px={3}
-            py={1}
+            borderRadius="xl"
+            fontWeight="600"
+            px={4}
+            py={2}
             h="auto"
-            minH="32px"
+            minH={{ base: "44px", md: "40px" }}
+            minW="80px"
             fontSize="xs"
             bg="white"
             color="#DC2626"
             border="1px solid"
             borderColor="#DC2626"
             boxShadow="none"
+            sx={{
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent'
+            }}
             _hover={{
               bg: "rgba(220, 38, 38, 0.05)",
               borderColor: "#B91C1C",
@@ -193,7 +188,7 @@ export function SaveSessionButton({ onSaved }: SaveSessionButtonProps) {
               outline: "none",
               boxShadow: "0 0 0 2px rgba(220, 38, 38, 0.3)",
             }}
-            transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)"
+            transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
             disabled={isSaving}
             _disabled={{
               opacity: 0.4,

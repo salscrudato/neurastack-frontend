@@ -76,7 +76,7 @@ export function useMobileOptimization() {
     }
   }, [isMobile]);
 
-  // Enhanced haptic feedback utility with workout-specific patterns
+  // Enhanced haptic feedback utility
   const triggerHaptic = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' | number | number[] = 'light') => {
     if (!isMobile || !('vibrate' in navigator)) return;
 
@@ -118,9 +118,9 @@ export function useMobileOptimization() {
     overscrollBehavior: 'contain' as const,
   }), []);
 
-  // Enhanced workout-specific mobile optimizations
-  const workoutConfig = useMemo(() => ({
-    // Prevent screen sleep during workouts
+  // Enhanced mobile optimizations for app features
+  const appConfig = useMemo(() => ({
+    // Prevent screen sleep during active sessions
     preventSleep: () => {
       if ('wakeLock' in navigator) {
         return (navigator as any).wakeLock.request('screen');
@@ -138,8 +138,8 @@ export function useMobileOptimization() {
       lineHeight: '1.1',
     },
 
-    // Enhanced exercise card optimizations
-    exerciseCardStyles: {
+    // Enhanced card optimizations
+    cardStyles: {
       padding: isMobile ? '1.25rem' : '0.75rem',
       borderRadius: isMobile ? '1.25rem' : '0.5rem',
       minHeight: isMobile ? '140px' : '100px',
@@ -147,8 +147,8 @@ export function useMobileOptimization() {
       transition: 'all 0.2s ease',
     },
 
-    // Enhanced button optimizations for workout controls
-    workoutButtonStyles: {
+    // Enhanced button optimizations
+    buttonStyles: {
       minHeight: isMobile ? '64px' : '48px',
       fontSize: isMobile ? '1.25rem' : '1rem',
       fontWeight: '600',
@@ -190,9 +190,9 @@ export function useMobileOptimization() {
     touchConfig,
     inputOptimizations,
     performanceConfig,
-    workoutConfig,
+    appConfig,
 
-    // Enhanced responsive values for NeuraFit
+    // Enhanced responsive values
     spacing: {
       xs: isMobile ? 3 : 2,
       sm: isMobile ? 4 : 3,
@@ -201,7 +201,7 @@ export function useMobileOptimization() {
       xl: isMobile ? 7 : 6,
     },
 
-    // Enhanced touch target sizes for workout interface
+    // Enhanced touch target sizes
     touchTargets: {
       small: isMobile ? '44px' : '40px',
       medium: isMobile ? '52px' : '44px',

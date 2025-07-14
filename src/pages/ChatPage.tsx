@@ -34,10 +34,10 @@ export function ChatPage() {
 
   const chatConfig = useMemo(() => ({
     container: {
-      padding: { base: "clamp(0.25rem, 1vw, 0.5rem)", sm: "clamp(0.5rem, 1.5vw, 0.75rem)", md: 0 },
-      gap: { base: "clamp(0.75rem, 2.5vw, 1.25rem)", md: "clamp(1rem, 3vw, 1.5rem)", lg: "clamp(1.25rem, 3.5vw, 1.75rem)", xl: "clamp(1.5rem, 4vw, 2rem)" },
+      padding: { base: "clamp(0.125rem, 0.5vw, 0.25rem)", sm: "clamp(0.25rem, 1vw, 0.5rem)", md: 0 },
+      gap: { base: "clamp(0.5rem, 1.5vw, 0.75rem)", md: "clamp(0.75rem, 2vw, 1rem)", lg: "clamp(1rem, 2.5vw, 1.25rem)", xl: "clamp(1.25rem, 3vw, 1.5rem)" },
       maxWidth: { base: "100%", md: "850px", lg: "950px", xl: "1050px" },
-      centerPadding: { md: "clamp(1.5rem, 4vw, 2rem)", lg: "clamp(2rem, 5vw, 2.5rem)", xl: "clamp(2.5rem, 6vw, 3rem)" },
+      centerPadding: { md: "clamp(1rem, 3vw, 1.5rem)", lg: "clamp(1.5rem, 4vw, 2rem)", xl: "clamp(2rem, 5vw, 2.5rem)" },
     },
     hero: {
       fontSize: { base: "lg", sm: "xl", md: "2xl", lg: "3xl", xl: "4xl" },

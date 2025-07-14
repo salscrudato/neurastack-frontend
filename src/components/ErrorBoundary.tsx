@@ -13,7 +13,6 @@ import {
     useColorModeValue
 } from '@chakra-ui/react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { logSecurityEvent } from '../utils/securityUtils';
 
 interface Props {
   children: ReactNode;
@@ -50,35 +49,6 @@ class ErrorBoundary extends Component<Props, State> {
       error,
       errorInfo,
     });
-
-    // Enhanced error logging for production
-    const errorDetails = {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: Date.now(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-    };
-
-    // Log security event for potential security-related errors
-    if (error.message.includes('script') || error.message.includes('eval') || error.message.includes('unsafe')) {
-      try {
-        logSecurityEvent({
-          action: 'potential_security_error',
-          severity: 'high',
-          details: errorDetails
-        });
-      } catch (err) {
-        console.warn('Failed to log security event:', err);
-      }
-    }
-
-    // Log to external service in production
-    if (import.meta.env.PROD) {
-      // In production, this would send to error tracking service
-      console.error('Production Error:', errorDetails);
-    }
   }
 
   handleReset = () => {

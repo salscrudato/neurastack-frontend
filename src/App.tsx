@@ -4,7 +4,6 @@ import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
-import UpdateNotification from "./components/UpdateNotification";
 
 import "./styles/global.css";
 import "./styles/utilities.css";
@@ -91,7 +90,6 @@ export default function App() {
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      <UpdateNotification />
       <Suspense fallback={<Fallback />}>
         <div id="main-content" role="main">
           <Outlet />

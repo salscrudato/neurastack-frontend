@@ -4,8 +4,6 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
-import { setupCacheManagement } from './utils/cacheControl';
-import { initializeResourcePreloading } from './utils/resourcePreloader';
 
 // Import pages and auth guard
 import { AuthGuard } from './components/AuthGuard';
@@ -63,18 +61,9 @@ function RouteErrorBoundary() {
   );
 }
 
-// Setup cache management before rendering
-let cleanupCacheManagement: (() => void) | undefined;
-try {
-  cleanupCacheManagement = setupCacheManagement();
-} catch (error) {
-  console.warn('Cache management setup failed:', error);
-}
-
-// Combined deferred initializations (non-blocking, single setTimeout)
+// Simplified initialization for MVP
 setTimeout(() => {
   try {
-    initializeResourcePreloading();
     preloadCriticalServices();
   } catch (error) {
     console.warn('Initialization failed:', error);
@@ -91,7 +80,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>
 );
 
-// Cleanup cache management on page unload
-if (cleanupCacheManagement) {
-  window.addEventListener('beforeunload', cleanupCacheManagement);
-}

@@ -31,12 +31,7 @@
 /*.svg
   Cache-Control: public, max-age=86400
 
-# Service worker and manifest - no cache
-/sw.js
-  Cache-Control: no-cache, no-store, must-revalidate
 
-/manifest.json
-  Cache-Control: no-cache, no-store, must-revalidate
 
 # API routes - no cache
 /api/*

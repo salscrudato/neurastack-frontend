@@ -1,8 +1,6 @@
-import {
-  ExclamationCircleIcon
-} from '@heroicons/react/24/solid';
 import { GoogleAuthProvider, signInAnonymously, signInWithPopup } from "firebase/auth";
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { PiWarningCircleBold } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import styled, { css, keyframes } from 'styled-components';
 import logo from "../assets/icons/logo.svg";
@@ -519,7 +517,7 @@ export function SplashPage() {
 
         {err && (
           <Message type="error" id="error-message" role="alert">
-            <ExclamationCircleIcon width={20} />
+            <PiWarningCircleBold size={20} />
             {err}
           </Message>
         )}

@@ -137,7 +137,6 @@
   --z-modal: 1070;
   --z-popover: 1080;
   --z-tooltip: 1090;
-  --z-toast: 1100;
   --z-header: 9999;
 }
 
@@ -1044,10 +1043,4 @@ img[loading="lazy"].loaded {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
   line-height: 1.2 !important;
-}
-
-/* Toast accessibility */
-.chakra-toast {
-  max-width: 90vw !important;
-  word-wrap: break-word !important;
 }

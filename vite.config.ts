@@ -10,9 +10,6 @@ import svgr from 'vite-plugin-svgr';
 // Import Node.js path module to resolve file paths cleanly
 import path from 'node:path';
 
-// Import PWA plugin for Progressive Web App functionality
-import { VitePWA } from 'vite-plugin-pwa';
-
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
 
@@ -62,122 +59,6 @@ export default defineConfig({
       ext: '.br',
     }),
 
-    // PWA plugin with optimized caching strategy
-    VitePWA({
-      registerType: 'autoUpdate',
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'gstatic-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-              }
-            }
-          },
-          {
-            urlPattern: /\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 100, // Increased for better caching
-                maxAgeSeconds: 60 * 10 // Increased to 10 minutes
-              },
-              networkTimeoutSeconds: 15, // Increased timeout
-              plugins: [{
-                cacheKeyWillBeUsed: async ({ request }) => {
-                  // Remove auth headers from cache key for better hit rate
-                  const url = new URL(request.url);
-                  return url.href;
-                }
-              }]
-            }
-          },
-          {
-            // Cache static assets more aggressively
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'images-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          }
-        ],
-        // Ensure HTML is always fresh but allow offline fallback
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
-        skipWaiting: true,
-        clientsClaim: true,
-        cleanupOutdatedCaches: true
-      },
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'logo.svg'],
-      manifest: {
-        name: 'NeuraStack AI',
-        short_name: 'NeuraStack',
-        description: 'AI-Powered App Ecosystem with Multi-Model Ensemble',
-        theme_color: '#4F9CF9',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait-primary',
-        scope: '/',
-        start_url: '/',
-        icons: [
-          {
-            src: 'icons/neurastack-192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'icons/neurastack-512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'icons/neurastack-180.png',
-            sizes: '180x180',
-            type: 'image/png',
-            purpose: 'apple-touch-icon'
-          }
-        ],
-        categories: ['productivity', 'utilities', 'lifestyle'],
-        shortcuts: [
-          {
-            name: 'Chat',
-            short_name: 'Chat',
-            description: 'Start AI conversation',
-            url: '/chat',
-            icons: [{ src: 'icons/neurastack-192.png', sizes: '192x192' }]
-          },
-          {
-            name: 'History',
-            short_name: 'History',
-            description: 'View chat history',
-            url: '/history',
-            icons: [{ src: 'icons/neurastack-192.png', sizes: '192x192' }]
-          }
-        ]
-      }
-    }),
-
   ],
 
   // Simplified aliases - only include what's actively used
@@ -222,7 +103,7 @@ export default defineConfig({
         },
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const name = assetInfo.name || 'asset';
+          const name = assetInfo.names?.[0] || 'asset';
           const info = name.split('.');
           const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
@@ -302,8 +183,6 @@ export default defineConfig({
       'date-fns/format',
       'date-fns/formatDistanceToNow',
       'nanoid',
-      '@heroicons/react/24/solid',
-      '@heroicons/react/24/outline',
       'react-icons/pi',
     ],
 
