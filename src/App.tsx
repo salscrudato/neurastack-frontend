@@ -4,7 +4,6 @@ import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
-import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import UpdateNotification from "./components/UpdateNotification";
 
 import "./styles/global.css";
@@ -58,43 +57,8 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
         flex="1"
         position="relative"
         w="100%"
-        sx={{
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          contain: 'layout style',
-          willChange: 'auto',
-          // For non-splash pages, calculate exact space between header and input
-          paddingTop: !isSplashPage ? {
-            base: 'calc(env(safe-area-inset-top, 0px) + 56px)',
-            md: '60px'
-          } : 0,
-          paddingBottom: !isSplashPage ? {
-            base: '120px', // Space for chat input
-            md: '140px'
-          } : 0,
-          height: !isSplashPage ? {
-            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px)',
-            md: 'calc(100vh - 60px - 140px)'
-          } : '100vh',
-          maxHeight: !isSplashPage ? {
-            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px)',
-            md: 'calc(100vh - 60px - 140px)'
-          } : '100vh',
-          '@media (max-width: 768px)': {
-            touchAction: 'pan-y',
-            overflow: 'hidden', // Prevent page scrolling
-            // Exact space calculation for mobile
-            paddingTop: !isSplashPage ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
-            paddingBottom: !isSplashPage ? 'calc(120px + env(safe-area-inset-bottom, 0px))' : 0,
-            height: !isSplashPage
-              ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px - env(safe-area-inset-bottom, 0px))'
-              : '100vh',
-            maxHeight: !isSplashPage
-              ? 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px - env(safe-area-inset-bottom, 0px))'
-              : '100vh',
-          },
-        }}
+        h="100%"
+        overflow="hidden"
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -140,7 +104,6 @@ export default function App() {
   return (
     <PageContentWrapper>
       <UpdateNotification />
-      <PWAInstallPrompt />
       <Suspense fallback={<Fallback />}>
         <Outlet />
       </Suspense>

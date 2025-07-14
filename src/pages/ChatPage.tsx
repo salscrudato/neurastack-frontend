@@ -111,7 +111,7 @@ export function ChatPage() {
 
   return (
     <Box
-      h="100%"
+      h="100vh"
       w="100%"
       bg={bgColor}
       position="relative"
@@ -121,16 +121,12 @@ export function ChatPage() {
         touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
         "@media (min-width: 769px)": { background: "#FAFBFC" },
-        // Use full available height without scrolling
-        height: "100%",
-        maxHeight: "100%",
         display: "flex",
         flexDirection: "column"
       }}
     >
       <Box
         ref={messagesContainerRef}
-        flex="1"
         w="100%"
         bg={containerBg}
         overflowY="auto"
@@ -143,9 +139,19 @@ export function ChatPage() {
           scrollBehavior: "smooth",
           scrollSnapType: "y proximity",
           touchAction: "pan-y",
-          // Use full available height - no extra padding needed since layout is constrained
-          height: "100%",
-          maxHeight: "100%",
+          // Calculate exact height between fixed header and input
+          height: {
+            base: 'calc(100vh - env(safe-area-inset-top, 0px) - 56px - 120px - env(safe-area-inset-bottom, 0px))',
+            md: 'calc(100vh - 60px - 140px)'
+          },
+          marginTop: {
+            base: 'calc(env(safe-area-inset-top, 0px) + 56px)',
+            md: '60px'
+          },
+          marginBottom: {
+            base: 'calc(120px + env(safe-area-inset-bottom, 0px))',
+            md: '140px'
+          },
           "@media (max-width: 768px)": {
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -187,8 +193,11 @@ export function ChatPage() {
         <IconButton
           aria-label="Scroll to bottom of chat"
           icon={<PiArrowUpBold />}
-          position="absolute"
-          bottom={{ base: "16px", md: "20px" }}
+          position="fixed"
+          bottom={{
+            base: "calc(120px + env(safe-area-inset-bottom, 0px) + 16px)",
+            md: "calc(140px + 20px)"
+          }}
           right={{ base: 4, md: 6 }}
           size={{ base: "md", md: "lg" }}
           borderRadius="full"

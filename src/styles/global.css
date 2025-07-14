@@ -510,8 +510,6 @@ select {
     left: 0 !important;
     right: 0 !important;
     z-index: 1000 !important;
-    height: 120px !important; /* Consistent height for layout calculations */
-    max-height: 120px !important;
   }
 
   /* Optimize touch interactions and prevent unwanted behaviors */

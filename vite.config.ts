@@ -168,10 +168,10 @@ export default defineConfig({
             icons: [{ src: 'icons/neurastack-192.png', sizes: '192x192' }]
           },
           {
-            name: 'NeuraFit',
-            short_name: 'Fitness',
-            description: 'AI-powered fitness tracking',
-            url: '/neurafit',
+            name: 'History',
+            short_name: 'History',
+            description: 'View chat history',
+            url: '/history',
             icons: [{ src: 'icons/neurastack-192.png', sizes: '192x192' }]
           }
         ]
