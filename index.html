@@ -1,47 +1,45 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, interactive-widget=resizes-content" />
 
   <title>neurastack</title>
 
-  <!-- Cache Control for HTML -->
+  <!-- Cache Control (consolidated to essential headers) -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- Icons -->
+  <!-- Icons and PWA -->
   <link rel="icon" type="image/svg+xml" href="/logo.svg" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/neurastack-180.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
 
-  <!-- Theme Color -->
+  <!-- Theme and PWA Meta (streamlined) -->
   <meta name="theme-color" content="#4F9CF9" />
-
-  <!-- PWA Meta Tags -->
-  <meta name="application-name" content="NeuraStack AI" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="NeuraStack" />
   <meta name="description" content="AI-Powered App Ecosystem with Multi-Model Ensemble" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="msapplication-config" content="/browserconfig.xml" />
   <meta name="msapplication-TileColor" content="#4F9CF9" />
   <meta name="msapplication-tap-highlight" content="no" />
 
-  <!-- Social Metadata -->
+  <!-- Social Metadata (consolidated) -->
   <meta property="og:title" content="Neurastack – Ask the Team" />
   <meta property="og:description" content="Agentic AI Ensemble" />
   <meta property="og:image" content="https://neurastack.ai/assets/icons/logo-full.svg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://neurastack.ai/assets/icons/logo-full.svg" />
-</head>
 
+  <!-- Performance Optimizations (preload critical assets) -->
+  <link rel="preload" href="/src/main.tsx" as="script" />
+  <link rel="preload" href="/logo.svg" as="image" />
+</head>
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
-
 </html>

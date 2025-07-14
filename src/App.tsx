@@ -6,7 +6,7 @@ import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import UpdateNotification from "./components/UpdateNotification";
-import { usePerformanceOptimization } from "./hooks/usePerformanceOptimization";
+
 import "./styles/global.css";
 import "./styles/utilities.css";
 import { authManager } from "./utils/authUtils";
@@ -32,7 +32,6 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
       overflowX="hidden"
       position="relative"
       sx={{
-        // Modern viewport units with fallbacks
         minHeight: ['100vh', '100dvh', '100svh'],
         height: ['100vh', '100dvh'],
         '@supports (-webkit-touch-callout: none)': {
@@ -40,17 +39,14 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           height: '-webkit-fill-available',
         },
         overflow: 'hidden',
-        // Enhanced mobile viewport handling with container queries
         '@media (max-width: 768px)': {
           minHeight: 'max(100vh, 100dvh)',
           height: 'max(100vh, 100dvh)',
           maxHeight: 'max(100vh, 100dvh)',
         },
-        // Safe area support with enhanced padding
         paddingLeft: 'max(env(safe-area-inset-left), 0px)',
         paddingRight: 'max(env(safe-area-inset-right), 0px)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        // Performance optimizations
         contain: 'layout style paint',
         willChange: 'auto',
       }}
@@ -64,22 +60,17 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           overflowX: 'hidden',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          // Performance optimizations
           contain: 'layout style',
           willChange: 'auto',
-          // Enhanced responsive padding with fluid values - account for fixed header
-          // Chat page handles its own layout, so no padding needed
           paddingTop: (!isSplashPage && !isChatPage) ? 'clamp(64px, 15vw, 72px)' : 0,
           minHeight: (!isSplashPage && !isChatPage)
             ? 'calc(100vh - clamp(64px, 15vw, 72px))'
             : '100vh',
-          // Modern viewport support
           '@supports (height: 100dvh)': {
             minHeight: (!isSplashPage && !isChatPage)
               ? 'calc(100dvh - clamp(64px, 15vw, 72px))'
               : '100dvh',
           },
-          // Enhanced mobile optimizations - account for fixed header and safe areas
           '@media (max-width: 768px)': {
             paddingTop: (!isSplashPage && !isChatPage) ? 'calc(env(safe-area-inset-top, 0px) + 56px)' : 0,
             minHeight: (!isSplashPage && !isChatPage)
@@ -125,21 +116,9 @@ const Fallback = () => (
 );
 
 export default function App() {
-  // Initialize performance optimizations - minimal logging
-  usePerformanceOptimization({
-    enableMetrics: false, // Disabled to reduce console noise
-    enableResourceHints: true,
-    enableImageOptimization: true,
-    enableFontOptimization: true
-  });
-
-  // Initialize auth manager
   useEffect(() => {
     authManager.initialize();
-
-    return () => {
-      authManager.cleanup();
-    };
+    return () => authManager.cleanup();
   }, []);
 
   return (

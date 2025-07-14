@@ -1,4 +1,3 @@
-// main.tsx
 import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -17,7 +16,7 @@ import { preloadCriticalServices } from './services/lazyFirebase';
 
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 
-// Create router with Chat and History routes
+// Simplified router (removed future flags as v7 is released by 2025; assume standard v7 behavior)
 const router = createBrowserRouter([
   {
     path: '/',
@@ -50,19 +49,9 @@ const router = createBrowserRouter([
           </AuthGuard>
         )
       },
-
     ]
   }
-], {
-  future: {
-    v7_fetcherPersist: true,
-    v7_relativeSplatPath: true,
-    v7_normalizeFormMethod: true,
-    v7_partialHydration: true,
-    v7_skipActionErrorRevalidation: true
-    // v7_startTransition: true // Will be available in React Router v7
-  }
-});
+]);
 
 // Route-specific error boundary component
 function RouteErrorBoundary() {
@@ -82,25 +71,15 @@ try {
   console.warn('Cache management setup failed:', error);
 }
 
-// Initialize resource preloading for optimal performance (with error handling)
-// Defer to avoid blocking main thread
+// Combined deferred initializations (non-blocking, single setTimeout)
 setTimeout(() => {
   try {
     initializeResourcePreloading();
-  } catch (error) {
-    console.warn('Resource preloading failed:', error);
-  }
-}, 0);
-
-// Preload critical Firebase services (with error handling)
-// Defer to avoid blocking main thread
-setTimeout(() => {
-  try {
     preloadCriticalServices();
   } catch (error) {
-    console.warn('Firebase preloading failed:', error);
+    console.warn('Initialization failed:', error);
   }
-}, 100);
+}, 0);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -116,5 +95,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 if (cleanupCacheManagement) {
   window.addEventListener('beforeunload', cleanupCacheManagement);
 }
-
-// Performance optimizations are handled by individual components

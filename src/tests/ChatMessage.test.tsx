@@ -5,7 +5,7 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import ChatMessage from '../components/ChatMessage';
+import { ChatMessage } from '../components/ChatMessage';
 import type { Message } from '../store/useChatStore';
 
 // Mock ensemble response data matching the API structure
