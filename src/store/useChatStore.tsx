@@ -350,8 +350,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
                 individualResponses: response.individualResponses,
                 // Full ensemble metadata for confidence display (includes synthesis, voting, roles)
                 metadata: response.metadata,
-                // Ensemble data for EnsembleInfoModal
-                ensembleData: response.metadata
+                // Ensemble data for EnsembleInfoModal (raw API response)
+                ensembleData: response.rawApiResponse
               }
             };
 

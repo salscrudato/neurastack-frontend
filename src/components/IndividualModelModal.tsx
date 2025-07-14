@@ -6,28 +6,28 @@
  */
 
 import {
-    Alert,
-    AlertDescription,
-    AlertIcon,
-    AlertTitle,
-    Badge,
-    Box,
-    IconButton,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalHeader,
-    ModalOverlay,
-    Text,
-    useClipboard,
-    useColorModeValue,
-    VStack
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Badge,
+  Box,
+  IconButton,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+  useClipboard,
+  useColorModeValue,
+  VStack
 } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import {
-    PiCheckBold,
-    PiCopyBold,
-    PiWarningBold
+  PiCheckBold,
+  PiCopyBold,
+  PiWarningBold
 } from 'react-icons/pi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -208,6 +208,7 @@ export function IndividualModelModal({
         sx={{
           cursor: 'pointer',
           transition: 'all 0.2s ease',
+          zIndex: 'var(--z-modal-backdrop)',
           '&:hover': {
             bg: 'blackAlpha.750'
           }
@@ -215,28 +216,16 @@ export function IndividualModelModal({
       />
       <ModalContent
         bg={modalBg}
-        borderRadius={{ base: "xl", md: "2xl" }}
-        maxH={{ base: "85vh", md: "85vh" }}
-        maxW={{ base: "90vw", md: "700px" }}
-        mx={{ base: 4, md: 4 }}
-        my={{ base: "auto", md: "auto" }}
+        borderRadius="2xl"
+        maxH="90vh"
+        maxW="700px"
+        m={0}
         overflow="hidden"
         boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
         border="1px solid"
         borderColor="rgba(226, 232, 240, 0.8)"
         sx={{
-          // Ensure proper z-index and positioning
-          zIndex: 1401,
-          // Mobile-specific styles for compact design
-          '@media (max-width: 768px)': {
-            margin: '16px',
-            borderRadius: '16px',
-            maxHeight: 'calc(100vh - 56px - 32px)',
-            maxWidth: 'calc(100vw - 32px)',
-            // Add safe area padding and account for fixed header
-            marginTop: 'calc(56px + env(safe-area-inset-top, 0px) + 16px)',
-            marginBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-          }
+          zIndex: 'var(--z-modal)',
         }}
       >
         {/* Optimized Header */}
@@ -279,7 +268,7 @@ export function IndividualModelModal({
           position="absolute"
           top={{ base: "16px", md: "20px" }}
           right={{ base: "16px", md: "20px" }}
-          zIndex={1600} // Higher z-index to ensure visibility
+          zIndex="calc(var(--z-modal) + 100)" // Higher z-index to ensure visibility
           sx={{
             // Force visibility
             display: 'block !important',

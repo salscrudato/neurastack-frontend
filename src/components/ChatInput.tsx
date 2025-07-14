@@ -1,10 +1,10 @@
 import {
-    Box,
-    IconButton,
-    InputGroup,
-    InputRightElement,
-    ScaleFade,
-    Textarea
+  Box,
+  IconButton,
+  InputGroup,
+  InputRightElement,
+  ScaleFade,
+  Textarea
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -14,8 +14,11 @@ import { useChatStore } from "../store/useChatStore";
 import { debounce } from "../utils/performanceOptimizer";
 import { logSecurityEvent, validateInput } from "../utils/securityUtils";
 
-export default function ChatInput() {
-  const send = useChatStore((s) => s.sendMessage);
+interface ChatInputProps {
+  onSend: (prompt: string) => Promise<void>;
+}
+
+export default function ChatInput({ onSend }: ChatInputProps) {
   const busy = useChatStore((s) => s.isLoading);
   const [txt, setTxt] = useState("");
   const [charCount, setCharCount] = useState(0);
@@ -140,11 +143,7 @@ export default function ChatInput() {
     }
     if (isMobile && 'vibrate' in navigator) navigator.vibrate(50);
     try {
-      // Debug logging to check what's being sent
-      if (import.meta.env.DEV) {
-        console.log('📤 ChatInput sending:', { trimmedText, type: typeof trimmedText });
-      }
-      await send(trimmedText);
+      await onSend(trimmedText);
       setTxt("");
       setCharCount(0);
       setIsFocused(false);
@@ -154,7 +153,7 @@ export default function ChatInput() {
       if (isMobile && 'vibrate' in navigator) navigator.vibrate([100, 50, 100]);
       console.error('Failed to send message:', error);
     }
-  }, [busy, txt, send, isMobile]);
+  }, [busy, txt, onSend, isMobile]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (isComposing) return;

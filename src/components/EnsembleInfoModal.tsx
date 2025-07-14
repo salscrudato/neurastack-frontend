@@ -18,10 +18,8 @@ import {
     ModalContent,
     ModalOverlay,
     Progress,
-    SimpleGrid,
     Spinner,
     Text,
-    Tooltip,
     VStack
 } from "@chakra-ui/react";
 import { useEffect, useMemo, useState } from 'react';
@@ -36,75 +34,66 @@ import {
 import { useMobileOptimization } from '../hooks/useMobileOptimization';
 import { commonModalProps, commonOverlayStyles, modalSizes } from './shared/modalConfig';
 
-// ============================================================================
-// Component Props
-// ============================================================================
-
 interface EnsembleInfoModalProps {
-    /** Whether modal is open */
     isOpen: boolean;
-
-    /** Close modal callback */
     onClose: () => void;
-
-    /** Ensemble metadata from API response */
-    ensembleData: any;
+    ensembleData: {
+        status: "success" | "error";
+        data?: {
+            synthesis: {
+                content: string;
+                confidence: {
+                    score: number;
+                    level: "high" | "medium" | "low" | "very-low";
+                    factors: string[];
+                };
+                status: "success" | "error";
+                processingTime: number;
+            };
+            voting: {
+                winner: string;
+                confidence: number;
+                consensus: "strong" | "moderate" | "weak";
+                weights: Record<string, number>;
+            };
+            roles: Array<{
+                role: string;
+                content: string;
+                status: "fulfilled" | "rejected";
+                confidence: {
+                    score: number;
+                    level: "high" | "medium" | "low" | "very-low";
+                    factors: string[];
+                };
+                quality: {
+                    wordCount: number;
+                    hasStructure: boolean;
+                    hasReasoning: boolean;
+                };
+                metadata: {
+                    model: string;
+                    provider: string;
+                    processingTime: number;
+                };
+            }>;
+            metadata: {
+                timestamp: string;
+                correlationId: string;
+                tier: string;
+                processingTime?: number;
+            };
+        };
+        correlationId?: string;
+    } | null;
 }
-
-// ============================================================================
-// Helper Functions (defined inside component for proper scope)
-// ============================================================================
-
-
-
-
-
-
-
-
-
-
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 export function EnsembleInfoModal({
     isOpen,
     onClose,
     ensembleData
 }: EnsembleInfoModalProps) {
-    // Mobile help modal state
-    const [mobileHelpModal, setMobileHelpModal] = useState<{
-        isOpen: boolean;
-        title: string;
-        content: string;
-    }>({
-        isOpen: false,
-        title: '',
-        content: ''
-    });
-
-    // Metric detail modal state
-    const [metricModal, setMetricModal] = useState<{
-        isOpen: boolean;
-        title: string;
-        content: string;
-        value: string;
-        description: string;
-    }>({
-        isOpen: false,
-        title: '',
-        content: '',
-        value: '',
-        description: ''
-    });
-
-    // Mobile optimization hook
-    const { isMobile } = useMobileOptimization();
-
-    // Loading and error states
     const [isLoading, setIsLoading] = useState(true);
+    const { isMobile } = useMobileOptimization();
 
     useEffect(() => {
         if (ensembleData) {
@@ -112,219 +101,102 @@ export function EnsembleInfoModal({
         }
     }, [ensembleData]);
 
-    // Error state for missing data
     const hasError = !isLoading && !ensembleData;
 
-    // Memoized computed values for performance - Updated to match actual API structure
     const computedMetrics = useMemo(() => {
-        if (!ensembleData) return null;
+        if (!ensembleData?.data) return null;
 
-        // Handle both direct metadata structure and nested data structure
-        const synthesis = ensembleData.synthesis || ensembleData.data?.synthesis;
-        const metadata = ensembleData.metadata || ensembleData.data?.metadata || ensembleData;
-        const voting = ensembleData.voting || ensembleData.data?.voting;
+        const data = ensembleData.data;
+        const synthesis = data.synthesis;
+        const voting = data.voting;
+        const roles = data.roles;
+        const metadata = data.metadata;
 
         return {
             synthesis,
             voting,
-            // Updated paths to match actual API structure
-            overallConfidence: metadata?.confidenceAnalysis?.overallConfidence || 0,
-            modelAgreement: metadata?.confidenceAnalysis?.modelAgreement || 0,
-            consensusStrength: metadata?.confidenceAnalysis?.votingAnalysis?.consensusStrength || 'unknown',
+            roles,
+            overallConfidence: synthesis?.confidence?.score || 0,
+            confidenceLevel: synthesis?.confidence?.level || 'unknown',
             votingWinner: voting?.winner || 'N/A',
-            totalModels: metadata?.totalRoles || 0,
-            successfulModels: metadata?.successfulRoles || 0,
-            processingTime: metadata?.averageResponseTime || 0,
-            costEstimate: metadata?.costEstimate?.totalCost || 0,
-            responseQuality: metadata?.confidenceAnalysis?.qualityDistribution?.averageScore || 0,
-            // Additional missing variables
-            qualityDistribution: metadata?.confidenceAnalysis?.qualityDistribution || {
-                high: 0,
-                medium: 0,
-                low: 0,
-                veryLow: 0,
-                averageScore: 0,
-                scoreRange: { min: 0, max: 0 }
-            },
-            responseConsistency: metadata?.confidenceAnalysis?.responseConsistency || 0,
-            basedOnResponses: metadata?.totalRoles || 0,
-            consensusLevel: synthesis?.metadata?.consensusLevel || 'unknown'
+            votingConfidence: voting?.confidence || 0,
+            consensus: voting?.consensus || 'unknown',
+            totalModels: roles?.length || 0,
+            successfulModels: roles?.filter(r => r.status === 'fulfilled').length || 0,
+            processingTime: synthesis?.processingTime || metadata?.processingTime || 0,
+            tier: metadata?.tier || 'free'
         };
     }, [ensembleData]);
 
-    // Handle metric click - opens modal for both mobile and desktop
-    const handleMetricClick = (title: string, content: string, value: string, description: string) => {
-        setMetricModal({
-            isOpen: true,
-            title,
-            content,
-            value,
-            description
-        });
-    };
-
-    // Handle mobile metric click (legacy for existing tooltips)
-    const handleMobileMetricClick = (title: string, content: string) => {
-        if (isMobile) {
-            setMobileHelpModal({
-                isOpen: true,
-                title,
-                content
-            });
-        }
-    };
-
-    // Close metric modal
-    const closeMetricModal = () => {
-        setMetricModal({
-            isOpen: false,
-            title: '',
-            content: '',
-            value: '',
-            description: ''
-        });
-    };
-
-    // Close mobile help modal
-    const closeMobileHelpModal = () => {
-        setMobileHelpModal({
-            isOpen: false,
-            title: '',
-            content: ''
-        });
-    };
-
-    // Modern color values - light mode only
-    const modalBg = '#FFFFFF';
-    const textColor = '#1E293B';
-    const mutedColor = '#64748B';
-
-    // Helper function to get confidence color
     const getConfidenceColor = (confidence: number) => {
-        if (confidence >= 0.8) return "#10B981"; // Green
-        if (confidence >= 0.6) return "#F59E0B"; // Yellow
-        return "#EF4444"; // Red
+        if (confidence >= 0.8) return "#10B981";
+        if (confidence >= 0.6) return "#F59E0B";
+        return "#EF4444";
     };
 
-    // Helper function to format percentage
-    const formatPercentage = (value: number) => {
-        return `${Math.round(value * 100)}%`;
-    };
+    const formatPercentage = (value: number) => `${Math.round(value * 100)}%`;
 
-    // Helper function to get consensus strength color and description
     const getConsensusInfo = (strength: string) => {
         switch (strength) {
-            case 'very-strong':
-                return { color: '#10B981', description: 'Very Strong', icon: PiCheckCircleBold };
-            case 'strong':
-                return { color: '#059669', description: 'Strong', icon: PiCheckCircleBold };
-            case 'moderate':
-                return { color: '#F59E0B', description: 'Moderate', icon: PiScalesBold };
-            case 'weak':
-                return { color: '#F97316', description: 'Weak', icon: PiWarningCircleBold };
-            case 'very-weak':
-                return { color: '#EF4444', description: 'Very Weak', icon: PiWarningCircleBold };
-            default:
-                return { color: '#6B7280', description: 'Unknown', icon: PiScalesBold };
+            case 'strong': return { color: '#059669', description: 'Strong', icon: PiCheckCircleBold };
+            case 'moderate': return { color: '#F59E0B', description: 'Moderate', icon: PiScalesBold };
+            case 'weak': return { color: '#EF4444', description: 'Weak', icon: PiWarningCircleBold };
+            default: return { color: '#6B7280', description: 'Unknown', icon: PiScalesBold };
         }
     };
 
-
-
-    // Debug: Log the ensemble data structure
     if (import.meta.env.DEV && ensembleData && isOpen) {
         console.group('🔍 EnsembleInfoModal Data Debug');
         console.log('📊 ensembleData keys:', Object.keys(ensembleData));
-        console.log('📊 ensembleData.confidenceAnalysis:', ensembleData.confidenceAnalysis);
-        console.log('📊 ensembleData.synthesis:', ensembleData.synthesis);
-        console.log('📊 ensembleData.voting:', ensembleData.voting);
-        console.log('📊 ensembleData.roles:', ensembleData.roles);
-        if (ensembleData.confidenceAnalysis) {
-            console.log('📊 modelAgreement:', ensembleData.confidenceAnalysis.modelAgreement);
-            console.log('📊 responseConsistency:', ensembleData.confidenceAnalysis.responseConsistency);
-            console.log('📊 overallConfidence:', ensembleData.confidenceAnalysis.overallConfidence);
-        }
-        // Additional voting debug
-        if (ensembleData.voting) {
-            console.log('📊 voting.winner:', ensembleData.voting.winner);
-            console.log('📊 voting.confidence:', ensembleData.voting.confidence);
-            console.log('📊 voting.weights:', ensembleData.voting.weights);
-            console.log('📊 voting full object:', JSON.stringify(ensembleData.voting, null, 2));
-        }
-        // Check if voting data might be elsewhere
-        if (ensembleData.votingAnalysis) {
-            console.log('📊 votingAnalysis:', JSON.stringify(ensembleData.votingAnalysis, null, 2));
-        }
+        console.log('📊 ensembleData.data keys:', Object.keys(ensembleData.data || {}));
+        console.log('📊 synthesis:', ensembleData.data?.synthesis);
+        console.log('📊 voting:', ensembleData.data?.voting);
+        console.log('📊 roles:', ensembleData.data?.roles);
+        console.log('📊 metadata:', ensembleData.data?.metadata);
         console.groupEnd();
     }
 
-
-
-    // Use computed metrics for clean data access
     if (!computedMetrics) {
-        return null; // This will be handled by the loading/error states
+        return null;
     }
 
     const {
         synthesis,
         voting,
+        roles,
         overallConfidence,
-        modelAgreement,
-        consensusStrength,
+        confidenceLevel,
+        votingWinner,
+        votingConfidence,
+        consensus,
         totalModels,
         successfulModels,
         processingTime,
-        responseQuality,
-        qualityDistribution,
-        responseConsistency
+        tier
     } = computedMetrics;
 
     return (
-        <>
-            <Modal
-                isOpen={isOpen}
-                onClose={onClose}
-                size={modalSizes.large}
-                {...commonModalProps}
-                aria-labelledby="ensemble-modal-title"
-                aria-describedby="ensemble-modal-description"
-            >
-            <ModalOverlay
-                bg="blackAlpha.600"
-                {...commonOverlayStyles}
-                sx={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 'var(--z-modal-backdrop)',
-                }}
-            />
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            size={modalSizes.large}
+            {...commonModalProps}
+            aria-labelledby="ensemble-modal-title"
+            aria-describedby="ensemble-modal-description"
+        >
+            <ModalOverlay bg="blackAlpha.600" {...commonOverlayStyles} />
             <ModalContent
-                bg={modalBg}
-                borderRadius={{ base: 0, md: "2xl" }}
-                maxH={{ base: "100vh", md: "85vh" }}
-                maxW={{ base: "100vw", md: "900px" }}
-                mx={{ base: 0, md: 4 }}
-                my={{ base: 0, md: "auto" }}
-                position={{ base: "fixed", md: "relative" }}
-                top={{ base: 0, md: "auto" }}
-                left={{ base: 0, md: "auto" }}
-                right={{ base: 0, md: "auto" }}
-                bottom={{ base: 0, md: "auto" }}
+                bg="#FFFFFF"
+                borderRadius="2xl"
+                maxH="90vh"
+                maxW="900px"
+                m={0}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
                 overflow="hidden"
                 sx={{
-                    zIndex: 1401,
-                    '@media (max-width: 768px)': {
-                        margin: 0,
-                        borderRadius: 0,
-                        height: '100vh',
-                        width: '100vw',
-                    }
+                    zIndex: 'var(--z-modal)',
                 }}
             >
                 <ModalCloseButton
@@ -357,10 +229,9 @@ export function EnsembleInfoModal({
                     }}
                 />
 
-                {/* Body */}
                 <ModalBody
                     p={{ base: 3, md: 4 }}
-                    pt={{ base: "calc(env(safe-area-inset-top, 0px) + 56px + 12px)", md: 4 }}
+                    pt={{ base: 3, md: 4 }}
                     bg="#FAFBFC"
                     overflowY="auto"
                     maxH="100%"
@@ -378,723 +249,168 @@ export function EnsembleInfoModal({
                     }}
                 >
                     {isLoading ? (
-                        <Flex
-                            justify="center"
-                            align="center"
-                            minH="400px"
-                            direction="column"
-                            gap={4}
-                        >
-                            <Spinner
-                                size="xl"
-                                color="#4F9CF9"
-                                thickness="4px"
-                            />
-                            <Text
-                                fontSize="lg"
-                                color="gray.600"
-                                fontWeight="500"
-                            >
+                        <Flex justify="center" align="center" minH="400px" direction="column" gap={4}>
+                            <Spinner size="xl" color="#4F9CF9" thickness="4px" />
+                            <Text fontSize="lg" color="gray.600" fontWeight="500">
                                 Loading ensemble data...
                             </Text>
                         </Flex>
                     ) : hasError ? (
-                        <Flex
-                            justify="center"
-                            align="center"
-                            minH="400px"
-                            direction="column"
-                            gap={4}
-                            textAlign="center"
-                        >
-                            <Icon
-                                as={PiWarningCircleBold}
-                                boxSize={12}
-                                color="orange.400"
-                            />
-                            <Text
-                                fontSize="xl"
-                                color="gray.700"
-                                fontWeight="600"
-                            >
+                        <Flex justify="center" align="center" minH="400px" direction="column" gap={4} textAlign="center">
+                            <Icon as={PiWarningCircleBold} boxSize={12} color="orange.400" />
+                            <Text fontSize="xl" color="gray.700" fontWeight="600">
                                 No Ensemble Data Available
                             </Text>
-                            <Text
-                                fontSize="md"
-                                color="gray.500"
-                                maxW="md"
-                            >
-                                The ensemble information could not be loaded. This might be because the response is still being processed or there was an issue with the data.
+                            <Text fontSize="md" color="gray.500" maxW="md">
+                                The ensemble information could not be loaded.
                             </Text>
                         </Flex>
                     ) : (
-                    <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-
-                        {/* Intelligence Overview - Hero Section */}
-                        <Box
-                            bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                            borderRadius={{ base: "xl", md: "2xl" }}
-                            p={{ base: 4, md: 6 }}
-                            color="white"
-                            position="relative"
-                            overflow="hidden"
-                        >
-                            <Box
-                                position="absolute"
-                                top="0"
-                                right="0"
-                                w={{ base: "60px", md: "100px" }}
-                                h={{ base: "60px", md: "100px" }}
-                                bg="rgba(255, 255, 255, 0.1)"
-                                borderRadius="full"
-                                transform={{ base: "translate(20px, -20px)", md: "translate(30px, -30px)" }}
-                            />
-                            <HStack spacing={{ base: 3, md: 4 }} align="center">
-                                <Icon as={PiBrainBold} boxSize={{ base: 6, md: 8 }} />
-                                <VStack align="start" spacing={1}>
-                                    <Text
-                                        id="ensemble-modal-title"
-                                        fontSize={{ base: "lg", md: "xl" }}
-                                        fontWeight="bold"
-                                    >
-                                        AI Intelligence Analysis
-                                    </Text>
-                                    <Text
-                                        id="ensemble-modal-description"
-                                        fontSize={{ base: "xs", md: "sm" }}
-                                        opacity={0.9}
-                                    >
-                                        Multi-model synthesis performance
-                                    </Text>
-                                </VStack>
-                            </HStack>
-                        </Box>
-
-                        {/* Quality Analysis Section - Moved to top */}
-                        <Box
-                            bg="white"
-                            borderRadius="xl"
-                            p={6}
-                            border="1px solid"
-                            borderColor="rgba(226, 232, 240, 0.6)"
-                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                        >
-                            <HStack spacing={3} mb={4}>
-                                <Icon as={PiChartBarBold} boxSize={6} color="#8B5CF6" />
-                                <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                    Quality Analysis
-                                </Text>
-                            </HStack>
-
-                            <VStack spacing={4} align="stretch">
-                                {/* Quality Distribution */}
-                                <Box>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor} mb={3}>
-                                        Response Quality Distribution
-                                    </Text>
-                                    <SimpleGrid columns={4} spacing={3}>
-                                        <Box textAlign="center" p={3} bg="green.50" borderRadius="lg" border="1px solid" borderColor="green.200">
-                                            <Text fontSize="xl" fontWeight="bold" color="#10B981">
-                                                {qualityDistribution.high}
-                                            </Text>
-                                            <Text fontSize="xs" fontWeight="600" color={textColor}>
-                                                High
-                                            </Text>
-                                            <Text fontSize="xs" color={mutedColor}>
-                                                &gt;80%
-                                            </Text>
-                                        </Box>
-                                        <Box textAlign="center" p={3} bg="yellow.50" borderRadius="lg" border="1px solid" borderColor="yellow.200">
-                                            <Text fontSize="xl" fontWeight="bold" color="#F59E0B">
-                                                {qualityDistribution.medium}
-                                            </Text>
-                                            <Text fontSize="xs" fontWeight="600" color={textColor}>
-                                                Medium
-                                            </Text>
-                                            <Text fontSize="xs" color={mutedColor}>
-                                                60-80%
-                                            </Text>
-                                        </Box>
-                                        <Box textAlign="center" p={3} bg="orange.50" borderRadius="lg" border="1px solid" borderColor="orange.200">
-                                            <Text fontSize="xl" fontWeight="bold" color="#F97316">
-                                                {qualityDistribution.low}
-                                            </Text>
-                                            <Text fontSize="xs" fontWeight="600" color={textColor}>
-                                                Low
-                                            </Text>
-                                            <Text fontSize="xs" color={mutedColor}>
-                                                40-60%
-                                            </Text>
-                                        </Box>
-                                        <Box textAlign="center" p={3} bg="red.50" borderRadius="lg" border="1px solid" borderColor="red.200">
-                                            <Text fontSize="xl" fontWeight="bold" color="#EF4444">
-                                                {qualityDistribution.veryLow}
-                                            </Text>
-                                            <Text fontSize="xs" fontWeight="600" color={textColor}>
-                                                Very Low
-                                            </Text>
-                                            <Text fontSize="xs" color={mutedColor}>
-                                                &lt;40%
-                                            </Text>
-                                        </Box>
-                                    </SimpleGrid>
-
-                                    {/* Quality Score Range */}
-                                    <Box mt={4} p={3} bg="gray.50" borderRadius="lg">
-                                        <HStack justify="space-between" mb={2}>
-                                            <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                                Quality Score Range
-                                            </Text>
-                                            <Badge colorScheme="blue" variant="subtle">
-                                                {Math.round((qualityDistribution.scoreRange?.min || 0) * 100)}% - {Math.round((qualityDistribution.scoreRange?.max || 0) * 100)}%
-                                            </Badge>
-                                        </HStack>
-                                        <Progress
-                                            value={Math.round((qualityDistribution.averageScore || 0) * 100)}
-                                            colorScheme={qualityDistribution.averageScore >= 0.8 ? "green" : qualityDistribution.averageScore >= 0.6 ? "yellow" : "red"}
-                                            size="sm"
-                                            borderRadius="full"
-                                        />
-                                        <Text fontSize="xs" color={mutedColor} mt={1}>
-                                            Average: {Math.round((qualityDistribution.averageScore || 0) * 100)}%
+                        <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+                            {/* Header */}
+                            <Box bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" borderRadius={{ base: "xl", md: "2xl" }} p={{ base: 4, md: 6 }} color="white" position="relative" overflow="hidden">
+                                <Box position="absolute" top="0" right="0" w={{ base: "60px", md: "100px" }} h={{ base: "60px", md: "100px" }} bg="rgba(255, 255, 255, 0.1)" borderRadius="full" transform={{ base: "translate(20px, -20px)", md: "translate(30px, -30px)" }} />
+                                <HStack spacing={{ base: 3, md: 4 }} align="center">
+                                    <Icon as={PiBrainBold} boxSize={{ base: 6, md: 8 }} />
+                                    <VStack align="start" spacing={1}>
+                                        <Text id="ensemble-modal-title" fontSize={{ base: "lg", md: "xl" }} fontWeight="bold">
+                                            AI Ensemble Analysis
                                         </Text>
-                                    </Box>
-                                </Box>
-                            </VStack>
-                        </Box>
-
-                        {/* Consistency Section - Moved below Quality Analysis */}
-                        <Box
-                            bg="white"
-                            borderRadius="xl"
-                            p={6}
-                            border="1px solid"
-                            borderColor="rgba(226, 232, 240, 0.6)"
-                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                        >
-                            <HStack spacing={3} mb={4}>
-                                <Icon as={PiScalesBold} boxSize={6} color="#F59E0B" />
-                                <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                    Consistency Analysis
-                                </Text>
-                            </HStack>
-
-                            <VStack spacing={4} align="stretch">
-                                <Flex justify="space-between" align="center">
-                                    <Text fontSize="sm" color={mutedColor}>Response Consistency</Text>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                        {Math.round(responseConsistency * 100)}%
-                                    </Text>
-                                </Flex>
-                                <Progress
-                                    value={responseConsistency * 100}
-                                    colorScheme={
-                                        (responseConsistency * 100) > 80 ? "green" :
-                                        (responseConsistency * 100) > 60 ? "yellow" : "red"
-                                    }
-                                    size="sm"
-                                    borderRadius="full"
-                                />
-
-                                <Flex justify="space-between" align="center">
-                                    <Text fontSize="sm" color={mutedColor}>Synthesis Confidence</Text>
-                                    <Text fontSize="sm" fontWeight="600" color={textColor}>
-                                        {formatPercentage(synthesis?.confidence?.score || synthesis?.overallConfidence || 0)}
-                                    </Text>
-                                </Flex>
-                                <Progress
-                                    value={(synthesis?.confidence?.score || synthesis?.overallConfidence || 0) * 100}
-                                    colorScheme={
-                                        (synthesis?.confidence?.score || synthesis?.overallConfidence || 0) > 0.8 ? "green" :
-                                        (synthesis?.confidence?.score || synthesis?.overallConfidence || 0) > 0.6 ? "yellow" : "red"
-                                    }
-                                    size="sm"
-                                    borderRadius="full"
-                                />
-                            </VStack>
-                        </Box>
-
-                        {/* Enhanced Metrics Grid - Single column layout */}
-                        <SimpleGrid
-                            columns={{ base: 1, md: 1 }}
-                            spacing={{ base: 2, md: 3 }}
-                            maxW="100%"
-                        >
-                            {/* Row 1: Confidence Metrics */}
-                            {/* 1. Overall Confidence */}
-                            <Box
-                                bg="white"
-                                borderRadius="lg"
-                                p={{ base: 3, md: 4 }}
-                                minH={{ base: "80px", md: "auto" }}
-                                border="1px solid"
-                                borderColor="rgba(226, 232, 240, 0.6)"
-                                boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                cursor="pointer"
-                                _hover={{
-                                    boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                    transform: "translateY(-2px)"
-                                }}
-                                _active={{
-                                    transform: "scale(0.98)",
-                                    bg: "gray.50"
-                                }}
-                                transition="all 0.2s ease"
-                                onClick={() => handleMetricClick(
-                                    "Overall Confidence",
-                                    "This metric represents the final confidence score that combines synthesis quality with voting consensus from all AI models. A higher percentage indicates greater reliability and agreement among the models.",
-                                    `${Math.round(overallConfidence * 100)}%`,
-                                    "Final confidence score combining synthesis quality with voting consensus"
-                                )}
-                            >
-                                <HStack spacing={3} align="center">
-                                    <Icon as={PiShieldCheckBold} boxSize={5} color={getConfidenceColor(overallConfidence)} />
-                                    <VStack align="start" spacing={0} flex={1}>
-                                        <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                            Overall Confidence
-                                        </Text>
-                                        <Text fontSize="xl" fontWeight="bold" color={textColor}>
-                                            {Math.round(overallConfidence * 100)}%
+                                        <Text id="ensemble-modal-description" fontSize={{ base: "xs", md: "sm" }} opacity={0.9}>
+                                            Multi-model synthesis performance
                                         </Text>
                                     </VStack>
                                 </HStack>
                             </Box>
 
-                            {/* 2. Model Agreement */}
-                            <Box
-                                bg="white"
-                                borderRadius="lg"
-                                p={{ base: 3, md: 4 }}
-                                minH={{ base: "80px", md: "auto" }}
-                                border="1px solid"
-                                borderColor="rgba(226, 232, 240, 0.6)"
-                                boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                cursor="pointer"
-                                _hover={{
-                                    boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                    transform: "translateY(-2px)"
-                                }}
-                                _active={{
-                                    transform: "scale(0.98)",
-                                    bg: "gray.50"
-                                }}
-                                transition="all 0.2s ease"
-                                onClick={() => handleMetricClick(
-                                    "Model Agreement",
-                                    "This metric measures how similar the responses from different AI models are to each other. Higher agreement indicates that multiple models reached similar conclusions, which typically suggests more reliable results.",
-                                    `${Math.round(modelAgreement * 100)}%`,
-                                    "Similarity between different AI model responses"
-                                )}
-                            >
-                                <HStack spacing={3} align="center">
-                                    <Icon as={PiScalesBold} boxSize={5} color={getConfidenceColor(modelAgreement)} />
-                                    <VStack align="start" spacing={0} flex={1}>
-                                        <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                            Model Agreement
-                                        </Text>
-                                        <Text fontSize="xl" fontWeight="bold" color={textColor}>
-                                            {Math.round(modelAgreement * 100)}%
-                                        </Text>
-                                    </VStack>
-                                </HStack>
-                            </Box>
-
-                            {/* Row 2: Consensus Metrics */}
-                            {/* 3. Consensus Strength */}
-                            <Box
-                                bg="white"
-                                borderRadius="lg"
-                                p={{ base: 3, md: 4 }}
-                                minH={{ base: "80px", md: "auto" }}
-                                border="1px solid"
-                                borderColor="rgba(226, 232, 240, 0.6)"
-                                boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                cursor="pointer"
-                                _hover={{
-                                    boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                    transform: "translateY(-2px)"
-                                }}
-                                _active={{
-                                    transform: "scale(0.98)",
-                                    bg: "gray.50"
-                                }}
-                                transition="all 0.2s ease"
-                                onClick={() => handleMetricClick(
-                                    "Consensus Strength",
-                                    "This metric indicates how strongly the AI models agree with each other in their voting. Strong consensus (>60%) means most models agree, moderate (>45%) shows reasonable agreement, and weak (<45%) indicates significant disagreement among models.",
-                                    getConsensusInfo(consensusStrength).description,
-                                    "Voting agreement strength: strong (>60%), moderate (>45%), weak (<45%)"
-                                )}
-                            >
-                                <HStack spacing={3} align="center">
-                                    <Icon as={getConsensusInfo(consensusStrength).icon} boxSize={5} color={getConsensusInfo(consensusStrength).color} />
-                                    <VStack align="start" spacing={0} flex={1}>
-                                        <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                            Consensus Strength
-                                        </Text>
-                                        <Badge
-                                            colorScheme={
-                                                consensusStrength === 'strong' ? 'green' :
-                                                consensusStrength === 'moderate' ? 'yellow' : 'red'
-                                            }
-                                            variant="solid"
-                                            fontSize="sm"
-                                            px={3}
-                                            py={1}
-                                            borderRadius="full"
-                                        >
-                                            {getConsensusInfo(consensusStrength).description}
-                                        </Badge>
-                                    </VStack>
-                                </HStack>
-                            </Box>
-
-
-
-
-
-                            {/* Row 3: Performance Metrics */}
-                            {/* 5. Processing Time */}
-                            <Box
-                                bg="white"
-                                borderRadius="lg"
-                                p={{ base: 3, md: 4 }}
-                                minH={{ base: "80px", md: "auto" }}
-                                border="1px solid"
-                                borderColor="rgba(226, 232, 240, 0.6)"
-                                boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                cursor="pointer"
-                                _hover={{
-                                    boxShadow: "0 8px 25px -5px rgba(0, 0, 0, 0.15)",
-                                    transform: "translateY(-2px)"
-                                }}
-                                _active={{
-                                    transform: "scale(0.98)",
-                                    bg: "gray.50"
-                                }}
-                                transition="all 0.2s ease"
-                                onClick={() => handleMetricClick(
-                                    "Processing Time",
-                                    "This represents the total time required to generate responses from all AI models and synthesize them into the final result. Lower processing times indicate more efficient ensemble performance.",
-                                    `${(processingTime / 1000).toFixed(1)}s`,
-                                    "Total time to generate and synthesize all responses"
-                                )}
-                            >
-                                <HStack spacing={3} align="center">
-                                    <Icon as={PiChartBarBold} boxSize={5} color="#8B5CF6" />
-                                    <VStack align="start" spacing={0} flex={1}>
-                                        <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                            Processing Time
-                                        </Text>
-                                        <Text fontSize="xl" fontWeight="bold" color={textColor}>
-                                            {(processingTime / 1000).toFixed(1)}s
-                                        </Text>
-                                    </VStack>
-                                </HStack>
-                            </Box>
-
-
-                        </SimpleGrid>
-
-                        {/* Additional Metrics - Row 4: Quality & Model Analytics */}
-                        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-                            {/* Response Quality */}
-                            <Tooltip
-                                label="Overall quality assessment of the synthesized response"
-                                isDisabled={isMobile}
-                            >
-                                <Box
-                                    bg="white"
-                                    borderRadius="xl"
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                    cursor={isMobile ? "pointer" : "help"}
-                                    _hover={{
-                                        boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.1)",
-                                        transform: "translateY(-1px)"
-                                    }}
-                                    transition="all 0.2s ease"
-                                    onClick={() => handleMobileMetricClick(
-                                        "Response Quality",
-                                        "Overall quality assessment of the synthesized response"
-                                    )}
-                                >
-                                    <HStack spacing={3} align="center">
-                                        <Icon as={PiChartBarBold} boxSize={5} color="#8B5CF6" />
-                                        <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                                Response Quality
-                                            </Text>
-                                            <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                                {Math.round(responseQuality * 100)}%
-                                            </Text>
-                                        </VStack>
-                                    </HStack>
-                                </Box>
-                            </Tooltip>
-
-                            {/* Successful Models */}
-                            <Tooltip
-                                label="Number of AI models that successfully contributed responses"
-                                isDisabled={isMobile}
-                            >
-                                <Box
-                                    bg="white"
-                                    borderRadius="xl"
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                    cursor={isMobile ? "pointer" : "help"}
-                                    _hover={{
-                                        boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.1)",
-                                        transform: "translateY(-1px)"
-                                    }}
-                                    transition="all 0.2s ease"
-                                    onClick={() => handleMobileMetricClick(
-                                        "Successful Models",
-                                        "Number of AI models that successfully contributed responses"
-                                    )}
-                                >
-                                    <HStack spacing={3} align="center">
-                                        <Icon as={PiCheckCircleBold} boxSize={5} color="#10B981" />
-                                        <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                                Successful Models
-                                            </Text>
-                                            <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                                {successfulModels}/{totalModels}
-                                            </Text>
-                                        </VStack>
-                                    </HStack>
-                                </Box>
-                            </Tooltip>
-
-                            {/* Synthesis Strategy */}
-                            <Tooltip
-                                label="Method used to combine individual model responses"
-                                isDisabled={isMobile}
-                            >
-                                <Box
-                                    bg="white"
-                                    borderRadius="xl"
-                                    p={4}
-                                    border="1px solid"
-                                    borderColor="rgba(226, 232, 240, 0.6)"
-                                    boxShadow="0 2px 4px -1px rgba(0, 0, 0, 0.1)"
-                                    cursor={isMobile ? "pointer" : "help"}
-                                    _hover={{
-                                        boxShadow: "0 4px 12px -2px rgba(0, 0, 0, 0.1)",
-                                        transform: "translateY(-1px)"
-                                    }}
-                                    transition="all 0.2s ease"
-                                    onClick={() => handleMobileMetricClick(
-                                        "Synthesis Strategy",
-                                        "Method used to combine individual model responses"
-                                    )}
-                                >
-                                    <HStack spacing={3} align="center">
-                                        <Icon as={PiBrainBold} boxSize={5} color="#6366F1" />
-                                        <VStack align="start" spacing={1} flex={1}>
-                                            <Text fontSize="xs" fontWeight="600" color={mutedColor}>
-                                                Synthesis Strategy
-                                            </Text>
-                                            <Text fontSize="sm" fontWeight="bold" color={textColor} textTransform="capitalize">
-                                                {synthesis?.synthesisStrategy || 'consensus'}
-                                            </Text>
-                                        </VStack>
-                                    </HStack>
-                                </Box>
-                            </Tooltip>
-                        </SimpleGrid>
-
-
-
-
-
-                        {/* Actionable Insights & Recommendations */}
-                        {voting?.recommendation && (
-                            <Box
-                                bg={
-                                    overallConfidence > 80 ? 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)' :
-                                    overallConfidence > 60 ? 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)' :
-                                    'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)'
-                                }
-                                borderRadius="xl"
-                                p={6}
-                                border="2px solid"
-                                borderColor={
-                                    overallConfidence > 80 ? '#10B981' :
-                                    overallConfidence > 60 ? '#F59E0B' : '#EF4444'
-                                }
-                                position="relative"
-                                overflow="hidden"
-                            >
-                                <Box
-                                    position="absolute"
-                                    top="-20px"
-                                    right="-20px"
-                                    w="80px"
-                                    h="80px"
-                                    bg="rgba(255, 255, 255, 0.2)"
-                                    borderRadius="full"
-                                />
-
+                            {/* Confidence Section */}
+                            <Box bg="white" borderRadius="xl" p={6} border="1px solid" borderColor="rgba(226, 232, 240, 0.6)" boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)">
                                 <HStack spacing={3} mb={4}>
-                                    <Icon
-                                        as={PiBrainBold}
-                                        boxSize={6}
-                                        color={
-                                            overallConfidence > 80 ? '#10B981' :
-                                            overallConfidence > 60 ? '#F59E0B' : '#EF4444'
-                                        }
-                                    />
-                                    <Text fontSize="lg" fontWeight="bold" color={textColor}>
-                                        AI Ensemble Recommendation
+                                    <Icon as={PiShieldCheckBold} boxSize={6} color="#10B981" />
+                                    <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                        Confidence Metrics
                                     </Text>
                                 </HStack>
-
-                                <VStack align="start" spacing={3}>
-                                    <HStack spacing={2}>
-                                        <Badge
-                                            bg={
-                                                overallConfidence > 80 ? '#10B981' :
-                                                overallConfidence > 60 ? '#F59E0B' : '#EF4444'
-                                            }
-                                            color="white"
-                                            px={3}
-                                            py={1}
-                                            borderRadius="md"
-                                            fontSize="sm"
-                                            fontWeight="700"
-                                        >
-                                            {overallConfidence > 80 ? 'HIGH CONFIDENCE' :
-                                             overallConfidence > 60 ? 'MODERATE CONFIDENCE' : 'LOW CONFIDENCE'}
+                                <VStack spacing={4} align="stretch">
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">Synthesis Confidence</Text>
+                                        <Badge colorScheme={confidenceLevel === 'high' ? 'green' : confidenceLevel === 'medium' ? 'yellow' : 'red'}>
+                                            {formatPercentage(overallConfidence)} ({confidenceLevel})
                                         </Badge>
-                                        <Text fontSize="sm" color={textColor} fontWeight="600">
-                                            {overallConfidence}% Overall Reliability
-                                        </Text>
-                                    </HStack>
-
-                                    <Text fontSize="sm" color={textColor} lineHeight="1.6">
-                                        {voting?.recommendation}
-                                    </Text>
+                                    </Flex>
+                                    <Progress value={overallConfidence * 100} colorScheme={overallConfidence >= 0.8 ? 'green' : overallConfidence >= 0.6 ? 'yellow' : 'red'} size="sm" borderRadius="full" />
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">Voting Confidence</Text>
+                                        <Badge colorScheme={votingConfidence >= 0.8 ? 'green' : votingConfidence >= 0.6 ? 'yellow' : 'red'}>
+                                            {formatPercentage(votingConfidence)}
+                                        </Badge>
+                                    </Flex>
+                                    <Progress value={votingConfidence * 100} colorScheme={votingConfidence >= 0.8 ? 'green' : votingConfidence >= 0.6 ? 'yellow' : 'red'} size="sm" borderRadius="full" />
                                 </VStack>
                             </Box>
-                        )}
 
+                            {/* Voting Section */}
+                            <Box bg="white" borderRadius="xl" p={6} border="1px solid" borderColor="rgba(226, 232, 240, 0.6)" boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)">
+                                <HStack spacing={3} mb={4}>
+                                    <Icon as={PiScalesBold} boxSize={6} color="#F59E0B" />
+                                    <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                        Voting Analysis
+                                    </Text>
+                                </HStack>
+                                <VStack spacing={4} align="stretch">
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">Winner</Text>
+                                        <Badge colorScheme="blue" variant="solid">
+                                            {votingWinner.toUpperCase()}
+                                        </Badge>
+                                    </Flex>
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">Consensus</Text>
+                                        <Badge colorScheme={consensus === 'strong' ? 'green' : consensus === 'moderate' ? 'yellow' : 'red'}>
+                                            {consensus.toUpperCase()}
+                                        </Badge>
+                                    </Flex>
+                                    <Box>
+                                        <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={2}>
+                                            Voting Weights
+                                        </Text>
+                                        <VStack spacing={2} align="stretch">
+                                            {Object.entries(voting?.weights || {}).map(([model, weight]) => (
+                                                <Flex key={model} justify="space-between" align="center" p={2} bg="gray.50" borderRadius="md">
+                                                    <Text fontSize="xs" color="#64748B">{model.toUpperCase()}</Text>
+                                                    <Text fontSize="xs" fontWeight="600" color="#1E293B">{formatPercentage(weight as number)}</Text>
+                                                </Flex>
+                                            ))}
+                                        </VStack>
+                                    </Box>
+                                </VStack>
+                            </Box>
 
+                            {/* Models Section */}
+                            <Box bg="white" borderRadius="xl" p={6} border="1px solid" borderColor="rgba(226, 232, 240, 0.6)" boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)">
+                                <HStack spacing={3} mb={4}>
+                                    <Icon as={PiCheckCircleBold} boxSize={6} color="#10B981" />
+                                    <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                        Model Performance
+                                    </Text>
+                                </HStack>
+                                <VStack spacing={4} align="stretch">
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">Successful Models</Text>
+                                        <Badge colorScheme="green" variant="solid">
+                                            {successfulModels}/{totalModels}
+                                        </Badge>
+                                    </Flex>
+                                    <Box>
+                                        <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={2}>
+                                            Individual Models
+                                        </Text>
+                                        <VStack spacing={2} align="stretch">
+                                            {roles?.map((role, index) => (
+                                                <Flex key={index} justify="space-between" align="center" p={2} bg="gray.50" borderRadius="md">
+                                                    <HStack spacing={2}>
+                                                        <Text fontSize="xs" color="#64748B">{role.role.toUpperCase()}</Text>
+                                                        <Badge colorScheme={role.status === 'fulfilled' ? 'green' : 'red'} size="sm">
+                                                            {role.status}
+                                                        </Badge>
+                                                    </HStack>
+                                                    <Text fontSize="xs" fontWeight="600" color="#1E293B">
+                                                        {formatPercentage(role.confidence?.score || 0)}
+                                                    </Text>
+                                                </Flex>
+                                            ))}
+                                        </VStack>
+                                    </Box>
+                                </VStack>
+                            </Box>
 
-                    </VStack>
+                            {/* System Metrics */}
+                            <Box bg="white" borderRadius="xl" p={6} border="1px solid" borderColor="rgba(226, 232, 240, 0.6)" boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)">
+                                <HStack spacing={3} mb={4}>
+                                    <Icon as={PiChartBarBold} boxSize={6} color="#8B5CF6" />
+                                    <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                        System Metrics
+                                    </Text>
+                                </HStack>
+                                <VStack spacing={4} align="stretch">
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">Processing Time</Text>
+                                        <Badge colorScheme="blue" variant="solid">
+                                            {(processingTime / 1000).toFixed(1)}s
+                                        </Badge>
+                                    </Flex>
+                                    <Flex justify="space-between" align="center">
+                                        <Text fontSize="sm" color="#64748B">User Tier</Text>
+                                        <Badge colorScheme="purple" variant="solid">
+                                            {tier.toUpperCase()}
+                                        </Badge>
+                                    </Flex>
+                                </VStack>
+                            </Box>
+                        </VStack>
                     )}
                 </ModalBody>
             </ModalContent>
         </Modal>
-
-        {/* Metric Detail Modal */}
-        <Modal
-            isOpen={metricModal.isOpen}
-            onClose={closeMetricModal}
-            size="md"
-            isCentered
-        >
-            <ModalOverlay
-                bg="blackAlpha.600"
-                backdropFilter="blur(8px)"
-                sx={{
-                    WebkitBackdropFilter: 'blur(8px)',
-                }}
-            />
-            <ModalContent
-                mx={4}
-                borderRadius="2xl"
-                bg="white"
-                boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-                border="1px solid"
-                borderColor="rgba(226, 232, 240, 0.6)"
-            >
-                <ModalCloseButton
-                    color="gray.500"
-                    fontSize="lg"
-                    fontWeight="bold"
-                    _hover={{ bg: "gray.100", color: "gray.700" }}
-                    borderRadius="full"
-                    top={4}
-                    right={4}
-                />
-                <ModalBody p={8}>
-                    <VStack spacing={6} align="start">
-                        <VStack spacing={2} align="start" w="100%">
-                            <Text fontSize="2xl" fontWeight="bold" color="gray.800">
-                                {metricModal.title}
-                            </Text>
-                            <Text fontSize="sm" color="gray.500" fontWeight="500">
-                                {metricModal.description}
-                            </Text>
-                        </VStack>
-
-                        <Box
-                            w="100%"
-                            p={6}
-                            bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
-                            borderRadius="xl"
-                            border="1px solid"
-                            borderColor="rgba(226, 232, 240, 0.8)"
-                            textAlign="center"
-                        >
-                            <Text fontSize="4xl" fontWeight="bold" color="#4F9CF9" mb={2}>
-                                {metricModal.value}
-                            </Text>
-                            <Text fontSize="sm" color="gray.600" fontWeight="500">
-                                Current Value
-                            </Text>
-                        </Box>
-
-                        <Box>
-                            <Text fontSize="md" color="gray.700" lineHeight="1.7">
-                                {metricModal.content}
-                            </Text>
-                        </Box>
-                    </VStack>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-
-        {/* Mobile Help Modal */}
-        <Modal
-            isOpen={mobileHelpModal.isOpen}
-            onClose={closeMobileHelpModal}
-            size="sm"
-            isCentered
-        >
-            <ModalOverlay bg="blackAlpha.600" />
-            <ModalContent
-                mx={4}
-                borderRadius="2xl"
-                bg="white"
-                boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-            >
-                <ModalCloseButton
-                    color="blue.500"
-                    fontSize="lg"
-                    fontWeight="bold"
-                    _hover={{ bg: "blue.50" }}
-                    borderRadius="full"
-                />
-                <ModalBody p={6}>
-                    <VStack spacing={4} align="start">
-                        <Text fontSize="lg" fontWeight="bold" color="gray.800">
-                            {mobileHelpModal.title}
-                        </Text>
-                        <Text fontSize="sm" color="gray.600" lineHeight="1.6">
-                            {mobileHelpModal.content}
-                        </Text>
-                    </VStack>
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-        </>
     );
 }

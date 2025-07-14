@@ -16,6 +16,7 @@ export const commonModalProps = {
 // Common overlay styling
 export const commonOverlayStyles = {
   backdropFilter: "blur(4px)",
+  zIndex: "var(--z-modal-backdrop)",
 };
 
 // Common content styling

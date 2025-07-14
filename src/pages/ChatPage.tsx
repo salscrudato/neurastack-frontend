@@ -1,8 +1,8 @@
 import {
-    Box,
-    Flex,
-    IconButton,
-    Text
+  Box,
+  Flex,
+  IconButton,
+  Text
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -18,6 +18,7 @@ import { useHistoryStore } from '../store/useHistoryStore';
 export function ChatPage() {
   const msgs = useChatStore((s) => s.messages);
   const isLoading = useChatStore((s) => s.isLoading);
+  const sendMessage = useChatStore((s) => s.sendMessage);
   const user = useAuthStore((s) => s.user);
   const { loadAllSessions } = useHistoryStore();
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -108,6 +109,10 @@ export function ChatPage() {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [prefersReducedMotion, scrollToBottom]);
+
+  const handleSendMessage = useCallback(async (prompt: string) => {
+    await sendMessage(prompt);
+  }, [sendMessage]);
 
   return (
     <Box
@@ -221,7 +226,7 @@ export function ChatPage() {
           }}
         />
       )}
-      <ChatInput />
+      <ChatInput onSend={handleSendMessage} />
     </Box>
   );
 }

@@ -128,15 +128,15 @@
   /* Z-Index Scale - Consistent stacking order */
   --z-base: 0;
   --z-dropdown: 1000;
-  --z-chat-input: 1010;
   --z-sticky: 1020;
   --z-fixed: 1030;
   --z-drawer-overlay: 1040;
   --z-drawer-content: 1050;
-  --z-modal-backdrop: 1060;
-  --z-modal: 1070;
   --z-popover: 1080;
   --z-tooltip: 1090;
+  --z-chat-input: 1100;
+  --z-modal-backdrop: 1400;
+  --z-modal: 1500;
   --z-header: 9999;
 }
 

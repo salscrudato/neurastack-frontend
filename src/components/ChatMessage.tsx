@@ -1,13 +1,14 @@
 import {
-    Box,
-    Button,
-    Flex,
-    HStack,
-    IconButton,
-    Text,
-    Tooltip,
-    useClipboard,
-    VStack
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Text,
+  Tooltip,
+  useClipboard,
+  VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -21,6 +22,7 @@ import { UnifiedAIResponse } from "./UnifiedAIResponse";
 interface ChatMessageProps {
   message: Message;
   isHighlighted?: boolean;
+  fullData?: any; // Add fullData prop for analytics
 }
 
 const processContent = (text: string): string => text ? text.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').replace(/\n{5,}/g, '\n\n\n\n').replace(/[ \t]{4,}/g, '   ').trim() : '';
@@ -38,7 +40,7 @@ const CopyButton = memo(({ text }: { text: string }) => {
 
 CopyButton.displayName = 'CopyButton';
 
-export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = false }) => {
+export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = false, fullData }) => {
   const isUser = message.role === 'user';
   const isError = message.role === 'error';
   const isLoading = !message.text;
@@ -71,6 +73,12 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
   const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
   const bubbleText = isUser ? "white" : isError ? textErr : textAi;
+
+  // Extract analytics from fullData
+  const confidence = fullData?.synthesis?.confidence?.score || 0;
+  const confidenceLevel = fullData?.synthesis?.confidence?.level || 'medium';
+  const winner = fullData?.voting?.winner || 'unknown';
+  const consensus = fullData?.voting?.consensus || 'medium';
 
   return (
     <VStack spacing={{ base: 1, md: 2 }} w="100%" align="stretch">
@@ -152,7 +160,6 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                   align="center"
                   w="100%"
                   gap={2}
-                  flexWrap="wrap"
                   px={1}
                 >
                   {availableModels.map((model, index) => {
@@ -165,6 +172,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                         onClick={() => openModelModal(model)}
                         bg="white"
                         color={colors.text}
+                        flex="1"
                         fontWeight="600"
                         fontSize="2xs"
                         border={`1px solid ${colors.border}`}
@@ -242,11 +250,20 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           <Box>
             {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={textErr}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.4", md: "1.5" }} fontWeight="500" letterSpacing="0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "md", md: "lg" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
           </Box>
+          {!isUser && fullData && (
+            <HStack spacing={2} mt={2} justify="flex-start">
+              <Badge colorScheme={confidenceLevel === 'high' ? 'green' : confidenceLevel === 'medium' ? 'yellow' : 'red'}>
+                Confidence: {(confidence * 100).toFixed(0)}%
+              </Badge>
+              <Badge colorScheme="blue">Winner: {winner}</Badge>
+              <Badge colorScheme="purple">Consensus: {consensus}</Badge>
+            </HStack>
+          )}
           {!isUser && <HStack justify="flex-end" align="center" mt={1} spacing={1}><CopyButton text={processedContent} /></HStack>}
         </Box>
       </Flex>
       <IndividualModelModal isOpen={isModalOpen} onClose={closeModal} modelData={selectedModel} />
-      <EnsembleInfoModal isOpen={isEnsembleInfoOpen} onClose={() => setIsEnsembleInfoOpen(false)} ensembleData={message.metadata?.metadata} />
+      <EnsembleInfoModal isOpen={isEnsembleInfoOpen} onClose={() => setIsEnsembleInfoOpen(false)} ensembleData={message.metadata?.ensembleData} />
     </VStack>
   );
 });

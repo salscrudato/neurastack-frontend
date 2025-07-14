@@ -757,7 +757,9 @@ export class NeuraStackClient {
       metadata: {
         ...data.metadata, // Performance metrics and quality indicators per API spec
         synthesis: data.synthesis // Include synthesis data for UI
-      }
+      },
+      // Include raw API response for EnsembleInfoModal
+      rawApiResponse: ensembleResponse
     };
   }
 

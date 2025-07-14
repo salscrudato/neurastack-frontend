@@ -586,6 +586,9 @@ export interface NeuraStackQueryResponse {
 
   /** Performance metrics and quality indicators per API spec */
   metadata?: EnsembleMetadata;
+
+  /** Raw API response for EnsembleInfoModal */
+  rawApiResponse?: EnsembleResponse;
 }
 
 /* ============================================================================
