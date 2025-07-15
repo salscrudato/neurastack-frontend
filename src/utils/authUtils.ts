@@ -250,7 +250,7 @@ export const authSecurity = {
       const token = await user.getIdToken();
       return {
         'Authorization': `Bearer ${token}`,
-        'X-User-Id': user.uid,
+        'x-user-id': user.uid,
         'Content-Type': 'application/json'
       };
     } catch (error) {

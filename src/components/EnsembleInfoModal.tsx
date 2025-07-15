@@ -325,13 +325,13 @@ export function EnsembleInfoModal({
                                     <Flex justify="space-between" align="center">
                                         <Text fontSize="sm" color="#64748B">Winner</Text>
                                         <Badge colorScheme="blue" variant="solid">
-                                            {votingWinner.toUpperCase()}
+                                            {(votingWinner || 'unknown').toString().toUpperCase()}
                                         </Badge>
                                     </Flex>
                                     <Flex justify="space-between" align="center">
                                         <Text fontSize="sm" color="#64748B">Consensus</Text>
                                         <Badge colorScheme={consensus === 'strong' ? 'green' : consensus === 'moderate' ? 'yellow' : 'red'}>
-                                            {consensus.toUpperCase()}
+                                            {(consensus || 'unknown').toString().toUpperCase()}
                                         </Badge>
                                     </Flex>
                                     <Box>
@@ -341,7 +341,7 @@ export function EnsembleInfoModal({
                                         <VStack spacing={2} align="stretch">
                                             {Object.entries(voting?.weights || {}).map(([model, weight]) => (
                                                 <Flex key={model} justify="space-between" align="center" p={2} bg="gray.50" borderRadius="md">
-                                                    <Text fontSize="xs" color="#64748B">{model.toUpperCase()}</Text>
+                                                    <Text fontSize="xs" color="#64748B">{(model || 'unknown').toString().toUpperCase()}</Text>
                                                     <Text fontSize="xs" fontWeight="600" color="#1E293B">{formatPercentage(weight as number)}</Text>
                                                 </Flex>
                                             ))}
@@ -373,7 +373,7 @@ export function EnsembleInfoModal({
                                             {roles?.map((role, index) => (
                                                 <Flex key={index} justify="space-between" align="center" p={2} bg="gray.50" borderRadius="md">
                                                     <HStack spacing={2}>
-                                                        <Text fontSize="xs" color="#64748B">{role.role.toUpperCase()}</Text>
+                                                        <Text fontSize="xs" color="#64748B">{(role.role || 'unknown').toString().toUpperCase()}</Text>
                                                         <Badge colorScheme={role.status === 'fulfilled' ? 'green' : 'red'} size="sm">
                                                             {role.status}
                                                         </Badge>

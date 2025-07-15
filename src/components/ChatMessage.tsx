@@ -1,14 +1,14 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  IconButton,
-  Text,
-  Tooltip,
-  useClipboard,
-  VStack
+    Badge,
+    Box,
+    Button,
+    Flex,
+    HStack,
+    IconButton,
+    Text,
+    Tooltip,
+    useClipboard,
+    VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -58,6 +58,14 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
   const { selectedModel, isModalOpen, openModelModal, closeModal, getAvailableModels } = useModelResponses(message.metadata?.individualResponses, message.metadata?.modelsUsed, message.metadata?.fallbackReasons, message.metadata?.metadata);
   const availableModels = getAvailableModels();
+
+  // Debug logging for availableModels in ChatMessage
+  if (import.meta.env.DEV && !isUser && !isError) {
+    console.group('🔍 ChatMessage availableModels Debug');
+    console.log('📊 availableModels count:', availableModels.length);
+    console.log('📊 availableModels:', availableModels.map(m => ({ model: m.model, role: m.role, provider: m.provider, status: m.status })));
+    console.groupEnd();
+  }
 
   const [isEnsembleInfoOpen, setIsEnsembleInfoOpen] = useState(false);
 
@@ -167,7 +175,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                     const colors = modelColors[model.provider as keyof typeof modelColors] || modelColors.default;
                     return (
                       <Button
-                        key={model.model}
+                        key={`${model.model}-${index}`}
                         size="xs"
                         onClick={() => openModelModal(model)}
                         bg="white"
@@ -238,7 +246,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           textAlign="center"
                           w="100%"
                         >
-                          {model.provider === 'openai' ? 'GPT-4o' : model.provider === 'gemini' ? 'Gemini' : model.provider === 'claude' ? 'Claude' : (model.provider || 'Unknown').toUpperCase()}
+                          {model.provider === 'openai' ? 'GPT-4o' : model.provider === 'gemini' ? 'Gemini' : model.provider === 'claude' ? 'Claude' : String(model.provider || 'Unknown').toUpperCase()}
                         </Text>
                       </Button>
                     );

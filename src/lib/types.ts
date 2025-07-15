@@ -48,7 +48,7 @@ export interface NeuraStackQueryRequest {
 export interface NeuraStackHeaders {
   'Content-Type': 'application/json';
   'X-Session-Id'?: string; // Updated to match API documentation
-  'X-User-Id'?: string;
+  'x-user-id'?: string; // Lowercase as required by backend
   'Authorization'?: string;
   'X-Requested-With'?: string;
   [key: string]: string | undefined;

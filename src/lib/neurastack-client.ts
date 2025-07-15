@@ -111,20 +111,11 @@ export const NEURASTACK_ENDPOINTS = {
   ESTIMATE_COST: '/estimate-cost'
 } as const;
 
-export const NEURASTACK_MODELS = {
-  OPENAI_GPT4: 'openai:gpt-4',
-  OPENAI_GPT35: 'openai:gpt-3.5-turbo',
-  GOOGLE_GEMINI: 'google:gemini-1.5-flash',
-  XAI_GROK: 'xai:grok-3-mini'
-} as const;
-
-// Default model configuration for API requests
-export const DEFAULT_MODELS = [
-  'google:gemini-1.5-flash',
-  'google:gemini-1.5-flash',
-  'xai:grok-3-mini',
-  'xai:grok-3-mini'
-] as const;
+// Models are managed by the backend ensemble - no hardcoding needed
+// According to API integration guide, ensemble uses:
+// - OpenAI: gpt-4o-mini
+// - Google: gemini-1.5-flash
+// - Anthropic: claude-3-5-haiku-latest
 
 export const NEURASTACK_HEADERS = {
   CONTENT_TYPE: 'Content-Type',
@@ -229,7 +220,7 @@ export class NeuraStackClient {
         sessionId: config.sessionId || crypto.randomUUID(),
         userId: config.userId || '',
         authToken: config.authToken || '',
-        timeout: config.timeout || 60000,
+        timeout: config.timeout || 45000, // 45 seconds minimum per API integration guide
         useEnsemble: config.useEnsemble ?? true
       };
       console.groupEnd();
@@ -249,7 +240,7 @@ export class NeuraStackClient {
       sessionId: config.sessionId || crypto.randomUUID(),
       userId: config.userId || '',
       authToken: config.authToken || '',
-      timeout: config.timeout || 60000, // 60 seconds (API spec: responses may take 5-20s, up to 60+ seconds)
+      timeout: config.timeout || 45000, // 45 seconds minimum per API integration guide (responses take 15-30s)
       useEnsemble: config.useEnsemble ?? true
     };
   }
@@ -274,7 +265,8 @@ export class NeuraStackClient {
     // Prepare request body according to backend documentation
     const requestBody = {
       prompt: prompt || "Quick sanity check: explain AI in 1-2 lines.",
-      sessionId: options.sessionId || this.config.sessionId
+      sessionId: options.sessionId || this.config.sessionId,
+      explain: true
     };
 
     const headers: Record<string, string> = {
@@ -677,6 +669,7 @@ export class NeuraStackClient {
       console.log('📊 Full Response:', JSON.stringify(ensembleResponse, null, 2));
       console.log('📊 Data Object:', JSON.stringify(data, null, 2));
       console.log('📊 Synthesis:', JSON.stringify(data.synthesis, null, 2));
+      console.log('📊 Roles Count:', data.roles?.length || 0);
       console.log('📊 Roles:', JSON.stringify(data.roles, null, 2));
       console.log('📊 Voting:', JSON.stringify(data.voting, null, 2));
       console.log('📊 Metadata:', JSON.stringify(data.metadata, null, 2));
@@ -697,21 +690,43 @@ export class NeuraStackClient {
     // Create individual responses for UI display using new format
     // roles: Array of individual AI responses (character limited per API spec)
     const individualResponses: SubAnswer[] = (data.roles || []).map((role, index) => {
-      // Debug logging for undefined model issues
-      if (import.meta.env.DEV && (!role?.model || typeof role.model !== 'string')) {
-        console.warn(`⚠️ Role ${index} has invalid model:`, {
+      // Debug logging for role structure
+      if (import.meta.env.DEV) {
+        console.log(`🔍 Role ${index} structure:`, {
+          role: role?.role,
           model: role?.model,
-          type: typeof role?.model,
-          fullRole: role
+          provider: role?.provider,
+          hasContent: !!role?.content,
+          status: role?.status
         });
       }
 
+      // Map role names to model names based on API integration guide
+      const getModelFromRole = (roleName: string): string => {
+        switch (roleName) {
+          case 'gpt4o': return 'gpt-4o-mini';
+          case 'gemini': return 'gemini-1.5-flash';
+          case 'claude': return 'claude-3-5-haiku-latest';
+          default: return roleName || 'unknown-model';
+        }
+      };
+
+      // Map role names to providers based on API integration guide
+      const getProviderFromRole = (roleName: string): string => {
+        switch (roleName) {
+          case 'gpt4o': return 'openai';
+          case 'gemini': return 'google';
+          case 'claude': return 'anthropic';
+          default: return 'unknown';
+        }
+      };
+
       // Ensure role object has required properties with fallbacks
       const safeRole = {
-        model: role?.model || 'unknown-model',
+        model: role?.model || getModelFromRole(role?.role),
         content: role?.content || '',
         role: role?.role || 'assistant',
-        provider: role?.provider,
+        provider: role?.provider || getProviderFromRole(role?.role),
         status: role?.status
       };
 
@@ -767,10 +782,32 @@ export class NeuraStackClient {
       };
     });
 
-    // Create models used mapping
+    // Debug logging for individualResponses
+    if (import.meta.env.DEV) {
+      console.group('🔍 neurastack-client individualResponses Debug');
+      console.log('📊 Created individualResponses count:', individualResponses.length);
+      console.log('📊 individualResponses:', individualResponses.map(r => ({
+        model: r.model,
+        role: r.role,
+        provider: r.provider,
+        status: r.status,
+        hasContent: !!r.content
+      })));
+      console.groupEnd();
+    }
+
+    // Create models used mapping based on role names (aligned with API integration guide)
     const modelsUsed: Record<string, boolean> = {};
     (data.roles || []).forEach(role => {
-      modelsUsed[role.model] = role.status === 'fulfilled'; // Only count successful models
+      const modelName = role.model || (() => {
+        switch (role.role) {
+          case 'gpt4o': return 'gpt-4o-mini';
+          case 'gemini': return 'gemini-1.5-flash';
+          case 'claude': return 'claude-3-5-haiku-latest';
+          default: return role.role || 'unknown-model';
+        }
+      })();
+      modelsUsed[modelName] = role.status === 'fulfilled'; // Only count successful models
     });
 
     // Estimate token count (rough approximation: 1 token ≈ 4 characters)
@@ -798,21 +835,24 @@ export class NeuraStackClient {
   /**
    * Extract provider name from model string
    * Robust handling of undefined/null model values
+   * Aligned with NeuraStack AI Ensemble API Integration Guide
    */
   private extractProviderFromModel(model: string | undefined | null): string {
     // Handle undefined, null, or empty model values
     if (!model || typeof model !== 'string') {
-      return 'UNKNOWN';
+      return 'unknown';
     }
 
     // Convert to lowercase for case-insensitive matching
     const modelLower = model.toLowerCase();
 
-    if (modelLower.includes('gpt') || modelLower.includes('openai')) return 'OPENAI';
-    if (modelLower.includes('gemini') || modelLower.includes('google')) return 'GOOGLE';
-    if (modelLower.includes('claude') || modelLower.includes('anthropic')) return 'ANTHROPIC';
-    if (modelLower.includes('grok') || modelLower.includes('xai')) return 'XAI';
-    return 'UNKNOWN';
+    // Match provider names according to API integration guide
+    if (modelLower.includes('gpt') || modelLower.includes('openai')) return 'openai';
+    if (modelLower.includes('gemini') || modelLower.includes('google')) return 'google';
+    if (modelLower.includes('claude') || modelLower.includes('anthropic')) return 'anthropic';
+    if (modelLower.includes('grok') || modelLower.includes('xai')) return 'xai';
+
+    return 'unknown';
   }
 
 

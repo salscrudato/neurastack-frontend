@@ -83,11 +83,17 @@ export function IndividualModelModal({
         }
     }, [modelData]);
 
-    const formatModelName = (model: string) => {
-        if (model.includes('gpt')) return 'GPT-4o';
-        if (model.includes('gemini')) return 'Gemini';
-        if (model.includes('claude')) return 'Claude';
-        return model.toUpperCase();
+    const formatModelName = (model: string | undefined | null) => {
+        // Handle undefined, null, or empty model values
+        if (!model || typeof model !== 'string') {
+            return 'UNKNOWN';
+        }
+
+        const modelLower = model.toLowerCase();
+        if (modelLower.includes('gpt')) return 'GPT-4o';
+        if (modelLower.includes('gemini')) return 'Gemini';
+        if (modelLower.includes('claude')) return 'Claude';
+        return model.toString().toUpperCase();
     };
 
     const getConfidenceColor = (level: string) => {
@@ -156,7 +162,7 @@ export function IndividualModelModal({
                     <Box display="flex" alignItems="center" justifyContent="space-between" w="100%">
                         <VStack align="start" spacing={1} flex={1}>
                             <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" color={textColor}>
-                                {formatModelName(modelData.model).toUpperCase()}
+                                {formatModelName(modelData?.model)}
                             </Text>
                             {modelData.confidence && (
                                 <Badge
@@ -310,7 +316,7 @@ export function IndividualModelModal({
                                             colorScheme={modelData.status === 'success' ? 'green' : 'red'}
                                             variant="solid"
                                         >
-                                            {modelData.status.toUpperCase()}
+                                            {(modelData.status || 'unknown').toString().toUpperCase()}
                                         </Badge>
                                     </Flex>
 

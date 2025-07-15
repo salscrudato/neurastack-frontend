@@ -200,9 +200,26 @@ export function useModelResponses(
   const availableModels = useMemo((): ModelResponseData[] => {
     const models: ModelResponseData[] = [];
 
+    // Debug logging for individualResponses
+    if (import.meta.env.DEV) {
+      console.group('🔍 useModelResponses Debug');
+      console.log('📊 individualResponses length:', individualResponses?.length || 0);
+      console.log('📊 individualResponses:', individualResponses);
+      console.groupEnd();
+    }
+
     // Process roles array from new ensemble API format
     if (individualResponses && individualResponses.length > 0) {
-      individualResponses.forEach(response => {
+      individualResponses.forEach((response, index) => {
+        if (import.meta.env.DEV) {
+          console.log(`🔍 Processing response ${index}:`, {
+            model: response.model,
+            role: response.role,
+            provider: response.provider,
+            status: response.status,
+            hasContent: !!response.content
+          });
+        }
         // Map API response status to our internal status
         const status = response.status === 'fulfilled' ? 'success' : 'failed';
 
@@ -230,6 +247,10 @@ export function useModelResponses(
           metadata: response.metadata
         });
       });
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('🔍 Final availableModels:', models.map(m => ({ model: m.model, role: m.role, provider: m.provider, status: m.status })));
     }
 
     return models;
@@ -309,6 +330,11 @@ export function useModelResponses(
  * e.g., "creativeAdvisor" -> "Creative Advisor"
  */
 export function transformCamelCaseToDisplay(text: string): string {
+  // Handle undefined, null, or empty text values
+  if (!text || typeof text !== 'string') {
+    return 'Unknown';
+  }
+
   return text
     // Insert space before uppercase letters
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -343,6 +369,11 @@ function extractProviderFromModel(model: string): string {
  * Format model name for display without provider (just model name)
  */
 export function formatModelName(modelKey: string): string {
+  // Handle undefined, null, or empty modelKey values
+  if (!modelKey || typeof modelKey !== 'string') {
+    return 'Unknown Model';
+  }
+
   // Get display info for consistent formatting
   const info = getModelDisplayInfo(modelKey);
 
