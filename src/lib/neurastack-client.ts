@@ -696,16 +696,34 @@ export class NeuraStackClient {
 
     // Create individual responses for UI display using new format
     // roles: Array of individual AI responses (character limited per API spec)
-    const individualResponses: SubAnswer[] = (data.roles || []).map(role => {
+    const individualResponses: SubAnswer[] = (data.roles || []).map((role, index) => {
+      // Debug logging for undefined model issues
+      if (import.meta.env.DEV && (!role?.model || typeof role.model !== 'string')) {
+        console.warn(`⚠️ Role ${index} has invalid model:`, {
+          model: role?.model,
+          type: typeof role?.model,
+          fullRole: role
+        });
+      }
+
+      // Ensure role object has required properties with fallbacks
+      const safeRole = {
+        model: role?.model || 'unknown-model',
+        content: role?.content || '',
+        role: role?.role || 'assistant',
+        provider: role?.provider,
+        status: role?.status
+      };
+
       return {
-        model: role.model,
-        content: role.content, // Primary field for new API
-        answer: role.content,  // Legacy field for backward compatibility
-        role: role.role, // Keep the original role for reference
-        provider: role.provider || this.extractProviderFromModel(role.model), // Use API provider or extract from model name
-        status: role.status === 'fulfilled' ? 'fulfilled' : 'rejected', // Use new API status format
-        reason: role.status === 'rejected' ? 'Model failed to respond' : undefined,
-        wordCount: role.content ? role.content.split(' ').length : 0,
+        model: safeRole.model,
+        content: safeRole.content, // Primary field for new API
+        answer: safeRole.content,  // Legacy field for backward compatibility
+        role: safeRole.role, // Keep the original role for reference
+        provider: safeRole.provider || this.extractProviderFromModel(safeRole.model), // Use API provider or extract from model name
+        status: safeRole.status === 'fulfilled' ? 'fulfilled' : 'rejected', // Use new API status format
+        reason: safeRole.status === 'rejected' ? 'Model failed to respond' : undefined,
+        wordCount: safeRole.content ? safeRole.content.split(' ').length : 0,
 
         // Enhanced confidence data from API response
         confidence: role.confidence ? {
@@ -779,12 +797,21 @@ export class NeuraStackClient {
 
   /**
    * Extract provider name from model string
+   * Robust handling of undefined/null model values
    */
-  private extractProviderFromModel(model: string): string {
-    if (model.includes('gpt') || model.includes('openai')) return 'OPENAI';
-    if (model.includes('gemini') || model.includes('google')) return 'GOOGLE';
-    if (model.includes('claude') || model.includes('anthropic')) return 'ANTHROPIC';
-    if (model.includes('grok') || model.includes('xai')) return 'XAI';
+  private extractProviderFromModel(model: string | undefined | null): string {
+    // Handle undefined, null, or empty model values
+    if (!model || typeof model !== 'string') {
+      return 'UNKNOWN';
+    }
+
+    // Convert to lowercase for case-insensitive matching
+    const modelLower = model.toLowerCase();
+
+    if (modelLower.includes('gpt') || modelLower.includes('openai')) return 'OPENAI';
+    if (modelLower.includes('gemini') || modelLower.includes('google')) return 'GOOGLE';
+    if (modelLower.includes('claude') || modelLower.includes('anthropic')) return 'ANTHROPIC';
+    if (modelLower.includes('grok') || modelLower.includes('xai')) return 'XAI';
     return 'UNKNOWN';
   }
 
