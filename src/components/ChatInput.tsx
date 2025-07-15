@@ -1,13 +1,13 @@
 import {
-    Box,
-    Flex,
-    IconButton,
-    InputGroup,
-    InputRightElement,
-    ScaleFade,
-    Text,
-    Textarea,
-    Tooltip,
+  Box,
+  Flex,
+  IconButton,
+  InputGroup,
+  InputRightElement,
+  ScaleFade,
+  Text,
+  Textarea,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";

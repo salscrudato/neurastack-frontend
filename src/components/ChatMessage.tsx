@@ -1,21 +1,19 @@
 import {
-    Badge,
-    Box,
-    Button,
-    Flex,
-    HStack,
-    IconButton,
-    Text,
-    Tooltip,
-    useClipboard,
-    VStack
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Text,
+  Tooltip,
+  useClipboard,
+  VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
-import { useModelResponses } from "../hooks/useModelResponses";
 import type { Message } from "../store/useChatStore";
-import { EnsembleInfoModal } from "./EnsembleInfoModal";
-import { IndividualModelModal } from "./IndividualModelModal";
+import { AdvancedAnalyticsModal } from "./AdvancedAnalyticsModal";
 import { Loader } from "./LoadingSpinner";
 import { UnifiedAIResponse } from "./UnifiedAIResponse";
 
@@ -56,18 +54,11 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const structuredResponse = !isUser && !isError ? parseAIResponse(processedContent) : null;
   const displayText = processedContent;
 
-  const { selectedModel, isModalOpen, openModelModal, closeModal, getAvailableModels } = useModelResponses(message.metadata?.individualResponses, message.metadata?.modelsUsed, message.metadata?.fallbackReasons, message.metadata?.metadata);
-  const availableModels = getAvailableModels();
 
-  // Debug logging for availableModels in ChatMessage
-  if (import.meta.env.DEV && !isUser && !isError) {
-    console.group('🔍 ChatMessage availableModels Debug');
-    console.log('📊 availableModels count:', availableModels.length);
-    console.log('📊 availableModels:', availableModels.map(m => ({ model: m.model, role: m.role, provider: m.provider, status: m.status })));
-    console.groupEnd();
-  }
 
-  const [isEnsembleInfoOpen, setIsEnsembleInfoOpen] = useState(false);
+
+
+  const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
 
   const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)";
   const bgAi = "rgba(255, 255, 255, 0.95)";
@@ -88,6 +79,16 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const winner = fullData?.voting?.winner || 'unknown';
   const consensus = fullData?.voting?.consensus || 'medium';
 
+  // Debug logging
+  if (import.meta.env.DEV && !isUser && !isError) {
+    console.log('ChatMessage Debug:', {
+      hasMetadata: !!message.metadata?.metadata,
+      hasFullData: !!fullData,
+      fullData,
+      messageMetadata: message.metadata
+    });
+  }
+
   return (
     <VStack spacing={{ base: 1, md: 2 }} w="100%" align="stretch">
       <Flex align="center" w="100%" my={{ base: 0.5, md: 1 }}>
@@ -107,109 +108,31 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                       <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="#475569" letterSpacing="-0.025em">AI Ensemble</Text>
                     </HStack>
                     <Button
-                      size="xs"
-                      onClick={() => setIsEnsembleInfoOpen(true)}
-                      bg="rgba(255, 255, 255, 0.95)"
-                      color="#64748B"
-                      fontWeight="600"
-                      fontSize="2xs"
-                      border="1px solid rgba(100, 116, 139, 0.2)"
-                      boxShadow="0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
-                      position="relative"
-                      overflow="hidden"
-                      minH={{ base: "32px", md: "28px" }}
-                      px={3}
-                      py={1}
-                      h="auto"
-                      borderRadius="lg"
-                      transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                      letterSpacing="0.025em"
-                      sx={{
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
-                        touchAction: 'manipulation',
-                        WebkitTapHighlightColor: 'transparent'
-                      }}
-                      _before={{
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: '-100%',
-                        width: '100%',
-                        height: '100%',
-                        background: 'linear-gradient(90deg, transparent, rgba(100, 116, 139, 0.05), transparent)',
-                        transition: 'left 0.8s ease'
-                      }}
-                      _hover={{
-                        bg: "rgba(255, 255, 255, 0.9)",
-                        borderColor: "rgba(100, 116, 139, 0.5)",
-                        color: "#475569",
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-                        _before: { left: '100%' }
-                      }}
-                      _active={{
-                        transform: "translateY(0) scale(0.98)",
-                        bg: "rgba(255, 255, 255, 0.95)",
-                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
-                      }}
-                      _focus={{
-                        boxShadow: "0 0 0 2px rgba(100, 116, 139, 0.3)",
-                        outline: "none"
-                      }}
-                    >
-                      <Text>Details</Text>
-                    </Button>
-                  </HStack>
-                </Flex>
-                <Flex
-                  direction="row"
-                  justify="center"
-                  align="center"
-                  w="100%"
-                  gap={2}
-                  px={1}
-                >
-                  {availableModels.map((model, index) => {
-                    const modelColors = { openai: { border: '#4F9CF9', text: '#4F9CF9', hover: 'rgba(79, 156, 249, 0.05)' }, gemini: { border: '#3B82F6', text: '#3B82F6', hover: 'rgba(59, 130, 246, 0.05)' }, claude: { border: '#2563EB', text: '#2563EB', hover: 'rgba(37, 99, 235, 0.05)' }, default: { border: '#6366F1', text: '#6366F1', hover: 'rgba(99, 102, 241, 0.05)' } };
-                    const colors = modelColors[model.provider as keyof typeof modelColors] || modelColors.default;
-                    return (
-                      <Button
-                        key={`${model.model}-${index}`}
                         size="xs"
-                        onClick={() => openModelModal(model)}
-                        bg="white"
-                        color={colors.text}
-                        flex="1"
+                        onClick={() => {
+                          console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
+                          setIsAdvancedAnalyticsOpen(true);
+                        }}
+                        bg="rgba(79, 156, 249, 0.1)"
+                        color="#4F9CF9"
                         fontWeight="600"
                         fontSize="2xs"
-                        border={`1px solid ${colors.border}`}
-                        boxShadow="none"
+                        border="1px solid rgba(79, 156, 249, 0.3)"
+                        boxShadow="0 1px 4px rgba(79, 156, 249, 0.1), 0 4px 12px rgba(79, 156, 249, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
                         position="relative"
                         overflow="hidden"
-                        h={{ base: "32px", md: "28px" }}
-                        w={{ base: "70px", sm: "75px", md: "80px" }}
-                        minW={{ base: "70px", sm: "75px", md: "80px" }}
-                        maxW={{ base: "70px", sm: "75px", md: "80px" }}
-                        px={1}
+                        minH={{ base: "32px", md: "28px" }}
+                        px={3}
                         py={1}
+                        h="auto"
                         borderRadius="lg"
                         transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        flexShrink={0}
+                        letterSpacing="0.025em"
                         sx={{
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)',
                           touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
-                          '@keyframes fadeInUp': {
-                            '0%': { opacity: 0, transform: 'translateY(10px)' },
-                            '100%': { opacity: 1, transform: 'translateY(0)' }
-                          }
-                        }}
-                        style={{
-                          animationDelay: `${index * 0.1}s`,
-                          animation: 'fadeInUp 0.6s ease-out forwards'
+                          WebkitTapHighlightColor: 'transparent'
                         }}
                         _before={{
                           content: '""',
@@ -218,40 +141,32 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           left: '-100%',
                           width: '100%',
                           height: '100%',
-                          background: `linear-gradient(90deg, transparent, ${colors.hover}, transparent)`,
-                          transition: 'left 0.6s ease'
+                          background: 'linear-gradient(90deg, transparent, rgba(79, 156, 249, 0.1), transparent)',
+                          transition: 'left 0.8s ease'
                         }}
                         _hover={{
-                          bg: colors.hover,
-                          borderColor: colors.border,
+                          bg: "rgba(79, 156, 249, 0.15)",
+                          borderColor: "rgba(79, 156, 249, 0.5)",
+                          color: "#3B82F6",
                           transform: "translateY(-1px)",
-                          boxShadow: `0 2px 8px ${colors.border}30`,
+                          boxShadow: "0 8px 24px rgba(79, 156, 249, 0.25)",
                           _before: { left: '100%' }
                         }}
                         _active={{
                           transform: "translateY(0) scale(0.98)",
-                          bg: colors.hover,
-                          boxShadow: "none"
+                          bg: "rgba(79, 156, 249, 0.1)",
+                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.15)"
                         }}
                         _focus={{
-                          boxShadow: `0 0 0 2px ${colors.border}50`,
+                          boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
                           outline: "none"
                         }}
                       >
-                        <Text
-                          letterSpacing="0.025em"
-                          noOfLines={1}
-                          fontSize="xs"
-                          fontWeight="600"
-                          textAlign="center"
-                          w="100%"
-                        >
-                          {model.provider === 'openai' ? 'GPT-4o' : model.provider === 'gemini' ? 'Gemini' : model.provider === 'claude' ? 'Claude' : String(model.provider || 'Unknown').toUpperCase()}
-                        </Text>
+                        <Text>Analytics</Text>
                       </Button>
-                    );
-                  })}
+                  </HStack>
                 </Flex>
+
               </VStack>
             </Box>
           )}
@@ -270,8 +185,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           {!isUser && <HStack justify="flex-end" align="center" mt={1} spacing={1}><CopyButton text={processedContent} /></HStack>}
         </Box>
       </Flex>
-      <IndividualModelModal isOpen={isModalOpen} onClose={closeModal} modelData={selectedModel} />
-      <EnsembleInfoModal isOpen={isEnsembleInfoOpen} onClose={() => setIsEnsembleInfoOpen(false)} ensembleData={message.metadata?.ensembleData} />
+      <AdvancedAnalyticsModal isOpen={isAdvancedAnalyticsOpen} onClose={() => setIsAdvancedAnalyticsOpen(false)} analyticsData={message.metadata?.ensembleData} />
     </VStack>
   );
 });

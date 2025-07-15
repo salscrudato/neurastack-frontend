@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { PageLoader } from './components/LoadingSpinner';
 
 // Import pages and auth guard
+import { AnalyticsDemo } from './components/AnalyticsDemo';
 import { AuthGuard } from './components/AuthGuard';
 import OptimizedChakraProvider from './components/OptimizedChakraProvider';
 import { ChatPage } from './pages/ChatPage';
@@ -44,6 +45,14 @@ const router = createBrowserRouter([
             <Suspense fallback={<PageLoader message="Loading History..." />}>
               <HistoryPage />
             </Suspense>
+          </AuthGuard>
+        ),
+      },
+      {
+        path: 'demo',
+        element: (
+          <AuthGuard requireAuth={false}>
+            <AnalyticsDemo />
           </AuthGuard>
         ),
       },
