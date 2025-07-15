@@ -1,16 +1,16 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import {
-    Alert,
-    AlertDescription,
-    AlertIcon,
-    AlertTitle,
-    Box,
-    Button,
-    Code,
-    Collapse,
-    Text,
-    VStack,
-    useColorModeValue
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Box,
+  Button,
+  Code,
+  Collapse,
+  Text,
+  VStack,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 

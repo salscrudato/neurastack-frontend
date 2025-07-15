@@ -57,14 +57,19 @@ export const getFirestoreService = async () => {
 };
 
 /**
- * Lazy load Auth service - DEPRECATED
+ * Auth service - Using static imports
  * Auth is now statically imported for better performance
- * This function is kept for backward compatibility
  */
+import {
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    signInAnonymously,
+    signInWithPopup,
+    signOut
+} from 'firebase/auth';
+
 export const getAuthService = async () => {
   // Return static imports for better performance
-  const { signInWithPopup, signInAnonymously, signOut, onAuthStateChanged, GoogleAuthProvider } = await import('firebase/auth');
-
   return {
     signInWithPopup,
     signInAnonymously,

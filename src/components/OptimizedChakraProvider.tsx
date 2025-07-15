@@ -3,10 +3,11 @@
  *
  * Provides optimized Chakra UI setup with performance enhancements
  * and reduced CSS generation for better bundle size.
+ * Includes mobile optimizations for safe areas and touch interactions.
  */
 
 import { ChakraProvider } from '@chakra-ui/react';
-import { memo, type ReactNode } from 'react';
+import { memo, type ReactNode, useEffect } from 'react';
 import theme from '../theme/theme';
 
 interface OptimizedChakraProviderProps {
@@ -19,6 +20,22 @@ interface OptimizedChakraProviderProps {
 export const OptimizedChakraProvider = memo(function OptimizedChakraProvider({
   children
 }: OptimizedChakraProviderProps) {
+  useEffect(() => {
+    // Mobile touch optimizations
+    document.body.style.touchAction = 'manipulation';
+    (document.body.style as any).WebkitTapHighlightColor = 'transparent';
+    
+    // Safe area handling
+    document.documentElement.style.setProperty(
+      '--safe-area-inset-top',
+      'env(safe-area-inset-top)'
+    );
+    document.documentElement.style.setProperty(
+      '--safe-area-inset-bottom',
+      'env(safe-area-inset-bottom)'
+    );
+  }, []);
+
   return (
     <ChakraProvider
       theme={theme}

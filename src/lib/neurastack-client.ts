@@ -129,7 +129,7 @@ export const DEFAULT_MODELS = [
 export const NEURASTACK_HEADERS = {
   CONTENT_TYPE: 'Content-Type',
   SESSION_ID: 'X-Session-ID',
-  USER_ID: 'X-User-ID',
+  USER_ID: 'x-user-id',
   AUTHORIZATION: 'Authorization'
 } as const;
 
@@ -284,7 +284,7 @@ export class NeuraStackClient {
     // Add required headers according to backend documentation
     const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
-      headers['X-User-Id'] = userId;
+      headers['x-user-id'] = userId;
     }
 
     // Add correlation ID header for request tracking
@@ -479,7 +479,7 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    if (request.userId) headers['X-User-Id'] = request.userId;
+    if (request.userId) headers['x-user-id'] = request.userId;
 
     return this.makeRequest<StoreMemoryResponse>(
       NEURASTACK_ENDPOINTS.MEMORY_STORE,
@@ -499,7 +499,7 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    if (request.userId) headers['X-User-Id'] = request.userId;
+    if (request.userId) headers['x-user-id'] = request.userId;
 
     return this.makeRequest<any>(
       NEURASTACK_ENDPOINTS.MEMORY_RETRIEVE,
@@ -519,7 +519,7 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    if (request.userId) headers['X-User-Id'] = request.userId;
+    if (request.userId) headers['x-user-id'] = request.userId;
     // Note: X-Session-Id header removed to avoid CORS issues
 
     return this.makeRequest<MemoryContextResponse>(
@@ -540,7 +540,7 @@ export class NeuraStackClient {
       'Content-Type': 'application/json'
     };
 
-    if (userId) headers['X-User-Id'] = userId;
+    if (userId) headers['x-user-id'] = userId;
 
     return this.makeRequest<MemoryAnalyticsResponse>(
       `${NEURASTACK_ENDPOINTS.MEMORY_ANALYTICS}/${userId}`,
@@ -644,11 +644,25 @@ export class NeuraStackClient {
    * Following API spec: synthesis.content is main response, roles are individual responses
    */
   private transformEnsembleResponse(ensembleResponse: EnsembleResponse): NeuraStackQueryResponse {
+    // Debug: Log the full response structure to understand the data
+    if (import.meta.env.DEV) {
+      console.group('🔍 Ensemble Response Debug');
+      console.log('📊 Full Response:', JSON.stringify(ensembleResponse, null, 2));
+      console.log('📊 Status:', ensembleResponse.status);
+      console.log('📊 Has Data:', !!ensembleResponse.data);
+      console.groupEnd();
+    }
+
     // Always check status === 'success' before processing (per API spec)
     if (ensembleResponse.status !== 'success' || !ensembleResponse.data) {
+      const errorMessage = ensembleResponse.message || 'Failed to get successful response from ensemble API';
+      const errorDetails = `Status: ${ensembleResponse.status}, Error: ${ensembleResponse.error || 'Unknown'}, Message: ${errorMessage}`;
+
+      console.error('❌ Ensemble processing failed:', errorDetails);
+
       throw new NeuraStackApiError({
-        error: ensembleResponse.error || 'Ensemble API Error',
-        message: ensembleResponse.message || 'Failed to get successful response from ensemble API',
+        error: ensembleResponse.error || 'Ensemble processing failed',
+        message: errorDetails,
         statusCode: 500,
         timestamp: ensembleResponse.timestamp || new Date().toISOString(),
         correlationId: ensembleResponse.correlationId
@@ -835,10 +849,18 @@ export class NeuraStackClient {
 
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof NeuraStackApiError) {
         throw error;
       }
+
+      // Log detailed error information for debugging
+      console.group('❌ API Request Error');
+      console.error('Error Type:', error instanceof Error ? error.name : typeof error);
+      console.error('Error Message:', error instanceof Error ? error.message : String(error));
+      console.error('Endpoint:', `${this.config.baseUrl}${finalEndpoint}`);
+      console.error('Request Options:', JSON.stringify(options, null, 2));
+      console.groupEnd();
 
       if (error instanceof Error && error.name === 'AbortError') {
         throw new NeuraStackApiError({
@@ -849,9 +871,11 @@ export class NeuraStackClient {
         });
       }
 
+      // Enhanced network error with more details
+      const errorMessage = error instanceof Error ? error.message : String(error);
       throw new NeuraStackApiError({
         error: 'Network Error',
-        message: 'Failed to connect to NeuraStack API. Please check your connection.',
+        message: `Failed to connect to NeuraStack API (${this.config.baseUrl}): ${errorMessage}. Please check your connection.`,
         statusCode: 0,
         timestamp: new Date().toISOString()
       });

@@ -6,16 +6,16 @@
  */
 
 import {
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogOverlay,
-    Box,
-    Button,
-    HStack,
-    useDisclosure
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Box,
+  Button,
+  HStack,
+  useDisclosure
 } from '@chakra-ui/react';
 import { useRef, useState } from 'react';
 import { PiCheckBold, PiFloppyDiskBold, PiTrashBold } from 'react-icons/pi';

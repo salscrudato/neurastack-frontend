@@ -8,6 +8,9 @@ import {
     Flex,
     HStack,
     IconButton,
+    Input,
+    InputGroup,
+    InputLeftElement,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -15,14 +18,15 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Spinner,
     Text,
     Tooltip,
     useDisclosure,
     VStack,
 } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
-import { useState } from 'react';
-import { PiChatBold, PiChatCircleBold, PiClockBold, PiTrashBold } from 'react-icons/pi';
+import { useEffect, useState } from 'react';
+import { PiChatBold, PiChatCircleBold, PiClockBold, PiMagnifyingGlassBold, PiTrashBold } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import { useChatStore } from '../store/useChatStore';
 import { useHistoryStore } from '../store/useHistoryStore';
@@ -31,7 +35,8 @@ export default function HistoryPage() {
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { sessions, deleteSession, loadSession } = useHistoryStore();
+  const [searchQuery, setSearchQuery] = useState('');
+  const { sessions, deleteSession, loadSession, isLoading } = useHistoryStore();
   const { clearMessages } = useChatStore();
 
   const bgColor = '#FAFBFC';
@@ -39,6 +44,14 @@ export default function HistoryPage() {
   const borderColor = '#E2E8F0';
   const textColor = '#1E293B';
   const mutedColor = '#64748B';
+
+  useEffect(() => {
+    // Optional: Refresh sessions on mount
+  }, []);
+
+  const filteredSessions = sessions.filter(session =>
+    session.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleDeleteSession = async () => {
     if (deleteId) {
@@ -84,7 +97,6 @@ export default function HistoryPage() {
         overflowX: 'hidden',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
-        // Add top padding to account for fixed header
         paddingTop: {
           base: 'calc(env(safe-area-inset-top, 0px) + 56px + 16px)',
           md: 'calc(60px + 24px)'
@@ -115,10 +127,27 @@ export default function HistoryPage() {
             </VStack>
             <Button leftIcon={<PiChatBold />} colorScheme="blue" size={{ base: "md", md: "lg" }} onClick={() => navigate('/chat')} borderRadius="xl" fontWeight="600">New Chat</Button>
           </HStack>
+          <InputGroup>
+            <InputLeftElement pointerEvents="none">
+              <PiMagnifyingGlassBold color={mutedColor} />
+            </InputLeftElement>
+            <Input
+              placeholder="Search sessions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              borderRadius="xl"
+              bg={cardBg}
+              borderColor={borderColor}
+            />
+          </InputGroup>
           <Divider borderColor={borderColor} />
         </VStack>
         <Box flex="1" w="100%">
-          {sessions.length === 0 ? (
+          {isLoading ? (
+            <Flex justify="center" align="center" h="60%">
+              <Spinner size="xl" color="blue.500" />
+            </Flex>
+          ) : filteredSessions.length === 0 ? (
             <Flex direction="column" align="center" justify="center" h="60%" textAlign="center">
               <PiChatCircleBold size={48} color={mutedColor} />
               <Text fontSize="xl" fontWeight="600" color={textColor} mt={4} mb={2}>No saved conversations</Text>
@@ -127,7 +156,7 @@ export default function HistoryPage() {
             </Flex>
           ) : (
             <VStack spacing={4} align="stretch">
-              {sessions.map((session) => (
+              {filteredSessions.map((session) => (
                 <Card key={session.id} bg={cardBg} border="1px solid" borderColor={borderColor} borderRadius="lg" boxShadow="0 1px 2px rgba(0, 0, 0, 0.04)" _hover={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)", transform: "translateY(-1px)", borderColor: "#CBD5E1" }} transition="all 150ms ease" cursor="pointer" onClick={() => handleLoadSession(session.id)}>
                   <CardBody p={4}>
                     <Flex justify="space-between" align="start">

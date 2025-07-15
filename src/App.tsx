@@ -8,13 +8,13 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import "./styles/global.css";
 import "./styles/utilities.css";
 import { authManager } from "./utils/authUtils";
-import "./utils/mobileInit"; // Initialize mobile optimizations
+import "./utils/mobileInit";
 
-// Single transition variant for all pages
+// Unified page transition variants
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
+  exit: { opacity: 0, y: -20 },
 };
 
 const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -23,10 +23,7 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {/* Header - Always rendered outside main container for proper positioning */}
       {!isSplashPage && <Header />}
-
-      {/* Main Content Container */}
       <Box
         w="100%"
         h="100vh"
@@ -43,6 +40,8 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
           overflow: 'hidden',
           paddingLeft: 'max(env(safe-area-inset-left), 0px)',
           paddingRight: 'max(env(safe-area-inset-right), 0px)',
+          paddingTop: 'max(env(safe-area-inset-top), 0px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
         }}
       >
         <AnimatePresence mode="wait">
@@ -54,12 +53,14 @@ const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
             variants={pageVariants}
             transition={{
               duration: 0.35,
-              ease: [0.25, 0.46, 0.45, 0.94]
+              ease: [0.25, 0.46, 0.45, 0.94],
             }}
             style={{
               width: "100%",
               height: "100%",
-              backfaceVisibility: "hidden"
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              willChange: "opacity, transform",
             }}
           >
             {children}
@@ -86,12 +87,11 @@ export default function App() {
 
   return (
     <PageContentWrapper>
-      {/* Skip link for accessibility */}
-      <a href="#main-content" className="skip-link">
+      <a href="#main-content" className="skip-link" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden', zIndex: -1 }}>
         Skip to main content
       </a>
       <Suspense fallback={<Fallback />}>
-        <div id="main-content" role="main">
+        <div id="main-content" role="main" tabIndex={-1}>
           <Outlet />
         </div>
       </Suspense>

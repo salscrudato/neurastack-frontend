@@ -1,347 +1,337 @@
-# NeuraStack Frontend Integration Guide
+# NeuraStack Backend - Frontend Integration Guide (2025)
 
-## Overview
-This guide provides comprehensive documentation for integrating with the NeuraStack AI Ensemble API, including explainability features, voting dashboards, and response breakdown interfaces.
+## 🚀 Quick Start
 
-## Enhanced Ensemble API
+**Base URL**: `https://neurastack-backend-638289111765.us-central1.run.app`
 
-### Endpoint
-```
-POST /default-ensemble
-```
+**Required Headers**:
 
-### Request Parameters
-
-#### Headers
-- `x-user-id` (optional): User identifier for personalization
-- `x-session-id` (optional): Session identifier for context management
-- `x-correlation-id` (optional): Request tracking identifier
-
-#### Body Parameters
-```json
-{
-  "prompt": "string (required) - The user's question or request",
-  "sessionId": "string (optional) - Session identifier",
-  "tier": "string (optional) - 'free' or 'premium', defaults to 'free'",
-  "explain": "boolean (optional) - Enable detailed explanation mode"
-}
-```
-
-#### Query Parameters
-- `explain=true` - Enable verbose explanation mode for debugging/analysis
-
-### Response Structure
-
-#### Standard Response
-```json
-{
-  "status": "success",
-  "data": {
-    "prompt": "Original user prompt",
-    "userId": "User identifier",
-    "sessionId": "Session identifier",
-    "synthesis": {
-      "content": "Final synthesized response",
-      "model": "Model used for synthesis",
-      "provider": "AI provider",
-      "confidence": {
-        "score": 0.85,
-        "level": "high",
-        "factors": ["quality", "consensus", "reliability"]
-      },
-      "strategy": "consensus|best_response|comparative",
-      "_confidenceDescription": "Overall confidence explanation"
-    },
-    "roles": [
-      {
-        "role": "gpt4o|gemini|claude",
-        "content": "Individual model response",
-        "model": "Specific model name",
-        "provider": "AI provider",
-        "confidence": {
-          "score": 0.82,
-          "level": "high",
-          "factors": {
-            "quality": 0.9,
-            "consistency": 0.8,
-            "reliability": 0.85
-          }
-        },
-        "quality": {
-          "wordCount": 150,
-          "sentenceCount": 8,
-          "complexity": "medium"
-        },
-        "metadata": {
-          "processingTime": 2500,
-          "tokenCount": 200,
-          "complexity": "medium"
-        }
-      }
-    ],
-    "voting": {
-      "winner": "gpt4o",
-      "confidence": 0.87,
-      "consensus": "strong|moderate|weak",
-      "weights": {
-        "gpt4o": 0.45,
-        "gemini": 0.32,
-        "claude": 0.23
-      },
-      "sophisticatedVoting": {
-        "traditionalVoting": {},
-        "hybridVoting": {},
-        "diversityAnalysis": {},
-        "historicalPerformance": {},
-        "tieBreaking": {},
-        "metaVoting": {},
-        "abstention": {},
-        "analytics": {}
-      }
-    },
-    "metadata": {
-      "totalRoles": 3,
-      "successfulRoles": 3,
-      "failedRoles": 0,
-      "synthesisStatus": "success",
-      "correlationId": "req_123456",
-      "explainMode": false,
-      "decisionTrace": {
-        "timestamp": "2024-01-01T12:00:00Z",
-        "correlationId": "req_123456",
-        "steps": [
-          {
-            "step": "context_building",
-            "description": "Retrieved conversation context",
-            "outcome": "success"
-          }
-        ]
-      }
-    }
-  }
-}
-```
-
-#### Explanation Mode Response (when explain=true)
-When `explain=true` is set, the response includes additional `explanation` object:
-
-```json
-{
-  "explanation": {
-    "decisionTrace": {
-      "timestamp": "2024-01-01T12:00:00Z",
-      "correlationId": "req_123456",
-      "steps": [
-        {
-          "step": "context_building|model_execution|confidence_calculation|voting_weights|synthesis_strategy",
-          "description": "Human-readable step description",
-          "details": {},
-          "outcome": "success|failure|completed"
-        }
-      ]
-    },
-    "visualizationData": {
-      "voteDistribution": [
-        {
-          "model": "gpt4o",
-          "weight": 0.45,
-          "percentage": "45%"
-        }
-      ],
-      "confidenceHistogram": [
-        {
-          "model": "gpt4o",
-          "confidence": 0.85,
-          "factors": {}
-        }
-      ],
-      "processingTimeline": [
-        {
-          "step": "context_building",
-          "description": "Retrieved conversation context",
-          "outcome": "success",
-          "duration": 150
-        }
-      ]
-    },
-    "modelComparison": {
-      "responses": [
-        {
-          "model": "gpt4o",
-          "provider": "OpenAI",
-          "responseSnippet": "First 200 characters of response...",
-          "wordCount": 150,
-          "confidence": 0.85,
-          "processingTime": 2500,
-          "qualityMetrics": {}
-        }
-      ],
-      "consensusAnalysis": {
-        "agreementLevel": 0.78,
-        "conflictPoints": [
-          {
-            "type": "confidence_mismatch",
-            "models": ["gpt4o", "claude"],
-            "difference": 0.35,
-            "description": "Significant confidence difference"
-          }
-        ],
-        "synthesisStrategy": "consensus"
-      }
-    },
-    "performanceMetrics": {
-      "totalProcessingTime": 3200,
-      "parallelEfficiency": 0.85,
-      "cacheHitRate": 0,
-      "costEfficiency": {
-        "estimatedCost": 0.0045,
-        "costPerConfidencePoint": 0.0053,
-        "inputTokens": 50,
-        "outputTokens": 450,
-        "totalTokens": 500
-      }
-    }
-  }
-}
-```
-
-## Frontend Integration Examples
-
-### Basic Request
 ```javascript
-const response = await fetch('/default-ensemble', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-user-id': 'user123',
-    'x-session-id': 'session456'
-  },
-  body: JSON.stringify({
-    prompt: "Explain quantum computing in simple terms",
-    tier: "free"
-  })
-});
-
-const data = await response.json();
-console.log(data.data.synthesis.content); // Final response
+{
+  'Content-Type': 'application/json',
+  'x-user-id': 'your-user-id' // Required for most endpoints
+}
 ```
 
-### Explanation Mode Request
+## 📋 Core API Endpoints
+
+### 1. Health Check ✅ **TESTED & WORKING**
+
 ```javascript
-const response = await fetch('/default-ensemble?explain=true', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-user-id': 'user123'
-  },
-  body: JSON.stringify({
-    prompt: "Explain quantum computing",
-    explain: true
-  })
-});
-
-const data = await response.json();
-console.log(data.explanation.decisionTrace); // Decision process
-console.log(data.explanation.visualizationData); // Chart data
-```
-
-## React Component Examples
-
-### Voting Dashboard Component
-```jsx
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-
-const VotingDashboard = ({ votingData }) => {
-  const chartData = Object.entries(votingData.weights).map(([model, weight]) => ({
-    model: model.toUpperCase(),
-    weight: Math.round(weight * 100),
-    confidence: votingData.roles?.find(r => r.role === model)?.confidence?.score || 0
-  }));
-
-  return (
-    <div className="voting-dashboard">
-      <h3>AI Model Voting Results</h3>
-      <div className="winner-badge">
-        Winner: {votingData.winner.toUpperCase()} 
-        ({Math.round(votingData.confidence * 100)}% confidence)
-      </div>
-      
-      <BarChart width={400} height={300} data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="model" />
-        <YAxis />
-        <Tooltip />
-        <Bar dataKey="weight" fill="#8884d8" />
-      </BarChart>
-      
-      <div className="consensus-indicator">
-        Consensus: <span className={`consensus-${votingData.consensus}`}>
-          {votingData.consensus.toUpperCase()}
-        </span>
-      </div>
-    </div>
-  );
+// GET /health
+const healthCheck = async () => {
+  const response = await fetch(`${BASE_URL}/health`);
+  return await response.json();
+  // Returns: { status: "ok", message: "Neurastack backend healthy 🚀" }
 };
 ```
 
-### Response Breakdown Component
-```jsx
-import React, { useState } from 'react';
+### 2. AI Ensemble API ⭐ **Primary Feature**
 
-const ResponseBreakdown = ({ roles, explanation }) => {
-  const [selectedModel, setSelectedModel] = useState(null);
+```javascript
+// POST /default-ensemble
+const getAIResponse = async (prompt, userId, sessionId = null) => {
+  const response = await fetch(`${BASE_URL}/default-ensemble`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-user-id": userId,
+    },
+    body: JSON.stringify({
+      prompt: prompt,
+      sessionId: sessionId || `session_${userId}_${Date.now()}`,
+      explain: false, // Set to true for detailed explanations
+    }),
+  });
+  return await response.json();
+};
+```
+
+**⚠️ Note**: This endpoint is working but responses may take 15-30 seconds due to AI processing time.
+
+**Response Structure**:
+
+```javascript
+{
+  status: "success",
+  data: {
+    prompt: "Your original prompt",
+    userId: "user-123",
+    sessionId: "session_user-123_1234567890",
+    synthesis: {
+      content: "Final synthesized response from all AI models",
+      confidence: {
+        score: 0.85,
+        level: "high",
+        factors: ["Based on 3 successful responses", "Average role confidence: 82.3%"]
+      },
+      status: "success",
+      processingTime: 2500
+    },
+    roles: [
+      {
+        role: "gpt4o",
+        content: "GPT-4o-mini response",
+        status: "fulfilled",
+        confidence: {
+          score: 0.82,
+          level: "high",
+          factors: ["Response generated successfully", "Adequate response length"]
+        },
+        quality: {
+          wordCount: 45,
+          hasStructure: true,
+          hasReasoning: true
+        },
+        metadata: {
+          model: "gpt-4o-mini",
+          provider: "openai",
+          processingTime: 1200
+        }
+      },
+      // ... similar structure for gemini and claude roles
+    ],
+    voting: {
+      winner: "gpt4o",
+      confidence: 0.78,
+      consensus: "strong",
+      weights: {
+        gpt4o: 0.45,
+        gemini: 0.32,
+        claude: 0.23
+      }
+    },
+    metadata: {
+      timestamp: "2025-07-14T21:40:27.444Z",
+      correlationId: "abc123",
+      tier: "free"
+    }
+  },
+  correlationId: "abc123"
+}
+```
+
+### 3. Workout Generation API 💪
+
+```javascript
+// POST /workout/generate
+const generateWorkout = async (userMetadata, workoutRequest, userId) => {
+  const response = await fetch(`${BASE_URL}/workout/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-user-id": userId,
+    },
+    body: JSON.stringify({
+      userMetadata: {
+        fitnessLevel: "beginner", // "beginner" | "intermediate" | "advanced"
+        goals: ["weight_loss"], // Array of goals
+        equipment: ["bodyweight", "dumbbells"], // Available equipment
+        age: 25,
+        gender: "male", // "male" | "female" | "other"
+        weight: 70, // in kg
+        injuries: [], // Array of injury descriptions
+        daysPerWeek: 3,
+        minutesPerSession: 30,
+        workoutType: "strength", // "strength" | "cardio" | "flexibility" | "mixed"
+      },
+      workoutRequest: workoutRequest, // Natural language description
+    }),
+  });
+  return await response.json();
+};
+```
+
+**Workout Response Structure**:
+
+```javascript
+{
+  status: "success",
+  data: {
+    workoutId: "workout_abc123",
+    mainWorkout: {
+      exercises: [
+        {
+          name: "Push-ups",
+          sets: 3,
+          reps: "8-12",
+          duration: 0, // in seconds, 0 if reps-based
+          rest: "60s",
+          instructions: "Keep your body in a straight line...",
+          targetMuscles: ["chest", "triceps", "shoulders"]
+        }
+        // ... more exercises
+      ]
+    },
+    metadata: {
+      estimatedDuration: 30,
+      difficulty: "beginner",
+      totalExercises: 6,
+      targetMuscles: ["chest", "legs", "core"],
+      equipment: ["bodyweight"]
+    },
+    userId: "user-123",
+    timestamp: "2025-07-14T21:40:27.444Z"
+  }
+}
+```
+
+## 🔧 System Information Endpoints ✅ **ALL TESTED & WORKING**
+
+### 4. System Metrics
+
+```javascript
+// GET /metrics
+const getSystemMetrics = async () => {
+  const response = await fetch(`${BASE_URL}/metrics`);
+  return await response.json();
+};
+```
+
+**Sample Response**:
+
+```javascript
+{
+  timestamp: "2025-07-14T21:42:07.903Z",
+  system: {
+    requests: {
+      total: 6,
+      successful: 4,
+      failed: 2,
+      byEndpoint: {
+        "/health": { total: 1, successful: 1, failed: 0 },
+        "/default-ensemble": { total: 3, successful: 3, failed: 0 },
+        "/workout/generate": { total: 1, successful: 0, failed: 1 }
+      }
+    },
+    performance: {
+      averageResponseTime: 6384.5,
+      p95ResponseTime: 24600
+    }
+  },
+  tier: "free"
+}
+```
+
+### 5. Tier Information ✅ **TESTED & WORKING**
+
+```javascript
+// GET /tier-info
+const getTierInfo = async () => {
+  const response = await fetch(`${BASE_URL}/tier-info`);
+  return await response.json();
+};
+```
+
+**Sample Response**:
+
+```javascript
+{
+  status: "success",
+  data: {
+    currentTier: "free",
+    configuration: {
+      models: {
+        gpt4o: { provider: "openai", model: "gpt-4o-mini" },
+        gemini: { provider: "gemini", model: "gemini-1.5-flash" },
+        claude: { provider: "claude", model: "claude-3-5-haiku-latest" }
+      },
+      limits: {
+        requestsPerHour: 25,
+        requestsPerDay: 150,
+        maxPromptLength: 1500,
+        timeoutMs: 75000
+      }
+    }
+  }
+}
+```
+
+### 6. Detailed Health Check ✅ **TESTED & WORKING**
+
+```javascript
+// GET /health-detailed
+const getDetailedHealth = async () => {
+  const response = await fetch(`${BASE_URL}/health-detailed`);
+  return await response.json();
+};
+```
+
+## 🎯 Frontend Implementation Examples
+
+### React Hook for AI Ensemble
+
+```javascript
+import { useState, useCallback } from "react";
+
+const useAIEnsemble = () => {
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
+
+  const generateResponse = useCallback(async (prompt, userId, sessionId) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await getAIResponse(prompt, userId, sessionId);
+      setResponse(result);
+      return result;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { generateResponse, loading, response, error };
+};
+```
+
+### React Component Example
+
+```javascript
+const AIChat = ({ userId }) => {
+  const { generateResponse, loading, response, error } = useAIEnsemble();
+  const [prompt, setPrompt] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!prompt.trim()) return;
+
+    try {
+      await generateResponse(prompt, userId);
+      setPrompt("");
+    } catch (err) {
+      console.error("Failed to generate response:", err);
+    }
+  };
 
   return (
-    <div className="response-breakdown">
-      <h3>Individual Model Responses</h3>
-      
-      <div className="model-tabs">
-        {roles.map(role => (
-          <button
-            key={role.role}
-            className={`model-tab ${selectedModel === role.role ? 'active' : ''}`}
-            onClick={() => setSelectedModel(role.role)}
-          >
-            {role.role.toUpperCase()}
-            <span className="confidence-badge">
-              {Math.round(role.confidence.score * 100)}%
-            </span>
-          </button>
-        ))}
-      </div>
-      
-      {selectedModel && (
-        <div className="model-response">
-          {roles.filter(r => r.role === selectedModel).map(role => (
-            <div key={role.role} className="response-card">
-              <div className="response-header">
-                <h4>{role.model} ({role.provider})</h4>
-                <div className="metrics">
-                  <span>Words: {role.quality?.wordCount || 0}</span>
-                  <span>Time: {role.metadata?.processingTime || 0}ms</span>
-                  <span>Confidence: {Math.round(role.confidence.score * 100)}%</span>
-                </div>
-              </div>
-              
-              <div className="response-content">
-                {role.content}
-              </div>
-              
-              {explanation && (
-                <div className="response-analysis">
-                  <h5>Quality Factors:</h5>
-                  <ul>
-                    {Object.entries(role.confidence.factors || {}).map(([factor, score]) => (
-                      <li key={factor}>
-                        {factor}: {Math.round(score * 100)}%
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          ))}
+    <div>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Ask me anything..."
+          disabled={loading}
+        />
+        <button type="submit" disabled={loading || !prompt.trim()}>
+          {loading ? "Generating..." : "Send"}
+        </button>
+      </form>
+
+      {error && <div className="error">Error: {error}</div>}
+
+      {response && (
+        <div className="response">
+          <h3>AI Response:</h3>
+          <p>{response.data.synthesis.content}</p>
+          <div className="confidence">
+            Confidence:{" "}
+            {(response.data.synthesis.confidence.score * 100).toFixed(1)}%
+          </div>
         </div>
       )}
     </div>
@@ -349,83 +339,90 @@ const ResponseBreakdown = ({ roles, explanation }) => {
 };
 ```
 
-## Key Data Points for UI Display
+## 🚨 Error Handling
 
-### Most Important Fields
-1. **`data.synthesis.content`** - The final AI response to display to users
-2. **`data.synthesis.confidence.score`** - Overall confidence (0-1) for UI indicators
-3. **`data.voting.winner`** - Which AI model provided the best response
-4. **`data.voting.consensus`** - Strength of agreement between models
-5. **`data.metadata.successfulRoles`** - Number of AI models that responded successfully
+### Common Error Responses
 
-### Confidence Indicators
-- **High (0.8-1.0)**: Green indicator, "High confidence"
-- **Medium (0.6-0.79)**: Yellow indicator, "Medium confidence"  
-- **Low (0.4-0.59)**: Orange indicator, "Low confidence"
-- **Very Low (0-0.39)**: Red indicator, "Very low confidence"
-
-### Consensus Levels
-- **very-strong**: 🟢 "Very Strong Agreement"
-- **strong**: 🟢 "Strong Agreement"
-- **moderate**: 🟡 "Moderate Agreement"
-- **weak**: 🟠 "Weak Agreement"
-- **very-weak**: 🔴 "Very Weak Agreement"
-
-## Error Handling
-
-### Error Response Format
-```json
-{
-  "status": "error",
-  "message": "Human-readable error message",
-  "error": "Technical error details (development only)",
-  "timestamp": "2024-01-01T12:00:00Z",
-  "correlationId": "req_123456"
-}
-```
-
-### Common Error Scenarios
-1. **400 Bad Request**: Invalid prompt format or missing required fields
-2. **429 Too Many Requests**: Rate limit exceeded (free tier)
-3. **500 Internal Server Error**: AI service failures or system issues
-
-### Recommended Error Handling
 ```javascript
-try {
-  const response = await fetch('/default-ensemble', options);
-  const data = await response.json();
-  
-  if (data.status === 'error') {
-    // Handle API-level errors
-    showErrorMessage(data.message);
-    return;
-  }
-  
-  // Process successful response
-  displayResponse(data.data);
-  
-} catch (error) {
-  // Handle network/parsing errors
-  showErrorMessage('Connection error. Please try again.');
+// Rate limit exceeded
+{
+  status: "error",
+  message: "Rate limit exceeded",
+  retryAfter: 900,
+  correlationId: "abc123"
+}
+
+// Invalid input
+{
+  status: "error",
+  message: "Invalid prompt length/format.",
+  correlationId: "abc123"
+}
+
+// Server error
+{
+  status: "error",
+  message: "Ensemble processing failed.",
+  correlationId: "abc123"
 }
 ```
 
-## Performance Optimization
+## 📊 Key Data Points for UI Display
 
-### Caching Strategy
-- Responses are automatically cached server-side
-- Identical prompts return cached results with `cached: true` flag
-- Cache TTL varies by tier (free: 1 hour, premium: 30 minutes)
+### From AI Ensemble Response:
 
-### Loading States
-- Average response time: 3-8 seconds
-- Show loading indicator immediately
-- Consider timeout after 30 seconds
-- Display partial results if available
+- **`data.synthesis.content`** - Main AI response to display
+- **`data.synthesis.confidence.score`** - Confidence percentage (0-1)
+- **`data.synthesis.confidence.level`** - "high", "medium", "low", "very-low"
+- **`data.voting.winner`** - Which AI model won the voting
+- **`data.voting.consensus`** - "strong", "moderate", "weak"
+- **`data.roles[].content`** - Individual AI model responses
+- **`data.metadata.tier`** - Current user tier
 
-### Rate Limiting
-- Free tier: 10 requests per minute per user
-- Premium tier: 60 requests per minute per user
-- Implement client-side rate limiting to prevent errors
+### From Workout Response:
 
-This guide provides the foundation for building rich, interactive frontends that leverage NeuraStack's advanced AI ensemble capabilities with full explainability and transparency features.
+- **`data.mainWorkout.exercises`** - Array of exercises to display
+- **`data.metadata.estimatedDuration`** - Total workout time
+- **`data.metadata.difficulty`** - Workout difficulty level
+- **`data.metadata.targetMuscles`** - Muscles being worked
+
+## 🔐 Authentication & User Management
+
+The API uses simple header-based user identification:
+
+```javascript
+headers: {
+  'x-user-id': 'your-user-id' // Can be any unique identifier
+}
+```
+
+For production, implement proper authentication and pass the authenticated user ID in this header.
+
+## ⚡ Performance Considerations
+
+1. **AI Ensemble API**: Responses take 15-30 seconds - implement proper loading states
+2. **Caching**: The system has built-in caching - identical requests return faster
+3. **Rate Limits**: Free tier allows 25 requests/hour, 150/day
+4. **Timeouts**: Set client timeouts to at least 45 seconds for ensemble calls
+
+## 🎨 UI/UX Recommendations
+
+1. **Loading States**: Show spinners with estimated time (15-30s for ensemble)
+2. **Confidence Indicators**: Display confidence scores with color coding
+3. **Model Comparison**: Allow users to see individual AI model responses
+4. **Error Messages**: Provide clear, actionable error messages
+5. **Rate Limiting**: Show remaining requests or cooldown timers
+6. **Progressive Loading**: Show individual model responses as they complete
+
+## 📱 Mobile Considerations
+
+- API responses can be large - implement pagination for exercise lists
+- Use progressive loading for ensemble responses
+- Implement request cancellation for better UX
+- Consider caching strategies for frequently accessed data
+
+---
+
+**Deployment Status**: ✅ **LIVE & TESTED**
+**Last Updated**: July 14, 2025
+**Base URL**: https://neurastack-backend-638289111765.us-central1.run.app

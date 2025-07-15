@@ -30,7 +30,7 @@ const generateSafeUUID = (): string => {
   try {
     return crypto.randomUUID();
   } catch {
-    return 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    return 'session-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
   }
 };
 
@@ -61,6 +61,7 @@ interface StoredSession {
 interface HistoryState {
   sessions: ChatSession[];
   isLoading: boolean;
+  error: string | null;
   
   // Actions
   saveSession: (messages: Message[], customTitle?: string) => Promise<string>;
@@ -69,6 +70,7 @@ interface HistoryState {
   deleteSession: (sessionId: string) => Promise<void>;
   loadAllSessions: () => Promise<void>;
   clearSessions: () => void;
+  clearError: () => void;
 }
 
 // ============================================================================
@@ -119,6 +121,7 @@ export const useHistoryStore = create<HistoryState>()(
     (set, get) => ({
       sessions: [],
       isLoading: false,
+      error: null,
 
       saveSession: async (messages: Message[], customTitle?: string) => {
         if (messages.length === 0) {
@@ -265,7 +268,7 @@ export const useHistoryStore = create<HistoryState>()(
           return;
         }
 
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
 
         try {
           const userId = auth.currentUser.uid;
@@ -299,12 +302,16 @@ export const useHistoryStore = create<HistoryState>()(
           }
         } catch (error) {
           console.warn('Failed to load sessions from Firebase:', error);
-          set({ isLoading: false });
+          set({ isLoading: false, error: 'Failed to load sessions. Please try again.' });
         }
       },
 
       clearSessions: () => {
         set({ sessions: [] });
+      },
+
+      clearError: () => {
+        set({ error: null });
       }
     }),
     {

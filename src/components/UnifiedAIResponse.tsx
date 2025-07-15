@@ -6,29 +6,29 @@
  */
 
 import {
-    Accordion,
-    AccordionButton,
-    AccordionIcon,
-    AccordionItem,
-    AccordionPanel,
-    Badge,
-    Box,
-    Code,
-    Divider,
-    HStack,
-    ListItem,
-    OrderedList,
-    Table,
-    TableContainer,
-    Tbody,
-    Td,
-    Text,
-    Th,
-    Thead,
-    Tr,
-    UnorderedList,
-    useDisclosure,
-    VStack,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
+  Badge,
+  Box,
+  Code,
+  Divider,
+  HStack,
+  ListItem,
+  OrderedList,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  UnorderedList,
+  useDisclosure,
+  VStack,
 } from '@chakra-ui/react';
 import { memo } from 'react';
 import { PiClockBold } from 'react-icons/pi';
@@ -60,8 +60,6 @@ interface FontSizeConfig {
   small: string | object;
 }
 
-
-
 interface UnifiedAIResponseProps {
   content?: string;
   data?: AIResponseData;
@@ -84,7 +82,6 @@ const defaultFontSizes = {
 // ============================================================================
 
 const createMarkdownComponents = (fontSize: any) => ({
-  // Enhanced paragraphs for mobile reading
   p: ({ children }: any) => (
     <Text
       fontSize={fontSize.content}
@@ -93,7 +90,6 @@ const createMarkdownComponents = (fontSize: any) => ({
       mb={3}
       sx={{
         '&:last-child': { mb: 0 },
-        // Better text wrapping on mobile
         wordWrap: 'break-word',
         overflowWrap: 'break-word',
         hyphens: 'auto',
@@ -103,7 +99,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     </Text>
   ),
 
-  // Mobile-optimized headings
   h1: ({ children }: any) => (
     <Text
       as="h1"
@@ -149,7 +144,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     </Text>
   ),
 
-  // Enhanced lists for mobile
   ul: ({ children }: any) => (
     <UnorderedList
       pl={{ base: 4, md: 5 }}
@@ -193,7 +187,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     </ListItem>
   ),
 
-  // Enhanced code blocks for mobile
   code: ({ children, className }: any) => {
     const isInline = !className;
     
@@ -247,7 +240,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     );
   },
 
-  // Mobile-optimized tables
   table: ({ children }: any) => (
     <TableContainer mb={3} overflowX="auto">
       <Table size={{ base: "sm", md: "md" }} variant="simple">
@@ -276,7 +268,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     </Td>
   ),
 
-  // Enhanced blockquotes
   blockquote: ({ children }: any) => (
     <Box
       borderLeft="4px solid #4F9CF9"
@@ -298,7 +289,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     </Box>
   ),
 
-  // Horizontal rules
   hr: () => (
     <Divider
       my={4}
@@ -307,7 +297,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     />
   ),
 
-  // Links with mobile-friendly styling
   a: ({ children, href }: any) => (
     <Text
       as="a"
@@ -326,7 +315,6 @@ const createMarkdownComponents = (fontSize: any) => ({
     </Text>
   ),
 
-  // Strong and emphasis
   strong: ({ children }: any) => (
     <Text as="strong" fontWeight="600" color="#0F172A">
       {children}
@@ -350,17 +338,14 @@ export const UnifiedAIResponse = memo(({
 }: UnifiedAIResponseProps) => {
   const { isOpen: isExpanded, onToggle } = useDisclosure({ defaultIsOpen: true });
   
-  // Determine what to render
   const shouldRenderStructured = data && (data.ensembleMode || data.ensembleMetadata);
   const contentToRender = content || data?.answer || '';
   
   const markdownComponents = createMarkdownComponents(fontSize);
 
-  // If structured data, render enhanced version
   if (shouldRenderStructured && data) {
     return (
       <VStack align="stretch" spacing={4} w="100%">
-        {/* Main Response */}
         <Box>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -370,7 +355,6 @@ export const UnifiedAIResponse = memo(({
           </ReactMarkdown>
         </Box>
 
-        {/* Ensemble Metadata (if available) */}
         {data.ensembleMetadata && (
           <Accordion allowToggle index={isExpanded ? 0 : -1}>
             <AccordionItem border="none">
@@ -428,7 +412,6 @@ export const UnifiedAIResponse = memo(({
           </Accordion>
         )}
 
-        {/* Execution Info */}
         {(data.executionTime || data.ensembleMode) && (
           <HStack spacing={3} pt={2}>
             {data.ensembleMode && (
@@ -457,7 +440,6 @@ export const UnifiedAIResponse = memo(({
     );
   }
 
-  // Simple markdown rendering for regular content
   return (
     <Box
       w="100%"

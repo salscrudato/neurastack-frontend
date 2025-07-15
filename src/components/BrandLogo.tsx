@@ -20,10 +20,9 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
   text = 'neurastack',
   ...props
 }, ref) => {
-  // Adapt gradient to light / dark mode for a cleaner, on-brand look
   const gradient = useColorModeValue(
-    'linear(135deg, #4F9CF9 0%, #6366F1 50%, #8B5CF6 100%)',   // light - blue to purple
-    'linear(135deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%)'    // dark
+    'linear(135deg, #4F9CF9 0%, #6366F1 50%, #8B5CF6 100%)',
+    'linear(135deg, #60A5FA 0%, #3B82F6 50%, #1D4ED8 100%)'
   );
 
   const getLogoStyles = (): Record<string, unknown> => {
@@ -46,7 +45,16 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
     };
   };
 
-  const { fontSize, fontWeight } = typeof size === 'object' ? sizeMap.lg : sizeMap[size];
+  let fontSizeValue;
+  let fontWeightValue = '600';
+
+  if (typeof size === 'object') {
+    fontSizeValue = size;
+  } else {
+    const mappedSize = sizeMap[size];
+    fontSizeValue = mappedSize.fontSize;
+    fontWeightValue = mappedSize.fontWeight;
+  }
 
   const baseProps = {
     ref,
@@ -55,14 +63,13 @@ export const BrandLogo = memo(forwardRef<HTMLParagraphElement, BrandLogoProps>((
     letterSpacing: variant === 'splash' ? '0.5px' : variant === 'header' ? '0em' : '0px',
     transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
     position: "relative" as const,
-    // Ensure perfect vertical centering
     lineHeight: variant === 'header' ? '1' : '1.2',
     margin: 0,
     padding: 0,
     display: 'inline-block',
     ...getLogoStyles(),
-    fontSize: typeof size === 'object' ? size : fontSize,
-    fontWeight,
+    fontSize: fontSizeValue,
+    fontWeight: fontWeightValue,
     ...props,
   };
 

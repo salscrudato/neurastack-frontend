@@ -14,7 +14,7 @@ import { preloadCriticalServices } from './services/lazyFirebase';
 
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 
-// Simplified router (removed future flags as v7 is released by 2025; assume standard v7 behavior)
+// Router configuration using v7 standards
 const router = createBrowserRouter([
   {
     path: '/',
@@ -27,7 +27,7 @@ const router = createBrowserRouter([
           <AuthGuard requireAuth={false}>
             <SplashPage />
           </AuthGuard>
-        )
+        ),
       },
       {
         path: 'chat',
@@ -35,7 +35,7 @@ const router = createBrowserRouter([
           <AuthGuard requireAuth={true}>
             <ChatPage />
           </AuthGuard>
-        )
+        ),
       },
       {
         path: 'history',
@@ -45,38 +45,41 @@ const router = createBrowserRouter([
               <HistoryPage />
             </Suspense>
           </AuthGuard>
-        )
+        ),
       },
-    ]
-  }
-]);
+    ],
+  },
+], {
+  basename: '/', // Explicit for clarity; adjust if needed for deployment
+});
 
-// Route-specific error boundary component
+// Enhanced route error boundary with better UX
 function RouteErrorBoundary() {
   return (
-    <div className="error-container">
-      <h1>Oops! Something went wrong</h1>
-      <p>We couldn't find the page you're looking for.</p>
+    <div className="error-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', textAlign: 'center', padding: '1rem' }}>
+      <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Oops! Something went wrong</h1>
+      <p style={{ fontSize: '1rem', marginBottom: '2rem' }}>We couldn't find the page you're looking for. Please try refreshing or navigating back.</p>
+      <button onClick={() => window.location.href = '/'} style={{ padding: '0.5rem 1rem', background: '#4F9CF9', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        Go to Home
+      </button>
     </div>
   );
 }
 
-// Simplified initialization for MVP
+// Async initialization with error handling
 setTimeout(() => {
-  try {
-    preloadCriticalServices();
-  } catch (error) {
-    console.warn('Initialization failed:', error);
-  }
+  preloadCriticalServices().catch(error => {
+    console.warn('Service preload failed:', error);
+    // Optional: Add analytics or user notification here
+  });
 }, 0);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <OptimizedChakraProvider>
-        <RouterProvider router={router} />
+        <RouterProvider router={router} fallbackElement={<PageLoader message="Loading..." />} />
       </OptimizedChakraProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );
-

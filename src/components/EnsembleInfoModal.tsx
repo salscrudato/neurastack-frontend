@@ -4,6 +4,7 @@
  * Displays comprehensive AI ensemble analytics with modern, innovative design
  * following the NeuraStack API integration guide for optimal data utilization.
  * Optimized for informative insights without cost information.
+ * Incorporates 2025 UI/UX trends: minimalist design, enhanced animations, seamless UX.
  */
 
 import {
@@ -22,6 +23,7 @@ import {
     Text,
     VStack
 } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from 'react';
 import {
     PiBrainBold,
@@ -31,7 +33,6 @@ import {
     PiShieldCheckBold,
     PiWarningCircleBold
 } from "react-icons/pi";
-import { useMobileOptimization } from '../hooks/useMobileOptimization';
 import { commonModalProps, commonOverlayStyles, modalSizes } from './shared/modalConfig';
 
 interface EnsembleInfoModalProps {
@@ -87,13 +88,19 @@ interface EnsembleInfoModalProps {
     } | null;
 }
 
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+};
+
 export function EnsembleInfoModal({
     isOpen,
     onClose,
     ensembleData
 }: EnsembleInfoModalProps) {
     const [isLoading, setIsLoading] = useState(true);
-    const { isMobile } = useMobileOptimization();
+    // Remove unused variables to fix TypeScript warnings
 
     useEffect(() => {
         if (ensembleData) {
@@ -128,22 +135,7 @@ export function EnsembleInfoModal({
         };
     }, [ensembleData]);
 
-    const getConfidenceColor = (confidence: number) => {
-        if (confidence >= 0.8) return "#10B981";
-        if (confidence >= 0.6) return "#F59E0B";
-        return "#EF4444";
-    };
-
     const formatPercentage = (value: number) => `${Math.round(value * 100)}%`;
-
-    const getConsensusInfo = (strength: string) => {
-        switch (strength) {
-            case 'strong': return { color: '#059669', description: 'Strong', icon: PiCheckCircleBold };
-            case 'moderate': return { color: '#F59E0B', description: 'Moderate', icon: PiScalesBold };
-            case 'weak': return { color: '#EF4444', description: 'Weak', icon: PiWarningCircleBold };
-            default: return { color: '#6B7280', description: 'Unknown', icon: PiScalesBold };
-        }
-    };
 
     if (import.meta.env.DEV && ensembleData && isOpen) {
         console.group('🔍 EnsembleInfoModal Data Debug');
@@ -184,13 +176,18 @@ export function EnsembleInfoModal({
             aria-labelledby="ensemble-modal-title"
             aria-describedby="ensemble-modal-description"
         >
-            <ModalOverlay bg="blackAlpha.600" {...commonOverlayStyles} />
+            <ModalOverlay {...commonOverlayStyles} />
             <ModalContent
+                as={motion.div}
+                variants={modalVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
                 bg="#FFFFFF"
                 borderRadius="2xl"
-                maxH="90vh"
+                maxH="85vh"
                 maxW="900px"
-                m={0}
+                m={{ base: 2, md: 4 }}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
@@ -283,6 +280,8 @@ export function EnsembleInfoModal({
                                 </HStack>
                             </Box>
 
+
+
                             {/* Confidence Section */}
                             <Box bg="white" borderRadius="xl" p={6} border="1px solid" borderColor="rgba(226, 232, 240, 0.6)" boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)">
                                 <HStack spacing={3} mb={4}>
@@ -299,6 +298,11 @@ export function EnsembleInfoModal({
                                         </Badge>
                                     </Flex>
                                     <Progress value={overallConfidence * 100} colorScheme={overallConfidence >= 0.8 ? 'green' : overallConfidence >= 0.6 ? 'yellow' : 'red'} size="sm" borderRadius="full" />
+                                    <VStack align="start" spacing={1}>
+                                        {synthesis.confidence.factors.map((factor, index) => (
+                                            <Text key={index} fontSize="xs" color="#6B7280">• {factor}</Text>
+                                        ))}
+                                    </VStack>
                                     <Flex justify="space-between" align="center">
                                         <Text fontSize="sm" color="#64748B">Voting Confidence</Text>
                                         <Badge colorScheme={votingConfidence >= 0.8 ? 'green' : votingConfidence >= 0.6 ? 'yellow' : 'red'}>

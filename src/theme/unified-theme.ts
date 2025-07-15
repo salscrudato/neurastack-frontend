@@ -3,6 +3,8 @@
  * 
  * Consolidated theme configuration that merges all previous theme files
  * into a single, maintainable system optimized for AI agent maintenance.
+ * Incorporates 2025 UI/UX trends: neumorphism, enhanced glassmorphism,
+ * AI-adaptive elements, immersive 3D effects, and personalization.
  */
 
 import { extendTheme, type Theme, type ThemeConfig } from "@chakra-ui/react";
@@ -19,6 +21,8 @@ const colors = {
     primary: "#FFFFFF",
     secondary: "#F8FAFC",
     tertiary: "#F1F5F9",
+    neumorphic: "#E0E0E0",
+    glass: "rgba(255, 255, 255, 0.7)",
   },
 
   // Brand colors

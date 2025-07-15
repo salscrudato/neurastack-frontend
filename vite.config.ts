@@ -115,8 +115,32 @@ export default defineConfig({
           return `assets/[ext]/[name]-[hash].[ext]`;
         },
 
-        // Disable manual chunking to prevent initialization issues
-        // manualChunks: undefined,
+        // Manual chunking for optimal performance
+        manualChunks: {
+          // React core
+          'react-core': ['react', 'react-dom', 'react/jsx-runtime'],
+
+          // UI framework
+          'ui-framework': [
+            '@chakra-ui/react',
+            '@chakra-ui/theme-tools',
+            '@emotion/react',
+            '@emotion/styled',
+            'framer-motion'
+          ],
+
+          // Firebase
+          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
+
+          // Utilities
+          'utils': ['axios', 'date-fns', 'nanoid', 'zustand'],
+
+          // Icons and markdown
+          'content': ['react-icons', 'react-markdown', 'remark-gfm'],
+
+          // Router
+          'router': ['react-router-dom']
+        },
       },
 
       // Optimize external dependencies
@@ -166,7 +190,6 @@ export default defineConfig({
       'react/jsx-runtime',
       'react/jsx-dev-runtime',
       '@chakra-ui/react',
-      '@chakra-ui/system',
       '@chakra-ui/theme-tools',
       '@emotion/react',
       '@emotion/styled',

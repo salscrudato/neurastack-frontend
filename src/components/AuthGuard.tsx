@@ -17,10 +17,6 @@ interface AuthGuardProps {
   redirectTo?: string;
 }
 
-/**
- * AuthGuard component that protects routes using centralized auth state
- * No longer sets up its own auth listener to prevent conflicts
- */
 export function AuthGuard({
   children,
   requireAuth = true,
@@ -32,59 +28,33 @@ export function AuthGuard({
   const location = useLocation();
 
   useEffect(() => {
-    // Quick timeout to allow auth state to initialize
-    const quickTimeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 100); // Very short timeout for fast loading
-
-    return () => clearTimeout(quickTimeout);
+    const timeout = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    // Handle navigation based on auth state changes
     if (!isLoading) {
       if (requireAuth && !user) {
-        navigate(redirectTo, {
-          replace: true,
-          state: { from: location.pathname }
-        });
+        navigate(redirectTo, { replace: true, state: { from: location.pathname } });
       } else if (!requireAuth && user && location.pathname === '/') {
-        // User is authenticated but on splash page, redirect to chat immediately
         navigate('/chat', { replace: true });
       }
     }
   }, [user, isLoading, requireAuth, navigate, redirectTo, location.pathname]);
 
-  // Show minimal loading for very short time
   if (isLoading) {
     return (
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        minH="100vh"
-        bg="white"
-      >
-        <LoadingSpinner
-          size="lg"
-          message="Loading..."
-          fullScreen={false}
-        />
+      <Box display="flex" alignItems="center" justifyContent="center" minH="100vh" bg="white">
+        <LoadingSpinner size="lg" message="Authenticating..." fullScreen={false} />
       </Box>
     );
   }
 
-  // If auth is required but user is not authenticated, don't render children
-  if (requireAuth && !user) {
-    return null;
-  }
+  if (requireAuth && !user) return null;
 
   return <>{children}</>;
 }
 
-/**
- * Higher-order component for protecting routes
- */
 export function withAuthGuard<P extends object>(
   Component: React.ComponentType<P>,
   options: { requireAuth?: boolean; redirectTo?: string } = {}
@@ -98,9 +68,6 @@ export function withAuthGuard<P extends object>(
   };
 }
 
-/**
- * Hook for checking authentication status using centralized state
- */
 export function useAuthGuard() {
   const user = useAuthStore(s => s.user);
 
@@ -108,6 +75,6 @@ export function useAuthGuard() {
     isAuthenticated: !!user,
     isAnonymous: user?.isAnonymous ?? false,
     user,
-    isLoading: false // No loading since we use centralized auth state
+    isLoading: false,
   };
 }

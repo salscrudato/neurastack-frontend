@@ -140,6 +140,7 @@ export function ChatPage() {
         overflowY="auto"
         overflowX="hidden"
         px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }}
+        pb={{ base: "clamp(100px, 25vh, 140px)", md: "clamp(120px, 15vh, 160px)" }}  // Added padding-bottom for mobile keyboard
         sx={{
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
@@ -168,8 +169,8 @@ export function ChatPage() {
           <Flex direction="column" align="stretch" gap={chatConfig.container.gap}>
             {msgs.length === 0 && !isLoading && (
               <Flex direction="column" align="center" justify="center" minH="60vh" textAlign="center" px={4}>
-                <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="500" color="gray.800" mb={3} letterSpacing="-0.02em">What do you want to know?</Text>
-                <Text fontSize={{ base: "md", md: "lg" }} color="gray.500" fontWeight="400">The team will look into it...</Text>
+                <Text fontSize={{ base: "xl", sm: "2xl", md: "3xl" }} fontWeight="500" color="gray.800" mb={3} letterSpacing="-0.02em">What do you want to know?</Text>
+                <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} color="gray.500" fontWeight="400">The team will look into it...</Text>
               </Flex>
             )}
             {msgs.map((m, index) => (

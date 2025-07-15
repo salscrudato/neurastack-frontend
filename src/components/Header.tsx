@@ -50,7 +50,6 @@ export function Header() {
       { label: 'Chat', path: '/chat', icon: PiChatCircleBold, disabled: false }
     ];
 
-    // Only show History tab for authenticated non-guest users
     if (user && !user.isAnonymous) {
       items.push({ label: 'History', path: '/history', icon: PiClockCounterClockwiseBold, disabled: false });
     }
@@ -379,7 +378,7 @@ export function Header() {
                   textAlign="center"
                   lineHeight="1.4"
                 >
-                  v5.16 • pam.hackensack.ai
+                  v5.16 • Designed by Pam in Hackensack
                 </Text>
               </VStack>
             </DrawerFooter>
