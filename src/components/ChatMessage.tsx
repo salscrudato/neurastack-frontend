@@ -1,14 +1,14 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  IconButton,
-  Text,
-  Tooltip,
-  useClipboard,
-  VStack
+    Badge,
+    Box,
+    Button,
+    Flex,
+    HStack,
+    IconButton,
+    Text,
+    Tooltip,
+    useClipboard,
+    VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -29,9 +29,49 @@ const formatTimestamp = (timestamp: number): string => new Date(timestamp).toLoc
 
 const CopyButton = memo(({ text }: { text: string }) => {
   const { onCopy, hasCopied } = useClipboard(text);
+
   return (
-    <Tooltip label={hasCopied ? "Copied!" : "Copy message"} hasArrow fontSize="xs">
-      <IconButton aria-label="Copy message" icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />} size={{ base: "md", md: "sm" }} variant="ghost" onClick={onCopy} color="#94A3B8" boxShadow="none" _hover={{ color: "#475569", bg: "#F8FAFC", transform: "translateY(-1px)", boxShadow: "0 2px 8px rgba(148, 163, 184, 0.15)" }} _focus={{ boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)", outline: "none" }} _active={{ transform: "scale(0.95)", boxShadow: "none" }} minW={{ base: "44px", md: "32px" }} minH={{ base: "44px", md: "32px" }} sx={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }} />
+    <Tooltip
+      label={hasCopied ? "Copied!" : "Copy message"}
+      hasArrow
+      fontSize="xs"
+      bg="var(--color-surface-glass-strong)"
+      color="var(--color-text-primary)"
+      borderRadius="var(--radius-lg)"
+      backdropFilter="blur(12px)"
+    >
+      <IconButton
+        aria-label="Copy message"
+        icon={hasCopied ? <PiCheckBold /> : <PiCopyBold />}
+        size={{ base: "md", md: "sm" }}
+        variant="ghost"
+        onClick={onCopy}
+        color="var(--color-text-muted)"
+        bg="transparent"
+        borderRadius="var(--radius-lg)"
+        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+        _hover={{
+          color: "var(--color-text-secondary)",
+          bg: "var(--color-surface-glass)",
+          transform: "translateY(-1px) scale(1.05)",
+          boxShadow: "var(--shadow-button-hover)"
+        }}
+        _focus={{
+          boxShadow: "0 0 0 2px var(--color-brand-primary)",
+          outline: "none"
+        }}
+        _active={{
+          transform: "translateY(0) scale(0.95)",
+          boxShadow: "var(--shadow-button)"
+        }}
+        minW={{ base: "44px", md: "36px" }}
+        minH={{ base: "44px", md: "36px" }}
+        sx={{
+          touchAction: 'manipulation',
+          WebkitTapHighlightColor: 'transparent',
+          backdropFilter: hasCopied ? 'blur(8px)' : 'none'
+        }}
+      />
     </Tooltip>
   );
 });
@@ -60,18 +100,37 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
   const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
 
-  const bgUser = "linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)";
-  const bgAi = "rgba(255, 255, 255, 0.95)";
-  const textAi = "#1E293B";
-  const bgErr = "rgba(254, 242, 242, 0.95)";
-  const textErr = "#DC2626";
-  const timestampColor = "#94A3B8";
-  const borderAi = "rgba(226, 232, 240, 0.3)";
-  const shadowUser = "0 4px 16px rgba(79, 156, 249, 0.2), 0 2px 8px rgba(79, 156, 249, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)";
-  const shadowAi = "0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.8)";
-
-  const bubbleBg = isUser ? bgUser : isError ? bgErr : bgAi;
-  const bubbleText = isUser ? "white" : isError ? textErr : textAi;
+  // Enhanced styling system with improved visual hierarchy
+  const messageStyles = useMemo(() => {
+    if (isUser) {
+      return {
+        bg: "var(--gradient-primary)",
+        color: "white",
+        shadow: "var(--shadow-brand), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        align: "flex-end" as const,
+        borderRadius: "var(--radius-2xl) var(--radius-lg) var(--radius-lg) var(--radius-2xl)"
+      };
+    } else if (isError) {
+      return {
+        bg: "rgba(254, 242, 242, 0.95)",
+        color: "var(--color-text-error)",
+        shadow: "var(--shadow-card)",
+        border: "1px solid rgba(239, 68, 68, 0.2)",
+        align: "flex-start" as const,
+        borderRadius: "var(--radius-lg) var(--radius-2xl) var(--radius-2xl) var(--radius-lg)"
+      };
+    } else {
+      return {
+        bg: "var(--color-surface-glass-strong)",
+        color: "var(--color-text-primary)",
+        shadow: "var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
+        border: "none",
+        align: "flex-start" as const,
+        borderRadius: "var(--radius-lg) var(--radius-2xl) var(--radius-2xl) var(--radius-lg)"
+      };
+    }
+  }, [isUser, isError]);
 
   // Extract analytics from fullData
   const confidence = fullData?.synthesis?.confidence?.score || 0;
@@ -91,13 +150,100 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
   return (
     <VStack spacing={{ base: 1, md: 2 }} w="100%" align="stretch">
-      <Flex align="center" w="100%" my={{ base: 0.5, md: 1 }}>
-        <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.3} />
-        <Text px={{ base: 2, md: 3 }} fontSize={{ base: "2xs", md: "xs" }} color={timestampColor} fontWeight="500" bg="rgba(248, 250, 252, 0.8)" backdropFilter="blur(8px)" borderRadius="full" py={0.5} border="1px solid" borderColor="rgba(226, 232, 240, 0.3)">{formatTimestamp(message.timestamp)}</Text>
-        <Box flex="1" h="1px" bg="#E2E8F0" opacity={0.3} />
+      <Flex align="center" w="100%" my={{ base: 1, md: 1.5 }}>
+        <Box flex="1" h="1px" bg="var(--color-border-light)" opacity={0.4} />
+        <Text
+          px={{ base: 2, md: 3 }}
+          py={0.5}
+          fontSize={{ base: "2xs", md: "xs" }}
+          color="#6B7280"
+          fontWeight="400"
+          bg="transparent"
+          letterSpacing="var(--letter-spacing-normal)"
+        >
+          {formatTimestamp(message.timestamp)}
+        </Text>
+        <Box flex="1" h="1px" bg="var(--color-border-light)" opacity={0.4} />
       </Flex>
-      <Flex direction="column" align={isUser ? "flex-end" : "flex-start"} w="100%" bg={isHighlighted ? 'rgba(79, 156, 249, 0.05)' : 'transparent'} borderRadius="xl" p={isHighlighted ? 2 : 0} transition="all 200ms cubic-bezier(0.4, 0, 0.2, 1)">
-        <Box bg={bubbleBg} color={bubbleText} px={{ base: isUser ? 3 : 3, md: isUser ? 3.5 : 4 }} py={{ base: isUser ? 2 : 2.5, md: isUser ? 2.5 : 3 }} borderRadius={isUser ? "xl" : "lg"} maxW={{ base: isUser ? "90%" : "95%", sm: isUser ? "88%" : "92%", md: isUser ? "80%" : "88%", lg: isUser ? "75%" : "85%" }} minW={{ base: "20%", sm: "25%", md: "30%" }} position="relative" boxShadow={isUser ? shadowUser : shadowAi} border={isUser ? "none" : "1px solid"} borderColor={isUser ? "transparent" : borderAi} backdropFilter={isUser ? "none" : "blur(16px)"} transition="all 250ms cubic-bezier(0.4, 0, 0.2, 1)" minH={{ base: "44px", md: "auto" }} _hover={{ transform: isUser ? "translateY(-2px) scale(1.01)" : "translateY(-1px)", boxShadow: isUser ? "0 12px 40px rgba(79, 156, 249, 0.35), 0 4px 16px rgba(79, 156, 249, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25)" : "0 6px 20px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9)" }} sx={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', ...(isUser && { background: 'linear-gradient(135deg, #4F9CF9 0%, #6366F1 100%)', '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)', borderRadius: '2xl', pointerEvents: 'none' } }), ...(!isUser && !isError && { backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', '&::after': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)', borderRadius: 'xl', pointerEvents: 'none', zIndex: 1 } }), '@media (max-width: 768px)': { minHeight: '44px' } }}>
+      <Flex
+        direction="column"
+        align={messageStyles.align}
+        w="100%"
+        bg={isHighlighted ? 'rgba(79, 156, 249, 0.04)' : 'transparent'}
+        borderRadius="var(--radius-2xl)"
+        p={isHighlighted ? 3 : 0}
+        transition="var(--transition-normal)"
+      >
+        <Box
+          bg={messageStyles.bg}
+          color={messageStyles.color}
+          px={{ base: 4, md: 5 }}
+          py={{ base: 3, md: 3.5 }}
+          borderRadius={messageStyles.borderRadius}
+          maxW={{
+            base: isUser ? "85%" : "92%",
+            sm: isUser ? "80%" : "88%",
+            md: isUser ? "75%" : "85%",
+            lg: isUser ? "70%" : "80%"
+          }}
+          minW={{ base: "20%", sm: "25%", md: "30%" }}
+          position="relative"
+          boxShadow={messageStyles.shadow}
+          border={messageStyles.border}
+          backdropFilter={isUser ? "none" : "blur(20px)"}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          minH={{ base: "44px", md: "auto" }}
+          _hover={{
+            transform: isUser ? "translateY(-2px) scale(1.02)" : "translateY(-1px) scale(1.01)",
+            boxShadow: isUser
+              ? "var(--shadow-brand-hover), inset 0 1px 0 rgba(255, 255, 255, 0.3)"
+              : "var(--shadow-card-hover), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
+          }}
+          sx={{
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            ...(isUser && {
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%)',
+                borderRadius: 'inherit',
+                pointerEvents: 'none'
+              }
+            }),
+            ...(!isUser && !isError && {
+              WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 0 20px rgba(79, 156, 249, 0.15)',
+              animation: 'subtleBlueGlow 3s ease-in-out infinite',
+              '@keyframes subtleBlueGlow': {
+                '0%, 100%': {
+                  boxShadow: '0 0 15px rgba(79, 156, 249, 0.1), var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+                },
+                '50%': {
+                  boxShadow: '0 0 25px rgba(79, 156, 249, 0.2), var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+                }
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                borderRadius: 'inherit',
+                pointerEvents: 'none',
+                zIndex: 1
+              }
+            })
+          }}
+        >
           {!isUser && !isError && !isLoading && message.metadata?.metadata && (
             <Box mb={2}>
               <VStack spacing={2} align="stretch">
@@ -113,11 +259,11 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
                           setIsAdvancedAnalyticsOpen(true);
                         }}
-                        bg="rgba(79, 156, 249, 0.1)"
-                        color="#4F9CF9"
+                        bg="#4F9CF9"
+                        color="white"
                         fontWeight="600"
                         fontSize="2xs"
-                        border="1px solid rgba(79, 156, 249, 0.3)"
+                        border="1px solid #4F9CF9"
                         boxShadow="0 1px 4px rgba(79, 156, 249, 0.1), 0 4px 12px rgba(79, 156, 249, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
                         position="relative"
                         overflow="hidden"
@@ -141,21 +287,21 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           left: '-100%',
                           width: '100%',
                           height: '100%',
-                          background: 'linear-gradient(90deg, transparent, rgba(79, 156, 249, 0.1), transparent)',
+                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
                           transition: 'left 0.8s ease'
                         }}
                         _hover={{
-                          bg: "rgba(79, 156, 249, 0.15)",
-                          borderColor: "rgba(79, 156, 249, 0.5)",
-                          color: "#3B82F6",
+                          bg: "#3B82F6",
+                          borderColor: "#3B82F6",
+                          color: "white",
                           transform: "translateY(-1px)",
-                          boxShadow: "0 8px 24px rgba(79, 156, 249, 0.25)",
+                          boxShadow: "0 8px 24px rgba(79, 156, 249, 0.35)",
                           _before: { left: '100%' }
                         }}
                         _active={{
                           transform: "translateY(0) scale(0.98)",
-                          bg: "rgba(79, 156, 249, 0.1)",
-                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.15)"
+                          bg: "#2563EB",
+                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.25)"
                         }}
                         _focus={{
                           boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
@@ -171,7 +317,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
             </Box>
           )}
           <Box>
-            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={textErr}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.4", md: "1.5" }} fontWeight="500" letterSpacing="0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "md", md: "lg" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
+            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.4", md: "1.5" }} fontWeight="500" letterSpacing="0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "md", md: "lg" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
           </Box>
           {!isUser && fullData && (
             <HStack spacing={2} mt={2} justify="flex-start">

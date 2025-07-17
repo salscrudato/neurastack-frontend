@@ -503,9 +503,10 @@
     border-radius: 0;
   }
 
-  /* Enhanced touch targets */
+  /* Enhanced touch targets - 2025 */
   button,
   .chakra-button,
+  .chakra-icon-button,
   [role="button"] {
     min-height: 48px;
     min-width: 48px;
@@ -513,6 +514,30 @@
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* Enhanced focus states for mobile accessibility */
+  .chakra-button:focus,
+  .chakra-input:focus,
+  .chakra-textarea:focus {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+  }
+
+  /* Better mobile typography */
+  .mobile-text {
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    letter-spacing: var(--letter-spacing-normal);
+  }
+
+  /* Mobile-optimized spacing */
+  .mobile-spacing {
+    padding: var(--space-4);
+    gap: var(--space-3);
   }
 
   /* Optimize animations for mobile */
@@ -525,6 +550,78 @@
   .chakra-modal,
   .chakra-drawer {
     will-change: transform, opacity;
+  }
+}
+
+/* ===================================================================
+   ENHANCED DESIGN SYSTEM UTILITIES - 2025
+   =================================================================== */
+
+/* Typography utilities */
+.text-crisp {
+  font-family: var(--font-text);
+  letter-spacing: var(--letter-spacing-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.text-gradient-brand {
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-primary) 0%,
+    var(--color-brand-secondary) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced hover effects */
+.hover-lift-subtle {
+  transition: var(--transition-normal);
+}
+
+.hover-lift-subtle:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.hover-glow-brand {
+  transition: var(--transition-normal);
+}
+
+.hover-glow-brand:hover {
+  box-shadow: var(--shadow-brand);
+}
+
+/* Animation utilities */
+.animate-fade-in-smooth {
+  animation: fadeInSmooth var(--transition-normal) ease-out;
+}
+
+.animate-slide-up-smooth {
+  animation: slideUpSmooth var(--transition-slow) ease-out;
+}
+
+@keyframes fadeInSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpSmooth {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

@@ -1,10 +1,10 @@
 import {
-  Box,
-  Flex,
-  SkeletonText,
-  Spinner,
-  Text,
-  useColorModeValue
+    Box,
+    Flex,
+    SkeletonText,
+    Spinner,
+    Text,
+    useColorModeValue
 } from '@chakra-ui/react';
 import { memo, useEffect, useState } from 'react';
 import { useReducedMotion } from '../hooks/useAccessibility';
@@ -17,19 +17,19 @@ interface LoaderProps {
   lines?: number;
 }
 
-// Enhanced InnovativeSpinner with optimized animations and theme support
+// Enhanced InnovativeSpinner with modern design system integration
 const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
   const [activeNode, setActiveNode] = useState(0);
   const [connectionPhase, setConnectionPhase] = useState(0);
   const [neuralPulse, setNeuralPulse] = useState(0);
   const prefersReducedMotion = useReducedMotion();
-  const primaryColor = useColorModeValue('#4F9CF9', '#60A5FA');
+  const primaryColor = 'var(--color-brand-primary)';
 
   const sizeConfig = {
-    sm: { container: 50, node: 6, core: 3 },
-    md: { container: 70, node: 8, core: 4 },
-    lg: { container: 90, node: 10, core: 5 },
-    xl: { container: 110, node: 12, core: 6 }
+    sm: { container: 56, node: 7, core: 4 },
+    md: { container: 76, node: 9, core: 5 },
+    lg: { container: 96, node: 11, core: 6 },
+    xl: { container: 116, node: 13, core: 7 }
   };
 
   const config = sizeConfig[size];
@@ -45,10 +45,10 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
   }, [prefersReducedMotion]);
 
   const nodes = [
-    { x: 0.25, y: 0.25, color: '#6EE7B7', name: 'GPT' },
-    { x: 0.75, y: 0.25, color: '#C4B5FD', name: 'Claude' },
-    { x: 0.25, y: 0.75, color: '#FCD34D', name: 'Gemini' },
-    { x: 0.75, y: 0.75, color: '#93C5FD', name: 'Synthesis' }
+    { x: 0.25, y: 0.25, color: 'var(--color-success)', name: 'GPT' },
+    { x: 0.75, y: 0.25, color: 'var(--color-brand-secondary)', name: 'Claude' },
+    { x: 0.25, y: 0.75, color: 'var(--color-warning)', name: 'Gemini' },
+    { x: 0.75, y: 0.75, color: 'var(--color-brand-accent)', name: 'Synthesis' }
   ];
 
   return (

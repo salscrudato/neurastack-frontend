@@ -13,29 +13,64 @@ export const commonModalProps = {
   blockScrollOnMount: true,
 };
 
-// Common overlay styling
+// Enhanced overlay styling with improved glass morphism
 export const commonOverlayStyles = {
-  backdropFilter: "blur(8px)",
-  bg: "rgba(0, 0, 0, 0.6)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  bg: "rgba(15, 23, 42, 0.4)",
   zIndex: "var(--z-modal-backdrop)",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
 };
 
-// Common content styling
+// Enhanced content styling with modern glass effects
 export const commonContentStyles = {
-  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)",
-  border: "1px solid",
-  borderColor: "rgba(226, 232, 240, 0.8)",
+  bg: "var(--color-surface-glass-strong)",
+  backdropFilter: "blur(24px)",
+  WebkitBackdropFilter: "blur(24px)",
+  boxShadow: "var(--shadow-2xl), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
+  border: "1px solid rgba(255, 255, 255, 0.2)",
+  borderRadius: "var(--radius-3xl)",
+  position: "relative",
+  overflow: "hidden",
+  _before: {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "1px",
+    background: "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%)",
+    pointerEvents: "none"
+  }
 };
 
-// Modal size configurations
+// Enhanced modal size configurations
 export const modalSizes = {
-  small: { base: "xl", md: "lg" },
+  small: { base: "sm", md: "md" },
+  medium: { base: "lg", md: "xl" },
   large: { base: "full", md: "2xl" },
+  extraLarge: { base: "full", md: "4xl" }
 };
 
-// Common close button styling
+// Enhanced close button styling
 export const commonCloseButtonStyles = {
-  color: "#4F9CF9",
-  _hover: { bg: "blue.50" },
-  borderRadius: "full",
+  color: "var(--color-text-muted)",
+  bg: "var(--color-surface-glass)",
+  borderRadius: "var(--radius-lg)",
+  backdropFilter: "blur(8px)",
+  border: "1px solid rgba(255, 255, 255, 0.2)",
+  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+  _hover: {
+    bg: "var(--color-surface-primary)",
+    color: "var(--color-text-primary)",
+    transform: "scale(1.05)",
+    boxShadow: "var(--shadow-button-hover)"
+  },
+  _active: {
+    transform: "scale(0.95)"
+  },
+  _focus: {
+    outline: "none",
+    boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.3)"
+  }
 };

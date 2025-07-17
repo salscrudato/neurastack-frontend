@@ -112,7 +112,15 @@ export function IndividualModelModal({
         return (
             <Modal {...commonModalProps} isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay {...commonOverlayStyles} />
-                <ModalContent>
+                <ModalContent
+                    mx={{ base: 2, md: 4 }}
+                    mt={{
+                      base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)",
+                      md: "calc(var(--header-height-desktop) + 16px)"
+                    }}
+                    mb={{ base: 2, md: 4 }}
+                    sx={{ zIndex: 'var(--z-modal)' }}
+                >
                     <ModalBody display="flex" justifyContent="center" alignItems="center" minH="200px">
                         <Spinner size="lg" color="#4F9CF9" />
                     </ModalBody>
@@ -140,7 +148,12 @@ export function IndividualModelModal({
                 borderRadius="2xl"
                 maxH="85vh"
                 maxW="700px"
-                m={{ base: 2, md: 4 }}
+                mx={{ base: 2, md: 4 }}
+                mt={{
+                  base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)",
+                  md: "calc(var(--header-height-desktop) + 16px)"
+                }}
+                mb={{ base: 2, md: 4 }}
                 overflow="hidden"
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"

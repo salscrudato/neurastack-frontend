@@ -5,38 +5,71 @@
   --chat-input-height-mobile: 120px;
   --chat-input-height-desktop: 140px;
 
-  /* Modern Typography Stack */
-  --font-display: "SF Pro Display", "Inter var", -apple-system,
+  /* Enhanced Typography Stack - 2025 */
+  --font-display: "SF Pro Display", "Inter Display", -apple-system,
     BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
-  --font-text: "SF Pro Text", "Inter var", -apple-system, BlinkMacSystemFont,
+  --font-text: "SF Pro Text", "Inter", -apple-system, BlinkMacSystemFont,
     "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
-  --font-mono: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
-    "Source Code Pro", monospace;
-  --font-family: var(--font-text); /* Default fallback */
-  --font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01", "ss02";
+  --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", "Monaco", "Inconsolata",
+    "Roboto Mono", "Source Code Pro", monospace;
+  --font-family: var(--font-text);
+  --font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01", "ss02",
+    "liga", "calt";
   --font-variant-numeric: proportional-nums;
-  --letter-spacing-tight: -0.011em;
-  --letter-spacing-normal: -0.009em;
-  --letter-spacing-wide: -0.008em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: -0.015em;
+  --letter-spacing-wide: -0.005em;
+  --letter-spacing-loose: 0.025em;
 
-  /* Color Palette - Light Mode */
+  /* Typography Scale - Refined */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+
+  /* Line Heights - Optimized */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Enhanced Color System - 2025 */
+  /* Background Colors */
   --color-bg-primary: #fafbfc;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+
+  /* Surface Colors */
   --color-surface-primary: #ffffff;
   --color-surface-secondary: #f8fafc;
   --color-surface-tertiary: #f1f5f9;
-  --color-surface-glass: rgba(255, 255, 255, 0.8);
+  --color-surface-elevated: #ffffff;
+  --color-surface-glass: rgba(255, 255, 255, 0.85);
+  --color-surface-glass-strong: rgba(255, 255, 255, 0.95);
 
   /* Dark Mode Palette */
   --color-bg-primary-dark: #0f172a;
+  --color-bg-secondary-dark: #1e293b;
   --color-surface-primary-dark: #1e293b;
   --color-surface-secondary-dark: #334155;
   --color-surface-tertiary-dark: #475569;
-  --color-surface-glass-dark: rgba(30, 41, 59, 0.8);
+  --color-surface-glass-dark: rgba(30, 41, 59, 0.85);
 
-  /* Brand Colors */
+  /* Brand Colors - Enhanced */
   --color-brand-primary: #4f9cf9;
+  --color-brand-primary-hover: #3b82f6;
+  --color-brand-primary-active: #2563eb;
   --color-brand-secondary: #8b5cf6;
+  --color-brand-secondary-hover: #7c3aed;
   --color-brand-accent: #06b6d4;
+  --color-brand-accent-hover: #0891b2;
   --gradient-primary: linear-gradient(135deg, #4f9cf9 0%, #6366f1 100%);
   --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
   --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
@@ -56,17 +89,35 @@
   --gradient-text-primary: linear-gradient(135deg, #4f9cf9 0%, #8b5cf6 100%);
   --gradient-text-secondary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 
-  /* Text Colors */
+  /* Text Colors - Enhanced Contrast */
   --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #64748b;
-  --color-text-muted: #94a3b8;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-text-subtle: #d1d5db;
   --color-text-inverse: #ffffff;
+  --color-text-brand: #4f9cf9;
+  --color-text-success: #059669;
+  --color-text-warning: #d97706;
+  --color-text-error: #dc2626;
 
-  /* Border Colors */
-  --color-border-light: #f1f5f9;
-  --color-border-medium: #e2e8f0;
-  --color-border-strong: #cbd5e1;
+  /* Border System - Refined */
+  --color-border-subtle: #f3f4f6;
+  --color-border-light: #e5e7eb;
+  --color-border-medium: #d1d5db;
+  --color-border-strong: #9ca3af;
+  --color-border-brand: rgba(79, 156, 249, 0.2);
+  --color-border-brand-hover: rgba(79, 156, 249, 0.4);
+
+  /* Border Radius - Consistent Scale */
+  --radius-xs: 0.25rem; /* 4px */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+  --radius-2xl: 1.5rem; /* 24px */
+  --radius-3xl: 2rem; /* 32px */
+  --radius-full: 9999px;
 
   /* Semantic Colors */
   --color-success: #10b981;
@@ -74,23 +125,34 @@
   --color-error: #ef4444;
   --color-info: #3b82f6;
 
-  /* Enhanced Shadows with Glass Effects */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* Enhanced Shadow System - 2025 */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -2px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  --shadow-glass-light: 0 4px 16px 0 rgba(31, 38, 135, 0.15);
-  --shadow-glow: 0 0 20px rgba(79, 156, 249, 0.3);
-  --shadow-glow-strong: 0 0 40px rgba(79, 156, 249, 0.4);
-  --shadow-user-bubble: 0 4px 12px rgba(79, 156, 249, 0.25);
-  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.12),
-    0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+
+  /* Glass Effects - Enhanced */
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+  --shadow-glass-light: 0 4px 16px 0 rgba(31, 38, 135, 0.12);
+  --shadow-glass-strong: 0 12px 40px 0 rgba(31, 38, 135, 0.35);
+
+  /* Brand Shadows */
+  --shadow-brand: 0 4px 12px rgba(79, 156, 249, 0.15);
+  --shadow-brand-hover: 0 8px 24px rgba(79, 156, 249, 0.25);
+  --shadow-brand-active: 0 2px 8px rgba(79, 156, 249, 0.2);
+
+  /* Interactive Shadows */
+  --shadow-button: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-button-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.06);
 
   /* Backdrop Blur Values */
   --blur-xs: blur(4px);
@@ -100,15 +162,32 @@
   --blur-xl: blur(24px);
   --blur-2xl: blur(32px);
 
-  /* Spacing Scale (4px grid) */
-  --space-xs: 0.25rem; /* 4px */
-  --space-sm: 0.5rem; /* 8px */
-  --space-md: 1rem; /* 16px */
-  --space-lg: 1.5rem; /* 24px */
-  --space-xl: 2rem; /* 32px */
-  --space-2xl: 3rem; /* 48px */
-  --space-3xl: 4rem; /* 64px */
-  --space-4xl: 6rem; /* 96px */
+  /* Enhanced Spacing System - 4px Base Grid */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+
+  /* Legacy spacing for compatibility */
+  --space-xs: var(--space-1); /* 4px */
+  --space-sm: var(--space-2); /* 8px */
+  --space-md: var(--space-4); /* 16px */
+  --space-lg: var(--space-6); /* 24px */
+  --space-xl: var(--space-8); /* 32px */
+  --space-2xl: var(--space-12); /* 48px */
+  --space-3xl: var(--space-16); /* 64px */
+  --space-4xl: var(--space-24); /* 96px */
 
   /* Border Radius */
   --radius-sm: 0.125rem; /* 2px */
