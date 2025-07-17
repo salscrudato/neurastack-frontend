@@ -1,12 +1,3 @@
-/**
- * Enhanced Ensemble Info Modal Component
- *
- * Displays comprehensive AI ensemble analytics with modern, innovative design
- * following the NeuraStack API integration guide for optimal data utilization.
- * Optimized for informative insights without cost information.
- * Incorporates 2025 UI/UX trends: minimalist design, enhanced animations, seamless UX.
- */
-
 import {
     Badge,
     Box,
@@ -94,13 +85,14 @@ const modalVariants = {
   exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
 };
 
+
+
 export function EnsembleInfoModal({
     isOpen,
     onClose,
     ensembleData
 }: EnsembleInfoModalProps) {
     const [isLoading, setIsLoading] = useState(true);
-    // Remove unused variables to fix TypeScript warnings
 
     useEffect(() => {
         if (ensembleData) {
@@ -188,6 +180,7 @@ export function EnsembleInfoModal({
                 maxH="85vh"
                 maxW="900px"
                 m={{ base: 2, md: 4 }}
+                mt={{ base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)", md: "calc(var(--header-height-desktop) + env(safe-area-inset-top, 0px) + 24px)" }}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"

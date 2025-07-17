@@ -1,14 +1,14 @@
 import {
-    Badge,
-    Box,
-    Button,
-    Flex,
-    HStack,
-    IconButton,
-    Text,
-    Tooltip,
-    useClipboard,
-    VStack
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Text,
+  Tooltip,
+  useClipboard,
+  VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -93,10 +93,6 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
   const structuredResponse = !isUser && !isError ? parseAIResponse(processedContent) : null;
   const displayText = processedContent;
-
-
-
-
 
   const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
 

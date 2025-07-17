@@ -24,6 +24,8 @@ export function ChatPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const initialHeightRef = useRef<number>(window.innerHeight);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const prefersReducedMotion = useReducedMotion();
 
@@ -114,6 +116,33 @@ export function ChatPage() {
     await sendMessage(prompt);
   }, [sendMessage]);
 
+  useEffect(() => {
+    const updateInitialHeight = () => {
+      if (window.innerHeight > initialHeightRef.current) {
+        initialHeightRef.current = window.innerHeight;
+      }
+    };
+    window.addEventListener('resize', updateInitialHeight);
+    updateInitialHeight();
+    return () => window.removeEventListener('resize', updateInitialHeight);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const newHeight = window.innerHeight;
+      const kh = initialHeightRef.current - newHeight;
+      setKeyboardHeight(kh > 100 ? kh : 0);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const scrollButtonBottom = useMemo(() => ({
+    base: `calc(120px + env(safe-area-inset-bottom, 0px) + 16px + ${keyboardHeight}px)`,
+    md: `calc(140px + 20px + ${keyboardHeight}px)`
+  }), [keyboardHeight]);
+
   return (
     <Box
       h="100vh"
@@ -140,6 +169,7 @@ export function ChatPage() {
         overflowY="auto"
         overflowX="hidden"
         px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }}
+        pt={{ base: "calc(4rem + env(safe-area-inset-top, 0px))", md: "5rem" }}
         pb={{ base: "clamp(100px, 25vh, 140px)", md: "clamp(120px, 15vh, 160px)" }}  // Added padding-bottom for mobile keyboard
         sx={{
           WebkitOverflowScrolling: "touch",
@@ -189,10 +219,7 @@ export function ChatPage() {
           aria-label="Scroll to bottom of chat"
           icon={<PiArrowUpBold />}
           position="fixed"
-          bottom={{
-            base: "calc(120px + env(safe-area-inset-bottom, 0px) + 16px)",
-            md: "calc(140px + 20px)"
-          }}
+          bottom={scrollButtonBottom}
           right={{ base: 4, md: 6 }}
           size={{ base: "md", md: "lg" }}
           borderRadius="full"

@@ -26,6 +26,7 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { auth } from '../firebase';
+import { useReducedMotion } from '../hooks/useAccessibility';
 import { useAuthStore } from '../store/useAuthStore';
 import { BrandLogo } from './BrandLogo';
 
@@ -43,6 +44,8 @@ export function Header() {
     if (isOpen) onClose();
   }
 
+  const prefersReducedMotion = useReducedMotion();
+
   const brandText = 'neurastack';
 
   const navigationItems = useMemo(() => {
@@ -56,6 +59,29 @@ export function Header() {
 
     return items;
   }, [user]);
+
+  const animationConfig = useMemo(() => ({
+    transition: prefersReducedMotion ? 'none' : 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+    transitionLong: prefersReducedMotion ? 'none' : 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+    hoverTransform: prefersReducedMotion ? 'none' : 'translateY(-1px)',
+    activeTransform: prefersReducedMotion ? 'none' : 'translateY(0) scale(0.98)',
+    hoverBoxShadow: prefersReducedMotion ? '0 2px 12px rgba(79, 156, 249, 0.15), 0 4px 24px rgba(79, 156, 249, 0.06)' : '0 4px 16px rgba(79, 156, 249, 0.2), 0 8px 32px rgba(79, 156, 249, 0.08)',
+    activeBoxShadow: '0 2px 12px rgba(79, 156, 249, 0.15), 0 4px 24px rgba(79, 156, 249, 0.06)',
+    hoverBorderColor: 'rgba(79, 156, 249, 0.25)',
+    closeTransition: prefersReducedMotion ? 'none' : 'all 0.2s ease',
+    closeHoverTransform: prefersReducedMotion ? 'none' : 'scale(1.05)',
+    closeActiveTransform: prefersReducedMotion ? 'none' : 'scale(0.95)',
+    signOutHoverBg: 'rgba(239, 68, 68, 0.1)',
+    signOutHoverBorder: 'rgba(239, 68, 68, 0.2)',
+    signOutHoverShadow: prefersReducedMotion ? 'none' : '0 4px 12px rgba(239, 68, 68, 0.15)',
+    menuHoverColor: prefersReducedMotion ? '#4F9CF9' : '#3B82F6',
+    menuHoverBg: 'rgba(255, 255, 255, 1)',
+    menuHoverShadow: '0 8px 20px rgba(79, 156, 249, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)',
+    menuHoverBorder: 'rgba(79, 156, 249, 0.25)',
+    menuActiveBg: 'rgba(255, 255, 255, 0.95)',
+    menuActiveShadow: '0 4px 12px rgba(79, 156, 249, 0.2), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+    menuFocusShadow: '0 0 0 3px rgba(79, 156, 249, 0.3), 0 4px 12px rgba(79, 156, 249, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
+  }), [prefersReducedMotion]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -105,7 +131,7 @@ export function Header() {
           w="100%"
           p={3}
           borderRadius="16px"
-          transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+          transition={animationConfig.transition}
           bg={isActive ? "rgba(79, 156, 249, 0.08)" : "rgba(255, 255, 255, 0.6)"}
           border={isActive ? "1px solid rgba(79, 156, 249, 0.2)" : "1px solid rgba(79, 156, 249, 0.05)"}
           opacity={isDisabled ? 0.5 : 1}
@@ -119,16 +145,16 @@ export function Header() {
           boxShadow={isActive ? "0 2px 12px rgba(79, 156, 249, 0.15), 0 4px 24px rgba(79, 156, 249, 0.06)" : "0 1px 4px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.01)"}
           _hover={isDisabled ? {} : {
             bg: isActive ? "rgba(79, 156, 249, 0.12)" : "rgba(79, 156, 249, 0.06)",
-            transform: "translateY(-1px)",
-            boxShadow: "0 4px 16px rgba(79, 156, 249, 0.2), 0 8px 32px rgba(79, 156, 249, 0.08)",
-            borderColor: "rgba(79, 156, 249, 0.25)"
+            transform: animationConfig.hoverTransform,
+            boxShadow: animationConfig.hoverBoxShadow,
+            borderColor: animationConfig.hoverBorderColor
           }}
           _focus={isDisabled ? {} : {
             outline: "none",
             boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)"
           }}
           _active={isDisabled ? {} : {
-            transform: "translateY(0) scale(0.98)"
+            transform: animationConfig.activeTransform
           }}
           aria-label={`Navigate to ${item.label}`}
           aria-current={isActive ? 'page' : undefined}
@@ -143,14 +169,14 @@ export function Header() {
               display="flex"
               alignItems="center"
               justifyContent="center"
-              transition="all 0.2s ease"
+              transition={animationConfig.transition}
             >
               <Icon
                 as={IconComponent}
                 w={4}
                 h={4}
                 color={isDisabled ? "#94A3B8" : (isActive ? "#4F9CF9" : "#64748B")}
-                transition="all 0.2s ease"
+                transition={animationConfig.transition}
               />
             </Box>
             <VStack spacing={0} align="start" flex={1}>
@@ -168,7 +194,7 @@ export function Header() {
         </Box>
       );
     })
-  ), [location.pathname, navigationItems, handleNavigationClick, handleMenuKeyDown]);
+  ), [location.pathname, navigationItems, handleNavigationClick, handleMenuKeyDown, animationConfig]);
 
   return (
     <Box
@@ -207,7 +233,7 @@ export function Header() {
         h={{ base: "48px", md: "52px" }}
         minH={{ base: "48px", md: "52px" }}
       >
-        <IconButton aria-label="Open navigation menu" aria-expanded={isOpen} aria-haspopup="menu" icon={<PiListBold size={20} />} onClick={onOpen} variant="ghost" size={{ base: "lg", md: "md" }} color="#4F9CF9" bg="rgba(255, 255, 255, 0.9)" borderRadius="16px" minH={{ base: "48px", md: "44px" }} minW={{ base: "48px", md: "44px" }} position="absolute" left={3} sx={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }} border="1px solid rgba(79, 156, 249, 0.15)" boxShadow="0 4px 12px rgba(79, 156, 249, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)" transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)" _hover={{ bg: "rgba(255, 255, 255, 1)", color: "#3B82F6", transform: "translateY(-2px)", boxShadow: "0 8px 20px rgba(79, 156, 249, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9)", borderColor: "rgba(79, 156, 249, 0.25)" }} _active={{ transform: "translateY(-1px)", bg: "rgba(255, 255, 255, 0.95)", boxShadow: "0 4px 12px rgba(79, 156, 249, 0.2), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)" }} _focus={{ outline: "none", boxShadow: "0 0 0 3px rgba(79, 156, 249, 0.3), 0 4px 12px rgba(79, 156, 249, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)" }} />
+        <IconButton aria-label="Open navigation menu" aria-expanded={isOpen} aria-haspopup="menu" icon={<PiListBold size={20} />} onClick={onOpen} variant="ghost" size={{ base: "lg", md: "md" }} color="#4F9CF9" bg="rgba(255, 255, 255, 0.9)" borderRadius="16px" minH={{ base: "48px", md: "44px" }} minW={{ base: "48px", md: "44px" }} position="absolute" left={3} sx={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }} border="1px solid rgba(79, 156, 249, 0.15)" boxShadow="0 4px 12px rgba(79, 156, 249, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)" transition={animationConfig.transitionLong} _hover={{ bg: animationConfig.menuHoverBg, color: animationConfig.menuHoverColor, transform: animationConfig.hoverTransform, boxShadow: animationConfig.menuHoverShadow, borderColor: animationConfig.menuHoverBorder }} _active={{ transform: animationConfig.activeTransform, bg: animationConfig.menuActiveBg, boxShadow: animationConfig.menuActiveShadow }} _focus={{ outline: "none", boxShadow: animationConfig.menuFocusShadow }} />
         <Box flex="1" display="flex" alignItems="center" justifyContent="center" pointerEvents="none">
           <BrandLogo size="sm" variant="header" text={brandText} />
         </Box>
@@ -242,10 +268,10 @@ export function Header() {
               _hover={{
                 color: "#374151",
                 bg: "rgba(100, 116, 139, 0.08)",
-                transform: "scale(1.05)"
+                transform: animationConfig.closeHoverTransform
               }}
               _active={{
-                transform: "scale(0.95)"
+                transform: animationConfig.closeActiveTransform
               }}
               _focus={{
                 boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
@@ -254,7 +280,7 @@ export function Header() {
               borderRadius="12px"
               top={4}
               right={4}
-              transition="all 0.2s ease"
+              transition={animationConfig.closeTransition}
               bg="rgba(255, 255, 255, 0.8)"
               backdropFilter="blur(12px)"
               boxShadow="0 2px 8px rgba(0, 0, 0, 0.08)"
@@ -355,19 +381,19 @@ export function Header() {
                   color="#EF4444"
                   bg="rgba(239, 68, 68, 0.05)"
                   border="1px solid rgba(239, 68, 68, 0.1)"
-                  transition="all 0.2s ease"
+                  transition={animationConfig.transition}
                   sx={{
                     touchAction: 'manipulation',
                     WebkitTapHighlightColor: 'transparent'
                   }}
                   _hover={{
-                    bg: "rgba(239, 68, 68, 0.1)",
-                    borderColor: "rgba(239, 68, 68, 0.2)",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 4px 12px rgba(239, 68, 68, 0.15)"
+                    bg: animationConfig.signOutHoverBg,
+                    borderColor: animationConfig.signOutHoverBorder,
+                    transform: animationConfig.hoverTransform,
+                    boxShadow: animationConfig.signOutHoverShadow
                   }}
                   _active={{
-                    transform: "translateY(0) scale(0.98)"
+                    transform: animationConfig.activeTransform
                   }}
                 >
                   Sign Out

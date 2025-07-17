@@ -1,13 +1,13 @@
 import {
-    Box,
-    Flex,
-    IconButton,
-    InputGroup,
-    InputRightElement,
-    ScaleFade,
-    Text,
-    Textarea,
-    Tooltip
+  Box,
+  Flex,
+  IconButton,
+  InputGroup,
+  InputRightElement,
+  ScaleFade,
+  Text,
+  Textarea,
+  Tooltip
 } from "@chakra-ui/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -147,6 +147,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
   const [isComposing, setIsComposing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const initialHeightRef = useRef<number>(window.innerHeight);
   const prefersReducedMotion = useReducedMotion();
   const { isMobile } = useMobileOptimization();
 
@@ -187,6 +188,17 @@ export default function ChatInput({ onSend }: ChatInputProps) {
   useEffect(() => { debouncedTextAnalysis(txt); }, [txt, debouncedTextAnalysis]);
 
   useEffect(() => {
+    const updateInitialHeight = () => {
+      if (!document.body.classList.contains('keyboard-visible')) {
+        initialHeightRef.current = window.innerHeight;
+      }
+    };
+    window.addEventListener('resize', updateInitialHeight);
+    updateInitialHeight();
+    return () => window.removeEventListener('resize', updateInitialHeight);
+  }, []);
+
+  useEffect(() => {
     if (txt.length === 0 && !isFocused) {
       const interval = setInterval(() => setCurrentPlaceholderIndex((prev) => (prev + 1) % placeholderSuggestions.length), 4000);
       return () => clearInterval(interval);
@@ -211,23 +223,38 @@ export default function ChatInput({ onSend }: ChatInputProps) {
     handleAutoResize();
     if (isMobile) {
       document.body.classList.add('keyboard-visible');
-      const handleKeyboardPosition = () => {
-        if (!textareaRef.current || !containerRef.current) return;
+      const updateKeyboardHeight = () => {
+        let kh = 0;
         if (window.visualViewport) {
-          const viewport = window.visualViewport;
-          const keyboardHeight = window.innerHeight - viewport.height;
-          if (keyboardHeight > 150) {
-            containerRef.current.style.bottom = `${keyboardHeight}px`;
+          kh = window.innerHeight - window.visualViewport.height;
+        } else {
+          kh = initialHeightRef.current - window.innerHeight;
+        }
+        if (kh < 0) kh = 0;
+        if (kh > 100 && isFocused) {
+          if (containerRef.current) {
+            containerRef.current.style.bottom = `${kh}px`;
+            containerRef.current.style.transition = 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+          }
+        } else {
+          if (containerRef.current) {
+            containerRef.current.style.bottom = `0px`;
             containerRef.current.style.transition = 'bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
           }
         }
       };
-      handleKeyboardPosition();
-      if (window.visualViewport) window.visualViewport.addEventListener('resize', handleKeyboardPosition);
-      (textareaRef.current as any)._keyboardCleanup = () => window.visualViewport?.removeEventListener('resize', handleKeyboardPosition);
-      setTimeout(handleKeyboardPosition, 300);
+      updateKeyboardHeight();
+      const eventTarget = window.visualViewport ? window.visualViewport : window;
+      eventTarget.addEventListener('resize', updateKeyboardHeight);
+      if (textareaRef.current) {
+        (textareaRef.current as any)._keyboardCleanup = () => {
+          eventTarget.removeEventListener('resize', updateKeyboardHeight);
+        };
+      }
+      setTimeout(updateKeyboardHeight, 100);
+      setTimeout(updateKeyboardHeight, 300);
     }
-  }, [handleAutoResize, isMobile]);
+  }, [handleAutoResize, isMobile, isFocused]);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
@@ -242,7 +269,12 @@ export default function ChatInput({ onSend }: ChatInputProps) {
         cleanup();
         delete (textareaRef.current as any)._keyboardCleanup;
       }
-      setTimeout(() => { if (containerRef.current) containerRef.current.style.transition = ''; }, 300);
+      setTimeout(() => {
+        if (containerRef.current) {
+          containerRef.current.style.transition = '';
+        }
+        initialHeightRef.current = window.innerHeight;
+      }, 300);
     }
   }, [isMobile]);
 
