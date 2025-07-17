@@ -1,27 +1,28 @@
 import {
-  Avatar,
-  Box,
-  Button,
-  Drawer, DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerOverlay,
-  Flex,
-  HStack, Icon,
-  IconButton,
-  Text,
-  useDisclosure,
-  VStack
+    Avatar,
+    Box,
+    Button,
+    Drawer, DrawerBody,
+    DrawerCloseButton,
+    DrawerContent,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerOverlay,
+    Flex,
+    HStack, Icon,
+    IconButton,
+    Text,
+    useDisclosure,
+    VStack
 } from '@chakra-ui/react';
 import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
-  PiChatCircleBold, PiClockCounterClockwiseBold,
-  PiListBold,
-  PiSignOutBold,
-  PiUserLight
+    PiChatCircleBold, PiClockCounterClockwiseBold,
+    PiCrownBold,
+    PiListBold,
+    PiSignOutBold,
+    PiUserLight
 } from 'react-icons/pi';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -55,6 +56,7 @@ export function Header() {
 
     if (user && !user.isAnonymous) {
       items.push({ label: 'History', path: '/history', icon: PiClockCounterClockwiseBold, disabled: false });
+      items.push({ label: 'Subscription', path: '/subscription', icon: PiCrownBold, disabled: false });
     }
 
     return items;

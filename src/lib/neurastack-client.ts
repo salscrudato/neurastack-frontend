@@ -24,9 +24,16 @@ import type {
     StoreMemoryRequest,
     StoreMemoryResponse,
     SubAnswer,
-    TierInfoResponse
+    TierConfigResponse,
+    TierDowngradeRequest,
+    TierDowngradeResponse,
+    TierInfoResponse,
+    TierUpgradeRequest,
+    TierUpgradeResponse,
+    UserTierInfoResponse
 } from './types';
 
+// Additional tier management imports
 
 
 // ============================================================================
@@ -108,7 +115,13 @@ export const NEURASTACK_ENDPOINTS = {
   HEALTH_DETAILED: '/health-detailed',
   METRICS: '/metrics',
   TIER_INFO: '/tier-info',
-  ESTIMATE_COST: '/estimate-cost'
+  ESTIMATE_COST: '/estimate-cost',
+
+  // Tier management endpoints
+  USER_TIER_INFO: '/tiers/info',
+  TIER_UPGRADE: '/tiers/upgrade',
+  TIER_DOWNGRADE: '/tiers/downgrade',
+  TIER_CONFIG: '/tiers/config'
 } as const;
 
 // Models are managed by the backend ensemble - no hardcoding needed
@@ -627,6 +640,82 @@ export class NeuraStackClient {
         method: 'POST',
         headers,
         body: JSON.stringify(request)
+      }
+    );
+  }
+
+  // ============================================================================
+  // Tier Management Methods
+  // ============================================================================
+
+  /**
+   * Get user tier information and usage statistics
+   */
+  async getUserTierInfo(userId: string): Promise<UserTierInfoResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    return this.makeRequest<UserTierInfoResponse>(
+      `${NEURASTACK_ENDPOINTS.USER_TIER_INFO}/${userId}`,
+      {
+        method: 'GET',
+        headers,
+        bustCache: true
+      }
+    );
+  }
+
+  /**
+   * Upgrade user to premium tier
+   */
+  async upgradeTier(request: TierUpgradeRequest): Promise<TierUpgradeResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    return this.makeRequest<TierUpgradeResponse>(
+      NEURASTACK_ENDPOINTS.TIER_UPGRADE,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request)
+      }
+    );
+  }
+
+  /**
+   * Downgrade user to free tier
+   */
+  async downgradeTier(request: TierDowngradeRequest): Promise<TierDowngradeResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    return this.makeRequest<TierDowngradeResponse>(
+      NEURASTACK_ENDPOINTS.TIER_DOWNGRADE,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request)
+      }
+    );
+  }
+
+  /**
+   * Get tier configurations for all available tiers
+   */
+  async getTierConfigurations(): Promise<TierConfigResponse> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+
+    return this.makeRequest<TierConfigResponse>(
+      NEURASTACK_ENDPOINTS.TIER_CONFIG,
+      {
+        method: 'GET',
+        headers,
+        bustCache: true
       }
     );
   }

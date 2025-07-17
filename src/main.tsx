@@ -14,6 +14,7 @@ import { SplashPage } from './pages/SplashPage';
 import { preloadCriticalServices } from './services/lazyFirebase';
 
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
+const SubscriptionPage = React.lazy(() => import('./pages/SubscriptionPage'));
 
 // Router configuration using v7 standards
 const router = createBrowserRouter([
@@ -44,6 +45,16 @@ const router = createBrowserRouter([
           <AuthGuard requireAuth={true}>
             <Suspense fallback={<PageLoader message="Loading History..." />}>
               <HistoryPage />
+            </Suspense>
+          </AuthGuard>
+        ),
+      },
+      {
+        path: 'subscription',
+        element: (
+          <AuthGuard requireAuth={true}>
+            <Suspense fallback={<PageLoader message="Loading Subscription..." />}>
+              <SubscriptionPage />
             </Suspense>
           </AuthGuard>
         ),

@@ -450,6 +450,94 @@ export interface TierInfoResponse {
   timestamp: string;
 }
 
+/** User Tier Information Response (from /tiers/info/{userId}) */
+export interface UserTierInfoResponse {
+  status: "success";
+  data: {
+    userId: string;
+    tier: NeuraStackTier;
+    config: {
+      name: string;
+      maxRequestsPerHour: number;
+      maxRequestsPerDay: number;
+      maxPromptLength: number;
+      models: string[];
+      features: string[];
+      costPerMonth: number;
+    };
+    userData: {
+      tierStartDate: string;
+      tierEndDate?: string;
+      usage: {
+        requestsToday: number;
+        requestsThisHour: number;
+        totalRequests: number;
+      };
+      isActive: boolean;
+    };
+  };
+}
+
+/** Tier Upgrade Request */
+export interface TierUpgradeRequest {
+  userId: string;
+  durationDays?: number;
+  reason?: string;
+}
+
+/** Tier Upgrade Response */
+export interface TierUpgradeResponse {
+  status: "success";
+  data: {
+    success: boolean;
+    tier: NeuraStackTier;
+    startDate: string;
+    endDate: string;
+    message: string;
+  };
+}
+
+/** Tier Downgrade Request */
+export interface TierDowngradeRequest {
+  userId: string;
+  reason?: string;
+}
+
+/** Tier Downgrade Response */
+export interface TierDowngradeResponse {
+  status: "success";
+  data: {
+    success: boolean;
+    tier: NeuraStackTier;
+    message: string;
+  };
+}
+
+/** Tier Configuration Response */
+export interface TierConfigResponse {
+  status: "success";
+  data: {
+    free: {
+      name: string;
+      maxRequestsPerHour: number;
+      maxRequestsPerDay: number;
+      maxPromptLength: number;
+      models: string[];
+      features: string[];
+      costPerMonth: number;
+    };
+    premium: {
+      name: string;
+      maxRequestsPerHour: number;
+      maxRequestsPerDay: number;
+      maxPromptLength: number;
+      models: string[];
+      features: string[];
+      costPerMonth: number;
+    };
+  };
+}
+
 /** Cost Estimate Request */
 export interface CostEstimateRequest {
   prompt: string;
