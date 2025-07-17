@@ -186,35 +186,14 @@ export default function SubscriptionPage() {
     return (
         <Box
             w="100%"
-            minH="100vh"
+            h="100vh"
             bg={bgColor}
-            sx={{
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                WebkitOverflowScrolling: 'touch',
-                overscrollBehavior: 'contain',
-                paddingTop: {
-                    base: 'calc(env(safe-area-inset-top, 0px) + 56px + 16px)',
-                    md: 'calc(60px + 24px)'
-                },
-                '@media (max-width: 768px)': {
-                    minHeight: '100vh',
-                    paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
-                    paddingX: '16px'
-                },
-                '@media (min-width: 769px)': {
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    paddingBottom: '24px',
-                    paddingX: '16px'
-                },
-                '@supports (-webkit-touch-callout: none)': {
-                    minHeight: '-webkit-fill-available'
-                }
-            }}
+            overflow="auto"
+            pt={{ base: "calc(56px + 16px)", md: "calc(60px + 24px)" }}
+            pb={{ base: "calc(env(safe-area-inset-bottom, 0px) + 16px)", md: "24px" }}
+            px={{ base: 4, md: 4 }}
         >
-            <Flex direction="column" w="100%" maxW={{ base: "100%", md: "800px", lg: "900px", xl: "1000px" }} px={{ base: 0, md: 8, lg: 12, xl: 16 }}>
+            <Flex direction="column" w="100%" maxW="800px" mx="auto">
                 {/* Header */}
                 <VStack spacing={4} align="stretch" mb={6}>
                     <VStack align="start" spacing={1}>
@@ -232,7 +211,7 @@ export default function SubscriptionPage() {
                 </VStack>
 
                 {/* Current Plan Status */}
-                {userTierInfo && userTierInfo.data && userTierInfo.data.userData && (
+                {userTierInfo && userTierInfo.data && (
                     <Card bg={cardBg} border="1px solid" borderColor={borderColor} borderRadius="xl" mb={6} overflow="hidden">
                         <CardHeader pb={2}>
                             <HStack justify="space-between" align="center">
@@ -260,75 +239,75 @@ export default function SubscriptionPage() {
                         </CardHeader>
                         <CardBody pt={0}>
                             <VStack spacing={4} align="stretch">
-                                <Text color={mutedColor}>
-                                    Started: {formatDate(userTierInfo.data.userData.tierStartDate)}
-                                    {userTierInfo.data.userData.tierEndDate && (
-                                        <> • Expires: {formatDate(userTierInfo.data.userData.tierEndDate)}</>
-                                    )}
-                                </Text>
-                                
-                                {/* Usage Statistics */}
-                                <VStack spacing={3} align="stretch">
-                                    <Text fontSize="md" fontWeight="600" color={textColor}>Usage Today</Text>
-                                    
-                                    <Box>
-                                        <HStack justify="space-between" mb={1}>
-                                            <Text fontSize="sm" color={mutedColor}>Requests</Text>
-                                            <Text fontSize="sm" color={textColor}>
-                                                {userTierInfo.data.userData.usage.requestsToday} / {userTierInfo.data.config.maxRequestsPerDay}
+                                {userTierInfo.data.userData && (
+                                    <Text color={mutedColor}>
+                                        Started: {formatDate(userTierInfo.data.userData.tierStartDate)}
+                                        {userTierInfo.data.userData.tierEndDate && (
+                                            <> • Expires: {formatDate(userTierInfo.data.userData.tierEndDate)}</>
+                                        )}
+                                    </Text>
+                                )}
+
+                                {/* Usage Statistics - only show if userData exists */}
+                                {userTierInfo.data.userData && (
+                                    <VStack spacing={3} align="stretch">
+                                        <Text fontSize="md" fontWeight="600" color={textColor}>Usage Today</Text>
+
+                                        <Box>
+                                            <HStack justify="space-between" mb={1}>
+                                                <Text fontSize="sm" color={mutedColor}>Requests</Text>
+                                                <Text fontSize="sm" color={textColor}>
+                                                    {userTierInfo.data.userData.usage.requestsToday} / {userTierInfo.data.config.maxRequestsPerDay}
+                                                </Text>
+                                            </HStack>
+                                            <Progress
+                                                value={getUsagePercentage(userTierInfo.data.userData.usage.requestsToday, userTierInfo.data.config.maxRequestsPerDay)}
+                                                colorScheme={getUsageColor(getUsagePercentage(userTierInfo.data.userData.usage.requestsToday, userTierInfo.data.config.maxRequestsPerDay))}
+                                                size="sm"
+                                                borderRadius="full"
+                                            />
+                                        </Box>
+
+                                        <Box>
+                                            <HStack justify="space-between" mb={1}>
+                                                <Text fontSize="sm" color={mutedColor}>Hourly Requests</Text>
+                                                <Text fontSize="sm" color={textColor}>
+                                                    {userTierInfo.data.userData.usage.requestsThisHour} / {userTierInfo.data.config.maxRequestsPerHour}
+                                                </Text>
+                                            </HStack>
+                                            <Progress
+                                                value={getUsagePercentage(userTierInfo.data.userData.usage.requestsThisHour, userTierInfo.data.config.maxRequestsPerHour)}
+                                                colorScheme={getUsageColor(getUsagePercentage(userTierInfo.data.userData.usage.requestsThisHour, userTierInfo.data.config.maxRequestsPerHour))}
+                                                size="sm"
+                                                borderRadius="full"
+                                            />
+                                        </Box>
+                                    </VStack>
+                                )}
+
+                                {/* Show plan limits when userData is not available */}
+                                {!userTierInfo.data.userData && (
+                                    <VStack spacing={3} align="stretch">
+                                        <Text fontSize="md" fontWeight="600" color={textColor}>Plan Limits</Text>
+                                        <VStack spacing={2} align="start">
+                                            <Text fontSize="sm" color={mutedColor}>
+                                                • {userTierInfo.data.config.maxRequestsPerDay} requests per day
                                             </Text>
-                                        </HStack>
-                                        <Progress 
-                                            value={getUsagePercentage(userTierInfo.data.userData.usage.requestsToday, userTierInfo.data.config.maxRequestsPerDay)}
-                                            colorScheme={getUsageColor(getUsagePercentage(userTierInfo.data.userData.usage.requestsToday, userTierInfo.data.config.maxRequestsPerDay))}
-                                            size="sm"
-                                            borderRadius="full"
-                                        />
-                                    </Box>
-                                    
-                                    <Box>
-                                        <HStack justify="space-between" mb={1}>
-                                            <Text fontSize="sm" color={mutedColor}>Hourly Requests</Text>
-                                            <Text fontSize="sm" color={textColor}>
-                                                {userTierInfo.data.userData.usage.requestsThisHour} / {userTierInfo.data.config.maxRequestsPerHour}
+                                            <Text fontSize="sm" color={mutedColor}>
+                                                • {userTierInfo.data.config.maxRequestsPerHour} requests per hour
                                             </Text>
-                                        </HStack>
-                                        <Progress 
-                                            value={getUsagePercentage(userTierInfo.data.userData.usage.requestsThisHour, userTierInfo.data.config.maxRequestsPerHour)}
-                                            colorScheme={getUsageColor(getUsagePercentage(userTierInfo.data.userData.usage.requestsThisHour, userTierInfo.data.config.maxRequestsPerHour))}
-                                            size="sm"
-                                            borderRadius="full"
-                                        />
-                                    </Box>
-                                </VStack>
+                                            <Text fontSize="sm" color={mutedColor}>
+                                                • Up to {userTierInfo.data.config.maxPromptLength.toLocaleString()} characters per prompt
+                                            </Text>
+                                        </VStack>
+                                    </VStack>
+                                )}
                             </VStack>
                         </CardBody>
                     </Card>
                 )}
 
-                {/* Error state when userTierInfo exists but userData is missing */}
-                {userTierInfo && userTierInfo.data && !userTierInfo.data.userData && (
-                    <Card bg={cardBg} border="1px solid" borderColor="red.200" borderRadius="xl" mb={6} overflow="hidden">
-                        <CardBody>
-                            <VStack spacing={4} align="center">
-                                <Text color="red.500" fontWeight="600">
-                                    Unable to load subscription data
-                                </Text>
-                                <Text color={mutedColor} textAlign="center">
-                                    There was an issue loading your subscription information. Please try refreshing the page.
-                                </Text>
-                                <Button
-                                    colorScheme="blue"
-                                    size="sm"
-                                    onClick={loadSubscriptionData}
-                                    isLoading={isLoading}
-                                >
-                                    Retry
-                                </Button>
-                            </VStack>
-                        </CardBody>
-                    </Card>
-                )}
+
 
                 {/* Plan Comparison */}
                 {tierConfig && (

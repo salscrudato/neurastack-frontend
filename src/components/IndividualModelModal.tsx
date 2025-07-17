@@ -148,12 +148,12 @@ export function IndividualModelModal({
                 borderRadius="2xl"
                 maxH="85vh"
                 maxW="700px"
-                mx={{ base: 2, md: 4 }}
+                mx={{ base: 4, md: 6 }}
                 mt={{
                   base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)",
                   md: "calc(var(--header-height-desktop) + 16px)"
                 }}
-                mb={{ base: 2, md: 4 }}
+                mb={{ base: 4, md: 6 }}
                 overflow="hidden"
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"

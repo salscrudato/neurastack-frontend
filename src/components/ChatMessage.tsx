@@ -83,7 +83,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const isError = message.role === 'error';
   const isLoading = !message.text;
 
-  const fontSizes = { micro: { base: "2xs", md: "xs" }, small: { base: "xs", md: "sm" }, content: { base: "xs", md: "sm" }, code: { base: "2xs", md: "xs" } };
+  const fontSizes = { micro: { base: "2xs", md: "xs" }, small: { base: "2xs", md: "xs" }, content: { base: "13px", md: "14px" }, code: { base: "11px", md: "12px" } };
 
   const processedContent = useMemo(() => processContent(message.text || ''), [message.text]);
 
@@ -145,7 +145,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   }
 
   return (
-    <VStack spacing={{ base: 1, md: 2 }} w="100%" align="stretch">
+    <VStack spacing={{ base: 0.5, md: 1 }} w="100%" align="stretch">
       <Flex align="center" w="100%" my={{ base: 1, md: 1.5 }}>
         <Box flex="1" h="1px" bg="var(--color-border-light)" opacity={0.4} />
         <Text
@@ -173,8 +173,8 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
         <Box
           bg={messageStyles.bg}
           color={messageStyles.color}
-          px={{ base: 4, md: 5 }}
-          py={{ base: 3, md: 3.5 }}
+          px={{ base: 3, md: 4 }}
+          py={{ base: 2.5, md: 3 }}
           borderRadius={messageStyles.borderRadius}
           maxW={{
             base: isUser ? "85%" : "92%",
@@ -241,8 +241,8 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           }}
         >
           {!isUser && !isError && !isLoading && message.metadata?.metadata && (
-            <Box mb={2}>
-              <VStack spacing={2} align="stretch">
+            <Box mb={1.5}>
+              <VStack spacing={1.5} align="stretch">
                 <Flex justify="space-between" align="center" p={{ base: 2, md: 3 }} bg="rgba(255, 255, 255, 0.9)" borderRadius="lg" border="1px solid" borderColor="rgba(226, 232, 240, 0.4)" position="relative" backdropFilter="blur(20px)" sx={{ WebkitBackdropFilter: 'blur(20px)', '@keyframes shimmer': { '0%, 100%': { opacity: 0.2 }, '50%': { opacity: 0.4 } } }} overflow="hidden" _before={{ content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.3) 50%, transparent 100%)', animation: 'shimmer 4s ease-in-out infinite' }}>
                   <HStack justify="space-between" align="center" w="100%" spacing={2}>
                     <HStack spacing={2}>
@@ -255,72 +255,40 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
                           setIsAdvancedAnalyticsOpen(true);
                         }}
-                        bg="rgba(255, 255, 255, 0.95)"
+                        bg="white"
                         color="#4F9CF9"
                         fontWeight="600"
-                        fontSize="2xs"
-                        border="1px solid rgba(79, 156, 249, 0.2)"
-                        boxShadow="0 2px 8px rgba(79, 156, 249, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)"
-                        position="relative"
-                        overflow="hidden"
-                        minH={{ base: "32px", md: "28px" }}
-                        px={3}
+                        fontSize="11px"
+                        border="1px solid rgba(79, 156, 249, 0.25)"
+                        boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+                        minH="26px"
+                        px={2.5}
                         py={1}
-                        h="auto"
-                        borderRadius="lg"
-                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                        letterSpacing="0.025em"
+                        h="26px"
+                        borderRadius="md"
+                        transition="all 0.15s ease"
+                        letterSpacing="-0.01em"
                         sx={{
-                          backdropFilter: 'blur(16px)',
-                          WebkitBackdropFilter: 'blur(16px)',
                           touchAction: 'manipulation',
                           WebkitTapHighlightColor: 'transparent'
-                        }}
-                        _before={{
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: '-100%',
-                          width: '100%',
-                          height: '100%',
-                          background: 'linear-gradient(90deg, transparent, rgba(79, 156, 249, 0.05), transparent)',
-                          transition: 'left 0.6s ease'
                         }}
                         _hover={{
                           bg: "#4F9CF9",
                           borderColor: "#4F9CF9",
                           color: "white",
-                          transform: "translateY(-1px) scale(1.02)",
-                          boxShadow: "0 8px 24px rgba(79, 156, 249, 0.25), 0 4px 12px rgba(79, 156, 249, 0.15)",
-                          _before: { left: '100%' }
+                          transform: "translateY(-0.5px)",
+                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.2)"
                         }}
                         _active={{
-                          transform: "translateY(0) scale(0.98)",
-                          bg: "#3B82F6",
-                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.2)"
+                          transform: "translateY(0)",
+                          boxShadow: "0 1px 2px rgba(79, 156, 249, 0.2)"
                         }}
                         _focus={{
                           boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
                           outline: "none"
                         }}
                       >
-                        <HStack spacing={1.5}>
-                          <Box
-                            w="4px"
-                            h="4px"
-                            borderRadius="full"
-                            bg="currentColor"
-                            opacity={0.7}
-                            animation="pulse 2s ease-in-out infinite"
-                            sx={{
-                              '@keyframes pulse': {
-                                '0%, 100%': { opacity: 0.7, transform: 'scale(1)' },
-                                '50%': { opacity: 1, transform: 'scale(1.1)' }
-                              }
-                            }}
-                          />
-                          <Text>Analytics</Text>
-                        </HStack>
+                        Analytics
                       </Button>
                   </HStack>
                 </Flex>
@@ -329,7 +297,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
             </Box>
           )}
           <Box>
-            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.4", md: "1.5" }} fontWeight="500" letterSpacing="0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "md", md: "lg" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
+            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.35", md: "1.4" }} fontWeight="500" letterSpacing="-0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "15px", md: "16px" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
           </Box>
           {!isUser && fullData && (
             <HStack spacing={2} mt={2} justify="flex-start">

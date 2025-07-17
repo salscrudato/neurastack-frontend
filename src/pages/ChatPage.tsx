@@ -39,15 +39,15 @@ export function ChatPage() {
 
   const chatConfig = useMemo(() => ({
     container: {
-      padding: { base: "clamp(0.125rem, 0.5vw, 0.25rem)", sm: "clamp(0.25rem, 1vw, 0.5rem)", md: 0 },
-      gap: { base: "clamp(0.5rem, 1.5vw, 0.75rem)", md: "clamp(0.75rem, 2vw, 1rem)", lg: "clamp(1rem, 2.5vw, 1.25rem)", xl: "clamp(1.25rem, 3vw, 1.5rem)" },
+      padding: { base: 2, md: 0 },
+      gap: { base: 3, md: 4, lg: 5 },
       maxWidth: { base: "100%", md: "850px", lg: "950px", xl: "1050px" },
-      centerPadding: { md: "clamp(1rem, 3vw, 1.5rem)", lg: "clamp(1.5rem, 4vw, 2rem)", xl: "clamp(2rem, 5vw, 2.5rem)" },
+      centerPadding: { md: 6, lg: 8, xl: 10 },
     },
     hero: {
-      fontSize: { base: "lg", sm: "xl", md: "2xl", lg: "3xl", xl: "4xl" },
-      subFontSize: { base: "sm", sm: "md", md: "lg", lg: "xl", xl: "2xl" },
-      padding: { base: 4, sm: 6, md: 8, lg: 10, xl: 12 },
+      fontSize: { base: "xl", md: "2xl", lg: "3xl" },
+      subFontSize: { base: "sm", md: "md", lg: "lg" },
+      padding: { base: 4, md: 6, lg: 8 },
     },
     scrollButton: {
       size: { base: "sm", sm: "md", lg: "lg" },
@@ -141,8 +141,8 @@ export function ChatPage() {
   }, []);
 
   const scrollButtonBottom = useMemo(() => ({
-    base: `calc(120px + env(safe-area-inset-bottom, 0px) + 16px + ${keyboardHeight}px)`,
-    md: `calc(140px + 20px + ${keyboardHeight}px)`
+    base: `calc(136px + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`,
+    md: `calc(160px + ${keyboardHeight}px)`
   }), [keyboardHeight]);
 
   return (
@@ -170,9 +170,9 @@ export function ChatPage() {
         bg={containerBg}
         overflowY="auto"
         overflowX="hidden"
-        px={{ base: "clamp(0.5rem, 2vw, 1rem)", md: "clamp(1rem, 4vw, 2rem)" }}
+        px={{ base: 4, md: 6 }}
         pt={{ base: "calc(4rem + env(safe-area-inset-top, 0px))", md: "5rem" }}
-        pb={{ base: "clamp(100px, 25vh, 140px)", md: "clamp(120px, 15vh, 160px)" }}  // Added padding-bottom for mobile keyboard
+        pb={{ base: "120px", md: "140px" }}
         sx={{
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",
@@ -232,15 +232,15 @@ export function ChatPage() {
           position="fixed"
           bottom={scrollButtonBottom}
           right={{ base: 4, md: 6 }}
-          size={{ base: "md", md: "lg" }}
+          size="lg"
           borderRadius="full"
           bg={scrollButtonBg}
           color={scrollButtonColor}
           boxShadow="0 4px 20px rgba(79, 156, 249, 0.15)"
           transition={animationConfig.transition}
           border="1px solid rgba(79, 156, 249, 0.1)"
-          minW={{ base: "44px", sm: "46px", md: "48px", lg: "52px" }}
-          h={{ base: "44px", sm: "46px", md: "48px", lg: "52px" }}
+          w={{ base: "48px", md: "52px" }}
+          h={{ base: "48px", md: "52px" }}
           _hover={{
             bg: scrollButtonHoverBg,
             transform: animationConfig.transform,

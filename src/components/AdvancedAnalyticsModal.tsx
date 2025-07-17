@@ -7,6 +7,11 @@
  */
 
 import {
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
     Badge,
     Box,
     Flex,
@@ -159,8 +164,7 @@ export function AdvancedAnalyticsModal({
             isOpen={isOpen}
             onClose={onClose}
             size="full"
-            {...commonModalProps}
-            isCentered={true}
+            {...{ ...commonModalProps, isCentered: false }}
             aria-labelledby="analytics-modal-title"
         >
             <ModalOverlay
@@ -176,36 +180,37 @@ export function AdvancedAnalyticsModal({
                 bg="#FFFFFF"
                 borderRadius={{ base: "0", md: "2xl" }}
                 h={{
-                    base: "calc(100vh - var(--header-height-mobile) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0px)",
-                    md: "calc(100vh - var(--header-height-desktop) - 16px)"
+                    base: "calc(100vh - 60px)",
+                    md: "calc(100vh - 80px)"
                 }}
                 w="100vw"
                 maxH={{
-                    base: "calc(100vh - var(--header-height-mobile) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px)",
-                    md: "calc(100vh - var(--header-height-desktop) - 32px)"
+                    base: "calc(100vh - 60px)",
+                    md: "calc(100vh - 80px)"
                 }}
                 maxW="100vw"
-                mt={{
-                    base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px))",
-                    md: "var(--header-height-desktop)"
-                }}
-                mb={{
-                    base: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
-                    md: "16px"
-                }}
-                m={0}
-                pt={0}
-                pb={0}
+                m="0 !important"
+                p={0}
                 boxShadow={{ base: "none", md: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
                 border={{ base: "none", md: "1px solid" }}
                 borderColor="rgba(226, 232, 240, 0.8)"
                 overflow="hidden"
                 zIndex="var(--z-modal)"
                 position="fixed"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
+                top={{
+                    base: "var(--header-height-mobile) !important",
+                    md: "var(--header-height-desktop) !important"
+                }}
+                left="0 !important"
+                right="0 !important"
+                bottom={{
+                    base: "env(safe-area-inset-bottom, 0px) !important",
+                    md: "0 !important"
+                }}
+                sx={{
+                    margin: "0 !important",
+                    transform: "none !important"
+                }}
                 display="flex"
                 flexDirection="column"
             >
@@ -360,7 +365,8 @@ export function AdvancedAnalyticsModal({
                         >
                             {/* Overview Tab */}
                             <TabPanel
-                                p={{ base: 3, md: 6, lg: 8 }}
+                                p={{ base: 4, md: 6 }}
+                                pb={{ base: 8, md: 12 }}
                                 h="100%"
                                 overflow="auto"
                                 css={{
@@ -616,6 +622,7 @@ export function AdvancedAnalyticsModal({
                                         bg="white"
                                         borderRadius="xl"
                                         p={6}
+                                        pb={8}
                                         border="1px solid"
                                         borderColor="rgba(226, 232, 240, 0.6)"
                                         boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
@@ -626,47 +633,106 @@ export function AdvancedAnalyticsModal({
                                                 Individual Model Responses
                                             </Text>
                                         </HStack>
-                                        <VStack spacing={4} align="stretch">
+
+                                        <Accordion allowMultiple>
                                             {analytics.roles.map((role: any, index: number) => (
-                                                <Box
+                                                <AccordionItem
                                                     key={index}
-                                                    p={4}
-                                                    borderRadius="lg"
                                                     border="1px solid"
                                                     borderColor="rgba(226, 232, 240, 0.4)"
+                                                    borderRadius="lg"
                                                     bg="rgba(248, 250, 252, 0.5)"
+                                                    mb={4}
+                                                    _last={{ mb: 6 }}
                                                 >
-                                                    <Flex justify="flex-start" align="center" mb={3}>
-                                                        <Badge colorScheme="blue" variant="solid">
-                                                            {role.role || role.model || 'Unknown'}
-                                                        </Badge>
-                                                    </Flex>
-                                                    {role.content && (
-                                                        <Box
-                                                            p={3}
-                                                            bg="white"
-                                                            borderRadius="md"
-                                                            border="1px solid"
-                                                            borderColor="rgba(226, 232, 240, 0.3)"
-                                                        >
-                                                            <Text fontSize="sm" color="#1E293B" lineHeight="1.6">
-                                                                {role.content.length > 300
-                                                                    ? `${role.content.substring(0, 300)}...`
-                                                                    : role.content
-                                                                }
-                                                            </Text>
+                                                    <AccordionButton
+                                                        p={4}
+                                                        bg="rgba(79, 156, 249, 0.03)"
+                                                        _hover={{ bg: "rgba(79, 156, 249, 0.08)" }}
+                                                        _expanded={{ bg: "rgba(79, 156, 249, 0.12)" }}
+                                                        borderRadius="lg"
+                                                        border="none"
+                                                    >
+                                                        <Box flex="1" textAlign="left">
+                                                            <HStack spacing={3}>
+                                                                <Badge colorScheme="blue" variant="solid">
+                                                                    {role.role || role.model || 'Unknown'}
+                                                                </Badge>
+                                                                <Badge
+                                                                    colorScheme={role.status === 'fulfilled' ? 'green' : 'red'}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                >
+                                                                    {role.status || 'Unknown'}
+                                                                </Badge>
+                                                                {role.confidence && (
+                                                                    <Text fontSize="xs" color="#64748B">
+                                                                        {(role.confidence.score * 100).toFixed(1)}% confidence
+                                                                    </Text>
+                                                                )}
+                                                            </HStack>
                                                         </Box>
-                                                    )}
-                                                </Box>
+                                                        <AccordionIcon color="#4F9CF9" />
+                                                    </AccordionButton>
+
+                                                    <AccordionPanel p={4} pt={0}>
+                                                        {role.content && (
+                                                            <Box
+                                                                p={4}
+                                                                bg="white"
+                                                                borderRadius="md"
+                                                                border="1px solid"
+                                                                borderColor="rgba(226, 232, 240, 0.3)"
+                                                                mb={4}
+                                                            >
+                                                                <Text fontSize="xs" color="#64748B" mb={2} fontWeight="600">
+                                                                    FULL RESPONSE
+                                                                </Text>
+                                                                <Text fontSize="sm" color="#1E293B" lineHeight="1.6" whiteSpace="pre-wrap">
+                                                                    {role.content}
+                                                                </Text>
+                                                            </Box>
+                                                        )}
+
+                                                        {/* Additional metrics */}
+                                                        <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
+                                                            {role.responseTime && (
+                                                                <Box>
+                                                                    <Text fontSize="xs" color="#64748B" mb={1}>Response Time</Text>
+                                                                    <Text fontSize="sm" fontWeight="600" color="#1E293B">
+                                                                        {(role.responseTime / 1000).toFixed(2)}s
+                                                                    </Text>
+                                                                </Box>
+                                                            )}
+                                                            {role.confidence && (
+                                                                <Box>
+                                                                    <Text fontSize="xs" color="#64748B" mb={1}>Confidence Score</Text>
+                                                                    <Text fontSize="sm" fontWeight="600" color="#1E293B">
+                                                                        {(role.confidence.score * 100).toFixed(1)}%
+                                                                    </Text>
+                                                                </Box>
+                                                            )}
+                                                            {role.tokens && (
+                                                                <Box>
+                                                                    <Text fontSize="xs" color="#64748B" mb={1}>Tokens Used</Text>
+                                                                    <Text fontSize="sm" fontWeight="600" color="#1E293B">
+                                                                        {role.tokens.total || 'N/A'}
+                                                                    </Text>
+                                                                </Box>
+                                                            )}
+                                                        </Grid>
+                                                    </AccordionPanel>
+                                                </AccordionItem>
                                             ))}
-                                        </VStack>
+                                        </Accordion>
                                     </Box>
                                 </VStack>
                             </TabPanel>
 
                             {/* Model Performance Tab */}
                             <TabPanel
-                                p={{ base: 3, md: 6, lg: 8 }}
+                                p={{ base: 4, md: 6 }}
+                                pb={{ base: 8, md: 12 }}
                                 h="100%"
                                 overflow="auto"
                                 css={{
@@ -874,7 +940,8 @@ export function AdvancedAnalyticsModal({
 
                             {/* Advanced Insights Tab */}
                             <TabPanel
-                                p={{ base: 3, md: 6, lg: 8 }}
+                                p={{ base: 4, md: 6 }}
+                                pb={{ base: 8, md: 12 }}
                                 h="100%"
                                 overflow="auto"
                                 css={{

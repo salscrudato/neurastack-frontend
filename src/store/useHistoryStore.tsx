@@ -168,6 +168,17 @@ export const useHistoryStore = create<HistoryState>()(
               console.log('✅ Session saved to Firebase successfully');
             }
           } catch (error) {
+            // Handle Firebase permissions gracefully for save operations
+            if (error instanceof Error) {
+              const errorMessage = error.message.toLowerCase();
+              if (errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
+                if (import.meta.env.DEV) {
+                  console.warn('⚠️ Firebase permissions not configured - session saved locally only');
+                }
+                return sessionId; // Continue with local save
+              }
+            }
+
             handleSilentError(error, {
               component: 'useHistoryStore',
               action: 'saveSession',
@@ -227,6 +238,17 @@ export const useHistoryStore = create<HistoryState>()(
               console.log('✅ Session title updated in Firebase');
             }
           } catch (error) {
+            // Handle Firebase permissions gracefully for update operations
+            if (error instanceof Error) {
+              const errorMessage = error.message.toLowerCase();
+              if (errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
+                if (import.meta.env.DEV) {
+                  console.warn('⚠️ Firebase permissions not configured - title updated locally only');
+                }
+                return; // Continue with local update
+              }
+            }
+
             handleSilentError(error, {
               component: 'useHistoryStore',
               action: 'updateSessionTitle',
@@ -254,6 +276,17 @@ export const useHistoryStore = create<HistoryState>()(
               console.log('✅ Session deleted from Firebase');
             }
           } catch (error) {
+            // Handle Firebase permissions gracefully for delete operations
+            if (error instanceof Error) {
+              const errorMessage = error.message.toLowerCase();
+              if (errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
+                if (import.meta.env.DEV) {
+                  console.warn('⚠️ Firebase permissions not configured - session deleted locally only');
+                }
+                return; // Continue with local delete
+              }
+            }
+
             handleSilentError(error, {
               component: 'useHistoryStore',
               action: 'deleteSession',
@@ -296,13 +329,42 @@ export const useHistoryStore = create<HistoryState>()(
           });
 
           set({ sessions, isLoading: false });
-          
+
           if (import.meta.env.DEV) {
             console.log(`✅ Loaded ${sessions.length} sessions from Firebase`);
           }
         } catch (error) {
-          console.warn('Failed to load sessions from Firebase:', error);
-          set({ isLoading: false, error: 'Failed to load sessions. Please try again.' });
+          // Handle Firebase permissions gracefully
+          if (error instanceof Error) {
+            const errorMessage = error.message.toLowerCase();
+
+            // Check for permission-related errors
+            if (errorMessage.includes('permission') || errorMessage.includes('insufficient')) {
+              if (import.meta.env.DEV) {
+                console.warn('⚠️ Firebase permissions not configured - using local storage only');
+              }
+              set({ isLoading: false, error: null }); // Don't show error to user
+              return;
+            }
+
+            // Check for network/offline errors
+            if (errorMessage.includes('offline') || errorMessage.includes('network') || errorMessage.includes('unavailable')) {
+              if (import.meta.env.DEV) {
+                console.warn('⚠️ Firebase offline - using local storage only');
+              }
+              set({ isLoading: false, error: null }); // Don't show error to user
+              return;
+            }
+          }
+
+          // For other errors, log but don't show to user unless critical
+          handleSilentError(error, {
+            component: 'useHistoryStore',
+            action: 'loadAllSessions',
+            userId: auth.currentUser?.uid
+          });
+
+          set({ isLoading: false, error: null }); // Keep error null for better UX
         }
       },
 

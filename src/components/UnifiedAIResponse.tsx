@@ -6,29 +6,29 @@
  */
 
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
-  Badge,
-  Box,
-  Code,
-  Divider,
-  HStack,
-  ListItem,
-  OrderedList,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  UnorderedList,
-  useDisclosure,
-  VStack,
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
+    Badge,
+    Box,
+    Code,
+    Divider,
+    HStack,
+    ListItem,
+    OrderedList,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Text,
+    Th,
+    Thead,
+    Tr,
+    UnorderedList,
+    useDisclosure,
+    VStack,
 } from '@chakra-ui/react';
 import { memo } from 'react';
 import { PiClockBold } from 'react-icons/pi';
@@ -71,10 +71,10 @@ interface UnifiedAIResponseProps {
 // ============================================================================
 
 const defaultFontSizes = {
-  content: { base: "14px", md: "15px" },
-  heading: { base: "16px", md: "18px" },
-  code: { base: "12px", md: "13px" },
-  small: { base: "12px", md: "13px" },
+  content: { base: "13px", md: "14px" },
+  heading: { base: "15px", md: "16px" },
+  code: { base: "11px", md: "12px" },
+  small: { base: "11px", md: "12px" },
 };
 
 // ============================================================================
@@ -85,9 +85,9 @@ const createMarkdownComponents = (fontSize: any) => ({
   p: ({ children }: any) => (
     <Text
       fontSize={fontSize.content}
-      lineHeight={{ base: "1.6", md: "1.5" }}
+      lineHeight={{ base: "1.45", md: "1.4" }}
       color="#1E293B"
-      mb={3}
+      mb={2.5}
       sx={{
         '&:last-child': { mb: 0 },
         wordWrap: 'break-word',
@@ -102,12 +102,12 @@ const createMarkdownComponents = (fontSize: any) => ({
   h1: ({ children }: any) => (
     <Text
       as="h1"
-      fontSize={{ base: "18px", md: "20px" }}
+      fontSize={{ base: "16px", md: "17px" }}
       fontWeight="700"
       color="#0F172A"
-      mb={4}
-      mt={6}
-      lineHeight="1.3"
+      mb={3}
+      mt={4}
+      lineHeight="1.25"
       sx={{ '&:first-of-type': { mt: 0 } }}
     >
       {children}
@@ -120,9 +120,9 @@ const createMarkdownComponents = (fontSize: any) => ({
       fontSize={fontSize.heading}
       fontWeight="600"
       color="#1E293B"
-      mb={3}
-      mt={5}
-      lineHeight="1.3"
+      mb={2.5}
+      mt={4}
+      lineHeight="1.25"
       sx={{ '&:first-of-type': { mt: 0 } }}
     >
       {children}

@@ -370,15 +370,9 @@ export default function ChatInput({ onSend }: ChatInputProps) {
         willChange: isFocused ? 'transform' : 'auto',
         backfaceVisibility: 'hidden',
         transform: 'translateZ(0)',
-        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
-        paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
-        paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
+        padding: 'calc(env(safe-area-inset-bottom, 0px) + 8px) calc(env(safe-area-inset-left, 0px) + 8px) calc(env(safe-area-inset-bottom, 0px) + 8px) calc(env(safe-area-inset-right, 0px) + 8px)',
         '@media (max-width: 768px)': {
-          paddingX: 2,
-          paddingY: 1,
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
-          paddingLeft: 'calc(env(safe-area-inset-left, 0px) + 8px)',
-          paddingRight: 'calc(env(safe-area-inset-right, 0px) + 8px)',
+          padding: 'calc(env(safe-area-inset-bottom, 0px) + 12px) calc(env(safe-area-inset-left, 0px) + 8px) calc(env(safe-area-inset-bottom, 0px) + 12px) calc(env(safe-area-inset-right, 0px) + 8px)',
           maxHeight: 'var(--chat-input-height-mobile)',
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
@@ -391,16 +385,15 @@ export default function ChatInput({ onSend }: ChatInputProps) {
           maxHeight: 'var(--chat-input-height-desktop)',
           display: 'flex',
           justifyContent: 'center',
-          paddingY: 0,
-          paddingX: 2,
+          padding: '16px',
           background: 'transparent'
         }
       }}
     >
-      <Box w="100%" maxW={{ base: "100%", md: "850px", lg: "950px", xl: "1050px" }} px={{ base: "clamp(0.5rem, 1.5vw, 0.75rem)", sm: "clamp(0.75rem, 2vw, 1rem)", md: "clamp(1rem, 3vw, 1.5rem)", lg: "clamp(1.5rem, 4vw, 2rem)", xl: "clamp(2rem, 5vw, 2.5rem)" }} position="relative" overflow="visible">
+      <Box w="100%" maxW={{ base: "100%", md: "850px", lg: "950px", xl: "1050px" }} px={{ base: 3, md: 6, lg: 8, xl: 10 }} position="relative" overflow="visible">
         <ScaleFade in={true} initialScale={0.95}>
           <Flex direction="column" w="full">
-            <InputGroup bg="transparent" border="none" borderRadius={inputConfig.borderRadius} px={{ base: 2, sm: 2, md: 0 }} py={{ base: 0, sm: 0, md: 1, lg: 1, xl: 1 }} alignItems="center" transition={animationConfig.transition} position="relative" overflow="visible" role="group" aria-label="Message input area" aria-expanded={isFocused} aria-busy={busy}>
+            <InputGroup bg="transparent" border="none" borderRadius={inputConfig.borderRadius} px={{ base: 2, md: 0 }} py={{ base: 0, md: 1 }} alignItems="center" transition={animationConfig.transition} position="relative" overflow="visible" role="group" aria-label="Message input area" aria-expanded={isFocused} aria-busy={busy}>
               <Textarea
                 ref={textareaRef}
                 flex={1}

@@ -52,6 +52,47 @@ export const modalSizes = {
   extraLarge: { base: "full", md: "4xl" }
 };
 
+// Simplified modal spacing configurations
+export const modalSpacing = {
+  // Standard modal margins and positioning
+  standard: {
+    mx: { base: 4, md: 6 },
+    mt: {
+      base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)",
+      md: "calc(var(--header-height-desktop) + 16px)"
+    },
+    mb: { base: 4, md: 6 },
+    maxH: "85vh"
+  },
+
+  // Full-screen modal positioning
+  fullscreen: {
+    m: 0,
+    h: {
+      base: "calc(100vh - var(--header-height-mobile))",
+      md: "calc(100vh - var(--header-height-desktop))"
+    },
+    maxH: {
+      base: "calc(100vh - var(--header-height-mobile))",
+      md: "calc(100vh - var(--header-height-desktop))"
+    },
+    w: "100vw",
+    maxW: "100vw",
+    position: "fixed",
+    top: {
+      base: "var(--header-height-mobile)",
+      md: "var(--header-height-desktop)"
+    }
+  },
+
+  // Modal content padding
+  content: {
+    header: { py: { base: 3, md: 4 }, px: { base: 4, md: 6 } },
+    body: { py: { base: 4, md: 6 }, px: { base: 4, md: 6 } },
+    footer: { py: { base: 3, md: 4 }, px: { base: 4, md: 6 } }
+  }
+};
+
 // Enhanced close button styling
 export const commonCloseButtonStyles = {
   color: "var(--color-text-muted)",

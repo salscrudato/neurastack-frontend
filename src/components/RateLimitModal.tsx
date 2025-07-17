@@ -1,14 +1,14 @@
 import {
-  Box,
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Text,
-  VStack
+    Box,
+    Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+    VStack
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useChatStore } from '../store/useChatStore';
@@ -68,7 +68,7 @@ export function RateLimitModal() {
         borderRadius="16px"
         border="1px solid rgba(255, 255, 255, 0.2)"
         boxShadow="0 8px 32px rgba(0, 0, 0, 0.1)"
-        mx={4}
+        mx={{ base: 4, md: 6 }}
       >
         <ModalHeader
           fontSize="lg"
