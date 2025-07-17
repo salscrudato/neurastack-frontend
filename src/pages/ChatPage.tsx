@@ -1,8 +1,8 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  Text
+    Box,
+    Flex,
+    IconButton,
+    Text
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -208,7 +208,15 @@ export function ChatPage() {
                 <ChatMessage message={m} isHighlighted={false} />
               </Box>
             ))}
-            {isLoading && <Box px={4} py={6}><Loader variant="innovative" size="lg" message="AI models collaborating on your response..." /></Box>}
+            {isLoading && (
+              <Box px={4} py={6}>
+                <Loader
+                  variant="chat"
+                  size="lg"
+                  message="AI ensemble is crafting your response..."
+                />
+              </Box>
+            )}
             {msgs.length > 0 && !isLoading && <SaveSessionButton />}
             <div ref={bottomRef} />
           </Flex>

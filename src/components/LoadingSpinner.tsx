@@ -10,7 +10,7 @@ import { memo, useEffect, useState } from 'react';
 import { useReducedMotion } from '../hooks/useAccessibility';
 
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble' | 'innovative' | 'quantum' | 'glassmorph' | 'morphing';
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble' | 'innovative' | 'quantum' | 'glassmorph' | 'morphing' | 'chat';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
@@ -22,14 +22,14 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
   const [activeNode, setActiveNode] = useState(0);
   const [connectionPhase, setConnectionPhase] = useState(0);
   const [neuralPulse, setNeuralPulse] = useState(0);
+  const [thinkingPhase, setThinkingPhase] = useState(0);
   const prefersReducedMotion = useReducedMotion();
-  const primaryColor = 'var(--color-brand-primary)';
 
   const sizeConfig = {
-    sm: { container: 56, node: 7, core: 4 },
-    md: { container: 76, node: 9, core: 5 },
-    lg: { container: 96, node: 11, core: 6 },
-    xl: { container: 116, node: 13, core: 7 }
+    sm: { container: 64, node: 8, core: 6, orbit: 20 },
+    md: { container: 88, node: 10, core: 8, orbit: 28 },
+    lg: { container: 112, node: 12, core: 10, orbit: 36 },
+    xl: { container: 136, node: 14, core: 12, orbit: 44 }
   };
 
   const config = sizeConfig[size];
@@ -37,18 +37,19 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
   useEffect(() => {
     if (prefersReducedMotion) return;
     const intervals = [
-      setInterval(() => setActiveNode(n => (n + 1) % 4), 800),
-      setInterval(() => setConnectionPhase(p => (p + 1) % 6), 300),
-      setInterval(() => setNeuralPulse(p => (p + 1) % 3), 1200)
+      setInterval(() => setActiveNode(n => (n + 1) % 4), 1000),
+      setInterval(() => setConnectionPhase(p => (p + 1) % 6), 400),
+      setInterval(() => setNeuralPulse(p => (p + 1) % 3), 1500),
+      setInterval(() => setThinkingPhase(p => (p + 1) % 8), 200)
     ];
     return () => intervals.forEach(clearInterval);
   }, [prefersReducedMotion]);
 
   const nodes = [
-    { x: 0.25, y: 0.25, color: 'var(--color-success)', name: 'GPT' },
-    { x: 0.75, y: 0.25, color: 'var(--color-brand-secondary)', name: 'Claude' },
-    { x: 0.25, y: 0.75, color: 'var(--color-warning)', name: 'Gemini' },
-    { x: 0.75, y: 0.75, color: 'var(--color-brand-accent)', name: 'Synthesis' }
+    { x: 0.3, y: 0.2, color: '#10B981', name: 'GPT', gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' },
+    { x: 0.7, y: 0.2, color: '#8B5CF6', name: 'Claude', gradient: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)' },
+    { x: 0.3, y: 0.8, color: '#F59E0B', name: 'Gemini', gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' },
+    { x: 0.7, y: 0.8, color: '#4F9CF9', name: 'Synthesis', gradient: 'linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)' }
   ];
 
   return (
@@ -62,6 +63,26 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
       role="status"
       aria-label="AI models processing your request"
       aria-live="polite"
+      bg="rgba(255, 255, 255, 0.02)"
+      borderRadius="50%"
+      backdropFilter="blur(10px)"
+      border="1px solid rgba(79, 156, 249, 0.1)"
+      boxShadow="0 8px 32px rgba(79, 156, 249, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
+      _before={{
+        content: '""',
+        position: "absolute",
+        inset: "-2px",
+        borderRadius: "50%",
+        background: "linear-gradient(45deg, rgba(79, 156, 249, 0.1), rgba(139, 92, 246, 0.1), rgba(79, 156, 249, 0.1))",
+        zIndex: -1,
+        animation: prefersReducedMotion ? 'none' : 'borderGlow 3s ease-in-out infinite'
+      }}
+      sx={{
+        '@keyframes borderGlow': {
+          '0%, 100%': { opacity: 0.3 },
+          '50%': { opacity: 0.8 }
+        }
+      }}
     >
       <svg
         width={config.container}
@@ -70,13 +91,21 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
           position: 'absolute',
           top: 0,
           left: 0,
-          opacity: 0.4,
-          filter: 'drop-shadow(0 0 2px rgba(79, 156, 249, 0.3))'
+          opacity: 0.6,
+          filter: 'drop-shadow(0 0 4px rgba(79, 156, 249, 0.2))'
         }}
       >
+        <defs>
+          <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgba(79, 156, 249, 0.8)" />
+            <stop offset="50%" stopColor="rgba(139, 92, 246, 0.6)" />
+            <stop offset="100%" stopColor="rgba(79, 156, 249, 0.8)" />
+          </linearGradient>
+        </defs>
         {nodes.map((node, i) =>
           nodes.slice(i + 1).map((targetNode, j) => {
             const isActive = connectionPhase === ((i + j) % 6);
+            const isThinking = thinkingPhase === ((i + j) % 8);
             return (
               <line
                 key={`${i}-${j}`}
@@ -84,12 +113,13 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
                 y1={node.y * config.container}
                 x2={targetNode.x * config.container}
                 y2={targetNode.y * config.container}
-                stroke={isActive ? primaryColor : 'rgba(79, 156, 249, 0.2)'}
-                strokeWidth={isActive ? 2 : 1}
+                stroke={isActive ? 'url(#connectionGradient)' : 'rgba(79, 156, 249, 0.15)'}
+                strokeWidth={isActive ? 3 : isThinking ? 2 : 1}
                 style={{
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  strokeDasharray: isActive ? 'none' : '2,2',
-                  filter: isActive ? 'drop-shadow(0 0 4px rgba(79, 156, 249, 0.6))' : 'none'
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  strokeDasharray: isActive ? 'none' : isThinking ? '4,2' : '2,3',
+                  filter: isActive ? 'drop-shadow(0 0 8px rgba(79, 156, 249, 0.4))' : 'none',
+                  strokeLinecap: 'round'
                 }}
               />
             );
@@ -99,6 +129,7 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
 
       {nodes.map((node, i) => {
         const isActive = activeNode === i;
+        const isThinking = thinkingPhase === i;
         return (
           <Box
             key={i}
@@ -108,13 +139,34 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
             w={`${config.node}px`}
             h={`${config.node}px`}
             borderRadius="50%"
-            bg={isActive ? node.color : `${node.color}60`}
+            bg={isActive ? node.gradient : `${node.color}40`}
             border="2px solid"
-            borderColor={isActive ? node.color : 'transparent'}
-            transform={isActive ? 'scale(1.4)' : 'scale(1)'}
-            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-            boxShadow={isActive ? `0 0 16px ${node.color}80` : 'none'}
+            borderColor={isActive ? node.color : isThinking ? `${node.color}60` : 'transparent'}
+            transform={isActive ? 'scale(1.5)' : isThinking ? 'scale(1.1)' : 'scale(1)'}
+            transition="all 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
+            boxShadow={
+              isActive
+                ? `0 0 20px ${node.color}60, 0 0 40px ${node.color}30, inset 0 1px 0 rgba(255, 255, 255, 0.3)`
+                : isThinking
+                ? `0 0 12px ${node.color}40`
+                : '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }
             aria-label={node.name}
+            _before={isActive ? {
+              content: '""',
+              position: "absolute",
+              inset: "-4px",
+              borderRadius: "50%",
+              background: `linear-gradient(45deg, ${node.color}20, transparent, ${node.color}20)`,
+              zIndex: -1,
+              animation: prefersReducedMotion ? 'none' : 'nodeGlow 2s ease-in-out infinite'
+            } : {}}
+            sx={{
+              '@keyframes nodeGlow': {
+                '0%, 100%': { transform: 'scale(1)', opacity: 0.5 },
+                '50%': { transform: 'scale(1.2)', opacity: 1 }
+              }
+            }}
           />
         );
       })}
@@ -127,13 +179,22 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
         w={`${config.core}px`}
         h={`${config.core}px`}
         borderRadius="50%"
-        bg={primaryColor}
-        opacity={neuralPulse === 0 ? 1 : 0.6}
-        animation={prefersReducedMotion ? 'none' : "neuralCore 1.2s ease-in-out infinite"}
+        bg="linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 50%, #4F9CF9 100%)"
+        opacity={neuralPulse === 0 ? 1 : 0.8}
+        animation={prefersReducedMotion ? 'none' : "neuralCore 2s ease-in-out infinite"}
+        border="2px solid rgba(255, 255, 255, 0.3)"
         sx={{
           '@keyframes neuralCore': {
-            '0%, 100%': { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.8, boxShadow: '0 0 8px rgba(79, 156, 249, 0.4)' },
-            '50%': { transform: 'translate(-50%, -50%) scale(1.8)', opacity: 1, boxShadow: '0 0 20px rgba(79, 156, 249, 0.8)' }
+            '0%, 100%': {
+              transform: 'translate(-50%, -50%) scale(1)',
+              opacity: 0.9,
+              boxShadow: '0 0 16px rgba(79, 156, 249, 0.5), 0 0 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+            },
+            '50%': {
+              transform: 'translate(-50%, -50%) scale(1.3)',
+              opacity: 1,
+              boxShadow: '0 0 24px rgba(79, 156, 249, 0.8), 0 0 48px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
+            }
           }
         }}
       />
@@ -143,19 +204,61 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
         top="50%"
         left="50%"
         transform="translate(-50%, -50%)"
-        w={`${config.container * 0.9}px`}
-        h={`${config.container * 0.9}px`}
+        w={`${config.container * 0.85}px`}
+        h={`${config.container * 0.85}px`}
         borderRadius="50%"
-        border="1px solid"
-        borderColor="rgba(79, 156, 249, 0.15)"
-        animation={prefersReducedMotion ? 'none' : "energyRing 3s ease-in-out infinite"}
+        border="2px solid"
+        borderColor="rgba(79, 156, 249, 0.2)"
+        animation={prefersReducedMotion ? 'none' : "energyRing 4s ease-in-out infinite"}
         sx={{
+          background: 'conic-gradient(from 0deg, transparent, rgba(79, 156, 249, 0.1), transparent, rgba(139, 92, 246, 0.1), transparent)',
           '@keyframes energyRing': {
-            '0%, 100%': { transform: 'translate(-50%, -50%) scale(1) rotate(0deg)', borderColor: 'rgba(79, 156, 249, 0.15)', opacity: 0.6 },
-            '50%': { transform: 'translate(-50%, -50%) scale(1.05) rotate(180deg)', borderColor: 'rgba(79, 156, 249, 0.3)', opacity: 1 }
+            '0%': {
+              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
+              borderColor: 'rgba(79, 156, 249, 0.2)',
+              opacity: 0.7
+            },
+            '50%': {
+              transform: 'translate(-50%, -50%) scale(1.02) rotate(180deg)',
+              borderColor: 'rgba(79, 156, 249, 0.4)',
+              opacity: 1
+            },
+            '100%': {
+              transform: 'translate(-50%, -50%) scale(1) rotate(360deg)',
+              borderColor: 'rgba(79, 156, 249, 0.2)',
+              opacity: 0.7
+            }
           }
         }}
       />
+
+      {/* Add floating particles for extra visual interest */}
+      {!prefersReducedMotion && Array.from({ length: 6 }, (_, i) => (
+        <Box
+          key={`particle-${i}`}
+          position="absolute"
+          top="50%"
+          left="50%"
+          w="3px"
+          h="3px"
+          borderRadius="50%"
+          bg="rgba(79, 156, 249, 0.6)"
+          transform={`translate(-50%, -50%) rotate(${i * 60}deg) translateY(-${config.orbit}px)`}
+          animation={`particleOrbit 3s ease-in-out infinite ${i * 0.5}s`}
+          sx={{
+            '@keyframes particleOrbit': {
+              '0%, 100%': {
+                opacity: 0.3,
+                transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-${config.orbit}px) scale(1)`
+              },
+              '50%': {
+                opacity: 1,
+                transform: `translate(-50%, -50%) rotate(${i * 60 + 180}deg) translateY(-${config.orbit + 8}px) scale(1.5)`
+              }
+            }
+          }}
+        />
+      ))}
     </Box>
   );
 });
@@ -376,12 +479,136 @@ const MorphingLoader = memo(({ size = 'md' }: { size?: string }) => {
 
 const SkeletonLoader = memo(({ lines = 3 }: { lines?: number }) => <Box w="100%" maxW="400px"><SkeletonText noOfLines={lines} spacing={2} /></Box>);
 
+// Enhanced ChatLoader specifically designed for chat interface
+const ChatLoader = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
+  const [typingDots, setTypingDots] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
+
+  const sizeConfig = {
+    sm: { container: 60, dot: 6, spacing: 8 },
+    md: { container: 80, dot: 8, spacing: 12 },
+    lg: { container: 100, dot: 10, spacing: 16 },
+    xl: { container: 120, dot: 12, spacing: 20 }
+  };
+
+  const config = sizeConfig[size];
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const interval = setInterval(() => setTypingDots(d => (d + 1) % 4), 600);
+    return () => clearInterval(interval);
+  }, [prefersReducedMotion]);
+
+  return (
+    <Box
+      position="relative"
+      w={`${config.container}px`}
+      h={`${config.container}px`}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      role="status"
+      aria-label="AI is typing a response"
+      aria-live="polite"
+    >
+      {/* Chat bubble container */}
+      <Box
+        position="relative"
+        bg="rgba(255, 255, 255, 0.95)"
+        borderRadius="24px 24px 24px 8px"
+        p={4}
+        border="1px solid rgba(226, 232, 240, 0.6)"
+        boxShadow="0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(79, 156, 249, 0.1)"
+        backdropFilter="blur(20px)"
+        minW={`${config.container * 0.8}px`}
+        minH={`${config.container * 0.4}px`}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        _before={{
+          content: '""',
+          position: "absolute",
+          bottom: "-1px",
+          left: "8px",
+          width: "0",
+          height: "0",
+          borderLeft: "8px solid transparent",
+          borderRight: "8px solid transparent",
+          borderTop: "8px solid rgba(255, 255, 255, 0.95)",
+          filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
+        }}
+      >
+        {/* Typing dots */}
+        <Flex align="center" gap={1.5}>
+          {[0, 1, 2].map((i) => (
+            <Box
+              key={i}
+              w={`${config.dot}px`}
+              h={`${config.dot}px`}
+              borderRadius="50%"
+              bg={typingDots === i ? "#4F9CF9" : "#CBD5E1"}
+              transform={typingDots === i ? "scale(1.2)" : "scale(1)"}
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              animation={prefersReducedMotion ? 'none' : typingDots === i ? 'typingBounce 0.6s ease-in-out infinite' : 'none'}
+              sx={{
+                '@keyframes typingBounce': {
+                  '0%, 100%': { transform: 'scale(1.2) translateY(0)' },
+                  '50%': { transform: 'scale(1.4) translateY(-4px)' }
+                }
+              }}
+            />
+          ))}
+        </Flex>
+
+        {/* Subtle brain icon */}
+        <Box
+          position="absolute"
+          top="-8px"
+          right="-8px"
+          w="20px"
+          h="20px"
+          borderRadius="50%"
+          bg="linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 100%)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          boxShadow="0 2px 8px rgba(79, 156, 249, 0.3)"
+          animation={prefersReducedMotion ? 'none' : 'brainPulse 2s ease-in-out infinite'}
+          sx={{
+            '@keyframes brainPulse': {
+              '0%, 100%': { transform: 'scale(1)', opacity: 0.8 },
+              '50%': { transform: 'scale(1.1)', opacity: 1 }
+            }
+          }}
+        >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
+            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
+          </svg>
+        </Box>
+      </Box>
+    </Box>
+  );
+});
+
 export const Loader = memo(({ variant = 'spinner', size = 'md', message, fullScreen = false, lines = 3 }: LoaderProps) => {
-  const bg = useColorModeValue('rgba(255, 255, 255, 0.9)', 'rgba(0, 0, 0, 0.9)');
-  const textColor = useColorModeValue('gray.600', 'gray.300');
+  const bg = useColorModeValue('rgba(255, 255, 255, 0.95)', 'rgba(0, 0, 0, 0.95)');
+  const textColor = useColorModeValue('#64748B', '#94A3B8');
+  const containerBg = useColorModeValue('rgba(255, 255, 255, 0.8)', 'rgba(26, 32, 44, 0.8)');
+
   const renderLoader = () => {
     switch (variant) {
       case 'innovative': return <InnovativeSpinner size={size} />;
+      case 'chat': return <ChatLoader size={size} />;
       case 'ensemble': case 'modern': return <ModernEnsembleLoader size={size} />;
       case 'team': return <WaveAnimation size={size} />;
       case 'futuristic': return <FuturisticLoader size={size} />;
@@ -392,8 +619,58 @@ export const Loader = memo(({ variant = 'spinner', size = 'md', message, fullScr
       case 'spinner': default: return <Spinner size={size} color="blue.500" thickness="3px" />;
     }
   };
-  const content = <Flex direction="column" align="center" gap={3}>{renderLoader()}{message && <Text fontSize="sm" color={textColor} textAlign="center" fontWeight="500">{message}</Text>}</Flex>;
-  if (fullScreen) return <Flex position="fixed" top={0} left={0} right={0} bottom={0} bg={bg} backdropFilter="blur(4px)" zIndex={9999} align="center" justify="center">{content}</Flex>;
+
+  const content = (
+    <Flex
+      direction="column"
+      align="center"
+      gap={4}
+      p={6}
+      bg={containerBg}
+      borderRadius="2xl"
+      backdropFilter="blur(20px)"
+      border="1px solid rgba(79, 156, 249, 0.1)"
+      boxShadow="0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(79, 156, 249, 0.1)"
+      maxW="320px"
+      mx="auto"
+    >
+      {renderLoader()}
+      {message && (
+        <Text
+          fontSize={{ base: "sm", md: "md" }}
+          color={textColor}
+          textAlign="center"
+          fontWeight="500"
+          letterSpacing="-0.01em"
+          lineHeight="1.5"
+          maxW="280px"
+        >
+          {message}
+        </Text>
+      )}
+    </Flex>
+  );
+
+  if (fullScreen) {
+    return (
+      <Flex
+        position="fixed"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        bg={bg}
+        backdropFilter="blur(8px)"
+        zIndex={9999}
+        align="center"
+        justify="center"
+        p={4}
+      >
+        {content}
+      </Flex>
+    );
+  }
+
   return content;
 });
 

@@ -24,7 +24,7 @@ import {
     PiShieldCheckBold,
     PiWarningCircleBold
 } from "react-icons/pi";
-import { commonModalProps, commonOverlayStyles, modalSizes } from './shared/modalConfig';
+import { commonModalProps, commonOverlayStyles } from './shared/modalConfig';
 
 interface EnsembleInfoModalProps {
     isOpen: boolean;
@@ -163,8 +163,8 @@ export function EnsembleInfoModal({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            size={modalSizes.large}
-            {...commonModalProps}
+            size="full"
+            {...{ ...commonModalProps, isCentered: false }}
             aria-labelledby="ensemble-modal-title"
             aria-describedby="ensemble-modal-description"
         >
@@ -176,17 +176,35 @@ export function EnsembleInfoModal({
                 animate="visible"
                 exit="exit"
                 bg="#FFFFFF"
-                borderRadius="2xl"
-                maxH="85vh"
-                maxW="900px"
-                m={{ base: 2, md: 4 }}
-                mt={{ base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)", md: "calc(var(--header-height-desktop) + env(safe-area-inset-top, 0px) + 24px)" }}
+                borderRadius={{ base: "0", md: "2xl" }}
+                h={{
+                    base: "calc(100vh - var(--header-height-mobile))",
+                    md: "calc(100vh - var(--header-height-desktop))"
+                }}
+                maxH={{
+                    base: "calc(100vh - var(--header-height-mobile))",
+                    md: "calc(100vh - var(--header-height-desktop))"
+                }}
+                w="100vw"
+                maxW="100vw"
+                m={0}
+                position="fixed"
+                top={{
+                    base: "var(--header-height-mobile)",
+                    md: "var(--header-height-desktop)"
+                }}
+                left={0}
+                right={0}
+                bottom={0}
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
                 overflow="hidden"
                 sx={{
                     zIndex: 'var(--z-modal)',
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    background: "rgba(255, 255, 255, 0.95)",
                 }}
             >
                 <ModalCloseButton
@@ -220,21 +238,30 @@ export function EnsembleInfoModal({
                 />
 
                 <ModalBody
-                    p={{ base: 3, md: 4 }}
-                    pt={{ base: 3, md: 4 }}
+                    p={{ base: 4, md: 6 }}
+                    pt={{ base: 4, md: 6 }}
+                    pb={{ base: 6, md: 8 }}
                     bg="#FAFBFC"
                     overflowY="auto"
+                    h="100%"
                     maxH="100%"
+                    flex="1"
+                    display="flex"
+                    flexDirection="column"
                     css={{
                         '&::-webkit-scrollbar': {
-                            width: '4px',
+                            width: '8px',
                         },
                         '&::-webkit-scrollbar-track': {
-                            background: 'transparent',
+                            background: 'rgba(0, 0, 0, 0.05)',
+                            borderRadius: '4px',
                         },
                         '&::-webkit-scrollbar-thumb': {
-                            background: 'rgba(0, 0, 0, 0.2)',
-                            borderRadius: '2px',
+                            background: 'rgba(79, 156, 249, 0.3)',
+                            borderRadius: '4px',
+                        },
+                        '&::-webkit-scrollbar-thumb:hover': {
+                            background: 'rgba(79, 156, 249, 0.5)',
                         },
                     }}
                 >
@@ -256,7 +283,7 @@ export function EnsembleInfoModal({
                             </Text>
                         </Flex>
                     ) : (
-                        <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+                        <VStack spacing={{ base: 4, md: 6 }} align="stretch" flex="1" h="100%">
                             {/* Header */}
                             <Box bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" borderRadius={{ base: "xl", md: "2xl" }} p={{ base: 4, md: 6 }} color="white" position="relative" overflow="hidden">
                                 <Box position="absolute" top="0" right="0" w={{ base: "60px", md: "100px" }} h={{ base: "60px", md: "100px" }} bg="rgba(255, 255, 255, 0.1)" borderRadius="full" transform={{ base: "translate(20px, -20px)", md: "translate(30px, -30px)" }} />
