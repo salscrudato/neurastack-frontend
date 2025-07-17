@@ -25,6 +25,8 @@ const generateSafeUUID = (): string => {
   }
 };
 
+
+
 /**
  * Represents a chat message with comprehensive metadata
  * @interface Message
@@ -91,6 +93,14 @@ interface ChatState {
     windowStart: number;
     isLimited: boolean;
   };
+  guestRateLimit: {
+    lastRequestTime: number;
+    isLimited: boolean;
+  };
+  rateLimitModal: {
+    isOpen: boolean;
+    timeRemaining: number;
+  };
   // Performance metrics
   performanceMetrics: {
     averageResponseTime: number;
@@ -116,6 +126,9 @@ interface ChatState {
   clearError: () => void;
   updateOnlineStatus: (isOnline: boolean) => void;
   checkRateLimit: () => boolean;
+  checkGuestRateLimit: () => { allowed: boolean; timeUntilNext: number };
+  showRateLimitModal: (timeRemaining: number) => void;
+  closeRateLimitModal: () => void;
   updatePerformanceMetrics: (responseTime: number, success: boolean) => void;
 }
 
@@ -199,6 +212,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     windowStart: Date.now(),
     isLimited: false,
   },
+  guestRateLimit: {
+    lastRequestTime: 0,
+    isLimited: false,
+  },
+  rateLimitModal: {
+    isOpen: false,
+    timeRemaining: 0,
+  },
   performanceMetrics: {
     averageResponseTime: 0,
     totalRequests: 0,
@@ -228,6 +249,15 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         // Rate limiting check
         if (!get().checkRateLimit()) {
           set({ error: 'Too many requests. Please wait a moment before sending another message.' });
+          return;
+        }
+
+
+
+        // Guest user rate limiting check (1 request per minute)
+        const guestRateCheck = get().checkGuestRateLimit();
+        if (!guestRateCheck.allowed) {
+          get().showRateLimitModal(guestRateCheck.timeUntilNext);
           return;
         }
 
@@ -605,6 +635,61 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           }
         });
         return true;
+      },
+
+      checkGuestRateLimit: () => {
+        const state = get();
+        const now = Date.now();
+        const GUEST_RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in milliseconds
+
+        // Check if user is a guest (anonymous)
+        const user = auth.currentUser;
+        if (!user || !user.isAnonymous) {
+          // Not a guest user, no additional restrictions
+          return { allowed: true, timeUntilNext: 0 };
+        }
+
+        // Check if enough time has passed since last request
+        const timeSinceLastRequest = now - state.guestRateLimit.lastRequestTime;
+
+        if (timeSinceLastRequest < GUEST_RATE_LIMIT_WINDOW) {
+          // Still within rate limit window
+          const timeUntilNext = GUEST_RATE_LIMIT_WINDOW - timeSinceLastRequest;
+          set({
+            guestRateLimit: {
+              ...state.guestRateLimit,
+              isLimited: true,
+            }
+          });
+          return { allowed: false, timeUntilNext };
+        }
+
+        // Rate limit window has passed, allow request
+        set({
+          guestRateLimit: {
+            lastRequestTime: now,
+            isLimited: false,
+          }
+        });
+        return { allowed: true, timeUntilNext: 0 };
+      },
+
+      showRateLimitModal: (timeRemaining: number) => {
+        set({
+          rateLimitModal: {
+            isOpen: true,
+            timeRemaining,
+          }
+        });
+      },
+
+      closeRateLimitModal: () => {
+        set({
+          rateLimitModal: {
+            isOpen: false,
+            timeRemaining: 0,
+          }
+        });
       },
 
       updatePerformanceMetrics: (responseTime: number, success: boolean) => {

@@ -1,14 +1,14 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  IconButton,
-  Text,
-  Tooltip,
-  useClipboard,
-  VStack
+    Badge,
+    Box,
+    Button,
+    Flex,
+    HStack,
+    IconButton,
+    Text,
+    Tooltip,
+    useClipboard,
+    VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -255,12 +255,12 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
                           setIsAdvancedAnalyticsOpen(true);
                         }}
-                        bg="#4F9CF9"
-                        color="white"
+                        bg="rgba(255, 255, 255, 0.95)"
+                        color="#4F9CF9"
                         fontWeight="600"
                         fontSize="2xs"
-                        border="1px solid #4F9CF9"
-                        boxShadow="0 1px 4px rgba(79, 156, 249, 0.1), 0 4px 12px rgba(79, 156, 249, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8)"
+                        border="1px solid rgba(79, 156, 249, 0.2)"
+                        boxShadow="0 2px 8px rgba(79, 156, 249, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)"
                         position="relative"
                         overflow="hidden"
                         minH={{ base: "32px", md: "28px" }}
@@ -268,11 +268,11 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                         py={1}
                         h="auto"
                         borderRadius="lg"
-                        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
+                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                         letterSpacing="0.025em"
                         sx={{
-                          backdropFilter: 'blur(12px)',
-                          WebkitBackdropFilter: 'blur(12px)',
+                          backdropFilter: 'blur(16px)',
+                          WebkitBackdropFilter: 'blur(16px)',
                           touchAction: 'manipulation',
                           WebkitTapHighlightColor: 'transparent'
                         }}
@@ -283,28 +283,44 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                           left: '-100%',
                           width: '100%',
                           height: '100%',
-                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent)',
-                          transition: 'left 0.8s ease'
+                          background: 'linear-gradient(90deg, transparent, rgba(79, 156, 249, 0.05), transparent)',
+                          transition: 'left 0.6s ease'
                         }}
                         _hover={{
-                          bg: "#3B82F6",
-                          borderColor: "#3B82F6",
+                          bg: "#4F9CF9",
+                          borderColor: "#4F9CF9",
                           color: "white",
-                          transform: "translateY(-1px)",
-                          boxShadow: "0 8px 24px rgba(79, 156, 249, 0.35)",
+                          transform: "translateY(-1px) scale(1.02)",
+                          boxShadow: "0 8px 24px rgba(79, 156, 249, 0.25), 0 4px 12px rgba(79, 156, 249, 0.15)",
                           _before: { left: '100%' }
                         }}
                         _active={{
                           transform: "translateY(0) scale(0.98)",
-                          bg: "#2563EB",
-                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.25)"
+                          bg: "#3B82F6",
+                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.2)"
                         }}
                         _focus={{
                           boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
                           outline: "none"
                         }}
                       >
-                        <Text>Analytics</Text>
+                        <HStack spacing={1.5}>
+                          <Box
+                            w="4px"
+                            h="4px"
+                            borderRadius="full"
+                            bg="currentColor"
+                            opacity={0.7}
+                            animation="pulse 2s ease-in-out infinite"
+                            sx={{
+                              '@keyframes pulse': {
+                                '0%, 100%': { opacity: 0.7, transform: 'scale(1)' },
+                                '50%': { opacity: 1, transform: 'scale(1.1)' }
+                              }
+                            }}
+                          />
+                          <Text>Analytics</Text>
+                        </HStack>
                       </Button>
                   </HStack>
                 </Flex>

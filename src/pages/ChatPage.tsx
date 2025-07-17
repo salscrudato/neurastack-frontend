@@ -9,6 +9,7 @@ import { PiArrowUpBold } from 'react-icons/pi';
 import ChatInput from '../components/ChatInput';
 import { ChatMessage } from '../components/ChatMessage';
 import { Loader } from '../components/LoadingSpinner';
+import { RateLimitModal } from '../components/RateLimitModal';
 import { SaveSessionButton } from '../components/SaveSessionButton';
 import { useReducedMotion } from '../hooks/useAccessibility';
 import { useAuthStore } from '../store/useAuthStore';
@@ -19,6 +20,7 @@ export function ChatPage() {
   const msgs = useChatStore((s) => s.messages);
   const isLoading = useChatStore((s) => s.isLoading);
   const sendMessage = useChatStore((s) => s.sendMessage);
+
   const user = useAuthStore((s) => s.user);
   const { loadAllSessions } = useHistoryStore();
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -197,6 +199,7 @@ export function ChatPage() {
       >
         <Box w="100%" maxW={chatConfig.container.maxWidth} px={chatConfig.container.centerPadding}>
           <Flex direction="column" align="stretch" gap={chatConfig.container.gap}>
+
             {msgs.length === 0 && !isLoading && (
               <Flex direction="column" align="center" justify="center" minH="60vh" textAlign="center" px={4}>
                 <Text fontSize={{ base: "xl", sm: "2xl", md: "3xl" }} fontWeight="500" color="gray.800" mb={3} letterSpacing="-0.02em">What do you want to know?</Text>
@@ -263,6 +266,7 @@ export function ChatPage() {
         />
       )}
       <ChatInput onSend={handleSendMessage} />
+      <RateLimitModal />
     </Box>
   );
 }

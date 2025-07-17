@@ -1,13 +1,12 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  InputGroup,
-  InputRightElement,
-  ScaleFade,
-  Text,
-  Textarea,
-  Tooltip
+    Box,
+    Flex,
+    IconButton,
+    InputGroup,
+    InputRightElement,
+    ScaleFade,
+    Textarea,
+    Tooltip
 } from "@chakra-ui/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PiArrowUpBold } from "react-icons/pi";
@@ -93,11 +92,12 @@ const SendButton = memo(({ isActive, isLoading, onClick, isDisabled }: {
         minH={{ base: "40px", md: "44px" }}
         borderRadius="full"
         transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)"
-        cursor={isActive ? "pointer" : "not-allowed"}
+        cursor={isDisabled ? "not-allowed" : (isActive ? "pointer" : "not-allowed")}
         position="relative"
         overflow="hidden"
         backdropFilter="blur(20px)"
         isDisabled={isDisabled}
+        opacity={isDisabled && isActive ? 0.7 : 1}
         {...buttonStyles}
         _hover={isActive ? {
           bg: "rgba(255, 255, 255, 1)",
@@ -150,6 +150,8 @@ export default function ChatInput({ onSend }: ChatInputProps) {
   const initialHeightRef = useRef<number>(window.innerHeight);
   const prefersReducedMotion = useReducedMotion();
   const { isMobile } = useMobileOptimization();
+
+
 
   const inputConfig = useMemo(() => ({
     minHeight: { base: "48px", sm: "50px", md: "52px", lg: "54px", xl: "56px" },
@@ -505,11 +507,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
                 />
               </InputRightElement>
             </InputGroup>
-            <Flex justify="flex-end" mt={1} pr={4}>
-              <Text fontSize="xs" color={colorSystem.text.charCount}>
-                {charCount} / {MAX_CHARS}
-              </Text>
-            </Flex>
+
           </Flex>
         </ScaleFade>
       </Box>

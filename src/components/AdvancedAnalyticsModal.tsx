@@ -139,7 +139,14 @@ export function AdvancedAnalyticsModal({
             sophisticatedFeatures: voting?.analytics?.sophisticatedFeaturesUsed || [],
             qualityScore: voting?.analytics?.qualityScore || 0,
             abstentionTriggered: voting?.abstention?.triggered || false,
-            abstentionReasons: voting?.abstention?.reasons || []
+            abstentionReasons: voting?.abstention?.reasons || [],
+
+            // New enhanced analytics
+            metaVoting: voting?.metaVoting || null,
+            tieBreaking: voting?.tieBreaking || null,
+            clusterAnalysis: voting?.diversityAnalysis?.clusterAnalysis || null,
+            historicalPerformance: voting?.historicalPerformance || null,
+            abstentionAnalysis: voting?.abstention || null
         };
     }, [analyticsData]);
 
@@ -153,7 +160,7 @@ export function AdvancedAnalyticsModal({
             onClose={onClose}
             size="full"
             {...commonModalProps}
-            isCentered={false}
+            isCentered={true}
             aria-labelledby="analytics-modal-title"
         >
             <ModalOverlay
@@ -168,16 +175,27 @@ export function AdvancedAnalyticsModal({
                 exit="exit"
                 bg="#FFFFFF"
                 borderRadius={{ base: "0", md: "2xl" }}
-                h="100vh"
-                w="100vw"
-                maxH="100vh"
-                maxW="100vw"
-                m={0}
-                pt={{
-                  base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px))",
-                  md: "calc(var(--header-height-desktop))"
+                h={{
+                    base: "calc(100vh - var(--header-height-mobile) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 0px)",
+                    md: "calc(100vh - var(--header-height-desktop) - 16px)"
                 }}
-                pb={{ base: "env(safe-area-inset-bottom, 0px)", md: 0 }}
+                w="100vw"
+                maxH={{
+                    base: "calc(100vh - var(--header-height-mobile) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px)",
+                    md: "calc(100vh - var(--header-height-desktop) - 32px)"
+                }}
+                maxW="100vw"
+                mt={{
+                    base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px))",
+                    md: "var(--header-height-desktop)"
+                }}
+                mb={{
+                    base: "calc(env(safe-area-inset-bottom, 0px) + 16px)",
+                    md: "16px"
+                }}
+                m={0}
+                pt={0}
+                pb={0}
                 boxShadow={{ base: "none", md: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
                 border={{ base: "none", md: "1px solid" }}
                 borderColor="rgba(226, 232, 240, 0.8)"
@@ -188,127 +206,190 @@ export function AdvancedAnalyticsModal({
                 left={0}
                 right={0}
                 bottom={0}
+                display="flex"
+                flexDirection="column"
             >
-                <ModalHeader
-                    bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
+                {/* Sticky Header Container */}
+                <Box
+                    position="sticky"
+                    top={0}
+                    zIndex={10}
+                    bg="#FFFFFF"
                     borderBottom="1px solid"
                     borderColor="rgba(226, 232, 240, 0.6)"
-                    py={6}
+                    boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
                 >
-                    <HStack spacing={3}>
-                        <Icon as={PiChartBarBold} boxSize={6} color="#4F9CF9" />
-                        <Text
-                            id="analytics-modal-title"
-                            fontSize="xl"
-                            fontWeight="bold"
-                            color="#1E293B"
-                        >
-                            Advanced Analytics Dashboard
-                        </Text>
-                    </HStack>
-                </ModalHeader>
-                <ModalCloseButton
-                    color="#4F9CF9"
-                    _hover={{ bg: "blue.50" }}
-                    borderRadius="full"
-                />
+                    <ModalHeader
+                        bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
+                        py={{ base: 3, md: 4 }}
+                        px={{ base: 4, md: 6 }}
+                        borderBottom="none"
+                    >
+                        <HStack spacing={3}>
+                            <Icon as={PiChartBarBold} boxSize={{ base: 5, md: 6 }} color="#4F9CF9" />
+                            <Text
+                                id="analytics-modal-title"
+                                fontSize={{ base: "lg", md: "xl" }}
+                                fontWeight="bold"
+                                color="#1E293B"
+                            >
+                                Advanced Analytics Dashboard
+                            </Text>
+                        </HStack>
+                    </ModalHeader>
+
+                    <ModalCloseButton
+                        color="#4F9CF9"
+                        _hover={{ bg: "blue.50" }}
+                        borderRadius="full"
+                        size={{ base: "sm", md: "md" }}
+                        top={{ base: 2, md: 3 }}
+                        right={{ base: 2, md: 3 }}
+                    />
+                </Box>
                 
-                <ModalBody
-                    p={0}
-                    overflow="auto"
+                {/* Tabs Wrapper */}
+                <Tabs
+                    variant="enclosed"
+                    colorScheme="blue"
                     h="100%"
                     display="flex"
                     flexDirection="column"
+                    flex="1"
                 >
-                    <Tabs
-                        variant="enclosed"
-                        colorScheme="blue"
-                        h="100%"
+                    {/* Sticky Tab Navigation */}
+                    <TabList
+                        bg="#F8FAFC"
+                        px={{ base: 4, md: 6 }}
+                        py={2}
+                        borderBottom="1px solid"
+                        borderColor="rgba(226, 232, 240, 0.6)"
+                        gap={1}
+                        overflowX="auto"
+                        position="sticky"
+                        top="0"
+                        zIndex={5}
+                        css={{
+                            '&::-webkit-scrollbar': {
+                                display: 'none'
+                            },
+                            scrollbarWidth: 'none'
+                        }}
+                    >
+                        <Tab
+                            fontWeight="600"
+                            fontSize={{ base: "xs", md: "sm" }}
+                            bg="#2563EB"
+                            color="white"
+                            _selected={{
+                                bg: "#1D4ED8",
+                                color: "white",
+                                borderColor: "#1D4ED8"
+                            }}
+                            _hover={{
+                                bg: "#1E40AF",
+                                color: "white"
+                            }}
+                            borderRadius="md"
+                            px={{ base: 3, md: 4 }}
+                            py={{ base: 2, md: 3 }}
+                            minW="fit-content"
+                            whiteSpace="nowrap"
+                        >
+                            Overview
+                        </Tab>
+                        <Tab
+                            fontWeight="600"
+                            fontSize={{ base: "xs", md: "sm" }}
+                            bg="#2563EB"
+                            color="white"
+                            _selected={{
+                                bg: "#1D4ED8",
+                                color: "white",
+                                borderColor: "#1D4ED8"
+                            }}
+                            _hover={{
+                                bg: "#1E40AF",
+                                color: "white"
+                            }}
+                            borderRadius="md"
+                            px={{ base: 3, md: 4 }}
+                            py={{ base: 2, md: 3 }}
+                            minW="fit-content"
+                            whiteSpace="nowrap"
+                        >
+                            Model Performance
+                        </Tab>
+                        <Tab
+                            fontWeight="600"
+                            fontSize={{ base: "xs", md: "sm" }}
+                            bg="#2563EB"
+                            color="white"
+                            _selected={{
+                                bg: "#1D4ED8",
+                                color: "white",
+                                borderColor: "#1D4ED8"
+                            }}
+                            _hover={{
+                                bg: "#1E40AF",
+                                color: "white"
+                            }}
+                            borderRadius="md"
+                            px={{ base: 3, md: 4 }}
+                            py={{ base: 2, md: 3 }}
+                            minW="fit-content"
+                            whiteSpace="nowrap"
+                        >
+                            Advanced Insights
+                        </Tab>
+                    </TabList>
+
+                    {/* Scrollable Content Area */}
+                    <ModalBody
+                        p={0}
+                        overflow="hidden"
+                        flex="1"
                         display="flex"
                         flexDirection="column"
                     >
-                        <TabList bg="#F8FAFC" px={6} borderBottom="1px solid" borderColor="rgba(226, 232, 240, 0.6)">
-                            <Tab
-                                fontWeight="600"
-                                fontSize="sm"
-                                bg="#2563EB"
-                                color="white"
-                                _selected={{
-                                    bg: "#1D4ED8",
-                                    color: "white",
-                                    borderColor: "#1D4ED8"
-                                }}
-                                _hover={{
-                                    bg: "#1E40AF",
-                                    color: "white"
-                                }}
-                                borderRadius="md"
-                                mr={1}
-                            >
-                                Overview
-                            </Tab>
-                            <Tab
-                                fontWeight="600"
-                                fontSize="sm"
-                                bg="#2563EB"
-                                color="white"
-                                _selected={{
-                                    bg: "#1D4ED8",
-                                    color: "white",
-                                    borderColor: "#1D4ED8"
-                                }}
-                                _hover={{
-                                    bg: "#1E40AF",
-                                    color: "white"
-                                }}
-                                borderRadius="md"
-                                mr={1}
-                            >
-                                Voting Analysis
-                            </Tab>
-                            <Tab
-                                fontWeight="600"
-                                fontSize="sm"
-                                bg="#2563EB"
-                                color="white"
-                                _selected={{
-                                    bg: "#1D4ED8",
-                                    color: "white",
-                                    borderColor: "#1D4ED8"
-                                }}
-                                _hover={{
-                                    bg: "#1E40AF",
-                                    color: "white"
-                                }}
-                                borderRadius="md"
-                                mr={1}
-                            >
-                                Model Performance
-                            </Tab>
 
-                        </TabList>
-                        
                         <TabPanels
                             flex="1"
-                            overflow="auto"
+                            overflow="hidden"
+                            h="100%"
                         >
                             {/* Overview Tab */}
                             <TabPanel
-                                p={{ base: 4, md: 8, lg: 12 }}
+                                p={{ base: 3, md: 6, lg: 8 }}
                                 h="100%"
                                 overflow="auto"
+                                css={{
+                                    '&::-webkit-scrollbar': {
+                                        width: '6px'
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                        background: '#f1f1f1',
+                                        borderRadius: '3px'
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                        background: '#c1c1c1',
+                                        borderRadius: '3px'
+                                    },
+                                    '&::-webkit-scrollbar-thumb:hover': {
+                                        background: '#a8a8a8'
+                                    }
+                                }}
                             >
-                                <VStack spacing={8} align="stretch" maxW="none" w="100%">
+                                <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
                                     {/* AI Meta-Voting Analysis */}
                                     {analytics.voting?.metaVoting && (
                                         <Box
                                             bg="white"
                                             borderRadius="xl"
-                                            p={{ base: 6, md: 8, lg: 10 }}
+                                            p={6}
                                             border="1px solid"
                                             borderColor="rgba(226, 232, 240, 0.6)"
                                             boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                            w="100%"
                                         >
                                             <HStack spacing={3} mb={4}>
                                                 <Icon as={PiBrainBold} boxSize={6} color="#10B981" />
@@ -343,7 +424,102 @@ export function AdvancedAnalyticsModal({
                                         </Box>
                                     )}
 
+                                    {/* Voting Overview */}
+                                    <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }} gap={{ base: 3, md: 4 }}>
+                                        <GridItem>
+                                            <Stat
+                                                bg="white"
+                                                p={{ base: 3, md: 4 }}
+                                                borderRadius={{ base: "lg", md: "xl" }}
+                                                border="1px solid"
+                                                borderColor="rgba(226, 232, 240, 0.6)"
+                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
+                                            >
+                                                <StatLabel fontSize={{ base: "2xs", md: "xs" }} color="#64748B">Voting Winner</StatLabel>
+                                                <StatNumber fontSize={{ base: "lg", md: "xl" }} color="#10B981">
+                                                    {analytics.votingWinner}
+                                                </StatNumber>
+                                                <StatHelpText fontSize={{ base: "2xs", md: "xs" }} color="#94A3B8">
+                                                    Selected model
+                                                </StatHelpText>
+                                            </Stat>
+                                        </GridItem>
 
+                                        <GridItem>
+                                            <Stat
+                                                bg="white"
+                                                p={4}
+                                                borderRadius="xl"
+                                                border="1px solid"
+                                                borderColor="rgba(226, 232, 240, 0.6)"
+                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
+                                            >
+                                                <StatLabel fontSize="xs" color="#64748B">Voting Confidence</StatLabel>
+                                                <StatNumber fontSize="xl" color="#4F9CF9">
+                                                    {(analytics.votingConfidence * 100).toFixed(1)}%
+                                                </StatNumber>
+                                                <StatHelpText fontSize="xs" color="#94A3B8">
+                                                    Decision strength
+                                                </StatHelpText>
+                                            </Stat>
+                                        </GridItem>
+
+                                        <GridItem>
+                                            <Stat
+                                                bg="white"
+                                                p={4}
+                                                borderRadius="xl"
+                                                border="1px solid"
+                                                borderColor="rgba(226, 232, 240, 0.6)"
+                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
+                                            >
+                                                <StatLabel fontSize="xs" color="#64748B">Consensus</StatLabel>
+                                                <StatNumber fontSize="xl" color="#8B5CF6">
+                                                    {analytics.consensus}
+                                                </StatNumber>
+                                                <StatHelpText fontSize="xs" color="#94A3B8">
+                                                    Agreement level
+                                                </StatHelpText>
+                                            </Stat>
+                                        </GridItem>
+                                    </Grid>
+
+                                    {/* Voting Weights */}
+                                    <Box
+                                        bg="white"
+                                        borderRadius="xl"
+                                        p={6}
+                                        border="1px solid"
+                                        borderColor="rgba(226, 232, 240, 0.6)"
+                                        boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                    >
+                                        <HStack spacing={3} mb={4}>
+                                            <Icon as={PiScalesBold} boxSize={6} color="#4F9CF9" />
+                                            <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                                Voting Weights
+                                            </Text>
+                                        </HStack>
+                                        <VStack spacing={4} align="stretch">
+                                            {analytics.voting?.weights && Object.entries(analytics.voting.weights).map(([model, weight]) => (
+                                                <Box key={model}>
+                                                    <Flex justify="space-between" align="center" mb={2}>
+                                                        <Text fontSize="sm" fontWeight="600" color="#1E293B">
+                                                            {model.toUpperCase()}
+                                                        </Text>
+                                                        <Text fontSize="sm" color="#64748B">
+                                                            {((weight as number) * 100).toFixed(1)}%
+                                                        </Text>
+                                                    </Flex>
+                                                    <Progress
+                                                        value={(weight as number) * 100}
+                                                        colorScheme="blue"
+                                                        size="sm"
+                                                        borderRadius="full"
+                                                    />
+                                                </Box>
+                                            ))}
+                                        </VStack>
+                                    </Box>
 
                                     {/* Confidence Analysis */}
                                     <Box
@@ -488,166 +664,31 @@ export function AdvancedAnalyticsModal({
                                 </VStack>
                             </TabPanel>
 
-                            {/* Voting Analysis Tab */}
-                            <TabPanel
-                                p={{ base: 4, md: 8, lg: 12 }}
-                                h="100%"
-                                overflow="auto"
-                            >
-                                <VStack spacing={8} align="stretch" maxW="none" w="100%">
-                                    {/* Voting Overview */}
-                                    <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
-                                        <GridItem>
-                                            <Stat
-                                                bg="white"
-                                                p={4}
-                                                borderRadius="xl"
-                                                border="1px solid"
-                                                borderColor="rgba(226, 232, 240, 0.6)"
-                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
-                                            >
-                                                <StatLabel fontSize="xs" color="#64748B">Voting Winner</StatLabel>
-                                                <StatNumber fontSize="xl" color="#10B981">
-                                                    {analytics.votingWinner}
-                                                </StatNumber>
-                                                <StatHelpText fontSize="xs" color="#94A3B8">
-                                                    Selected model
-                                                </StatHelpText>
-                                            </Stat>
-                                        </GridItem>
-
-                                        <GridItem>
-                                            <Stat
-                                                bg="white"
-                                                p={4}
-                                                borderRadius="xl"
-                                                border="1px solid"
-                                                borderColor="rgba(226, 232, 240, 0.6)"
-                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
-                                            >
-                                                <StatLabel fontSize="xs" color="#64748B">Voting Confidence</StatLabel>
-                                                <StatNumber fontSize="xl" color="#4F9CF9">
-                                                    {(analytics.votingConfidence * 100).toFixed(1)}%
-                                                </StatNumber>
-                                                <StatHelpText fontSize="xs" color="#94A3B8">
-                                                    Decision strength
-                                                </StatHelpText>
-                                            </Stat>
-                                        </GridItem>
-
-                                        <GridItem>
-                                            <Stat
-                                                bg="white"
-                                                p={4}
-                                                borderRadius="xl"
-                                                border="1px solid"
-                                                borderColor="rgba(226, 232, 240, 0.6)"
-                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
-                                            >
-                                                <StatLabel fontSize="xs" color="#64748B">Consensus</StatLabel>
-                                                <StatNumber fontSize="xl" color="#8B5CF6">
-                                                    {analytics.consensus}
-                                                </StatNumber>
-                                                <StatHelpText fontSize="xs" color="#94A3B8">
-                                                    Agreement level
-                                                </StatHelpText>
-                                            </Stat>
-                                        </GridItem>
-                                    </Grid>
-
-                                    {/* Voting Weights */}
-                                    <Box
-                                        bg="white"
-                                        borderRadius="xl"
-                                        p={6}
-                                        border="1px solid"
-                                        borderColor="rgba(226, 232, 240, 0.6)"
-                                        boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                    >
-                                        <HStack spacing={3} mb={4}>
-                                            <Icon as={PiScalesBold} boxSize={6} color="#4F9CF9" />
-                                            <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                Voting Weights
-                                            </Text>
-                                        </HStack>
-                                        <VStack spacing={4} align="stretch">
-                                            {analytics.voting?.weights && Object.entries(analytics.voting.weights).map(([model, weight]) => (
-                                                <Box key={model}>
-                                                    <Flex justify="space-between" align="center" mb={2}>
-                                                        <Text fontSize="sm" fontWeight="600" color="#1E293B">
-                                                            {model.toUpperCase()}
-                                                        </Text>
-                                                        <Text fontSize="sm" color="#64748B">
-                                                            {((weight as number) * 100).toFixed(1)}%
-                                                        </Text>
-                                                    </Flex>
-                                                    <Progress
-                                                        value={(weight as number) * 100}
-                                                        colorScheme="blue"
-                                                        size="sm"
-                                                        borderRadius="full"
-                                                    />
-                                                </Box>
-                                            ))}
-                                        </VStack>
-                                    </Box>
-
-
-
-                                    {/* Meta Voting */}
-                                    {analytics.voting?.metaVoting && (
-                                        <Box
-                                            bg="white"
-                                            borderRadius="xl"
-                                            p={6}
-                                            border="1px solid"
-                                            borderColor="rgba(226, 232, 240, 0.6)"
-                                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                                        >
-                                            <HStack spacing={3} mb={4}>
-                                                <Icon as={PiBrainBold} boxSize={6} color="#10B981" />
-                                                <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                    AI Meta-Voting Analysis
-                                                </Text>
-                                            </HStack>
-                                            <VStack spacing={4} align="stretch">
-                                                <Flex justify="space-between" align="center">
-                                                    <Text fontSize="sm" color="#64748B">Meta Winner</Text>
-                                                    <Badge colorScheme="green" variant="solid">
-                                                        {analytics.voting.metaVoting.winner}
-                                                    </Badge>
-                                                </Flex>
-                                                <Flex justify="space-between" align="center">
-                                                    <Text fontSize="sm" color="#64748B">Meta Confidence</Text>
-                                                    <Badge colorScheme="blue" variant="solid">
-                                                        {(analytics.voting.metaVoting.confidence * 100).toFixed(1)}%
-                                                    </Badge>
-                                                </Flex>
-                                                {analytics.voting.metaVoting.reasoning && (
-                                                    <Box>
-                                                        <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={2}>
-                                                            AI Reasoning
-                                                        </Text>
-                                                        <Text fontSize="xs" color="#64748B" lineHeight="1.5">
-                                                            {analytics.voting.metaVoting.reasoning}
-                                                        </Text>
-                                                    </Box>
-                                                )}
-                                            </VStack>
-                                        </Box>
-                                    )}
-                                </VStack>
-                            </TabPanel>
-
                             {/* Model Performance Tab */}
                             <TabPanel
-                                p={{ base: 4, md: 8, lg: 12 }}
+                                p={{ base: 3, md: 6, lg: 8 }}
                                 h="100%"
                                 overflow="auto"
+                                css={{
+                                    '&::-webkit-scrollbar': {
+                                        width: '6px'
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                        background: '#f1f1f1',
+                                        borderRadius: '3px'
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                        background: '#c1c1c1',
+                                        borderRadius: '3px'
+                                    },
+                                    '&::-webkit-scrollbar-thumb:hover': {
+                                        background: '#a8a8a8'
+                                    }
+                                }}
                             >
-                                <VStack spacing={8} align="stretch" maxW="none" w="100%">
+                                <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
                                     {/* Performance Overview */}
-                                    <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                                    <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)" }} gap={{ base: 3, md: 4 }}>
                                         <GridItem>
                                             <Stat
                                                 bg="white"
@@ -763,7 +804,7 @@ export function AdvancedAnalyticsModal({
                                                     borderColor="rgba(226, 232, 240, 0.4)"
                                                     bg="rgba(248, 250, 252, 0.5)"
                                                 >
-                                                    <Grid templateColumns={{ base: "1fr", md: "repeat(4, 1fr)" }} gap={4}>
+                                                    <Grid templateColumns={{ base: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)" }} gap={{ base: 2, md: 4 }}>
                                                         <GridItem>
                                                             <VStack spacing={1} align="start">
                                                                 <Text fontSize="xs" color="#64748B">Model</Text>
@@ -831,10 +872,389 @@ export function AdvancedAnalyticsModal({
                                 </VStack>
                             </TabPanel>
 
+                            {/* Advanced Insights Tab */}
+                            <TabPanel
+                                p={{ base: 3, md: 6, lg: 8 }}
+                                h="100%"
+                                overflow="auto"
+                                css={{
+                                    '&::-webkit-scrollbar': {
+                                        width: '6px',
+                                    },
+                                    '&::-webkit-scrollbar-track': {
+                                        background: 'rgba(0, 0, 0, 0.05)',
+                                        borderRadius: '3px',
+                                    },
+                                    '&::-webkit-scrollbar-thumb': {
+                                        background: 'rgba(79, 156, 249, 0.3)',
+                                        borderRadius: '3px',
+                                    },
+                                    '&::-webkit-scrollbar-thumb:hover': {
+                                        background: 'rgba(79, 156, 249, 0.5)',
+                                    },
+                                }}
+                            >
+                                <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
+
+                                    {/* Meta-Voting Analysis */}
+                                    {analytics.metaVoting && (
+                                        <Box
+                                            bg="white"
+                                            borderRadius="xl"
+                                            p={6}
+                                            border="1px solid"
+                                            borderColor="rgba(226, 232, 240, 0.6)"
+                                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        >
+                                            <HStack spacing={3} mb={4}>
+                                                <Icon as={PiBrainBold} boxSize={6} color="#8B5CF6" />
+                                                <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                                    AI Meta-Voting Analysis
+                                                </Text>
+                                            </HStack>
+                                            <VStack spacing={4} align="stretch">
+                                                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(139, 92, 246, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(139, 92, 246, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Meta-Voting Winner</StatLabel>
+                                                            <StatNumber fontSize="lg" color="#8B5CF6">
+                                                                {analytics.metaVoting.winner || 'N/A'}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                AI-selected best response
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(139, 92, 246, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(139, 92, 246, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Meta Confidence</StatLabel>
+                                                            <StatNumber fontSize="lg" color="#8B5CF6">
+                                                                {((analytics.metaVoting.confidence || 0) * 100).toFixed(1)}%
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                AI assessment confidence
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                </Grid>
+                                                {analytics.metaVoting.reasoning && (
+                                                    <Box
+                                                        p={4}
+                                                        bg="rgba(139, 92, 246, 0.02)"
+                                                        borderRadius="lg"
+                                                        border="1px solid rgba(139, 92, 246, 0.1)"
+                                                    >
+                                                        <Text fontSize="xs" fontWeight="600" color="#64748B" mb={2}>
+                                                            AI Reasoning:
+                                                        </Text>
+                                                        <Text fontSize="sm" color="#475569" lineHeight="1.6">
+                                                            {analytics.metaVoting.reasoning}
+                                                        </Text>
+                                                    </Box>
+                                                )}
+                                                {analytics.metaVoting.ranking && (
+                                                    <Box>
+                                                        <Text fontSize="sm" fontWeight="600" color="#64748B" mb={2}>
+                                                            Response Ranking:
+                                                        </Text>
+                                                        <HStack spacing={2}>
+                                                            {analytics.metaVoting.ranking.map((model: string, index: number) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    colorScheme={index === 0 ? "purple" : index === 1 ? "blue" : "gray"}
+                                                                    variant="solid"
+                                                                    fontSize="xs"
+                                                                >
+                                                                    #{index + 1} {model}
+                                                                </Badge>
+                                                            ))}
+                                                        </HStack>
+                                                    </Box>
+                                                )}
+                                            </VStack>
+                                        </Box>
+                                    )}
+
+                                    {/* Tie-Breaking Analysis */}
+                                    {analytics.tieBreaking && analytics.tieBreaking.used && (
+                                        <Box
+                                            bg="white"
+                                            borderRadius="xl"
+                                            p={6}
+                                            border="1px solid"
+                                            borderColor="rgba(226, 232, 240, 0.6)"
+                                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        >
+                                            <HStack spacing={3} mb={4}>
+                                                <Icon as={PiScalesBold} boxSize={6} color="#F59E0B" />
+                                                <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                                    Tie-Breaking Analysis
+                                                </Text>
+                                            </HStack>
+                                            <VStack spacing={4} align="stretch">
+                                                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(245, 158, 11, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(245, 158, 11, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Strategy Used</StatLabel>
+                                                            <StatNumber fontSize="sm" color="#F59E0B">
+                                                                {analytics.tieBreaking.strategy?.replace(/_/g, ' ').toUpperCase() || 'N/A'}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Tie resolution method
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(245, 158, 11, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(245, 158, 11, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Final Confidence</StatLabel>
+                                                            <StatNumber fontSize="lg" color="#F59E0B">
+                                                                {((analytics.tieBreaking.confidence || 0) * 100).toFixed(1)}%
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Post tie-breaking
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                </Grid>
+                                                {analytics.tieBreaking.reasoning && (
+                                                    <Box
+                                                        p={4}
+                                                        bg="rgba(245, 158, 11, 0.02)"
+                                                        borderRadius="lg"
+                                                        border="1px solid rgba(245, 158, 11, 0.1)"
+                                                    >
+                                                        <Text fontSize="xs" fontWeight="600" color="#64748B" mb={2}>
+                                                            Tie-Breaking Reasoning:
+                                                        </Text>
+                                                        <Text fontSize="sm" color="#475569" lineHeight="1.6">
+                                                            {analytics.tieBreaking.reasoning}
+                                                        </Text>
+                                                    </Box>
+                                                )}
+                                            </VStack>
+                                        </Box>
+                                    )}
+
+                                    {/* Cluster Analysis */}
+                                    {analytics.clusterAnalysis && (
+                                        <Box
+                                            bg="white"
+                                            borderRadius="xl"
+                                            p={6}
+                                            border="1px solid"
+                                            borderColor="rgba(226, 232, 240, 0.6)"
+                                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        >
+                                            <HStack spacing={3} mb={4}>
+                                                <Icon as={PiTrendUpBold} boxSize={6} color="#10B981" />
+                                                <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                                    Response Clustering Analysis
+                                                </Text>
+                                            </HStack>
+                                            <VStack spacing={4} align="stretch">
+                                                <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(16, 185, 129, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(16, 185, 129, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Total Clusters</StatLabel>
+                                                            <StatNumber fontSize="lg" color="#10B981">
+                                                                {analytics.clusterAnalysis.totalClusters || 0}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Semantic groups
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(16, 185, 129, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(16, 185, 129, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Largest Cluster</StatLabel>
+                                                            <StatNumber fontSize="lg" color="#10B981">
+                                                                {analytics.clusterAnalysis.largestCluster || 0}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Max group size
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(16, 185, 129, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(16, 185, 129, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Avg Cluster Size</StatLabel>
+                                                            <StatNumber fontSize="lg" color="#10B981">
+                                                                {(analytics.clusterAnalysis.averageClusterSize || 0).toFixed(1)}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Response similarity
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                </Grid>
+                                                {analytics.clusterAnalysis.clusters && analytics.clusterAnalysis.clusters.length > 0 && (
+                                                    <Box>
+                                                        <Text fontSize="sm" fontWeight="600" color="#64748B" mb={3}>
+                                                            Cluster Details:
+                                                        </Text>
+                                                        <VStack spacing={3} align="stretch">
+                                                            {analytics.clusterAnalysis.clusters.map((cluster: any, index: number) => (
+                                                                <Box
+                                                                    key={index}
+                                                                    p={3}
+                                                                    bg="rgba(16, 185, 129, 0.02)"
+                                                                    borderRadius="lg"
+                                                                    border="1px solid rgba(16, 185, 129, 0.1)"
+                                                                >
+                                                                    <HStack justify="space-between" mb={2}>
+                                                                        <Badge colorScheme="green" variant="solid" fontSize="xs">
+                                                                            Cluster {cluster.id + 1}
+                                                                        </Badge>
+                                                                        <Text fontSize="xs" color="#64748B">
+                                                                            Size: {cluster.size} | Similarity: {(cluster.averageSimilarity * 100).toFixed(1)}%
+                                                                        </Text>
+                                                                    </HStack>
+                                                                    <Wrap spacing={1}>
+                                                                        {cluster.responses?.map((response: string, respIndex: number) => (
+                                                                            <WrapItem key={respIndex}>
+                                                                                <Badge colorScheme="gray" variant="outline" fontSize="2xs">
+                                                                                    {response}
+                                                                                </Badge>
+                                                                            </WrapItem>
+                                                                        ))}
+                                                                    </Wrap>
+                                                                </Box>
+                                                            ))}
+                                                        </VStack>
+                                                    </Box>
+                                                )}
+                                            </VStack>
+                                        </Box>
+                                    )}
+
+                                    {/* Abstention Analysis */}
+                                    {analytics.abstentionAnalysis && (
+                                        <Box
+                                            bg="white"
+                                            borderRadius="xl"
+                                            p={6}
+                                            border="1px solid"
+                                            borderColor="rgba(226, 232, 240, 0.6)"
+                                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        >
+                                            <HStack spacing={3} mb={4}>
+                                                <Icon as={PiShieldCheckBold} boxSize={6} color="#EF4444" />
+                                                <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                                    Quality Control Analysis
+                                                </Text>
+                                            </HStack>
+                                            <VStack spacing={4} align="stretch">
+                                                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg={analytics.abstentionAnalysis.triggered ? "rgba(239, 68, 68, 0.05)" : "rgba(16, 185, 129, 0.05)"}
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border={`1px solid ${analytics.abstentionAnalysis.triggered ? "rgba(239, 68, 68, 0.1)" : "rgba(16, 185, 129, 0.1)"}`}
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Abstention Status</StatLabel>
+                                                            <StatNumber fontSize="sm" color={analytics.abstentionAnalysis.triggered ? "#EF4444" : "#10B981"}>
+                                                                {analytics.abstentionAnalysis.triggered ? "TRIGGERED" : "NOT TRIGGERED"}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Quality control check
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                    <GridItem>
+                                                        <Stat
+                                                            bg="rgba(239, 68, 68, 0.05)"
+                                                            p={4}
+                                                            borderRadius="lg"
+                                                            border="1px solid rgba(239, 68, 68, 0.1)"
+                                                        >
+                                                            <StatLabel fontSize="xs" color="#64748B">Severity Level</StatLabel>
+                                                            <StatNumber fontSize="sm" color="#EF4444">
+                                                                {analytics.abstentionAnalysis.severity?.toUpperCase() || 'N/A'}
+                                                            </StatNumber>
+                                                            <StatHelpText fontSize="xs" color="#94A3B8">
+                                                                Risk assessment
+                                                            </StatHelpText>
+                                                        </Stat>
+                                                    </GridItem>
+                                                </Grid>
+                                                {analytics.abstentionAnalysis.reasons && analytics.abstentionAnalysis.reasons.length > 0 && (
+                                                    <Box>
+                                                        <Text fontSize="sm" fontWeight="600" color="#64748B" mb={2}>
+                                                            Abstention Reasons:
+                                                        </Text>
+                                                        <Wrap spacing={2}>
+                                                            {analytics.abstentionAnalysis.reasons.map((reason: string, index: number) => (
+                                                                <WrapItem key={index}>
+                                                                    <Badge colorScheme="red" variant="subtle" fontSize="xs">
+                                                                        {reason.replace(/_/g, ' ').toUpperCase()}
+                                                                    </Badge>
+                                                                </WrapItem>
+                                                            ))}
+                                                        </Wrap>
+                                                    </Box>
+                                                )}
+                                                {analytics.abstentionAnalysis.recommendedStrategy && (
+                                                    <Box
+                                                        p={4}
+                                                        bg="rgba(239, 68, 68, 0.02)"
+                                                        borderRadius="lg"
+                                                        border="1px solid rgba(239, 68, 68, 0.1)"
+                                                    >
+                                                        <Text fontSize="xs" fontWeight="600" color="#64748B" mb={2}>
+                                                            Recommended Strategy:
+                                                        </Text>
+                                                        <Text fontSize="sm" color="#475569" lineHeight="1.6">
+                                                            {analytics.abstentionAnalysis.recommendedStrategy.replace(/_/g, ' ').toUpperCase()}
+                                                        </Text>
+                                                    </Box>
+                                                )}
+                                            </VStack>
+                                        </Box>
+                                    )}
+
+                                </VStack>
+                            </TabPanel>
+
 
                         </TabPanels>
-                    </Tabs>
-                </ModalBody>
+                    </ModalBody>
+                </Tabs>
             </ModalContent>
         </Modal>
     );
