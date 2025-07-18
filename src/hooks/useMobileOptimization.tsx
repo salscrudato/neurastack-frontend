@@ -76,29 +76,50 @@ export function useMobileOptimization() {
     }
   }, [isMobile]);
 
-  // Enhanced haptic feedback utility
-  const triggerHaptic = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' | number | number[] = 'light') => {
+  // Enhanced haptic feedback utility with better patterns
+  const triggerHaptic = useCallback((type: 'light' | 'medium' | 'heavy' | 'success' | 'warning' | 'error' | 'tap' | 'button' | 'swipe' | number | number[] = 'light') => {
     if (!isMobile || !('vibrate' in navigator)) return;
 
     const patterns = {
-      light: 50,
-      medium: 100,
-      heavy: 200,
-      success: [100, 50, 100],
-      warning: [150, 100, 150],
-      error: [200, 100, 200, 100, 200],
+      light: 25,
+      medium: 50,
+      heavy: 100,
+      tap: 30,
+      button: 40,
+      swipe: [30, 20, 30],
+      success: [50, 30, 50],
+      warning: [80, 50, 80],
+      error: [100, 50, 100, 50, 100],
     };
 
     const pattern = typeof type === 'string' ? patterns[type] : type;
-    navigator.vibrate(pattern);
+
+    // Check if vibration is supported and user hasn't disabled it
+    try {
+      navigator.vibrate(pattern);
+    } catch (error) {
+      // Silently fail if vibration is not supported
+      console.debug('Haptic feedback not supported:', error);
+    }
   }, [isMobile]);
 
-  // Enhanced touch configuration
+  // Enhanced touch configuration with better mobile support
   const touchConfig = useMemo(() => ({
-    minTouchTarget: isMobile ? 48 : 44,
+    minTouchTarget: isMobile ? 56 : 44, // Increased for better accessibility
     tapHighlight: 'transparent',
     touchAction: 'manipulation',
     userSelect: 'none' as const,
+    // Enhanced touch feedback
+    cursor: 'pointer',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitTouchCallout: 'none',
+    // Improved touch responsiveness
+    transition: 'all 0.15s ease-out',
+    transform: 'scale(1)',
+    '&:active': {
+      transform: 'scale(0.98)',
+      transition: 'all 0.1s ease-out'
+    }
   }), [isMobile]);
 
   // Input-specific optimizations
@@ -147,15 +168,25 @@ export function useMobileOptimization() {
       transition: 'all 0.2s ease',
     },
 
-    // Enhanced button optimizations
+    // Enhanced button optimizations with better touch feedback
     buttonStyles: {
-      minHeight: isMobile ? '64px' : '48px',
-      fontSize: isMobile ? '1.25rem' : '1rem',
+      minHeight: isMobile ? '56px' : '48px',
+      fontSize: isMobile ? '1.125rem' : '1rem',
       fontWeight: '600',
       borderRadius: isMobile ? '1rem' : '0.5rem',
       touchAction: 'manipulation' as const,
       WebkitTapHighlightColor: 'transparent',
-      transition: 'all 0.2s ease',
+      WebkitTouchCallout: 'none',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease-out',
+      transform: 'scale(1)',
+      '&:active': {
+        transform: 'scale(0.96)',
+        transition: 'all 0.1s ease-out'
+      },
+      '&:hover': {
+        transform: isMobile ? 'scale(1)' : 'scale(1.02)'
+      }
     },
 
     // Rest timer specific optimizations
@@ -176,6 +207,108 @@ export function useMobileOptimization() {
     },
   }), [isMobile]);
 
+  // Enhanced touch gesture utilities
+  const createTouchHandler = useCallback((callbacks: {
+    onTap?: () => void;
+    onDoubleTap?: () => void;
+    onLongPress?: () => void;
+    onSwipeLeft?: () => void;
+    onSwipeRight?: () => void;
+    onSwipeUp?: () => void;
+    onSwipeDown?: () => void;
+  }) => {
+    let touchStartTime = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastTapTime = 0;
+    let longPressTimer: NodeJS.Timeout | null = null;
+
+    return {
+      onTouchStart: (e: React.TouchEvent) => {
+        const touch = e.touches[0];
+        touchStartTime = Date.now();
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+
+        // Start long press timer
+        if (callbacks.onLongPress) {
+          longPressTimer = setTimeout(() => {
+            triggerHaptic('heavy');
+            callbacks.onLongPress?.();
+          }, 500);
+        }
+      },
+
+      onTouchMove: () => {
+        // Cancel long press on move
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      },
+
+      onTouchEnd: (e: React.TouchEvent) => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+
+        const touch = e.changedTouches[0];
+        const touchEndTime = Date.now();
+        const touchDuration = touchEndTime - touchStartTime;
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Handle swipes
+        if (distance > 50 && touchDuration < 300) {
+          const absX = Math.abs(deltaX);
+          const absY = Math.abs(deltaY);
+
+          if (absX > absY) {
+            // Horizontal swipe
+            if (deltaX > 0 && callbacks.onSwipeRight) {
+              triggerHaptic('swipe');
+              callbacks.onSwipeRight();
+              return;
+            } else if (deltaX < 0 && callbacks.onSwipeLeft) {
+              triggerHaptic('swipe');
+              callbacks.onSwipeLeft();
+              return;
+            }
+          } else {
+            // Vertical swipe
+            if (deltaY > 0 && callbacks.onSwipeDown) {
+              triggerHaptic('swipe');
+              callbacks.onSwipeDown();
+              return;
+            } else if (deltaY < 0 && callbacks.onSwipeUp) {
+              triggerHaptic('swipe');
+              callbacks.onSwipeUp();
+              return;
+            }
+          }
+        }
+
+        // Handle taps (only if not a swipe)
+        if (distance < 10 && touchDuration < 300) {
+          const now = Date.now();
+          const timeSinceLastTap = now - lastTapTime;
+
+          if (timeSinceLastTap < 300 && callbacks.onDoubleTap) {
+            triggerHaptic('medium');
+            callbacks.onDoubleTap();
+          } else if (callbacks.onTap) {
+            triggerHaptic('tap');
+            callbacks.onTap();
+          }
+
+          lastTapTime = now;
+        }
+      }
+    };
+  }, [triggerHaptic]);
+
   return {
     // Device detection
     isMobile,
@@ -185,6 +318,7 @@ export function useMobileOptimization() {
 
     // Utilities
     triggerHaptic,
+    createTouchHandler,
 
     // Configuration objects
     touchConfig,
@@ -201,12 +335,26 @@ export function useMobileOptimization() {
       xl: isMobile ? 7 : 6,
     },
 
-    // Enhanced touch target sizes
+    // Enhanced touch target sizes following WCAG guidelines
     touchTargets: {
-      small: isMobile ? '44px' : '40px',
-      medium: isMobile ? '52px' : '44px',
+      small: isMobile ? '48px' : '40px',
+      medium: isMobile ? '56px' : '44px',
       large: isMobile ? '64px' : '52px',
       xlarge: isMobile ? '72px' : '60px',
+    },
+
+    // Enhanced gesture handling
+    gestureConfig: {
+      // Swipe thresholds
+      swipeThreshold: 50,
+      swipeVelocityThreshold: 0.3,
+      // Tap configuration
+      tapTimeout: 300,
+      doubleTapTimeout: 300,
+      // Long press configuration
+      longPressTimeout: 500,
+      // Touch feedback
+      feedbackIntensity: isMobile ? 'medium' : 'light'
     },
 
     // Typography scaling for mobile readability

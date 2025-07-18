@@ -44,52 +44,96 @@ export const commonContentStyles = {
   }
 };
 
-// Enhanced modal size configurations
+// Enhanced modal size configurations with better mobile handling
 export const modalSizes = {
   small: { base: "sm", md: "md" },
-  medium: { base: "lg", md: "xl" },
-  large: { base: "full", md: "2xl" },
-  extraLarge: { base: "full", md: "4xl" }
+  medium: { base: "md", md: "lg" },
+  large: { base: "lg", md: "xl" },
+  extraLarge: { base: "xl", md: "2xl" },
+  fullscreen: { base: "full", md: "full" }
 };
 
-// Simplified modal spacing configurations
+// Enhanced modal spacing configurations with better content handling
 export const modalSpacing = {
   // Standard modal margins and positioning
   standard: {
-    mx: { base: 4, md: 6 },
+    mx: { base: 3, md: 6 },
     mt: {
-      base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)",
+      base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 12px)",
       md: "calc(var(--header-height-desktop) + 16px)"
     },
-    mb: { base: 4, md: 6 },
-    maxH: "85vh"
+    mb: { base: 3, md: 6 },
+    maxH: { base: "90vh", md: "85vh" },
+    minH: { base: "200px", md: "300px" }
   },
 
-  // Full-screen modal positioning
+  // Full-screen modal positioning with safe area handling
   fullscreen: {
     m: 0,
     h: {
-      base: "calc(100vh - var(--header-height-mobile))",
+      base: "calc(100vh - var(--header-height-mobile) - env(safe-area-inset-bottom, 0px))",
       md: "calc(100vh - var(--header-height-desktop))"
     },
     maxH: {
-      base: "calc(100vh - var(--header-height-mobile))",
+      base: "calc(100vh - var(--header-height-mobile) - env(safe-area-inset-bottom, 0px))",
       md: "calc(100vh - var(--header-height-desktop))"
     },
-    w: "100vw",
+    w: {
+      base: "calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))",
+      md: "100vw"
+    },
     maxW: "100vw",
     position: "fixed",
     top: {
-      base: "var(--header-height-mobile)",
+      base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px))",
       md: "var(--header-height-desktop)"
+    },
+    left: {
+      base: "env(safe-area-inset-left, 0px)",
+      md: 0
     }
   },
 
-  // Modal content padding
+  // Modal content padding with better mobile spacing
   content: {
-    header: { py: { base: 3, md: 4 }, px: { base: 4, md: 6 } },
-    body: { py: { base: 4, md: 6 }, px: { base: 4, md: 6 } },
-    footer: { py: { base: 3, md: 4 }, px: { base: 4, md: 6 } }
+    header: { py: { base: 2, md: 4 }, px: { base: 3, md: 6 } },
+    body: { py: { base: 3, md: 6 }, px: { base: 3, md: 6 } },
+    footer: { py: { base: 2, md: 4 }, px: { base: 3, md: 6 } }
+  }
+}
+
+// Enhanced modal content styles for better scrolling
+export const modalContentStyles = {
+  // Ensure proper scrolling behavior
+  scrollable: {
+    overflowY: "auto" as const,
+    overflowX: "hidden" as const,
+    WebkitOverflowScrolling: "touch" as const,
+    overscrollBehavior: "contain" as const,
+    scrollbarWidth: "thin" as const,
+    scrollbarColor: "rgba(79, 156, 249, 0.3) transparent",
+    "&::-webkit-scrollbar": {
+      width: "6px"
+    },
+    "&::-webkit-scrollbar-track": {
+      background: "transparent"
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: "rgba(79, 156, 249, 0.3)",
+      borderRadius: "3px"
+    },
+    "&::-webkit-scrollbar-thumb:hover": {
+      background: "rgba(79, 156, 249, 0.5)"
+    }
+  },
+
+  // Prevent content cutoff
+  contentSafe: {
+    wordWrap: "break-word" as const,
+    overflowWrap: "break-word" as const,
+    hyphens: "auto" as const,
+    minWidth: 0, // Allows flex items to shrink below content size
+    flex: "1 1 auto" // Allows content to grow and shrink
   }
 };
 

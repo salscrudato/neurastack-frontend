@@ -215,21 +215,29 @@ const createMarkdownComponents = (fontSize: any) => ({
         borderRadius="lg"
         p={{ base: 3, md: 4 }}
         mb={3}
-        overflow="auto"
+        overflowX="auto"
+        overflowY="visible"
         fontSize={fontSize.code}
         fontFamily="'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace"
         lineHeight="1.5"
         sx={{
+          // Mobile-friendly scrolling for code blocks
+          touchAction: 'pan-x',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
           '&::-webkit-scrollbar': {
-            height: '8px',
+            height: '6px',
           },
           '&::-webkit-scrollbar-track': {
             bg: '#F1F5F9',
-            borderRadius: '4px',
+            borderRadius: '3px',
           },
           '&::-webkit-scrollbar-thumb': {
             bg: '#CBD5E1',
-            borderRadius: '4px',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            bg: '#94A3B8',
           },
         }}
       >
@@ -241,7 +249,27 @@ const createMarkdownComponents = (fontSize: any) => ({
   },
 
   table: ({ children }: any) => (
-    <TableContainer mb={3} overflowX="auto">
+    <TableContainer
+      mb={3}
+      overflowX="auto"
+      sx={{
+        // Mobile-friendly table scrolling
+        touchAction: 'pan-x',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        '&::-webkit-scrollbar': {
+          height: '6px',
+        },
+        '&::-webkit-scrollbar-track': {
+          bg: '#F1F5F9',
+          borderRadius: '3px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          bg: '#CBD5E1',
+          borderRadius: '3px',
+        },
+      }}
+    >
       <Table size={{ base: "sm", md: "md" }} variant="simple">
         {children}
       </Table>
@@ -448,8 +476,20 @@ export const UnifiedAIResponse = memo(({
         wordWrap: 'break-word',
         overflowWrap: 'break-word',
         hyphens: 'auto',
+        // Prevent scrolling conflicts on mobile
+        touchAction: 'manipulation',
+        WebkitTouchCallout: 'none',
+        // Ensure content doesn't create internal scrollable areas
+        overflow: 'visible',
+        minWidth: 0,
         '& > *:first-of-type': { mt: 0 },
         '& > *:last-child': { mb: 0 },
+        // Ensure all child elements follow mobile-friendly scrolling
+        '& *': {
+          touchAction: 'manipulation',
+          overflowX: 'hidden',
+          overflowY: 'visible'
+        }
       }}
     >
       <ReactMarkdown

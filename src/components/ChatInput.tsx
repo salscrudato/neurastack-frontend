@@ -23,7 +23,7 @@ const SendButton = memo(({ isActive, isLoading, onClick, isDisabled }: {
   onClick: () => void;
   isDisabled: boolean;
 }) => {
-  const { isMobile } = useMobileOptimization();
+  const { isMobile, triggerHaptic } = useMobileOptimization();
 
   const buttonStyles = useMemo(() => ({
     bg: isActive ? "rgba(255, 255, 255, 0.98)" : "rgba(248, 250, 252, 0.85)",
@@ -83,7 +83,12 @@ const SendButton = memo(({ isActive, isLoading, onClick, isDisabled }: {
             )}
           </Box>
         }
-        onClick={onClick}
+        onClick={() => {
+          if (!isDisabled && isActive) {
+            triggerHaptic('button');
+            onClick();
+          }
+        }}
         isLoading={isLoading}
         size="sm"
         w={{ base: "40px", md: "44px" }}
@@ -149,7 +154,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const initialHeightRef = useRef<number>(window.innerHeight);
   const prefersReducedMotion = useReducedMotion();
-  const { isMobile } = useMobileOptimization();
+  const { isMobile, triggerHaptic } = useMobileOptimization();
 
 
 
@@ -223,6 +228,8 @@ export default function ChatInput({ onSend }: ChatInputProps) {
   const handleFocus = useCallback(() => {
     setIsFocused(true);
     handleAutoResize();
+    // Subtle haptic feedback on focus
+    triggerHaptic('light');
     if (isMobile) {
       document.body.classList.add('keyboard-visible');
       const updateKeyboardHeight = () => {
@@ -256,7 +263,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
       setTimeout(updateKeyboardHeight, 100);
       setTimeout(updateKeyboardHeight, 300);
     }
-  }, [handleAutoResize, isMobile, isFocused]);
+  }, [handleAutoResize, isMobile, isFocused, triggerHaptic]);
 
   const handleBlur = useCallback(() => {
     setIsFocused(false);
@@ -293,19 +300,22 @@ export default function ChatInput({ onSend }: ChatInputProps) {
       console.warn(`Message too long: ${trimmedText.length} characters (max: ${MAX_CHARS})`);
       return;
     }
-    if (isMobile && 'vibrate' in navigator) navigator.vibrate(50);
+    // Enhanced haptic feedback for send action
+    triggerHaptic('button');
     try {
       await onSend(trimmedText);
       setTxt("");
       setCharCount(0);
       setIsFocused(false);
       if (textareaRef.current) textareaRef.current.style.height = "auto";
-      if (isMobile && 'vibrate' in navigator) navigator.vibrate([50, 30, 50]);
+      // Success haptic feedback
+      triggerHaptic('success');
     } catch (error) {
-      if (isMobile && 'vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+      // Error haptic feedback
+      triggerHaptic('error');
       console.error('Failed to send message:', error);
     }
-  }, [busy, txt, onSend, isMobile]);
+  }, [busy, txt, onSend, isMobile, triggerHaptic]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (isComposing) return;
@@ -458,10 +468,18 @@ export default function ChatInput({ onSend }: ChatInputProps) {
                   bg: "#F8FAFC"
                 }}
                 sx={{
+                  // Enhanced mobile touch interactions
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent',
+                  WebkitTouchCallout: 'none',
                   WebkitBackdropFilter: 'blur(40px)',
+                  // Prevent zoom on iOS
+                  fontSize: isMobile ? '16px' : inputConfig.fontSize,
+                  // Enhanced text rendering
                   fontFeatureSettings: "'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss02'",
+                  // Smooth scrolling for long text
+                  WebkitOverflowScrolling: 'touch',
+                  overscrollBehavior: 'contain',
                   '@media (max-width: 768px)': { fontSize: '16px !important' },
                   willChange: 'height',
                   backfaceVisibility: 'hidden',

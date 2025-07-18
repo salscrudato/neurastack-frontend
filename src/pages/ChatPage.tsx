@@ -178,11 +178,24 @@ export function ChatPage() {
           overscrollBehavior: "contain",
           scrollBehavior: "smooth",
           scrollSnapType: "y proximity",
-          touchAction: "pan-y",
+          // Ensure only vertical scrolling is allowed
+          touchAction: "pan-y pinch-zoom",
+          // Prevent text selection from interfering with scrolling
+          WebkitUserSelect: "none",
+          userSelect: "none",
+          // Allow text selection within message content
+          "& .chat-message-content": {
+            WebkitUserSelect: "text",
+            userSelect: "text",
+            touchAction: "manipulation"
+          },
           "@media (max-width: 768px)": {
             scrollbarWidth: "none",
             msOverflowStyle: "none",
-            "&::-webkit-scrollbar": { display: "none" }
+            "&::-webkit-scrollbar": { display: "none" },
+            // Enhanced mobile scrolling
+            overscrollBehaviorY: "contain",
+            overscrollBehaviorX: "none"
           },
           "@media (min-width: 769px)": {
             display: "flex",

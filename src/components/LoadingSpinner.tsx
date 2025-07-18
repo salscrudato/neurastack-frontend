@@ -17,19 +17,17 @@ interface LoaderProps {
   lines?: number;
 }
 
-// Enhanced InnovativeSpinner with modern design system integration
+// Enhanced InnovativeSpinner with modern, subtle design
 const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
-  const [activeNode, setActiveNode] = useState(0);
-  const [connectionPhase, setConnectionPhase] = useState(0);
-  const [neuralPulse, setNeuralPulse] = useState(0);
-  const [thinkingPhase, setThinkingPhase] = useState(0);
+  const [activeRing, setActiveRing] = useState(0);
+  const [pulsePhase, setPulsePhase] = useState(0);
   const prefersReducedMotion = useReducedMotion();
 
   const sizeConfig = {
-    sm: { container: 64, node: 8, core: 6, orbit: 20 },
-    md: { container: 88, node: 10, core: 8, orbit: 28 },
-    lg: { container: 112, node: 12, core: 10, orbit: 36 },
-    xl: { container: 136, node: 14, core: 12, orbit: 44 }
+    sm: { container: 48, ring: 20, core: 8 },
+    md: { container: 64, ring: 26, core: 10 },
+    lg: { container: 80, ring: 32, core: 12 },
+    xl: { container: 96, ring: 38, core: 14 }
   };
 
   const config = sizeConfig[size];
@@ -37,20 +35,11 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
   useEffect(() => {
     if (prefersReducedMotion) return;
     const intervals = [
-      setInterval(() => setActiveNode(n => (n + 1) % 4), 1000),
-      setInterval(() => setConnectionPhase(p => (p + 1) % 6), 400),
-      setInterval(() => setNeuralPulse(p => (p + 1) % 3), 1500),
-      setInterval(() => setThinkingPhase(p => (p + 1) % 8), 200)
+      setInterval(() => setActiveRing(prev => (prev + 1) % 3), 1800),
+      setInterval(() => setPulsePhase(prev => (prev + 1) % 4), 2400)
     ];
     return () => intervals.forEach(clearInterval);
   }, [prefersReducedMotion]);
-
-  const nodes = [
-    { x: 0.3, y: 0.2, color: '#10B981', name: 'GPT', gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' },
-    { x: 0.7, y: 0.2, color: '#8B5CF6', name: 'Claude', gradient: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)' },
-    { x: 0.3, y: 0.8, color: '#F59E0B', name: 'Gemini', gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' },
-    { x: 0.7, y: 0.8, color: '#4F9CF9', name: 'Synthesis', gradient: 'linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)' }
-  ];
 
   return (
     <Box
@@ -61,116 +50,88 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
       alignItems="center"
       justifyContent="center"
       role="status"
-      aria-label="AI models processing your request"
+      aria-label="AI processing your request"
       aria-live="polite"
-      bg="rgba(255, 255, 255, 0.02)"
-      borderRadius="50%"
-      backdropFilter="blur(10px)"
-      border="1px solid rgba(79, 156, 249, 0.1)"
-      boxShadow="0 8px 32px rgba(79, 156, 249, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)"
-      _before={{
-        content: '""',
-        position: "absolute",
-        inset: "-2px",
-        borderRadius: "50%",
-        background: "linear-gradient(45deg, rgba(79, 156, 249, 0.1), rgba(139, 92, 246, 0.1), rgba(79, 156, 249, 0.1))",
-        zIndex: -1,
-        animation: prefersReducedMotion ? 'none' : 'borderGlow 3s ease-in-out infinite'
-      }}
-      sx={{
-        '@keyframes borderGlow': {
-          '0%, 100%': { opacity: 0.3 },
-          '50%': { opacity: 0.8 }
-        }
-      }}
     >
-      <svg
-        width={config.container}
-        height={config.container}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          opacity: 0.6,
-          filter: 'drop-shadow(0 0 4px rgba(79, 156, 249, 0.2))'
-        }}
-      >
-        <defs>
-          <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="rgba(79, 156, 249, 0.8)" />
-            <stop offset="50%" stopColor="rgba(139, 92, 246, 0.6)" />
-            <stop offset="100%" stopColor="rgba(79, 156, 249, 0.8)" />
-          </linearGradient>
-        </defs>
-        {nodes.map((node, i) =>
-          nodes.slice(i + 1).map((targetNode, j) => {
-            const isActive = connectionPhase === ((i + j) % 6);
-            const isThinking = thinkingPhase === ((i + j) % 8);
-            return (
-              <line
-                key={`${i}-${j}`}
-                x1={node.x * config.container}
-                y1={node.y * config.container}
-                x2={targetNode.x * config.container}
-                y2={targetNode.y * config.container}
-                stroke={isActive ? 'url(#connectionGradient)' : 'rgba(79, 156, 249, 0.15)'}
-                strokeWidth={isActive ? 3 : isThinking ? 2 : 1}
-                style={{
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                  strokeDasharray: isActive ? 'none' : isThinking ? '4,2' : '2,3',
-                  filter: isActive ? 'drop-shadow(0 0 8px rgba(79, 156, 249, 0.4))' : 'none',
-                  strokeLinecap: 'round'
-                }}
-              />
-            );
-          })
-        )}
-      </svg>
-
-      {nodes.map((node, i) => {
-        const isActive = activeNode === i;
-        const isThinking = thinkingPhase === i;
-        return (
-          <Box
-            key={i}
-            position="absolute"
-            left={`${node.x * config.container - config.node / 2}px`}
-            top={`${node.y * config.container - config.node / 2}px`}
-            w={`${config.node}px`}
-            h={`${config.node}px`}
-            borderRadius="50%"
-            bg={isActive ? node.gradient : `${node.color}40`}
-            border="2px solid"
-            borderColor={isActive ? node.color : isThinking ? `${node.color}60` : 'transparent'}
-            transform={isActive ? 'scale(1.5)' : isThinking ? 'scale(1.1)' : 'scale(1)'}
-            transition="all 0.5s cubic-bezier(0.4, 0, 0.2, 1)"
-            boxShadow={
-              isActive
-                ? `0 0 20px ${node.color}60, 0 0 40px ${node.color}30, inset 0 1px 0 rgba(255, 255, 255, 0.3)`
-                : isThinking
-                ? `0 0 12px ${node.color}40`
-                : '0 2px 8px rgba(0, 0, 0, 0.1)'
+      {/* Outer ring */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        w={`${config.ring + 16}px`}
+        h={`${config.ring + 16}px`}
+        borderRadius="50%"
+        border="2px solid"
+        borderColor={activeRing === 0 ? "rgba(79, 156, 249, 0.4)" : "rgba(79, 156, 249, 0.1)"}
+        animation={prefersReducedMotion ? 'none' : "outerRing 3.6s ease-in-out infinite"}
+        sx={{
+          '@keyframes outerRing': {
+            '0%, 100%': {
+              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
+              borderColor: 'rgba(79, 156, 249, 0.1)'
+            },
+            '33%': {
+              transform: 'translate(-50%, -50%) scale(1.05) rotate(120deg)',
+              borderColor: 'rgba(79, 156, 249, 0.4)'
             }
-            aria-label={node.name}
-            _before={isActive ? {
-              content: '""',
-              position: "absolute",
-              inset: "-4px",
-              borderRadius: "50%",
-              background: `linear-gradient(45deg, ${node.color}20, transparent, ${node.color}20)`,
-              zIndex: -1,
-              animation: prefersReducedMotion ? 'none' : 'nodeGlow 2s ease-in-out infinite'
-            } : {}}
-            sx={{
-              '@keyframes nodeGlow': {
-                '0%, 100%': { transform: 'scale(1)', opacity: 0.5 },
-                '50%': { transform: 'scale(1.2)', opacity: 1 }
-              }
-            }}
-          />
-        );
-      })}
+          }
+        }}
+      />
 
+      {/* Middle ring */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        w={`${config.ring}px`}
+        h={`${config.ring}px`}
+        borderRadius="50%"
+        border="2px solid"
+        borderColor={activeRing === 1 ? "rgba(139, 92, 246, 0.4)" : "rgba(139, 92, 246, 0.1)"}
+        animation={prefersReducedMotion ? 'none' : "middleRing 3.6s ease-in-out infinite 1.2s"}
+        sx={{
+          '@keyframes middleRing': {
+            '0%, 100%': {
+              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
+              borderColor: 'rgba(139, 92, 246, 0.1)'
+            },
+            '33%': {
+              transform: 'translate(-50%, -50%) scale(1.05) rotate(-120deg)',
+              borderColor: 'rgba(139, 92, 246, 0.4)'
+            }
+          }
+        }}
+      />
+
+      {/* Inner ring */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform="translate(-50%, -50%)"
+        w={`${config.ring - 8}px`}
+        h={`${config.ring - 8}px`}
+        borderRadius="50%"
+        border="2px solid"
+        borderColor={activeRing === 2 ? "rgba(99, 102, 241, 0.4)" : "rgba(99, 102, 241, 0.1)"}
+        animation={prefersReducedMotion ? 'none' : "innerRing 3.6s ease-in-out infinite 2.4s"}
+        sx={{
+          '@keyframes innerRing': {
+            '0%, 100%': {
+              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
+              borderColor: 'rgba(99, 102, 241, 0.1)'
+            },
+            '33%': {
+              transform: 'translate(-50%, -50%) scale(1.05) rotate(240deg)',
+              borderColor: 'rgba(99, 102, 241, 0.4)'
+            }
+          }
+        }}
+      />
+
+      {/* Central core */}
       <Box
         position="absolute"
         top="50%"
@@ -179,81 +140,50 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
         w={`${config.core}px`}
         h={`${config.core}px`}
         borderRadius="50%"
-        bg="linear-gradient(135deg, #4F9CF9 0%, #8B5CF6 50%, #4F9CF9 100%)"
-        opacity={neuralPulse === 0 ? 1 : 0.8}
-        animation={prefersReducedMotion ? 'none' : "neuralCore 2s ease-in-out infinite"}
-        border="2px solid rgba(255, 255, 255, 0.3)"
+        bg="linear-gradient(135deg, rgba(79, 156, 249, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%)"
+        animation={prefersReducedMotion ? 'none' : "coreGlow 4.8s ease-in-out infinite"}
+        boxShadow="0 0 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)"
         sx={{
-          '@keyframes neuralCore': {
+          '@keyframes coreGlow': {
             '0%, 100%': {
               transform: 'translate(-50%, -50%) scale(1)',
-              opacity: 0.9,
-              boxShadow: '0 0 16px rgba(79, 156, 249, 0.5), 0 0 32px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+              boxShadow: '0 0 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
             },
             '50%': {
-              transform: 'translate(-50%, -50%) scale(1.3)',
-              opacity: 1,
-              boxShadow: '0 0 24px rgba(79, 156, 249, 0.8), 0 0 48px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
+              transform: 'translate(-50%, -50%) scale(1.1)',
+              boxShadow: '0 0 20px rgba(79, 156, 249, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
             }
           }
         }}
       />
 
-      <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        transform="translate(-50%, -50%)"
-        w={`${config.container * 0.85}px`}
-        h={`${config.container * 0.85}px`}
-        borderRadius="50%"
-        border="2px solid"
-        borderColor="rgba(79, 156, 249, 0.2)"
-        animation={prefersReducedMotion ? 'none' : "energyRing 4s ease-in-out infinite"}
-        sx={{
-          background: 'conic-gradient(from 0deg, transparent, rgba(79, 156, 249, 0.1), transparent, rgba(139, 92, 246, 0.1), transparent)',
-          '@keyframes energyRing': {
-            '0%': {
-              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
-              borderColor: 'rgba(79, 156, 249, 0.2)',
-              opacity: 0.7
-            },
-            '50%': {
-              transform: 'translate(-50%, -50%) scale(1.02) rotate(180deg)',
-              borderColor: 'rgba(79, 156, 249, 0.4)',
-              opacity: 1
-            },
-            '100%': {
-              transform: 'translate(-50%, -50%) scale(1) rotate(360deg)',
-              borderColor: 'rgba(79, 156, 249, 0.2)',
-              opacity: 0.7
-            }
-          }
-        }}
-      />
-
-      {/* Add floating particles for extra visual interest */}
-      {!prefersReducedMotion && Array.from({ length: 6 }, (_, i) => (
+      {/* Subtle pulse indicators */}
+      {!prefersReducedMotion && Array.from({ length: 3 }, (_, i) => (
         <Box
-          key={`particle-${i}`}
+          key={`pulse-${i}`}
           position="absolute"
           top="50%"
           left="50%"
-          w="3px"
-          h="3px"
+          w={`${config.core + (i + 1) * 8}px`}
+          h={`${config.core + (i + 1) * 8}px`}
           borderRadius="50%"
-          bg="rgba(79, 156, 249, 0.6)"
-          transform={`translate(-50%, -50%) rotate(${i * 60}deg) translateY(-${config.orbit}px)`}
-          animation={`particleOrbit 3s ease-in-out infinite ${i * 0.5}s`}
+          border="1px solid"
+          borderColor={pulsePhase === i ? "rgba(79, 156, 249, 0.3)" : "rgba(79, 156, 249, 0.1)"}
+          transform="translate(-50%, -50%)"
+          animation={`pulseRing 4.8s ease-in-out infinite ${i * 1.6}s`}
           sx={{
-            '@keyframes particleOrbit': {
+            '@keyframes pulseRing': {
               '0%, 100%': {
-                opacity: 0.3,
-                transform: `translate(-50%, -50%) rotate(${i * 60}deg) translateY(-${config.orbit}px) scale(1)`
+                transform: 'translate(-50%, -50%) scale(1)',
+                opacity: 0.2
+              },
+              '25%': {
+                transform: 'translate(-50%, -50%) scale(1.1)',
+                opacity: 0.6
               },
               '50%': {
-                opacity: 1,
-                transform: `translate(-50%, -50%) rotate(${i * 60 + 180}deg) translateY(-${config.orbit + 8}px) scale(1.5)`
+                transform: 'translate(-50%, -50%) scale(1)',
+                opacity: 0.2
               }
             }
           }}

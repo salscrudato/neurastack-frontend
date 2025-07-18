@@ -146,20 +146,23 @@ export function IndividualModelModal({
                 exit="exit"
                 bg={modalBg}
                 borderRadius="2xl"
-                maxH="85vh"
-                maxW="700px"
-                mx={{ base: 4, md: 6 }}
+                maxH={{ base: "90vh", md: "85vh" }}
+                maxW={{ base: "95vw", md: "700px" }}
+                mx={{ base: 3, md: 6 }}
                 mt={{
-                  base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 16px)",
+                  base: "calc(var(--header-height-mobile) + env(safe-area-inset-top, 0px) + 12px)",
                   md: "calc(var(--header-height-desktop) + 16px)"
                 }}
-                mb={{ base: 4, md: 6 }}
+                mb={{ base: 3, md: 6 }}
                 overflow="hidden"
                 boxShadow="0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)"
                 border="1px solid"
                 borderColor="rgba(226, 232, 240, 0.8)"
                 sx={{
                     zIndex: 'var(--z-modal)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: { base: '200px', md: '300px' }
                 }}
             >
                 {/* Optimized Header */}
@@ -226,8 +229,32 @@ export function IndividualModelModal({
                     />
                 </Box>
 
-                <ModalBody p={0} overflow="hidden">
-                    <VStack spacing={0} align="stretch" h="100%">
+                <ModalBody
+                    p={0}
+                    flex="1"
+                    overflowY="auto"
+                    overflowX="hidden"
+                    sx={{
+                        WebkitOverflowScrolling: "touch",
+                        overscrollBehavior: "contain",
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(79, 156, 249, 0.3) transparent",
+                        "&::-webkit-scrollbar": {
+                            width: "6px"
+                        },
+                        "&::-webkit-scrollbar-track": {
+                            background: "transparent"
+                        },
+                        "&::-webkit-scrollbar-thumb": {
+                            background: "rgba(79, 156, 249, 0.3)",
+                            borderRadius: "3px"
+                        },
+                        "&::-webkit-scrollbar-thumb:hover": {
+                            background: "rgba(79, 156, 249, 0.5)"
+                        }
+                    }}
+                >
+                    <VStack spacing={0} align="stretch" minH="100%">
 
                         {/* Metrics Section */}
                         <Box p={6} bg="#F8FAFC">

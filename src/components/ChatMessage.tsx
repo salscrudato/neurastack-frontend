@@ -216,14 +216,21 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           backdropFilter={isUser ? "none" : "blur(20px)"}
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           minH={{ base: "44px", md: "auto" }}
-          _hover={{
-            transform: isUser ? "translateY(-2px) scale(1.02)" : "translateY(-1px) scale(1.01)",
-            boxShadow: isUser
-              ? "var(--shadow-brand-hover), inset 0 1px 0 rgba(255, 255, 255, 0.3)"
-              : "var(--shadow-card-hover), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
-          }}
           sx={{
-            touchAction: 'manipulation',
+            // Prevent text selection from interfering with scrolling
+            touchAction: "manipulation",
+            WebkitTouchCallout: "none",
+            WebkitUserSelect: "text",
+            userSelect: "text",
+            // Ensure text content doesn't create scrollable areas
+            overflowWrap: "break-word",
+            wordWrap: "break-word",
+            hyphens: "auto",
+            // Prevent horizontal scrolling within messages
+            overflowX: "hidden",
+            // Allow vertical scrolling only for very long content
+            overflowY: "visible",
+            // Enhanced visual styling
             WebkitTapHighlightColor: 'transparent',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
@@ -265,6 +272,12 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                 zIndex: 1
               }
             })
+          }}
+          _hover={{
+            transform: isUser ? "translateY(-2px) scale(1.02)" : "translateY(-1px) scale(1.01)",
+            boxShadow: isUser
+              ? "var(--shadow-brand-hover), inset 0 1px 0 rgba(255, 255, 255, 0.3)"
+              : "var(--shadow-card-hover), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
           }}
         >
           {!isUser && !isError && !isLoading && message.metadata?.metadata && (
@@ -354,8 +367,27 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
               </VStack>
             </Box>
           )}
-          <Box>
-            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.35", md: "1.4" }} fontWeight="500" letterSpacing="-0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "15px", md: "16px" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
+          <Box
+            className="chat-message-content"
+            sx={{
+              // Ensure text content doesn't interfere with parent scrolling
+              touchAction: "manipulation",
+              WebkitTouchCallout: "none",
+              // Prevent text selection from blocking scroll gestures
+              WebkitUserSelect: "text",
+              userSelect: "text",
+              // Ensure proper text wrapping
+              wordWrap: "break-word",
+              overflowWrap: "break-word",
+              hyphens: "auto",
+              // Prevent any internal scrolling
+              overflow: "visible",
+              // Ensure content fits within container
+              minWidth: 0,
+              width: "100%"
+            }}
+          >
+            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.35", md: "1.4" }} fontWeight="500" letterSpacing="-0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word', touchAction: 'manipulation' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "15px", md: "16px" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
           </Box>
           {!isUser && fullData && (
             <HStack spacing={2} mt={2} justify="flex-start">
