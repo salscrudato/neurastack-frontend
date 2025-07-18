@@ -214,9 +214,9 @@ export function ChatPage() {
             {isLoading && (
               <Box px={4} py={6}>
                 <Loader
-                  variant="chat"
+                  variant="neural"
                   size="lg"
-                  message="AI ensemble is crafting your response..."
+                  message="AI neural network is processing your request..."
                 />
               </Box>
             )}

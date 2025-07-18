@@ -1,9 +1,28 @@
 :root {
-  /* Layout Constants */
+  /* Responsive Breakpoints */
+  --breakpoint-xs: 20em; /* 320px - Small phones */
+  --breakpoint-sm: 30em; /* 480px - Large phones */
+  --breakpoint-md: 48em; /* 768px - Tablets */
+  --breakpoint-lg: 62em; /* 992px - Small laptops */
+  --breakpoint-xl: 80em; /* 1280px - Desktops */
+  --breakpoint-2xl: 96em; /* 1536px - Large screens */
+
+  /* Responsive Layout Constants */
+  --header-height: clamp(56px, 12vw, 64px);
   --header-height-mobile: 56px;
-  --header-height-desktop: 60px;
+  --header-height-desktop: 64px;
+  --chat-input-height: clamp(120px, 25vw, 140px);
   --chat-input-height-mobile: 120px;
   --chat-input-height-desktop: 140px;
+
+  /* Container Max Widths */
+  --container-xs: 100%;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  --container-content: clamp(320px, 90vw, 1200px);
 
   /* Enhanced Typography Stack - 2025 */
   --font-display: "SF Pro Display", "Inter Display", -apple-system,
@@ -21,16 +40,20 @@
   --letter-spacing-wide: -0.005em;
   --letter-spacing-loose: 0.025em;
 
-  /* Typography Scale - Refined */
-  --text-xs: 0.75rem; /* 12px */
-  --text-sm: 0.875rem; /* 14px */
-  --text-base: 1rem; /* 16px */
-  --text-lg: 1.125rem; /* 18px */
-  --text-xl: 1.25rem; /* 20px */
-  --text-2xl: 1.5rem; /* 24px */
-  --text-3xl: 1.875rem; /* 30px */
-  --text-4xl: 2.25rem; /* 36px */
-  --text-5xl: 3rem; /* 48px */
+  /* Fluid Typography Scale - Mobile-First Responsive */
+  --text-xs: clamp(0.75rem, 2vw, 0.875rem); /* 12px - 14px */
+  --text-sm: clamp(0.875rem, 2.5vw, 1rem); /* 14px - 16px */
+  --text-base: clamp(1rem, 3vw, 1.125rem); /* 16px - 18px */
+  --text-lg: clamp(1.125rem, 3.5vw, 1.25rem); /* 18px - 20px */
+  --text-xl: clamp(1.25rem, 4vw, 1.5rem); /* 20px - 24px */
+  --text-2xl: clamp(1.5rem, 5vw, 1.875rem); /* 24px - 30px */
+  --text-3xl: clamp(1.875rem, 6vw, 2.25rem); /* 30px - 36px */
+  --text-4xl: clamp(2.25rem, 8vw, 3rem); /* 36px - 48px */
+  --text-5xl: clamp(3rem, 10vw, 4rem); /* 48px - 64px */
+
+  /* Responsive Typography Modifiers */
+  --text-mobile-boost: 1.1; /* 10% larger on mobile for readability */
+  --text-desktop-optimize: 0.95; /* 5% smaller on desktop for density */
 
   /* Line Heights - Optimized */
   --leading-none: 1;
@@ -162,32 +185,43 @@
   --blur-xl: blur(24px);
   --blur-2xl: blur(32px);
 
-  /* Enhanced Spacing System - 4px Base Grid */
+  /* Enhanced Responsive Spacing System - 4px Base Grid with Fluid Scaling */
   --space-0: 0;
   --space-px: 1px;
   --space-0-5: 0.125rem; /* 2px */
-  --space-1: 0.25rem; /* 4px */
-  --space-2: 0.5rem; /* 8px */
-  --space-3: 0.75rem; /* 12px */
-  --space-4: 1rem; /* 16px */
-  --space-5: 1.25rem; /* 20px */
-  --space-6: 1.5rem; /* 24px */
-  --space-8: 2rem; /* 32px */
-  --space-10: 2.5rem; /* 40px */
-  --space-12: 3rem; /* 48px */
-  --space-16: 4rem; /* 64px */
-  --space-20: 5rem; /* 80px */
-  --space-24: 6rem; /* 96px */
+  --space-1: clamp(0.25rem, 0.5vw, 0.375rem); /* 4px - 6px */
+  --space-2: clamp(0.5rem, 1vw, 0.75rem); /* 8px - 12px */
+  --space-3: clamp(0.75rem, 1.5vw, 1rem); /* 12px - 16px */
+  --space-4: clamp(1rem, 2vw, 1.25rem); /* 16px - 20px */
+  --space-5: clamp(1.25rem, 2.5vw, 1.5rem); /* 20px - 24px */
+  --space-6: clamp(1.5rem, 3vw, 2rem); /* 24px - 32px */
+  --space-8: clamp(2rem, 4vw, 2.5rem); /* 32px - 40px */
+  --space-10: clamp(2.5rem, 5vw, 3rem); /* 40px - 48px */
+  --space-12: clamp(3rem, 6vw, 4rem); /* 48px - 64px */
+  --space-16: clamp(4rem, 8vw, 5rem); /* 64px - 80px */
+  --space-20: clamp(5rem, 10vw, 6rem); /* 80px - 96px */
+  --space-24: clamp(6rem, 12vw, 8rem); /* 96px - 128px */
 
-  /* Legacy spacing for compatibility */
-  --space-xs: var(--space-1); /* 4px */
-  --space-sm: var(--space-2); /* 8px */
-  --space-md: var(--space-4); /* 16px */
-  --space-lg: var(--space-6); /* 24px */
-  --space-xl: var(--space-8); /* 32px */
-  --space-2xl: var(--space-12); /* 48px */
-  --space-3xl: var(--space-16); /* 64px */
-  --space-4xl: var(--space-24); /* 96px */
+  /* Responsive Container Spacing */
+  --container-padding-mobile: clamp(1rem, 4vw, 1.5rem); /* 16px - 24px */
+  --container-padding-tablet: clamp(1.5rem, 6vw, 2rem); /* 24px - 32px */
+  --container-padding-desktop: clamp(2rem, 8vw, 3rem); /* 32px - 48px */
+
+  /* Responsive Touch Target Sizes */
+  --touch-target-small: clamp(44px, 10vw, 48px);
+  --touch-target-medium: clamp(48px, 12vw, 56px);
+  --touch-target-large: clamp(56px, 14vw, 64px);
+  --touch-target-xlarge: clamp(64px, 16vw, 72px);
+
+  /* Legacy spacing for compatibility with fluid scaling */
+  --space-xs: var(--space-1); /* Fluid 4px - 6px */
+  --space-sm: var(--space-2); /* Fluid 8px - 12px */
+  --space-md: var(--space-4); /* Fluid 16px - 20px */
+  --space-lg: var(--space-6); /* Fluid 24px - 32px */
+  --space-xl: var(--space-8); /* Fluid 32px - 40px */
+  --space-2xl: var(--space-12); /* Fluid 48px - 64px */
+  --space-3xl: var(--space-16); /* Fluid 64px - 80px */
+  --space-4xl: var(--space-24); /* Fluid 96px - 128px */
 
   /* Border Radius */
   --radius-sm: 0.125rem; /* 2px */
@@ -973,15 +1007,33 @@ select {
     border: 1px solid rgba(255, 255, 255, 0.18);
   }
 
-  /* Responsive font scaling */
+  /* Enhanced Responsive Font Scaling */
   html {
-    font-size: clamp(14px, 2vw, 16px);
+    font-size: clamp(14px, 2.5vw, 16px);
+    /* Prevent zoom on input focus for iOS */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
-  /* Better mobile typography */
+  /* Mobile-optimized typography */
   @media (max-width: 768px) {
     html {
       font-size: clamp(15px, 4vw, 16px);
+    }
+
+    /* Ensure minimum readable font sizes on mobile */
+    body,
+    .chakra-text {
+      font-size: max(16px, 1rem) !important;
+      line-height: 1.5 !important;
+    }
+  }
+
+  /* Desktop typography optimization */
+  @media (min-width: 1024px) {
+    html {
+      font-size: clamp(14px, 1.5vw, 16px);
     }
   }
 }

@@ -83,6 +83,10 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const isError = message.role === 'error';
   const isLoading = !message.text;
 
+  // State for response selection and analytics modal
+  const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
+  const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(-1); // -1 for synthesized, 0+ for individual models
+
   const fontSizes = { micro: { base: "2xs", md: "xs" }, small: { base: "2xs", md: "xs" }, content: { base: "13px", md: "14px" }, code: { base: "11px", md: "12px" } };
 
   const processedContent = useMemo(() => processContent(message.text || ''), [message.text]);
@@ -92,9 +96,32 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   };
 
   const structuredResponse = !isUser && !isError ? parseAIResponse(processedContent) : null;
-  const displayText = processedContent;
 
-  const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
+  // Get individual model responses from metadata
+  const individualResponses = message.metadata?.individualResponses || [];
+  const hasIndividualResponses = individualResponses.length > 0;
+
+  // Determine what content to display based on selected response
+  const displayContent = useMemo(() => {
+    if (isUser || isError || !hasIndividualResponses) {
+      return processedContent;
+    }
+
+    if (selectedResponseIndex === -1) {
+      // Show synthesized response (default)
+      return processedContent;
+    } else if (selectedResponseIndex >= 0 && selectedResponseIndex < individualResponses.length) {
+      // Show individual model response
+      const selectedResponse = individualResponses[selectedResponseIndex];
+      return selectedResponse.content || selectedResponse.answer || 'No response available';
+    }
+
+    return processedContent;
+  }, [processedContent, selectedResponseIndex, individualResponses, isUser, isError, hasIndividualResponses]);
+
+  const displayText = displayContent;
+
+
 
   // Enhanced styling system with improved visual hierarchy
   const messageStyles = useMemo(() => {
@@ -293,6 +320,37 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                   </HStack>
                 </Flex>
 
+                {/* Response Selector - Only show if individual responses are available */}
+                {hasIndividualResponses && (
+                  <Flex justify="center" px={{ base: 2, md: 3 }} pb={2}>
+                    <Box>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        rightIcon={<Box as="span" fontSize="xs">▼</Box>}
+                        color="#64748B"
+                        fontWeight="500"
+                        fontSize="xs"
+                        _hover={{ bg: "rgba(100, 116, 139, 0.1)" }}
+                        onClick={() => {
+                          // Cycle through responses: Synthesized -> Model 1 -> Model 2 -> ... -> Synthesized
+                          const nextIndex = selectedResponseIndex === -1
+                            ? 0
+                            : selectedResponseIndex + 1 >= individualResponses.length
+                              ? -1
+                              : selectedResponseIndex + 1;
+                          setSelectedResponseIndex(nextIndex);
+                        }}
+                      >
+                        {selectedResponseIndex === -1
+                          ? "Synthesized"
+                          : `${individualResponses[selectedResponseIndex]?.model || individualResponses[selectedResponseIndex]?.role || 'Model'} Response`
+                        }
+                      </Button>
+                    </Box>
+                  </Flex>
+                )}
+
               </VStack>
             </Box>
           )}
@@ -308,7 +366,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
               <Badge colorScheme="purple">Consensus: {consensus}</Badge>
             </HStack>
           )}
-          {!isUser && <HStack justify="flex-end" align="center" mt={1} spacing={1}><CopyButton text={processedContent} /></HStack>}
+          {!isUser && <HStack justify="flex-end" align="center" mt={1} spacing={1}><CopyButton text={displayContent} /></HStack>}
         </Box>
       </Flex>
       <AdvancedAnalyticsModal isOpen={isAdvancedAnalyticsOpen} onClose={() => setIsAdvancedAnalyticsOpen(false)} analyticsData={message.metadata?.ensembleData} />

@@ -861,10 +861,10 @@ export class NeuraStackClient {
         overallConfidence: data.synthesis?.overallConfidence || data.metadata?.confidenceAnalysis?.overallConfidence,
         synthesisStrategy: data.synthesis?.synthesisStrategy,
         votingResults: data.voting ? [{
-          role: role.role,
+          role: role.role, // Keep for backward compatibility
           model: role.model,
           confidence: role.confidence?.score || 0,
-          weightedScore: data.voting.weights?.[role.role] || 0,
+          weightedScore: data.voting.weights?.[role.model] || 0, // Use model instead of role for weights
           confidenceLevel: role.confidence?.level || 'medium'
         }] : undefined,
         isFineTuned: data.synthesis?.isFineTuned || false
@@ -885,10 +885,12 @@ export class NeuraStackClient {
       console.groupEnd();
     }
 
-    // Create models used mapping based on role names (aligned with API integration guide)
+    // Create models used mapping based on model names (aligned with API integration guide)
     const modelsUsed: Record<string, boolean> = {};
     (data.roles || []).forEach(role => {
+      // Use the actual model name from the API response as the primary identifier
       const modelName = role.model || (() => {
+        // Fallback to role-based mapping only if model field is missing
         switch (role.role) {
           case 'gpt4o': return 'gpt-4o-mini';
           case 'gemini': return 'gemini-1.5-flash';

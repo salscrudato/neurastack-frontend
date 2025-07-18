@@ -21,12 +21,19 @@ export const Box = defineStyleConfig({
   },
 });
 
-// Enhanced Button component with extracted patterns
+// Enhanced Button component with responsive patterns
 export const Button = defineStyleConfig({
   baseStyle: {
     fontWeight: 'semibold',
     borderRadius: 'xl',
     transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+    minHeight: { base: '48px', md: '44px' },
+    minWidth: { base: '48px', md: '44px' },
+    fontSize: { base: 'md', md: 'sm' },
+    px: { base: 4, md: 3 },
+    py: { base: 3, md: 2 },
+    touchAction: 'manipulation',
+    WebkitTapHighlightColor: 'transparent',
     _focus: {
       outline: 'none',
       boxShadow: 'none',
@@ -102,32 +109,32 @@ export const Button = defineStyleConfig({
   },
   sizes: {
     sm: {
-      h: '36px',
-      minW: '36px',
-      fontSize: 'sm',
-      px: 4,
+      h: { base: '44px', md: '36px' },
+      minW: { base: '44px', md: '36px' },
+      fontSize: { base: 'sm', md: 'xs' },
+      px: { base: 4, md: 3 },
       borderRadius: 'lg',
     },
     md: {
-      h: '44px',
-      minW: '44px',
-      fontSize: 'md',
-      px: 6,
+      h: { base: '48px', md: '44px' },
+      minW: { base: '48px', md: '44px' },
+      fontSize: { base: 'md', md: 'sm' },
+      px: { base: 6, md: 4 },
       borderRadius: 'xl',
     },
     lg: {
-      h: '52px',
-      minW: '52px',
-      fontSize: 'lg',
-      px: 8,
+      h: { base: '56px', md: '52px' },
+      minW: { base: '56px', md: '52px' },
+      fontSize: { base: 'lg', md: 'md' },
+      px: { base: 8, md: 6 },
       borderRadius: 'xl',
     },
     // Mobile-optimized sizes
     'mobile-sm': {
-      h: '48px',
-      minW: '48px',
-      fontSize: 'sm',
-      px: 4,
+      h: { base: '48px', md: '40px' },
+      minW: { base: '48px', md: '40px' },
+      fontSize: { base: 'sm', md: 'xs' },
+      px: { base: 4, md: 3 },
       borderRadius: 'xl',
     },
     'mobile-lg': {
@@ -140,7 +147,7 @@ export const Button = defineStyleConfig({
   },
 });
 
-// Enhanced Input component
+// Enhanced Input component with responsive patterns
 export const Input = defineStyleConfig({
   baseStyle: {
     field: {
@@ -150,6 +157,11 @@ export const Input = defineStyleConfig({
       bg: 'rgba(255, 255, 255, 0.95)',
       backdropFilter: 'blur(8px)',
       transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+      minH: { base: '48px', md: '44px' },
+      fontSize: { base: 'max(16px, 1rem)', md: 'md' }, // Prevent zoom on iOS
+      px: { base: 4, md: 3 },
+      py: { base: 3, md: 2 },
+      touchAction: 'manipulation',
       _focus: {
         outline: 'none',
         boxShadow: 'none',
@@ -266,7 +278,7 @@ export const Modal = defineStyleConfig({
   },
 });
 
-// Enhanced Textarea component
+// Enhanced Textarea component with responsive patterns
 export const Textarea = defineStyleConfig({
   baseStyle: {
     borderRadius: '3xl',
@@ -275,6 +287,12 @@ export const Textarea = defineStyleConfig({
     bg: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(8px)',
     transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+    minH: { base: '80px', md: '60px' },
+    fontSize: { base: 'max(16px, 1rem)', md: 'md' }, // Prevent zoom on iOS
+    px: { base: 4, md: 3 },
+    py: { base: 3, md: 2 },
+    touchAction: 'manipulation',
+    resize: 'vertical',
     _focus: {
       outline: 'none',
       boxShadow: 'none',
@@ -290,10 +308,16 @@ export const Textarea = defineStyleConfig({
   },
   variants: {
     'mobile-optimized': {
-      fontSize: '16px', // Prevent zoom on iOS
-      minH: '80px',
+      fontSize: 'max(16px, 1rem)', // Prevent zoom on iOS
+      minH: { base: '100px', md: '80px' },
       borderRadius: 'xl',
       resize: 'vertical',
+    },
+    'chat-input': {
+      minH: { base: '120px', md: '100px' },
+      maxH: { base: '200px', md: '160px' },
+      fontSize: 'max(16px, 1rem)',
+      borderRadius: '2xl',
     },
   },
 });

@@ -64,6 +64,18 @@ export function analyzeError(error: unknown, context?: ErrorContext): ErrorInfo 
         shouldRetry: false
       };
     }
+
+    // Firebase service unavailable (503 errors)
+    else if (message.includes('service-is-currently-unavailable') || message.includes('503') || message.includes('service unavailable')) {
+      errorInfo = {
+        type: 'firebase',
+        severity: 'medium',
+        userMessage: 'Authentication service is temporarily unavailable. Please try again in a few minutes.',
+        technicalMessage: error.message,
+        shouldRetry: true,
+        retryDelay: 5000
+      };
+    }
     
     // API errors
     else if (message.includes('api') || message.includes('timeout') || message.includes('400') || message.includes('500')) {

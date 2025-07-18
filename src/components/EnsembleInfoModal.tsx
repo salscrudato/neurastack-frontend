@@ -50,6 +50,7 @@ interface EnsembleInfoModalProps {
             };
             roles: Array<{
                 role: string;
+                model?: string; // Primary identifier - actual model name
                 content: string;
                 status: "fulfilled" | "rejected";
                 confidence: {
@@ -393,7 +394,7 @@ export function EnsembleInfoModal({
                                             {roles?.map((role, index) => (
                                                 <Flex key={index} justify="space-between" align="center" p={2} bg="gray.50" borderRadius="md">
                                                     <HStack spacing={2}>
-                                                        <Text fontSize="xs" color="#64748B">{(role.role || 'unknown').toString().toUpperCase()}</Text>
+                                                        <Text fontSize="xs" color="#64748B">{(role.model || role.metadata?.model || role.role || 'unknown').toString().toUpperCase()}</Text>
                                                         <Badge colorScheme={role.status === 'fulfilled' ? 'green' : 'red'} size="sm">
                                                             {role.status}
                                                         </Badge>

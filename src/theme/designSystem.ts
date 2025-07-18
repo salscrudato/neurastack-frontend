@@ -14,29 +14,43 @@ export const designTokens = {
     '4xl': '6rem',   // 96px
   },
 
-  // Typography scale
+  // Enhanced Typography scale with fluid responsive sizing
   typography: {
     fontSizes: {
-      xs: '0.75rem',   // 12px
-      sm: '0.875rem',  // 14px
-      md: '1rem',      // 16px
-      lg: '1.125rem',  // 18px
-      xl: '1.25rem',   // 20px
-      '2xl': '1.5rem', // 24px
-      '3xl': '1.875rem', // 30px
-      '4xl': '2.25rem',  // 36px
+      xs: 'clamp(0.75rem, 2vw, 0.875rem)',   // 12px - 14px
+      sm: 'clamp(0.875rem, 2.5vw, 1rem)',    // 14px - 16px
+      md: 'clamp(1rem, 3vw, 1.125rem)',      // 16px - 18px
+      lg: 'clamp(1.125rem, 3.5vw, 1.25rem)', // 18px - 20px
+      xl: 'clamp(1.25rem, 4vw, 1.5rem)',     // 20px - 24px
+      '2xl': 'clamp(1.5rem, 5vw, 1.875rem)', // 24px - 30px
+      '3xl': 'clamp(1.875rem, 6vw, 2.25rem)', // 30px - 36px
+      '4xl': 'clamp(2.25rem, 8vw, 3rem)',    // 36px - 48px
+      '5xl': 'clamp(3rem, 10vw, 4rem)',      // 48px - 64px
     },
     fontWeights: {
+      light: 300,
       normal: 400,
       medium: 500,
       semibold: 600,
       bold: 700,
       extrabold: 800,
+      black: 900,
     },
     lineHeights: {
+      none: 1,
       tight: 1.25,
+      snug: 1.375,
       normal: 1.5,
-      relaxed: 1.75,
+      relaxed: 1.625,
+      loose: 2,
+    },
+    letterSpacing: {
+      tighter: '-0.05em',
+      tight: '-0.025em',
+      normal: '0',
+      wide: '0.025em',
+      wider: '0.05em',
+      widest: '0.1em',
     },
   },
 
@@ -426,42 +440,56 @@ export const breakpoints = {
   '2xl': '96em', // 1536px - Large screens
 };
 
-// Mobile-specific responsive patterns
+// Enhanced Mobile-specific responsive patterns
 export const mobilePatterns = {
-  // Touch target sizes
+  // Touch target sizes with fluid scaling
   touchTargets: {
-    small: { base: '44px', md: '40px' },
-    medium: { base: '48px', md: '44px' },
-    large: { base: '56px', md: '48px' },
-    xlarge: { base: '64px', md: '52px' },
+    small: { base: 'clamp(44px, 10vw, 48px)', md: '40px' },
+    medium: { base: 'clamp(48px, 12vw, 56px)', md: '44px' },
+    large: { base: 'clamp(56px, 14vw, 64px)', md: '48px' },
+    xlarge: { base: 'clamp(64px, 16vw, 72px)', md: '52px' },
   },
 
-  // Typography scaling
+  // Fluid typography scaling
   typography: {
-    xs: { base: '12px', md: '11px' },
-    sm: { base: '14px', md: '13px' },
-    md: { base: '16px', md: '14px' },
-    lg: { base: '18px', md: '16px' },
-    xl: { base: '20px', md: '18px' },
-    '2xl': { base: '24px', md: '20px' },
-    '3xl': { base: '30px', md: '24px' },
+    xs: { base: 'clamp(12px, 3vw, 14px)', md: '11px' },
+    sm: { base: 'clamp(14px, 3.5vw, 16px)', md: '13px' },
+    md: { base: 'clamp(16px, 4vw, 18px)', md: '14px' },
+    lg: { base: 'clamp(18px, 4.5vw, 20px)', md: '16px' },
+    xl: { base: 'clamp(20px, 5vw, 24px)', md: '18px' },
+    '2xl': { base: 'clamp(24px, 6vw, 30px)', md: '20px' },
+    '3xl': { base: 'clamp(30px, 8vw, 36px)', md: '24px' },
   },
 
-  // Spacing adjustments
+  // Responsive spacing adjustments
   spacing: {
-    xs: { base: 2, md: 1 },
-    sm: { base: 3, md: 2 },
-    md: { base: 4, md: 3 },
-    lg: { base: 6, md: 4 },
-    xl: { base: 8, md: 6 },
+    xs: { base: 'clamp(0.5rem, 2vw, 0.75rem)', md: '0.25rem' },
+    sm: { base: 'clamp(0.75rem, 3vw, 1rem)', md: '0.5rem' },
+    md: { base: 'clamp(1rem, 4vw, 1.25rem)', md: '0.75rem' },
+    lg: { base: 'clamp(1.5rem, 6vw, 2rem)', md: '1rem' },
+    xl: { base: 'clamp(2rem, 8vw, 2.5rem)', md: '1.5rem' },
   },
 
-  // Container padding
+  // Responsive container padding
   containerPadding: {
-    base: { px: 4, py: 3 },
-    sm: { px: 6, py: 4 },
-    md: { px: 8, py: 6 },
-    lg: { px: 12, py: 8 },
+    base: { px: 'clamp(1rem, 4vw, 1.5rem)', py: 'clamp(0.75rem, 3vw, 1rem)' },
+    sm: { px: 'clamp(1.5rem, 6vw, 2rem)', py: 'clamp(1rem, 4vw, 1.25rem)' },
+    md: { px: 'clamp(2rem, 8vw, 2.5rem)', py: 'clamp(1.5rem, 6vw, 2rem)' },
+    lg: { px: 'clamp(3rem, 12vw, 4rem)', py: 'clamp(2rem, 8vw, 3rem)' },
+  },
+
+  // Responsive grid patterns
+  grid: {
+    columns: {
+      mobile: 'repeat(auto-fit, minmax(280px, 1fr))',
+      tablet: 'repeat(auto-fit, minmax(320px, 1fr))',
+      desktop: 'repeat(auto-fit, minmax(360px, 1fr))',
+    },
+    gap: {
+      mobile: 'clamp(1rem, 4vw, 1.5rem)',
+      tablet: 'clamp(1.5rem, 6vw, 2rem)',
+      desktop: 'clamp(2rem, 8vw, 2.5rem)',
+    },
   },
 };
 

@@ -7,7 +7,6 @@ import logo from "../assets/icons/logo.svg";
 import { auth } from "../firebase";
 import { useReducedMotion } from "../hooks/useAccessibility";
 import { useAuthStore } from "../store/useAuthStore";
-import { analyzeError } from "../utils/errorHandler";
 
 const provider = new GoogleAuthProvider();
 
@@ -423,6 +422,9 @@ const prettyError = (code: string): string => {
     case 'auth/weak-password': return 'Choose a stronger password.';
     case 'auth/email-already-in-use': return 'Username is already registered.';
     case 'auth/invalid-credentials': return 'Invalid username or password.';
+    case 'auth/the-service-is-currently-unavailable': return 'Authentication service is temporarily unavailable. Please try again in a few minutes.';
+    case 'auth/network-request-failed': return 'Network error. Please check your connection and try again.';
+    case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment and try again.';
     default: return 'Something went wrong. Please try again.';
   }
 };
@@ -434,6 +436,7 @@ export function SplashPage() {
   const user = useAuthStore((s) => s.user);
   const [err, setErr] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastFailedAction, setLastFailedAction] = useState<'google' | 'guest' | null>(null);
 
   const prefersReducedMotion = useReducedMotion();
 
@@ -459,12 +462,14 @@ export function SplashPage() {
   const handleGoogleLogin = useCallback(async () => {
     setErr('');
     setIsLoading(true);
+    setLastFailedAction(null);
     try {
       const res = await signInWithPopup(auth, provider);
       setUser(res.user);
       navigate("/chat", { replace: true });
     } catch (error: any) {
       setErr(prettyError(error?.code || 'unknown'));
+      setLastFailedAction('google');
     } finally {
       setIsLoading(false);
     }
@@ -473,16 +478,30 @@ export function SplashPage() {
   const handleGuestLogin = useCallback(async () => {
     setErr('');
     setIsLoading(true);
+    setLastFailedAction(null);
     try {
       const credential = await signInAnonymously(auth);
       setUser(credential.user);
       navigate("/chat", { replace: true });
     } catch (error: any) {
-      const errorInfo = analyzeError(error);
-      setErr(errorInfo.userMessage);
+      // Use the same error handling as Google login for consistency
+      setErr(prettyError(error?.code || 'unknown'));
+      setLastFailedAction('guest');
+    } finally {
       setIsLoading(false);
     }
   }, [navigate, setUser]);
+
+  const handleRetry = useCallback(() => {
+    if (lastFailedAction === 'google') {
+      handleGoogleLogin();
+    } else if (lastFailedAction === 'guest') {
+      handleGuestLogin();
+    }
+  }, [lastFailedAction, handleGoogleLogin, handleGuestLogin]);
+
+  // Check if the error is a service unavailable error that can be retried
+  const isRetryableError = err.includes('temporarily unavailable') || err.includes('try again');
 
   return (
     <Page>
@@ -519,6 +538,25 @@ export function SplashPage() {
           <Message type="error" id="error-message" role="alert">
             <PiWarningCircleBold size={20} />
             {err}
+            {isRetryableError && lastFailedAction && (
+              <button
+                onClick={handleRetry}
+                disabled={isLoading}
+                style={{
+                  marginLeft: '12px',
+                  padding: '4px 8px',
+                  fontSize: '0.8rem',
+                  background: 'rgba(239, 68, 68, 0.2)',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: '6px',
+                  color: '#fca5a5',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+              >
+                Retry
+              </button>
+            )}
           </Message>
         )}
 

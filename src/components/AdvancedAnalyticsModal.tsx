@@ -180,13 +180,13 @@ export function AdvancedAnalyticsModal({
                 bg="#FFFFFF"
                 borderRadius={{ base: "0", md: "2xl" }}
                 h={{
-                    base: "calc(100vh - 60px)",
-                    md: "calc(100vh - 80px)"
+                    base: "calc(100vh - 84px)",
+                    md: "calc(100vh - 104px)"
                 }}
                 w="100vw"
                 maxH={{
-                    base: "calc(100vh - 60px)",
-                    md: "calc(100vh - 80px)"
+                    base: "calc(100vh - 84px)",
+                    md: "calc(100vh - 104px)"
                 }}
                 maxW="100vw"
                 m="0 !important"
@@ -204,8 +204,8 @@ export function AdvancedAnalyticsModal({
                 left="0 !important"
                 right="0 !important"
                 bottom={{
-                    base: "env(safe-area-inset-bottom, 0px) !important",
-                    md: "0 !important"
+                    base: "calc(env(safe-area-inset-bottom, 0px) + 24px) !important",
+                    md: "24px !important"
                 }}
                 sx={{
                     margin: "0 !important",
@@ -656,7 +656,7 @@ export function AdvancedAnalyticsModal({
                                                         <Box flex="1" textAlign="left">
                                                             <HStack spacing={3}>
                                                                 <Badge colorScheme="blue" variant="solid">
-                                                                    {role.role || role.model || 'Unknown'}
+                                                                    {role.model || role.role || 'Unknown'}
                                                                 </Badge>
                                                                 <Badge
                                                                     colorScheme={role.status === 'fulfilled' ? 'green' : 'red'}
@@ -875,7 +875,7 @@ export function AdvancedAnalyticsModal({
                                                             <VStack spacing={1} align="start">
                                                                 <Text fontSize="xs" color="#64748B">Model</Text>
                                                                 <Badge colorScheme="blue" variant="solid">
-                                                                    {role.role || role.model || 'Unknown'}
+                                                                    {role.model || role.role || 'Unknown'}
                                                                 </Badge>
                                                             </VStack>
                                                         </GridItem>

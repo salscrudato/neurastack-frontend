@@ -105,9 +105,9 @@ export interface SubAnswer {
 
 /** New Ensemble API Response Types - Updated to match actual API structure */
 export interface EnsembleRole {
-  role: "gpt4o" | "gemini" | "claude";
+  role: "gpt4o" | "gemini" | "claude"; // Legacy field for backward compatibility
+  model: string; // Primary identifier - actual model name like "gpt-4.1-nano", "gemini-1.5-flash-8b", etc.
   content: string;
-  model: string;
   provider: "openai" | "gemini" | "claude";
   status: "fulfilled" | "rejected";
   wordCount: number;
@@ -115,7 +115,7 @@ export interface EnsembleRole {
   responseTime: number;
   confidence: {
     score: number;
-    level: "high" | "medium" | "low";
+    level: "high" | "medium" | "low" | "very-high" | "very-low";
     factors: string[];
   };
   metadata: {
@@ -123,7 +123,7 @@ export interface EnsembleRole {
     modelReliability: number;
     processingTime: number;
     tokenCount: number;
-    complexity: "high" | "medium" | "low";
+    complexity: "high" | "medium" | "low" | "very-high" | "very-low";
   };
   quality: {
     wordCount: number;
@@ -131,7 +131,7 @@ export interface EnsembleRole {
     averageWordsPerSentence: number;
     hasStructure: boolean;
     hasReasoning: boolean;
-    complexity: "high" | "medium" | "low";
+    complexity: "high" | "medium" | "low" | "very-high" | "very-low";
   };
   _confidenceDescription?: string;
   _qualityDescription?: string;
