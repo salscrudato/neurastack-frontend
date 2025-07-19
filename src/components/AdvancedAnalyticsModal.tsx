@@ -289,21 +289,21 @@ export function AdvancedAnalyticsModal({
                 
                 {/* Tabs Wrapper */}
                 <Tabs
-                    variant="enclosed"
-                    colorScheme="blue"
+                    variant="unstyled"
                     h="100%"
                     display="flex"
                     flexDirection="column"
                     flex="1"
                 >
-                    {/* Sticky Tab Navigation */}
+                    {/* Modern Tab Navigation */}
                     <TabList
-                        bg="#F8FAFC"
+                        bg="rgba(248, 250, 252, 0.8)"
+                        backdropFilter="blur(12px)"
                         px={{ base: 4, md: 6 }}
-                        py={3}
+                        py={4}
                         borderBottom="1px solid"
-                        borderColor="rgba(226, 232, 240, 0.6)"
-                        gap={2}
+                        borderColor="rgba(226, 232, 240, 0.3)"
+                        gap={1}
                         overflowX="auto"
                         position="sticky"
                         top="0"
@@ -318,69 +318,138 @@ export function AdvancedAnalyticsModal({
                     >
                         <Tab
                             fontWeight="600"
-                            fontSize={{ base: "xs", md: "sm" }}
-                            bg="#2563EB"
-                            color="white"
+                            fontSize={{ base: "sm", md: "md" }}
+                            color="#64748B"
+                            bg="transparent"
+                            border="1px solid transparent"
                             _selected={{
-                                bg: "#1D4ED8",
-                                color: "white",
-                                borderColor: "#1D4ED8"
+                                bg: "rgba(255, 255, 255, 0.9)",
+                                color: "#1E293B",
+                                borderColor: "rgba(226, 232, 240, 0.6)",
+                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                                transform: "translateY(-1px)"
                             }}
                             _hover={{
-                                bg: "#1E40AF",
-                                color: "white"
+                                bg: "rgba(255, 255, 255, 0.6)",
+                                color: "#374151",
+                                transform: "translateY(-1px)"
                             }}
-                            borderRadius="md"
-                            px={{ base: 3, md: 4 }}
-                            py={{ base: 2, md: 3 }}
+                            borderRadius="xl"
+                            px={{ base: 4, md: 6 }}
+                            py={{ base: 3, md: 4 }}
                             minW="fit-content"
                             whiteSpace="nowrap"
+                            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            _before={{
+                                content: '""',
+                                position: "absolute",
+                                bottom: "-4px",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                width: "0",
+                                height: "2px",
+                                bg: "#4F9CF9",
+                                borderRadius: "full",
+                                transition: "width 0.3s ease"
+                            }}
+                            sx={{
+                                '&[aria-selected="true"]::before': {
+                                    width: "80%"
+                                }
+                            }}
                         >
                             Overview
                         </Tab>
                         <Tab
                             fontWeight="600"
-                            fontSize={{ base: "xs", md: "sm" }}
-                            bg="#2563EB"
-                            color="white"
+                            fontSize={{ base: "sm", md: "md" }}
+                            color="#64748B"
+                            bg="transparent"
+                            border="1px solid transparent"
                             _selected={{
-                                bg: "#1D4ED8",
-                                color: "white",
-                                borderColor: "#1D4ED8"
+                                bg: "rgba(255, 255, 255, 0.9)",
+                                color: "#1E293B",
+                                borderColor: "rgba(226, 232, 240, 0.6)",
+                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                                transform: "translateY(-1px)"
                             }}
                             _hover={{
-                                bg: "#1E40AF",
-                                color: "white"
+                                bg: "rgba(255, 255, 255, 0.6)",
+                                color: "#374151",
+                                transform: "translateY(-1px)"
                             }}
-                            borderRadius="md"
-                            px={{ base: 3, md: 4 }}
-                            py={{ base: 2, md: 3 }}
+                            borderRadius="xl"
+                            px={{ base: 4, md: 6 }}
+                            py={{ base: 3, md: 4 }}
                             minW="fit-content"
                             whiteSpace="nowrap"
+                            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            _before={{
+                                content: '""',
+                                position: "absolute",
+                                bottom: "-4px",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                width: "0",
+                                height: "2px",
+                                bg: "#4F9CF9",
+                                borderRadius: "full",
+                                transition: "width 0.3s ease"
+                            }}
+                            sx={{
+                                '&[aria-selected="true"]::before': {
+                                    width: "80%"
+                                }
+                            }}
                         >
-                            Model Performance
+                            Performance
                         </Tab>
                         <Tab
                             fontWeight="600"
-                            fontSize={{ base: "xs", md: "sm" }}
-                            bg="#2563EB"
-                            color="white"
+                            fontSize={{ base: "sm", md: "md" }}
+                            color="#64748B"
+                            bg="transparent"
+                            border="1px solid transparent"
                             _selected={{
-                                bg: "#1D4ED8",
-                                color: "white",
-                                borderColor: "#1D4ED8"
+                                bg: "rgba(255, 255, 255, 0.9)",
+                                color: "#1E293B",
+                                borderColor: "rgba(226, 232, 240, 0.6)",
+                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+                                transform: "translateY(-1px)"
                             }}
                             _hover={{
-                                bg: "#1E40AF",
-                                color: "white"
+                                bg: "rgba(255, 255, 255, 0.6)",
+                                color: "#374151",
+                                transform: "translateY(-1px)"
                             }}
-                            borderRadius="md"
-                            px={{ base: 3, md: 4 }}
-                            py={{ base: 2, md: 3 }}
+                            borderRadius="xl"
+                            px={{ base: 4, md: 6 }}
+                            py={{ base: 3, md: 4 }}
                             minW="fit-content"
                             whiteSpace="nowrap"
+                            transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                            position="relative"
+                            _before={{
+                                content: '""',
+                                position: "absolute",
+                                bottom: "-4px",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                width: "0",
+                                height: "2px",
+                                bg: "#4F9CF9",
+                                borderRadius: "full",
+                                transition: "width 0.3s ease"
+                            }}
+                            sx={{
+                                '&[aria-selected="true"]::before': {
+                                    width: "80%"
+                                }
+                            }}
                         >
-                            Advanced Insights
+                            Technical Details
                         </Tab>
                     </TabList>
 
@@ -422,108 +491,215 @@ export function AdvancedAnalyticsModal({
                                     }
                                 }}
                             >
-                                <Box p={{ base: 4, md: 6 }} pb={{ base: 12, md: 16 }}>
+                                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                <Box p={{ base: 4, md: 6 }} pb={{ base: 12, md: 16 }}>
                                 <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
                                     {/* AI Meta-Voting Analysis - Simplified and User-Friendly */}
                                     {analytics.voting?.metaVoting && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 30 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+                                        >
                                         <Box
-                                            bg="linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)"
-                                            borderRadius="xl"
-                                            p={6}
+                                            bg="rgba(255, 255, 255, 0.8)"
+                                            backdropFilter="blur(16px)"
+                                            borderRadius="2xl"
+                                            p={{ base: 5, md: 6 }}
                                             border="1px solid"
-                                            borderColor="rgba(59, 130, 246, 0.2)"
-                                            boxShadow="0 4px 12px rgba(59, 130, 246, 0.1)"
+                                            borderColor="rgba(59, 130, 246, 0.15)"
+                                            boxShadow="0 8px 32px rgba(59, 130, 246, 0.08)"
+                                            position="relative"
+                                            _before={{
+                                                content: '""',
+                                                position: "absolute",
+                                                top: 0,
+                                                left: 0,
+                                                right: 0,
+                                                height: "1px",
+                                                background: "linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.3) 50%, transparent 100%)",
+                                                borderRadius: "2xl 2xl 0 0"
+                                            }}
                                         >
                                             <HStack spacing={3} mb={4}>
                                                 <Icon as={PiBrainBold} boxSize={6} color="#3B82F6" />
                                                 <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                    🤖 AI Quality Assessment
+                                                    AI Quality Assessment
                                                 </Text>
                                             </HStack>
                                             <VStack spacing={4} align="stretch">
                                                 <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
                                                     <GridItem>
-                                                        <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(59, 130, 246, 0.1)">
-                                                            <Text fontSize="xs" color="#64748B" mb={1}>Best Response Selected</Text>
-                                                            <Text fontSize="xl" fontWeight="bold" color="#3B82F6">
+                                                        <Box
+                                                            textAlign="center"
+                                                            p={5}
+                                                            bg="rgba(255, 255, 255, 0.9)"
+                                                            backdropFilter="blur(8px)"
+                                                            borderRadius="xl"
+                                                            border="1px solid rgba(59, 130, 246, 0.08)"
+                                                            boxShadow="0 2px 8px rgba(59, 130, 246, 0.05)"
+                                                        >
+                                                            <Text fontSize="xs" color="#64748B" mb={2} fontWeight="500">Best Response Selected</Text>
+                                                            <Text fontSize="2xl" fontWeight="700" color="#3B82F6" letterSpacing="tight">
                                                                 {analytics.voting.metaVoting.winner?.toUpperCase()}
                                                             </Text>
                                                         </Box>
                                                     </GridItem>
                                                     <GridItem>
-                                                        <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(59, 130, 246, 0.1)">
-                                                            <Text fontSize="xs" color="#64748B" mb={1}>AI Confidence</Text>
-                                                            <Text fontSize="xl" fontWeight="bold" color="#10B981">
+                                                        <Box
+                                                            textAlign="center"
+                                                            p={5}
+                                                            bg="rgba(255, 255, 255, 0.9)"
+                                                            backdropFilter="blur(8px)"
+                                                            borderRadius="xl"
+                                                            border="1px solid rgba(16, 185, 129, 0.08)"
+                                                            boxShadow="0 2px 8px rgba(16, 185, 129, 0.05)"
+                                                        >
+                                                            <Text fontSize="xs" color="#64748B" mb={2} fontWeight="500">AI Confidence</Text>
+                                                            <Text fontSize="2xl" fontWeight="700" color="#10B981" letterSpacing="tight">
                                                                 {(analytics.voting.metaVoting.confidence * 100).toFixed(0)}%
                                                             </Text>
                                                         </Box>
                                                     </GridItem>
                                                 </Grid>
                                                 {analytics.voting.metaVoting.reasoning && (
-                                                    <Box p={4} bg="white" borderRadius="lg" border="1px solid rgba(59, 130, 246, 0.1)">
-                                                        <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={2}>
-                                                            💡 Why This Response Was Chosen
+                                                    <Box
+                                                        p={5}
+                                                        bg="rgba(255, 255, 255, 0.9)"
+                                                        backdropFilter="blur(8px)"
+                                                        borderRadius="xl"
+                                                        border="1px solid rgba(59, 130, 246, 0.08)"
+                                                        boxShadow="0 2px 8px rgba(59, 130, 246, 0.05)"
+                                                    >
+                                                        <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={3}>
+                                                            Why This Response Was Chosen
                                                         </Text>
-                                                        <Text fontSize="sm" color="#64748B" lineHeight="1.6">
+                                                        <Text fontSize="sm" color="#475569" lineHeight="1.7">
                                                             {analytics.voting.metaVoting.reasoning}
                                                         </Text>
                                                     </Box>
                                                 )}
                                             </VStack>
                                         </Box>
+                                        </motion.div>
                                     )}
 
                                     {/* Overall Quality & Confidence Score - Simplified */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 30 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+                                    >
                                     <Box
-                                        bg="linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)"
-                                        borderRadius="xl"
-                                        p={6}
+                                        bg="rgba(255, 255, 255, 0.8)"
+                                        backdropFilter="blur(16px)"
+                                        borderRadius="2xl"
+                                        p={{ base: 5, md: 6 }}
                                         border="1px solid"
-                                        borderColor="rgba(34, 197, 94, 0.2)"
-                                        boxShadow="0 4px 12px rgba(34, 197, 94, 0.1)"
+                                        borderColor="rgba(34, 197, 94, 0.15)"
+                                        boxShadow="0 8px 32px rgba(34, 197, 94, 0.08)"
+                                        position="relative"
+                                        _before={{
+                                            content: '""',
+                                            position: "absolute",
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: "1px",
+                                            background: "linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.3) 50%, transparent 100%)",
+                                            borderRadius: "2xl 2xl 0 0"
+                                        }}
                                     >
                                         <HStack spacing={3} mb={4}>
                                             <Icon as={PiShieldCheckBold} boxSize={6} color="#22C55E" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                📊 Overall Quality Score
+                                                Overall Quality Score
                                             </Text>
                                         </HStack>
-                                        <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
+                                        <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }} gap={{ base: 4, md: 5 }}>
                                             <GridItem>
-                                                <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(34, 197, 94, 0.1)">
-                                                    <Text fontSize="xs" color="#64748B" mb={1}>Response Quality</Text>
-                                                    <Text fontSize="2xl" fontWeight="bold" color="#22C55E">
+                                                <Box
+                                                    textAlign="center"
+                                                    p={{ base: 4, md: 6 }}
+                                                    bg="rgba(255, 255, 255, 0.9)"
+                                                    backdropFilter="blur(8px)"
+                                                    borderRadius="xl"
+                                                    border="1px solid rgba(34, 197, 94, 0.08)"
+                                                    boxShadow="0 4px 16px rgba(34, 197, 94, 0.06)"
+                                                    transition="all 0.2s ease"
+                                                    _hover={{
+                                                        transform: "translateY(-2px)",
+                                                        boxShadow: "0 8px 24px rgba(34, 197, 94, 0.12)"
+                                                    }}
+                                                    minH={{ base: "120px", md: "140px" }}
+                                                    display="flex"
+                                                    flexDirection="column"
+                                                    justifyContent="center"
+                                                >
+                                                    <Text fontSize={{ base: "2xs", md: "xs" }} color="#64748B" mb={{ base: 2, md: 3 }} fontWeight="500" letterSpacing="wide">RESPONSE QUALITY</Text>
+                                                    <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="800" color="#22C55E" mb={{ base: 1, md: 2 }} letterSpacing="tight">
                                                         {(analytics.overallConfidence * 100).toFixed(0)}%
                                                     </Text>
-                                                    <Text fontSize="xs" color="#94A3B8" textTransform="capitalize">
+                                                    <Text fontSize={{ base: "2xs", md: "xs" }} color="#94A3B8" textTransform="capitalize" fontWeight="500">
                                                         {analytics.confidenceLevel} Quality
                                                     </Text>
                                                 </Box>
                                             </GridItem>
                                             <GridItem>
-                                                <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(34, 197, 94, 0.1)">
-                                                    <Text fontSize="xs" color="#64748B" mb={1}>Response Variety</Text>
-                                                    <Text fontSize="2xl" fontWeight="bold" color="#8B5CF6">
+                                                <Box
+                                                    textAlign="center"
+                                                    p={6}
+                                                    bg="rgba(255, 255, 255, 0.9)"
+                                                    backdropFilter="blur(8px)"
+                                                    borderRadius="xl"
+                                                    border="1px solid rgba(139, 92, 246, 0.08)"
+                                                    boxShadow="0 4px 16px rgba(139, 92, 246, 0.06)"
+                                                    transition="all 0.2s ease"
+                                                    _hover={{
+                                                        transform: "translateY(-2px)",
+                                                        boxShadow: "0 8px 24px rgba(139, 92, 246, 0.12)"
+                                                    }}
+                                                >
+                                                    <Text fontSize="xs" color="#64748B" mb={3} fontWeight="500" letterSpacing="wide">RESPONSE VARIETY</Text>
+                                                    <Text fontSize="3xl" fontWeight="800" color="#8B5CF6" mb={2} letterSpacing="tight">
                                                         {analytics.responseVariety}
                                                     </Text>
-                                                    <Text fontSize="xs" color="#94A3B8">
+                                                    <Text fontSize="xs" color="#94A3B8" fontWeight="500">
                                                         Diversity Level
                                                     </Text>
                                                 </Box>
                                             </GridItem>
                                             <GridItem>
-                                                <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(34, 197, 94, 0.1)">
-                                                    <Text fontSize="xs" color="#64748B" mb={1}>AI Systems Used</Text>
-                                                    <Text fontSize="2xl" fontWeight="bold" color="#F59E0B">
+                                                <Box
+                                                    textAlign="center"
+                                                    p={6}
+                                                    bg="rgba(255, 255, 255, 0.9)"
+                                                    backdropFilter="blur(8px)"
+                                                    borderRadius="xl"
+                                                    border="1px solid rgba(245, 158, 11, 0.08)"
+                                                    boxShadow="0 4px 16px rgba(245, 158, 11, 0.06)"
+                                                    transition="all 0.2s ease"
+                                                    _hover={{
+                                                        transform: "translateY(-2px)",
+                                                        boxShadow: "0 8px 24px rgba(245, 158, 11, 0.12)"
+                                                    }}
+                                                >
+                                                    <Text fontSize="xs" color="#64748B" mb={3} fontWeight="500" letterSpacing="wide">AI SYSTEMS USED</Text>
+                                                    <Text fontSize="3xl" fontWeight="800" color="#F59E0B" mb={2} letterSpacing="tight">
                                                         {analytics.aiSystemsUsed}
                                                     </Text>
-                                                    <Text fontSize="xs" color="#94A3B8">
+                                                    <Text fontSize="xs" color="#94A3B8" fontWeight="500">
                                                         Advanced Features
                                                     </Text>
                                                 </Box>
                                             </GridItem>
                                         </Grid>
                                     </Box>
+                                    </motion.div>
 
                                     {/* Model Performance Comparison - User-Friendly */}
                                     <Box
@@ -537,7 +713,7 @@ export function AdvancedAnalyticsModal({
                                         <HStack spacing={3} mb={4}>
                                             <Icon as={PiScalesBold} boxSize={6} color="#F59E0B" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                🏆 Model Performance Comparison
+                                                Model Performance Comparison
                                             </Text>
                                         </HStack>
                                         <VStack spacing={4} align="stretch">
@@ -558,10 +734,16 @@ export function AdvancedAnalyticsModal({
                                                     </Flex>
                                                     <Progress
                                                         value={(weight as number) * 100}
-                                                        colorScheme="orange"
-                                                        size="md"
+                                                        size="lg"
                                                         borderRadius="full"
-                                                        bg="rgba(245, 158, 11, 0.1)"
+                                                        bg="rgba(245, 158, 11, 0.08)"
+                                                        sx={{
+                                                            '& > div': {
+                                                                background: "linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)",
+                                                                borderRadius: "full",
+                                                                boxShadow: "0 2px 8px rgba(245, 158, 11, 0.3)"
+                                                            }
+                                                        }}
                                                     />
                                                 </Box>
                                             ))}
@@ -581,7 +763,7 @@ export function AdvancedAnalyticsModal({
                                         <HStack spacing={3} mb={4}>
                                             <Icon as={PiShieldCheckBold} boxSize={6} color="#8B5CF6" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                🔍 Response Analysis
+                                                Response Analysis
                                             </Text>
                                         </HStack>
                                         <VStack spacing={6} align="stretch">
@@ -646,7 +828,7 @@ export function AdvancedAnalyticsModal({
                                             {analytics.confidenceFactors.length > 0 && (
                                                 <Box p={4} bg="white" borderRadius="lg" border="1px solid rgba(139, 92, 246, 0.1)">
                                                     <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={3}>
-                                                        ✨ What Makes This Response High Quality
+                                                        What Makes This Response High Quality
                                                     </Text>
                                                     <Wrap spacing={2}>
                                                         {analytics.confidenceFactors.map((factor: any, index: number) => (
@@ -682,7 +864,7 @@ export function AdvancedAnalyticsModal({
                                         <HStack spacing={3} mb={4}>
                                             <Icon as={PiChartBarBold} boxSize={6} color="#64748B" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                🤖 Individual AI Model Responses
+                                                Individual AI Model Responses
                                             </Text>
                                         </HStack>
                                         <Text fontSize="sm" color="#64748B" mb={4}>
@@ -791,6 +973,7 @@ export function AdvancedAnalyticsModal({
                                     </Box>
                                 </VStack>
                                 </Box>
+                </motion.div>
                             </TabPanel>
 
                             {/* Model Performance Tab */}
