@@ -19,11 +19,11 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { PiCheckBold, PiCrownBold, PiLightningBold, PiShieldCheckBold, PiStarBold } from 'react-icons/pi';
+import { PaymentModal } from '../components/stripe';
 import { neuraStackClient } from '../lib/neurastack-client';
+import { SUBSCRIPTION_PRICES } from '../lib/stripe-config';
 import type { TierConfigResponse, UserTierInfoResponse } from '../lib/types';
 import { useAuthStore } from '../store/useAuthStore';
-
-// Import subscription service
 
 export default function SubscriptionPage() {
     const [userTierInfo, setUserTierInfo] = useState<UserTierInfoResponse | null>(null);
@@ -31,6 +31,7 @@ export default function SubscriptionPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isUpgrading, setIsUpgrading] = useState(false);
     const [isDowngrading, setIsDowngrading] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const user = useAuthStore((s) => s.user);
     const toast = useToast();
 
@@ -70,33 +71,56 @@ export default function SubscriptionPage() {
         }
     };
 
-    const handleUpgrade = async () => {
+    const handleUpgrade = () => {
         if (!user) return;
-        
+        setIsPaymentModalOpen(true);
+    };
+
+    const handlePaymentSuccess = async (paymentIntent: any) => {
+        if (!user) return;
+
         setIsUpgrading(true);
         try {
-            await neuraStackClient.upgradeTier({
-                userId: user.uid,
-                durationDays: 30,
-                reason: 'User manual upgrade'
-            });
-            
-            toast({
-                title: 'Upgraded Successfully!',
-                description: 'You now have access to premium features',
-                status: 'success',
-                duration: 5000,
-                isClosable: true,
-            });
-            
-            await loadSubscriptionData();
+            // In development mode, simulate successful upgrade without backend call
+            if (import.meta.env.DEV) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                toast({
+                    title: 'Payment Successful! (Demo Mode)',
+                    description: 'Welcome to NeuraStack Premium! In production, your account would be upgraded automatically.',
+                    status: 'success',
+                    duration: 8000,
+                    isClosable: true,
+                });
+
+                // In demo mode, we'll just reload the data (which won't change the tier)
+                await loadSubscriptionData();
+            } else {
+                // Production mode: actually upgrade the user's tier
+                await neuraStackClient.upgradeTier({
+                    userId: user.uid,
+                    durationDays: 30,
+                    reason: 'Payment successful - Stripe payment ID: ' + paymentIntent.id
+                });
+
+                toast({
+                    title: 'Payment Successful!',
+                    description: 'Welcome to NeuraStack Premium! You now have access to all premium features.',
+                    status: 'success',
+                    duration: 8000,
+                    isClosable: true,
+                });
+
+                await loadSubscriptionData();
+            }
         } catch (error) {
-            console.error('Failed to upgrade:', error);
+            console.error('Failed to upgrade after payment:', error);
             toast({
-                title: 'Upgrade Failed',
-                description: 'Unable to upgrade your subscription. Please try again.',
-                status: 'error',
-                duration: 5000,
+                title: 'Payment Processed, Upgrade Pending',
+                description: 'Your payment was successful, but there was an issue upgrading your account. Please contact support.',
+                status: 'warning',
+                duration: 10000,
                 isClosable: true,
             });
         } finally {
@@ -512,7 +536,7 @@ export default function SubscriptionPage() {
                                                         transform: "translateY(0)"
                                                     }}
                                                 >
-                                                    Upgrade to Premium
+                                                    Upgrade for ${tierConfig.data.premium.costPerMonth}/month
                                                 </Button>
                                             )}
                                         </VStack>
@@ -523,6 +547,25 @@ export default function SubscriptionPage() {
                     </VStack>
                 )}
             </Flex>
+
+            {/* Payment Modal */}
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                onSuccess={handlePaymentSuccess}
+                amount={SUBSCRIPTION_PRICES.premium.monthly.amount}
+                currency={SUBSCRIPTION_PRICES.premium.monthly.currency}
+                title="Upgrade to NeuraStack Premium"
+                description="Get unlimited access to our AI ensemble with premium features"
+                features={[
+                    'Unlimited AI requests per day',
+                    'Access to all premium AI models',
+                    'Priority processing and faster responses',
+                    'Advanced analytics and insights',
+                    'Premium customer support',
+                    'Early access to new features'
+                ]}
+            />
         </Box>
     );
 }

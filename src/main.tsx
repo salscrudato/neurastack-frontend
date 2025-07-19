@@ -16,8 +16,15 @@ import { PageLoader } from './components/LoadingSpinner';
 import { SplashPage } from './pages/SplashPage';
 import { preloadCriticalServices } from './services/lazyFirebase';
 
+// Import test utilities in development mode
+if (import.meta.env.DEV) {
+  import('./utils/stripeTestUtils');
+}
+
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const SubscriptionPage = React.lazy(() => import('./pages/SubscriptionPage'));
+const PaymentSuccessPage = React.lazy(() => import('./pages/PaymentSuccessPage'));
+const PaymentErrorPage = React.lazy(() => import('./pages/PaymentErrorPage'));
 // Lazy‑load named export `ChatPage` and expose it as default for React.lazy
 const ChatPage = React.lazy(() =>
   import('./pages/ChatPage').then((m) => ({ default: m.ChatPage }))
@@ -68,7 +75,26 @@ const router = createBrowserRouter([
           </AuthGuard>
         ),
       },
-
+      {
+        path: 'payment/success',
+        element: (
+          <AuthGuard requireAuth={true}>
+            <Suspense fallback={<PageLoader message="Loading..." />}>
+              <PaymentSuccessPage />
+            </Suspense>
+          </AuthGuard>
+        ),
+      },
+      {
+        path: 'payment/error',
+        element: (
+          <AuthGuard requireAuth={true}>
+            <Suspense fallback={<PageLoader message="Loading..." />}>
+              <PaymentErrorPage />
+            </Suspense>
+          </AuthGuard>
+        ),
+      },
 
     ],
   },
