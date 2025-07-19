@@ -207,13 +207,24 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           px={{ base: 3, md: 4 }}
           py={{ base: 2.5, md: 3 }}
           borderRadius={messageStyles.borderRadius}
-          maxW={{
-            base: isUser ? "85%" : "92%",
-            sm: isUser ? "80%" : "88%",
-            md: isUser ? "75%" : "85%",
-            lg: isUser ? "70%" : "80%"
+          w={{
+            base: isUser ? "85%" : "90%",
+            sm: isUser ? "80%" : "90%",
+            md: isUser ? "75%" : "90%",
+            lg: isUser ? "70%" : "90%"
           }}
-          minW={{ base: "20%", sm: "25%", md: "30%" }}
+          maxW={{
+            base: isUser ? "85%" : "90%",
+            sm: isUser ? "80%" : "90%",
+            md: isUser ? "75%" : "90%",
+            lg: isUser ? "70%" : "90%"
+          }}
+          minW={{
+            base: isUser ? "85%" : "90%",
+            sm: isUser ? "80%" : "90%",
+            md: isUser ? "75%" : "90%",
+            lg: isUser ? "70%" : "90%"
+          }}
           position="relative"
           boxShadow={messageStyles.shadow}
           border={messageStyles.border}
