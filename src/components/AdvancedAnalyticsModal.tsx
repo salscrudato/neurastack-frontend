@@ -110,6 +110,11 @@ export function AdvancedAnalyticsModal({
             ? successfulRoles.reduce((sum: number, role: any) => sum + (role.quality?.wordCount || 0), 0) / successfulRoles.length
             : 0;
 
+        // Extract additional interesting metrics from the response
+        const diversityScore = voting?.diversityAnalysis?.overallDiversity || 0;
+        const sophisticatedFeatures = voting?.analytics?.sophisticatedFeaturesUsed || [];
+        const qualityMetrics = voting?.abstention?.qualityMetrics || null;
+
         return {
             // Core data
             synthesis,
@@ -151,7 +156,15 @@ export function AdvancedAnalyticsModal({
             tieBreaking: voting?.tieBreaking || null,
             clusterAnalysis: voting?.diversityAnalysis?.clusterAnalysis || null,
             historicalPerformance: voting?.historicalPerformance || null,
-            abstentionAnalysis: voting?.abstention || null
+            abstentionAnalysis: voting?.abstention || null,
+
+            // Additional interesting metrics
+            qualityMetrics,
+
+            // User-friendly metrics
+            responseVariety: diversityScore > 0.8 ? 'High' : diversityScore > 0.5 ? 'Medium' : 'Low',
+            aiSystemsUsed: sophisticatedFeatures.length,
+            overallReliability: qualityMetrics?.overallQuality ? (qualityMetrics.overallQuality * 100).toFixed(0) + '%' : 'N/A'
         };
     }, [analyticsData]);
 
@@ -411,41 +424,47 @@ export function AdvancedAnalyticsModal({
                             >
                                 <Box p={{ base: 4, md: 6 }} pb={{ base: 12, md: 16 }}>
                                 <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
-                                    {/* AI Meta-Voting Analysis */}
+                                    {/* AI Meta-Voting Analysis - Simplified and User-Friendly */}
                                     {analytics.voting?.metaVoting && (
                                         <Box
-                                            bg="white"
+                                            bg="linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)"
                                             borderRadius="xl"
                                             p={6}
                                             border="1px solid"
-                                            borderColor="rgba(226, 232, 240, 0.6)"
-                                            boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                            borderColor="rgba(59, 130, 246, 0.2)"
+                                            boxShadow="0 4px 12px rgba(59, 130, 246, 0.1)"
                                         >
                                             <HStack spacing={3} mb={4}>
-                                                <Icon as={PiBrainBold} boxSize={6} color="#10B981" />
+                                                <Icon as={PiBrainBold} boxSize={6} color="#3B82F6" />
                                                 <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                    AI Meta-Voting Analysis
+                                                    🤖 AI Quality Assessment
                                                 </Text>
                                             </HStack>
                                             <VStack spacing={4} align="stretch">
-                                                <Flex justify="space-between" align="center">
-                                                    <Text fontSize="sm" color="#64748B">Meta Winner</Text>
-                                                    <Badge colorScheme="green" variant="solid">
-                                                        {analytics.voting.metaVoting.winner}
-                                                    </Badge>
-                                                </Flex>
-                                                <Flex justify="space-between" align="center">
-                                                    <Text fontSize="sm" color="#64748B">Meta Confidence</Text>
-                                                    <Badge colorScheme="blue" variant="solid">
-                                                        {(analytics.voting.metaVoting.confidence * 100).toFixed(1)}%
-                                                    </Badge>
-                                                </Flex>
+                                                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                                                    <GridItem>
+                                                        <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(59, 130, 246, 0.1)">
+                                                            <Text fontSize="xs" color="#64748B" mb={1}>Best Response Selected</Text>
+                                                            <Text fontSize="xl" fontWeight="bold" color="#3B82F6">
+                                                                {analytics.voting.metaVoting.winner?.toUpperCase()}
+                                                            </Text>
+                                                        </Box>
+                                                    </GridItem>
+                                                    <GridItem>
+                                                        <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(59, 130, 246, 0.1)">
+                                                            <Text fontSize="xs" color="#64748B" mb={1}>AI Confidence</Text>
+                                                            <Text fontSize="xl" fontWeight="bold" color="#10B981">
+                                                                {(analytics.voting.metaVoting.confidence * 100).toFixed(0)}%
+                                                            </Text>
+                                                        </Box>
+                                                    </GridItem>
+                                                </Grid>
                                                 {analytics.voting.metaVoting.reasoning && (
-                                                    <Box>
+                                                    <Box p={4} bg="white" borderRadius="lg" border="1px solid rgba(59, 130, 246, 0.1)">
                                                         <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={2}>
-                                                            AI Reasoning
+                                                            💡 Why This Response Was Chosen
                                                         </Text>
-                                                        <Text fontSize="xs" color="#64748B" lineHeight="1.5">
+                                                        <Text fontSize="sm" color="#64748B" lineHeight="1.6">
                                                             {analytics.voting.metaVoting.reasoning}
                                                         </Text>
                                                     </Box>
@@ -454,177 +473,186 @@ export function AdvancedAnalyticsModal({
                                         </Box>
                                     )}
 
-                                    {/* Voting Overview */}
-                                    <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }} gap={{ base: 3, md: 4 }}>
-                                        <GridItem>
-                                            <Stat
-                                                bg="white"
-                                                p={{ base: 3, md: 4 }}
-                                                borderRadius={{ base: "lg", md: "xl" }}
-                                                border="1px solid"
-                                                borderColor="rgba(226, 232, 240, 0.6)"
-                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
-                                            >
-                                                <StatLabel fontSize={{ base: "2xs", md: "xs" }} color="#64748B">Voting Winner</StatLabel>
-                                                <StatNumber fontSize={{ base: "lg", md: "xl" }} color="#10B981">
-                                                    {analytics.votingWinner}
-                                                </StatNumber>
-                                                <StatHelpText fontSize={{ base: "2xs", md: "xs" }} color="#94A3B8">
-                                                    Selected model
-                                                </StatHelpText>
-                                            </Stat>
-                                        </GridItem>
-
-                                        <GridItem>
-                                            <Stat
-                                                bg="white"
-                                                p={4}
-                                                borderRadius="xl"
-                                                border="1px solid"
-                                                borderColor="rgba(226, 232, 240, 0.6)"
-                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
-                                            >
-                                                <StatLabel fontSize="xs" color="#64748B">Voting Confidence</StatLabel>
-                                                <StatNumber fontSize="xl" color="#4F9CF9">
-                                                    {(analytics.votingConfidence * 100).toFixed(1)}%
-                                                </StatNumber>
-                                                <StatHelpText fontSize="xs" color="#94A3B8">
-                                                    Decision strength
-                                                </StatHelpText>
-                                            </Stat>
-                                        </GridItem>
-
-                                        <GridItem>
-                                            <Stat
-                                                bg="white"
-                                                p={4}
-                                                borderRadius="xl"
-                                                border="1px solid"
-                                                borderColor="rgba(226, 232, 240, 0.6)"
-                                                boxShadow="0 2px 4px rgba(0, 0, 0, 0.05)"
-                                            >
-                                                <StatLabel fontSize="xs" color="#64748B">Consensus</StatLabel>
-                                                <StatNumber fontSize="xl" color="#8B5CF6">
-                                                    {analytics.consensus}
-                                                </StatNumber>
-                                                <StatHelpText fontSize="xs" color="#94A3B8">
-                                                    Agreement level
-                                                </StatHelpText>
-                                            </Stat>
-                                        </GridItem>
-                                    </Grid>
-
-                                    {/* Voting Weights */}
+                                    {/* Overall Quality & Confidence Score - Simplified */}
                                     <Box
-                                        bg="white"
+                                        bg="linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)"
                                         borderRadius="xl"
                                         p={6}
                                         border="1px solid"
-                                        borderColor="rgba(226, 232, 240, 0.6)"
-                                        boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        borderColor="rgba(34, 197, 94, 0.2)"
+                                        boxShadow="0 4px 12px rgba(34, 197, 94, 0.1)"
                                     >
                                         <HStack spacing={3} mb={4}>
-                                            <Icon as={PiScalesBold} boxSize={6} color="#4F9CF9" />
+                                            <Icon as={PiShieldCheckBold} boxSize={6} color="#22C55E" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                Voting Weights
+                                                📊 Overall Quality Score
+                                            </Text>
+                                        </HStack>
+                                        <Grid templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }} gap={4}>
+                                            <GridItem>
+                                                <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(34, 197, 94, 0.1)">
+                                                    <Text fontSize="xs" color="#64748B" mb={1}>Response Quality</Text>
+                                                    <Text fontSize="2xl" fontWeight="bold" color="#22C55E">
+                                                        {(analytics.overallConfidence * 100).toFixed(0)}%
+                                                    </Text>
+                                                    <Text fontSize="xs" color="#94A3B8" textTransform="capitalize">
+                                                        {analytics.confidenceLevel} Quality
+                                                    </Text>
+                                                </Box>
+                                            </GridItem>
+                                            <GridItem>
+                                                <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(34, 197, 94, 0.1)">
+                                                    <Text fontSize="xs" color="#64748B" mb={1}>Response Variety</Text>
+                                                    <Text fontSize="2xl" fontWeight="bold" color="#8B5CF6">
+                                                        {analytics.responseVariety}
+                                                    </Text>
+                                                    <Text fontSize="xs" color="#94A3B8">
+                                                        Diversity Level
+                                                    </Text>
+                                                </Box>
+                                            </GridItem>
+                                            <GridItem>
+                                                <Box textAlign="center" p={4} bg="white" borderRadius="lg" border="1px solid rgba(34, 197, 94, 0.1)">
+                                                    <Text fontSize="xs" color="#64748B" mb={1}>AI Systems Used</Text>
+                                                    <Text fontSize="2xl" fontWeight="bold" color="#F59E0B">
+                                                        {analytics.aiSystemsUsed}
+                                                    </Text>
+                                                    <Text fontSize="xs" color="#94A3B8">
+                                                        Advanced Features
+                                                    </Text>
+                                                </Box>
+                                            </GridItem>
+                                        </Grid>
+                                    </Box>
+
+                                    {/* Model Performance Comparison - User-Friendly */}
+                                    <Box
+                                        bg="linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)"
+                                        borderRadius="xl"
+                                        p={6}
+                                        border="1px solid"
+                                        borderColor="rgba(245, 158, 11, 0.2)"
+                                        boxShadow="0 4px 12px rgba(245, 158, 11, 0.1)"
+                                    >
+                                        <HStack spacing={3} mb={4}>
+                                            <Icon as={PiScalesBold} boxSize={6} color="#F59E0B" />
+                                            <Text fontSize="lg" fontWeight="bold" color="#1E293B">
+                                                🏆 Model Performance Comparison
                                             </Text>
                                         </HStack>
                                         <VStack spacing={4} align="stretch">
                                             {analytics.voting?.weights && Object.entries(analytics.voting.weights).map(([model, weight]) => (
-                                                <Box key={model}>
+                                                <Box key={model} p={4} bg="white" borderRadius="lg" border="1px solid rgba(245, 158, 11, 0.1)">
                                                     <Flex justify="space-between" align="center" mb={2}>
-                                                        <Text fontSize="sm" fontWeight="600" color="#1E293B">
-                                                            {model.toUpperCase()}
-                                                        </Text>
-                                                        <Text fontSize="sm" color="#64748B">
-                                                            {((weight as number) * 100).toFixed(1)}%
+                                                        <HStack spacing={2}>
+                                                            <Badge colorScheme="orange" variant="solid" fontSize="xs">
+                                                                {model.toUpperCase()}
+                                                            </Badge>
+                                                            <Text fontSize="sm" color="#64748B">
+                                                                Performance Score
+                                                            </Text>
+                                                        </HStack>
+                                                        <Text fontSize="lg" fontWeight="bold" color="#F59E0B">
+                                                            {((weight as number) * 100).toFixed(0)}%
                                                         </Text>
                                                     </Flex>
                                                     <Progress
                                                         value={(weight as number) * 100}
-                                                        colorScheme="blue"
-                                                        size="sm"
+                                                        colorScheme="orange"
+                                                        size="md"
                                                         borderRadius="full"
+                                                        bg="rgba(245, 158, 11, 0.1)"
                                                     />
                                                 </Box>
                                             ))}
                                         </VStack>
                                     </Box>
 
-                                    {/* Confidence Analysis */}
+                                    {/* Confidence Analysis - Enhanced with User-Friendly Insights */}
                                     <Box
-                                        bg="white"
+                                        bg="linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)"
                                         borderRadius="xl"
                                         p={{ base: 6, md: 8, lg: 10 }}
                                         border="1px solid"
-                                        borderColor="rgba(226, 232, 240, 0.6)"
-                                        boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        borderColor="rgba(139, 92, 246, 0.2)"
+                                        boxShadow="0 4px 12px rgba(139, 92, 246, 0.1)"
                                         w="100%"
                                     >
                                         <HStack spacing={3} mb={4}>
-                                            <Icon as={PiShieldCheckBold} boxSize={6} color="#10B981" />
+                                            <Icon as={PiShieldCheckBold} boxSize={6} color="#8B5CF6" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                Confidence Analysis
+                                                🔍 Response Analysis
                                             </Text>
                                         </HStack>
-                                        <VStack spacing={4} align="stretch">
-                                            {/* Overall Confidence Display */}
+                                        <VStack spacing={6} align="stretch">
+                                            {/* Key Insights Grid */}
                                             <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
                                                 <GridItem>
-                                                    <Stat
-                                                        bg="rgba(248, 250, 252, 0.5)"
-                                                        p={{ base: 4, md: 6, lg: 8 }}
+                                                    <Box
+                                                        bg="white"
+                                                        p={{ base: 4, md: 6 }}
                                                         borderRadius="lg"
-                                                        border="1px solid"
-                                                        borderColor="rgba(226, 232, 240, 0.4)"
+                                                        border="1px solid rgba(139, 92, 246, 0.1)"
+                                                        textAlign="center"
                                                     >
-                                                        <StatLabel fontSize="xs" color="#64748B">Overall Confidence</StatLabel>
-                                                        <StatNumber fontSize="2xl" color={getConfidenceColor(analytics.confidenceLevel)}>
-                                                            {(analytics.overallConfidence * 100).toFixed(1)}%
-                                                        </StatNumber>
-                                                        <StatHelpText fontSize="xs" color="#94A3B8">
-                                                            {analytics.confidenceLevel.toUpperCase()}
-                                                        </StatHelpText>
-                                                    </Stat>
+                                                        <Text fontSize="xs" color="#64748B" mb={2}>Response Reliability</Text>
+                                                        <Text fontSize="3xl" fontWeight="bold" color={getConfidenceColor(analytics.confidenceLevel)} mb={1}>
+                                                            {(analytics.overallConfidence * 100).toFixed(0)}%
+                                                        </Text>
+                                                        <Badge
+                                                            colorScheme={analytics.confidenceLevel === 'high' || analytics.confidenceLevel === 'very-high' ? 'green' : analytics.confidenceLevel === 'medium' ? 'yellow' : 'red'}
+                                                            variant="subtle"
+                                                            textTransform="capitalize"
+                                                        >
+                                                            {analytics.confidenceLevel.replace('-', ' ')} Confidence
+                                                        </Badge>
+                                                    </Box>
                                                 </GridItem>
                                                 <GridItem>
-                                                    <Stat
-                                                        bg="rgba(248, 250, 252, 0.5)"
-                                                        p={{ base: 4, md: 6, lg: 8 }}
+                                                    <Box
+                                                        bg="white"
+                                                        p={{ base: 4, md: 6 }}
                                                         borderRadius="lg"
-                                                        border="1px solid"
-                                                        borderColor="rgba(226, 232, 240, 0.4)"
+                                                        border="1px solid rgba(139, 92, 246, 0.1)"
+                                                        textAlign="center"
                                                     >
-                                                        <StatLabel fontSize="xs" color="#64748B">Quality Score</StatLabel>
-                                                        <StatNumber fontSize="2xl" color="#8B5CF6">
-                                                            {(analytics.qualityScore * 100).toFixed(0)}%
-                                                        </StatNumber>
-                                                        <StatHelpText fontSize="xs" color="#94A3B8">
-                                                            Overall quality
-                                                        </StatHelpText>
-                                                    </Stat>
+                                                        <Text fontSize="xs" color="#64748B" mb={2}>System Reliability</Text>
+                                                        <Text fontSize="3xl" fontWeight="bold" color="#8B5CF6" mb={1}>
+                                                            {analytics.overallReliability}
+                                                        </Text>
+                                                        <Badge colorScheme="purple" variant="subtle">
+                                                            Overall Quality
+                                                        </Badge>
+                                                    </Box>
                                                 </GridItem>
                                             </Grid>
 
-                                            {/* Progress Bar */}
-                                            <Progress
-                                                value={analytics.overallConfidence * 100}
-                                                colorScheme={analytics.confidenceLevel === 'high' ? 'green' : analytics.confidenceLevel === 'medium' ? 'yellow' : 'red'}
-                                                size="lg"
-                                                borderRadius="full"
-                                            />
+                                            {/* Visual Progress Indicator */}
+                                            <Box>
+                                                <Flex justify="space-between" align="center" mb={2}>
+                                                    <Text fontSize="sm" fontWeight="600" color="#1E293B">Response Quality</Text>
+                                                    <Text fontSize="sm" color="#64748B">{(analytics.overallConfidence * 100).toFixed(0)}%</Text>
+                                                </Flex>
+                                                <Progress
+                                                    value={analytics.overallConfidence * 100}
+                                                    colorScheme={analytics.confidenceLevel === 'high' || analytics.confidenceLevel === 'very-high' ? 'green' : analytics.confidenceLevel === 'medium' ? 'yellow' : 'red'}
+                                                    size="lg"
+                                                    borderRadius="full"
+                                                    bg="rgba(139, 92, 246, 0.1)"
+                                                />
+                                            </Box>
 
-                                            {/* Confidence Factors */}
+                                            {/* Quality Insights */}
                                             {analytics.confidenceFactors.length > 0 && (
-                                                <Box>
-                                                    <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={2}>
-                                                        Confidence Factors
+                                                <Box p={4} bg="white" borderRadius="lg" border="1px solid rgba(139, 92, 246, 0.1)">
+                                                    <Text fontSize="sm" fontWeight="600" color="#1E293B" mb={3}>
+                                                        ✨ What Makes This Response High Quality
                                                     </Text>
                                                     <Wrap spacing={2}>
                                                         {analytics.confidenceFactors.map((factor: any, index: number) => (
                                                             <WrapItem key={index}>
                                                                 <Badge
-                                                                    colorScheme="blue"
+                                                                    colorScheme="purple"
                                                                     variant="subtle"
                                                                     fontSize="xs"
                                                                     px={3}
@@ -641,22 +669,25 @@ export function AdvancedAnalyticsModal({
                                         </VStack>
                                     </Box>
 
-                                    {/* Individual Model Responses */}
+                                    {/* Individual Model Responses - User-Friendly */}
                                     <Box
-                                        bg="white"
+                                        bg="linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)"
                                         borderRadius="xl"
                                         p={6}
                                         pb={8}
                                         border="1px solid"
-                                        borderColor="rgba(226, 232, 240, 0.6)"
-                                        boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
+                                        borderColor="rgba(100, 116, 139, 0.2)"
+                                        boxShadow="0 4px 12px rgba(100, 116, 139, 0.1)"
                                     >
                                         <HStack spacing={3} mb={4}>
-                                            <Icon as={PiChartBarBold} boxSize={6} color="#4F9CF9" />
+                                            <Icon as={PiChartBarBold} boxSize={6} color="#64748B" />
                                             <Text fontSize="lg" fontWeight="bold" color="#1E293B">
-                                                Individual Model Responses
+                                                🤖 Individual AI Model Responses
                                             </Text>
                                         </HStack>
+                                        <Text fontSize="sm" color="#64748B" mb={4}>
+                                            See how each AI model performed and what they contributed to the final response.
+                                        </Text>
 
                                         <Accordion allowMultiple>
                                             {analytics.roles.map((role: any, index: number) => (

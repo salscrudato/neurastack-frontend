@@ -132,8 +132,9 @@ export const NEURASTACK_ENDPOINTS = {
 
 export const NEURASTACK_HEADERS = {
   CONTENT_TYPE: 'Content-Type',
-  SESSION_ID: 'X-Session-ID',
-  USER_ID: 'x-user-id',
+  SESSION_ID: 'X-Session-Id',
+  USER_ID: 'X-User-Id',
+  CORRELATION_ID: 'X-Correlation-ID',
   AUTHORIZATION: 'Authorization'
 } as const;
 
@@ -274,13 +275,18 @@ export class NeuraStackClient {
     prompt: string,
     options: NeuraStackRequestOptions & Partial<NeuraStackQueryRequest> = {}
   ): Promise<NeuraStackQueryResponse> {
-    // Generate correlation ID for request tracking
-    const correlationId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Get user ID and session ID
+    const userId = options.userId || this.config.userId;
+    const sessionId = options.sessionId || this.config.sessionId;
+
+    // Generate correlation ID in the required format: ensemble-{{timestamp}}-{{userID}}
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${userId || 'anonymous'}`;
 
     // Prepare request body according to backend documentation
     const requestBody = {
       prompt: prompt || "Quick sanity check: explain AI in 1-2 lines.",
-      sessionId: options.sessionId || this.config.sessionId,
+      sessionId: sessionId,
       explain: true
     };
 
@@ -289,9 +295,13 @@ export class NeuraStackClient {
     };
 
     // Add required headers according to backend documentation
-    const userId = options.userId || this.config.userId;
     if (userId && userId.trim() !== '') {
-      headers['x-user-id'] = userId;
+      headers['X-User-Id'] = userId;
+    }
+
+    // Add session ID header
+    if (sessionId && sessionId.trim() !== '') {
+      headers['X-Session-Id'] = sessionId;
     }
 
     // Add correlation ID header for request tracking
@@ -482,11 +492,15 @@ export class NeuraStackClient {
    * Store a memory for future context
    */
   async storeMemory(request: StoreMemoryRequest): Promise<StoreMemoryResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${request.userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
 
-    if (request.userId) headers['x-user-id'] = request.userId;
+    if (request.userId) headers['X-User-Id'] = request.userId;
 
     return this.makeRequest<StoreMemoryResponse>(
       NEURASTACK_ENDPOINTS.MEMORY_STORE,
@@ -502,11 +516,15 @@ export class NeuraStackClient {
    * Retrieve memories based on criteria
    */
   async retrieveMemories(request: RetrieveMemoryRequest): Promise<any> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${request.userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
 
-    if (request.userId) headers['x-user-id'] = request.userId;
+    if (request.userId) headers['X-User-Id'] = request.userId;
 
     return this.makeRequest<any>(
       NEURASTACK_ENDPOINTS.MEMORY_RETRIEVE,
@@ -522,12 +540,16 @@ export class NeuraStackClient {
    * Get memory context for AI prompts
    */
   async getMemoryContext(request: MemoryContextRequest): Promise<MemoryContextResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${request.userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
 
-    if (request.userId) headers['x-user-id'] = request.userId;
-    // Note: X-Session-Id header removed to avoid CORS issues
+    if (request.userId) headers['X-User-Id'] = request.userId;
+    if (request.sessionId) headers['X-Session-Id'] = request.sessionId;
 
     return this.makeRequest<MemoryContextResponse>(
       NEURASTACK_ENDPOINTS.MEMORY_CONTEXT,
@@ -543,11 +565,15 @@ export class NeuraStackClient {
    * Get memory analytics for a user
    */
   async getMemoryAnalytics(userId: string): Promise<MemoryAnalyticsResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
 
-    if (userId) headers['x-user-id'] = userId;
+    if (userId) headers['X-User-Id'] = userId;
 
     return this.makeRequest<MemoryAnalyticsResponse>(
       `${NEURASTACK_ENDPOINTS.MEMORY_ANALYTICS}/${userId}`,
@@ -632,8 +658,12 @@ export class NeuraStackClient {
    * Estimate cost for processing a specific prompt
    */
   async estimateCost(request: CostEstimateRequest): Promise<CostEstimateResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-anonymous`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
 
     return this.makeRequest<CostEstimateResponse>(
@@ -654,9 +684,15 @@ export class NeuraStackClient {
    * Get user tier information and usage statistics
    */
   async getUserTierInfo(userId: string): Promise<UserTierInfoResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
+
+    if (userId) headers['X-User-Id'] = userId;
 
     return this.makeRequest<UserTierInfoResponse>(
       `${NEURASTACK_ENDPOINTS.USER_TIER_INFO}/${userId}`,
@@ -672,9 +708,15 @@ export class NeuraStackClient {
    * Upgrade user to premium tier
    */
   async upgradeTier(request: TierUpgradeRequest): Promise<TierUpgradeResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${request.userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
+
+    if (request.userId) headers['X-User-Id'] = request.userId;
 
     return this.makeRequest<TierUpgradeResponse>(
       NEURASTACK_ENDPOINTS.TIER_UPGRADE,
@@ -690,9 +732,15 @@ export class NeuraStackClient {
    * Downgrade user to free tier
    */
   async downgradeTier(request: TierDowngradeRequest): Promise<TierDowngradeResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-${request.userId || 'anonymous'}`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
+
+    if (request.userId) headers['X-User-Id'] = request.userId;
 
     return this.makeRequest<TierDowngradeResponse>(
       NEURASTACK_ENDPOINTS.TIER_DOWNGRADE,
@@ -708,8 +756,12 @@ export class NeuraStackClient {
    * Get tier configurations for all available tiers
    */
   async getTierConfigurations(): Promise<TierConfigResponse> {
+    const timestamp = Date.now();
+    const correlationId = `ensemble-${timestamp}-anonymous`;
+
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Correlation-ID': correlationId
     };
 
     return this.makeRequest<TierConfigResponse>(

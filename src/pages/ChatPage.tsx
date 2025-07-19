@@ -175,7 +175,7 @@ export function ChatPage() {
         overflowX="hidden"
         px={{ base: 4, md: 6 }}
         pt={{ base: "calc(4rem + env(safe-area-inset-top, 0px))", md: "5rem" }}
-        pb={{ base: "120px", md: "140px" }}
+        pb={{ base: "120px", md: "300px" }}
         sx={{
           WebkitOverflowScrolling: "touch",
           overscrollBehavior: "contain",

@@ -768,7 +768,7 @@ select {
   @media (min-width: 769px) {
     [role="log"][aria-label="Chat messages"] {
       padding-top: calc(var(--header-height-desktop) + 24px) !important;
-      padding-bottom: calc(var(--chat-input-height-desktop) + 24px) !important;
+      padding-bottom: 300px !important;
     }
   }
 

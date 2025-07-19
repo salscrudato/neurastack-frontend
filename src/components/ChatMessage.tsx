@@ -40,7 +40,7 @@ const formatTimestamp = (timestamp: number): string =>
 const FONT_SIZES = {
   content: { base: "12px", md: "13px" },
   code: { base: "10px", md: "11px" },
-  timestamp: { base: "10px", md: "11px" },
+  timestamp: { base: "9px", md: "10px" },
   analytics: { base: "12px", md: "13px" }
 } as const;
 
