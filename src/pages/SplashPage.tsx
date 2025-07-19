@@ -350,6 +350,28 @@ const GuestButton = styled.button`
   }
 `;
 
+/* ---------- Retry Button ---------- */
+const RetryButton = styled.button`
+  margin-left: 12px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  color: #fca5a5;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+`;
+
 /* ---------- Divider ---------- */
 const Divider = styled.div`
   display: flex;
@@ -446,6 +468,41 @@ export function SplashPage() {
     animationDuration: prefersReducedMotion ? '10s' : '3s'
   }), [prefersReducedMotion]);
 
+  // Memoised decorative elements to avoid re‑creation on every render
+  const stars = useMemo(
+    () =>
+      Array.from({ length: animationConfig.starsCount }, (_, i) => (
+        <FlyingStar
+          key={`star-${i}`}
+          style={{ top: `${Math.random() * 100}%`, left: '-10px' }}
+          $color={
+            i % 3 === 0
+              ? 'rgba(255,255,255,0.9)'
+              : i % 3 === 1
+              ? 'rgba(30,58,138,0.8)'
+              : 'rgba(59,130,246,0.6)'
+          }
+          $duration={`${2 + Math.random() * 3}s`}
+          $delay={`${Math.random() * 5}s`}
+        />
+      )),
+    [animationConfig.starsCount]
+  );
+
+  const warpLines = useMemo(
+    () =>
+      Array.from({ length: animationConfig.warpLinesCount }, (_, i) => (
+        <WarpLine
+          key={`warp-${i}`}
+          style={{ top: `${10 + i * 12}%`, left: '-100px' }}
+          $color={i % 2 === 0 ? 'rgba(30,58,138,0.6)' : 'rgba(59,130,246,0.4)'}
+          $duration={`${1.5 + Math.random() * 2}s`}
+          $delay={`${Math.random() * 3}s`}
+        />
+      )),
+    [animationConfig.warpLinesCount]
+  );
+
   useEffect(() => {
     if (user) navigate("/chat", { replace: true });
   }, [user, navigate]);
@@ -505,25 +562,9 @@ export function SplashPage() {
 
   return (
     <Page>
-      {Array.from({ length: animationConfig.starsCount }, (_, i) => (
-        <FlyingStar
-          key={`star-${i}`}
-          style={{ top: `${Math.random() * 100}%`, left: '-10px' }}
-          $color={i % 3 === 0 ? 'rgba(255,255,255,0.9)' : i % 3 === 1 ? 'rgba(30,58,138,0.8)' : 'rgba(59,130,246,0.6)'}
-          $duration={`${2 + Math.random() * 3}s`}
-          $delay={`${Math.random() * 5}s`}
-        />
-      ))}
+      {stars}
 
-      {Array.from({ length: animationConfig.warpLinesCount }, (_, i) => (
-        <WarpLine
-          key={`warp-${i}`}
-          style={{ top: `${10 + i * 12}%`, left: '-100px' }}
-          $color={i % 2 === 0 ? 'rgba(30,58,138,0.6)' : 'rgba(59,130,246,0.4)'}
-          $duration={`${1.5 + Math.random() * 2}s`}
-          $delay={`${Math.random() * 3}s`}
-        />
-      ))}
+      {warpLines}
 
       <CosmicOrb style={{ width: '200px', height: '200px', top: '5%', left: '5%' }} $color="rgba(30,58,138,0.3)" $duration="8s" $delay="0s" />
       <CosmicOrb style={{ width: '150px', height: '150px', top: '60%', right: '10%' }} $color="rgba(59,130,246,0.2)" $duration="6s" $delay="2s" />
@@ -539,23 +580,9 @@ export function SplashPage() {
             <PiWarningCircleBold size={20} />
             {err}
             {isRetryableError && lastFailedAction && (
-              <button
-                onClick={handleRetry}
-                disabled={isLoading}
-                style={{
-                  marginLeft: '12px',
-                  padding: '4px 8px',
-                  fontSize: '0.8rem',
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  borderRadius: '6px',
-                  color: '#fca5a5',
-                  cursor: isLoading ? 'not-allowed' : 'pointer',
-                  opacity: isLoading ? 0.6 : 1
-                }}
-              >
+              <RetryButton onClick={handleRetry} disabled={isLoading}>
                 Retry
-              </button>
+              </RetryButton>
             )}
           </Message>
         )}

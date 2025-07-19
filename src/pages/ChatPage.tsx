@@ -1,8 +1,9 @@
 import {
-    Box,
-    Flex,
-    IconButton,
-    Text
+  Box,
+  Flex,
+  IconButton,
+  Text,
+  useColorModeValue
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -15,6 +16,29 @@ import { useReducedMotion } from '../hooks/useAccessibility';
 import { useAuthStore } from '../store/useAuthStore';
 import { useChatStore } from '../store/useChatStore';
 import { useHistoryStore } from '../store/useHistoryStore';
+
+// -----------------------------------------------------------------------------
+// Static layout / sizing config — declared outside component to avoid
+// re‑creation on every render
+// -----------------------------------------------------------------------------
+const CHAT_CONFIG = {
+  container: {
+    padding: { base: 2, md: 0 },
+    gap: { base: 3, md: 4, lg: 5 },
+    maxWidth: { base: "100%", md: "850px", lg: "950px", xl: "1050px" },
+    centerPadding: { md: 6, lg: 8, xl: 10 },
+  },
+  hero: {
+    fontSize: { base: "xl", md: "2xl", lg: "3xl" },
+    subFontSize: { base: "sm", md: "md", lg: "lg" },
+    padding: { base: 4, md: 6, lg: 8 },
+  },
+  scrollButton: {
+    size: { base: "sm", sm: "md", lg: "lg" },
+    bottom: { base: "80px", sm: "85px", md: "100px", lg: "110px", xl: "120px" },
+    right: { base: "16px", sm: "20px", md: "32px", lg: "40px", xl: "48px" },
+  },
+} as const;
 
 export function ChatPage() {
   const msgs = useChatStore((s) => s.messages);
@@ -31,30 +55,14 @@ export function ChatPage() {
 
   const prefersReducedMotion = useReducedMotion();
 
-  const bgColor = "#FAFBFC";
-  const containerBg = "#FAFBFC";
-  const scrollButtonBg = "#FFFFFF";
-  const scrollButtonColor = "#4F9CF9";
-  const scrollButtonHoverBg = "#F8FAFC";
+  const bgColor = useColorModeValue("#FAFBFC", "gray.800");
+  const containerBg = useColorModeValue("#FAFBFC", "gray.800");
+  const scrollButtonBg = useColorModeValue("#FFFFFF", "gray.700");
+  const scrollButtonColor = "#4F9CF9"; // Keep brand colour consistent in both modes
+  const scrollButtonHoverBg = useColorModeValue("#F8FAFC", "gray.600");
 
-  const chatConfig = useMemo(() => ({
-    container: {
-      padding: { base: 2, md: 0 },
-      gap: { base: 3, md: 4, lg: 5 },
-      maxWidth: { base: "100%", md: "850px", lg: "950px", xl: "1050px" },
-      centerPadding: { md: 6, lg: 8, xl: 10 },
-    },
-    hero: {
-      fontSize: { base: "xl", md: "2xl", lg: "3xl" },
-      subFontSize: { base: "sm", md: "md", lg: "lg" },
-      padding: { base: 4, md: 6, lg: 8 },
-    },
-    scrollButton: {
-      size: { base: "sm", sm: "md", lg: "lg" },
-      bottom: { base: "80px", sm: "85px", md: "100px", lg: "110px", xl: "120px" },
-      right: { base: "16px", sm: "20px", md: "32px", lg: "40px", xl: "48px" },
-    },
-  }), []);
+  // Static config (memoised by virtue of being module‑scoped)
+  const chatConfig = CHAT_CONFIG;
 
   const animationConfig = useMemo(() => ({
     transition: prefersReducedMotion ? "none" : "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
@@ -79,23 +87,27 @@ export function ChatPage() {
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
-    let timeoutId: NodeJS.Timeout;
-    const debouncedHandleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleScroll, 16);
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    container.addEventListener("scroll", debouncedHandleScroll, { passive: true });
-    return () => {
-      container.removeEventListener("scroll", debouncedHandleScroll);
-      clearTimeout(timeoutId);
-    };
+
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
   }, [handleScroll]);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
   }, [prefersReducedMotion]);
 
-  // Simple keyboard shortcuts for navigation
+  // Keyboard shortcuts (Home/End + Ctrl/Cmd)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -118,32 +130,23 @@ export function ChatPage() {
     await sendMessage(prompt);
   }, [sendMessage]);
 
+  // Consolidated viewport/keyboard resize handler
   useEffect(() => {
-    const updateInitialHeight = () => {
+    const handleResize = () => {
+      // Update baseline height if user rotates or enlarges viewport
       if (window.innerHeight > initialHeightRef.current) {
         initialHeightRef.current = window.innerHeight;
       }
-    };
-    window.addEventListener('resize', updateInitialHeight);
-    updateInitialHeight();
-    return () => window.removeEventListener('resize', updateInitialHeight);
-  }, []);
 
-  useEffect(() => {
-    const handleResize = () => {
-      const newHeight = window.innerHeight;
-      const kh = initialHeightRef.current - newHeight;
+      // Derive virtual‑keyboard height (mobile)
+      const kh = initialHeightRef.current - window.innerHeight;
       setKeyboardHeight(kh > 100 ? kh : 0);
     };
-    window.addEventListener('resize', handleResize);
-    handleResize();
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    handleResize(); // initial run
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const scrollButtonBottom = useMemo(() => ({
-    base: `calc(136px + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`,
-    md: `calc(160px + ${keyboardHeight}px)`
-  }), [keyboardHeight]);
 
   return (
     <Box
@@ -227,9 +230,9 @@ export function ChatPage() {
             {isLoading && (
               <Box px={4} py={6}>
                 <Loader
-                  variant="neural"
+                  variant="premium"
                   size="lg"
-                  message="AI neural network is processing your request..."
+                  message="NeuraStack AI ensemble is processing your request..."
                 />
               </Box>
             )}
@@ -243,7 +246,7 @@ export function ChatPage() {
           aria-label="Scroll to bottom of chat"
           icon={<PiArrowUpBold />}
           position="fixed"
-          bottom={scrollButtonBottom}
+          bottom={{ ...chatConfig.scrollButton.bottom, md: `calc(${chatConfig.scrollButton.bottom.md} + ${keyboardHeight}px)` }}
           right={{ base: 4, md: 6 }}
           size="lg"
           borderRadius="full"

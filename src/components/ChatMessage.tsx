@@ -1,14 +1,14 @@
 import {
-    Badge,
-    Box,
-    Button,
-    Flex,
-    HStack,
-    IconButton,
-    Text,
-    Tooltip,
-    useClipboard,
-    VStack
+  Badge,
+  Box,
+  Button,
+  Flex,
+  HStack,
+  IconButton,
+  Text,
+  Tooltip,
+  useClipboard,
+  VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -87,7 +87,11 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(-1); // -1 for synthesized, 0+ for individual models
 
-  const fontSizes = { micro: { base: "2xs", md: "xs" }, small: { base: "2xs", md: "xs" }, content: { base: "13px", md: "14px" }, code: { base: "11px", md: "12px" } };
+  // Centralized typography scale — only sizes actually used
+  const fontSizes = {
+    content: { base: "13px", md: "14px" },
+    code: { base: "11px", md: "12px" }
+  } as const;
 
   const processedContent = useMemo(() => processContent(message.text || ''), [message.text]);
 
@@ -280,7 +284,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
               : "var(--shadow-card-hover), inset 0 1px 0 rgba(255, 255, 255, 0.9)"
           }}
         >
-          {!isUser && !isError && !isLoading && message.metadata?.metadata && (
+          {!isUser && !isError && !isLoading && message.metadata && (
             <Box mb={1.5}>
               <VStack spacing={1.5} align="stretch">
                 <Flex justify="space-between" align="center" p={{ base: 2, md: 3 }} bg="rgba(255, 255, 255, 0.9)" borderRadius="lg" border="1px solid" borderColor="rgba(226, 232, 240, 0.4)" position="relative" backdropFilter="blur(20px)" sx={{ WebkitBackdropFilter: 'blur(20px)', '@keyframes shimmer': { '0%, 100%': { opacity: 0.2 }, '50%': { opacity: 0.4 } } }} overflow="hidden" _before={{ content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.3) 50%, transparent 100%)', animation: 'shimmer 4s ease-in-out infinite' }}>
@@ -387,7 +391,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
               width: "100%"
             }}
           >
-            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.35", md: "1.4" }} fontWeight="500" letterSpacing="-0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word', touchAction: 'manipulation' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "15px", md: "16px" } as any, code: fontSizes.code as any, small: fontSizes.small as any }} />}
+            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.35", md: "1.4" }} fontWeight="500" letterSpacing="-0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word', touchAction: 'manipulation' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "15px", md: "16px" } as any, code: fontSizes.code as any, small: fontSizes.code as any }} />}
           </Box>
           {!isUser && fullData && (
             <HStack spacing={2} mt={2} justify="flex-start">

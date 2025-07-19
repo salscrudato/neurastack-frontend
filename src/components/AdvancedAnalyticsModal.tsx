@@ -180,16 +180,16 @@ export function AdvancedAnalyticsModal({
                 bg="#FFFFFF"
                 borderRadius={{ base: "0", md: "2xl" }}
                 h={{
-                    base: "calc(100vh - 84px)",
-                    md: "calc(100vh - 104px)"
+                    base: "calc(100vh - var(--header-height-mobile))",
+                    md: "calc(100vh - 40px)"
                 }}
                 w="100vw"
                 maxH={{
-                    base: "calc(100vh - 84px)",
-                    md: "calc(100vh - 104px)"
+                    base: "calc(100vh - var(--header-height-mobile))",
+                    md: "calc(100vh - 40px)"
                 }}
                 maxW="100vw"
-                m="0 !important"
+                m={{ base: "0 !important", md: "20px auto !important" }}
                 p={0}
                 boxShadow={{ base: "none", md: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
                 border={{ base: "none", md: "1px solid" }}
@@ -199,17 +199,23 @@ export function AdvancedAnalyticsModal({
                 position="fixed"
                 top={{
                     base: "var(--header-height-mobile) !important",
-                    md: "var(--header-height-desktop) !important"
+                    md: "20px !important"
                 }}
-                left="0 !important"
-                right="0 !important"
+                left={{
+                    base: "0 !important",
+                    md: "50% !important"
+                }}
+                right={{
+                    base: "0 !important",
+                    md: "auto !important"
+                }}
                 bottom={{
-                    base: "calc(env(safe-area-inset-bottom, 0px) + 24px) !important",
-                    md: "24px !important"
+                    base: "0 !important",
+                    md: "20px !important"
                 }}
                 sx={{
-                    margin: "0 !important",
-                    transform: "none !important"
+                    margin: { base: "0 !important", md: "20px auto !important" },
+                    transform: { base: "none !important", md: "translateX(-50%) !important" }
                 }}
                 display="flex"
                 flexDirection="column"
@@ -245,11 +251,26 @@ export function AdvancedAnalyticsModal({
 
                     <ModalCloseButton
                         color="#4F9CF9"
-                        _hover={{ bg: "blue.50" }}
+                        _hover={{
+                            bg: "blue.50",
+                            transform: "scale(1.05)"
+                        }}
+                        _active={{
+                            transform: "scale(0.95)"
+                        }}
                         borderRadius="full"
-                        size={{ base: "sm", md: "md" }}
-                        top={{ base: 2, md: 3 }}
-                        right={{ base: 2, md: 3 }}
+                        size={{ base: "md", md: "md" }}
+                        top={{ base: 3, md: 4 }}
+                        right={{ base: 3, md: 4 }}
+                        zIndex={20}
+                        bg="rgba(255, 255, 255, 0.9)"
+                        backdropFilter="blur(8px)"
+                        border="1px solid rgba(79, 156, 249, 0.1)"
+                        boxShadow="0 2px 8px rgba(0, 0, 0, 0.1)"
+                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                        sx={{
+                            WebkitBackdropFilter: 'blur(8px)'
+                        }}
                     />
                 </Box>
                 
@@ -266,14 +287,15 @@ export function AdvancedAnalyticsModal({
                     <TabList
                         bg="#F8FAFC"
                         px={{ base: 4, md: 6 }}
-                        py={2}
+                        py={3}
                         borderBottom="1px solid"
                         borderColor="rgba(226, 232, 240, 0.6)"
-                        gap={1}
+                        gap={2}
                         overflowX="auto"
                         position="sticky"
                         top="0"
                         zIndex={5}
+                        flexShrink={0}
                         css={{
                             '&::-webkit-scrollbar': {
                                 display: 'none'
@@ -356,36 +378,38 @@ export function AdvancedAnalyticsModal({
                         flex="1"
                         display="flex"
                         flexDirection="column"
+                        minH={0}
                     >
 
                         <TabPanels
                             flex="1"
                             overflow="hidden"
                             h="100%"
+                            minH={0}
                         >
                             {/* Overview Tab */}
                             <TabPanel
-                                p={{ base: 4, md: 6 }}
-                                pb={{ base: 8, md: 12 }}
+                                p={0}
                                 h="100%"
                                 overflow="auto"
                                 css={{
                                     '&::-webkit-scrollbar': {
-                                        width: '6px'
+                                        width: '8px'
                                     },
                                     '&::-webkit-scrollbar-track': {
-                                        background: '#f1f1f1',
-                                        borderRadius: '3px'
+                                        background: '#f8fafc',
+                                        borderRadius: '4px'
                                     },
                                     '&::-webkit-scrollbar-thumb': {
-                                        background: '#c1c1c1',
-                                        borderRadius: '3px'
+                                        background: '#cbd5e1',
+                                        borderRadius: '4px'
                                     },
                                     '&::-webkit-scrollbar-thumb:hover': {
-                                        background: '#a8a8a8'
+                                        background: '#94a3b8'
                                     }
                                 }}
                             >
+                                <Box p={{ base: 4, md: 6 }} pb={{ base: 12, md: 16 }}>
                                 <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
                                     {/* AI Meta-Voting Analysis */}
                                     {analytics.voting?.metaVoting && (
@@ -652,27 +676,35 @@ export function AdvancedAnalyticsModal({
                                                         _expanded={{ bg: "rgba(79, 156, 249, 0.12)" }}
                                                         borderRadius="lg"
                                                         border="none"
+                                                        display="flex"
+                                                        alignItems="center"
+                                                        justifyContent="space-between"
+                                                        w="100%"
+                                                        minH="60px"
                                                     >
-                                                        <Box flex="1" textAlign="left">
-                                                            <HStack spacing={3}>
-                                                                <Badge colorScheme="blue" variant="solid">
-                                                                    {role.model || role.role || 'Unknown'}
-                                                                </Badge>
-                                                                <Badge
-                                                                    colorScheme={role.status === 'fulfilled' ? 'green' : 'red'}
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                >
-                                                                    {role.status || 'Unknown'}
-                                                                </Badge>
+                                                        <Box flex="1" textAlign="left" pr={4} minW={0}>
+                                                            <VStack spacing={2} align="start">
+                                                                <HStack spacing={2} wrap="wrap">
+                                                                    <Badge colorScheme="blue" variant="solid" fontSize="xs">
+                                                                        {role.model || role.role || 'Unknown'}
+                                                                    </Badge>
+                                                                    <Badge
+                                                                        colorScheme={role.status === 'fulfilled' ? 'green' : 'red'}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        fontSize="xs"
+                                                                    >
+                                                                        {role.status || 'Unknown'}
+                                                                    </Badge>
+                                                                </HStack>
                                                                 {role.confidence && (
-                                                                    <Text fontSize="xs" color="#64748B">
+                                                                    <Text fontSize="xs" color="#64748B" fontWeight="500">
                                                                         {(role.confidence.score * 100).toFixed(1)}% confidence
                                                                     </Text>
                                                                 )}
-                                                            </HStack>
+                                                            </VStack>
                                                         </Box>
-                                                        <AccordionIcon color="#4F9CF9" />
+                                                        <AccordionIcon color="#4F9CF9" boxSize={5} flexShrink={0} />
                                                     </AccordionButton>
 
                                                     <AccordionPanel p={4} pt={0}>
@@ -727,31 +759,32 @@ export function AdvancedAnalyticsModal({
                                         </Accordion>
                                     </Box>
                                 </VStack>
+                                </Box>
                             </TabPanel>
 
                             {/* Model Performance Tab */}
                             <TabPanel
-                                p={{ base: 4, md: 6 }}
-                                pb={{ base: 8, md: 12 }}
+                                p={0}
                                 h="100%"
                                 overflow="auto"
                                 css={{
                                     '&::-webkit-scrollbar': {
-                                        width: '6px'
+                                        width: '8px'
                                     },
                                     '&::-webkit-scrollbar-track': {
-                                        background: '#f1f1f1',
-                                        borderRadius: '3px'
+                                        background: '#f8fafc',
+                                        borderRadius: '4px'
                                     },
                                     '&::-webkit-scrollbar-thumb': {
-                                        background: '#c1c1c1',
-                                        borderRadius: '3px'
+                                        background: '#cbd5e1',
+                                        borderRadius: '4px'
                                     },
                                     '&::-webkit-scrollbar-thumb:hover': {
-                                        background: '#a8a8a8'
+                                        background: '#94a3b8'
                                     }
                                 }}
                             >
+                                <Box p={{ base: 4, md: 6 }} pb={{ base: 12, md: 16 }}>
                                 <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
                                     {/* Performance Overview */}
                                     <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)" }} gap={{ base: 3, md: 4 }}>
@@ -936,31 +969,32 @@ export function AdvancedAnalyticsModal({
                                         </VStack>
                                     </Box>
                                 </VStack>
+                                </Box>
                             </TabPanel>
 
                             {/* Advanced Insights Tab */}
                             <TabPanel
-                                p={{ base: 4, md: 6 }}
-                                pb={{ base: 8, md: 12 }}
+                                p={0}
                                 h="100%"
                                 overflow="auto"
                                 css={{
                                     '&::-webkit-scrollbar': {
-                                        width: '6px',
+                                        width: '8px'
                                     },
                                     '&::-webkit-scrollbar-track': {
-                                        background: 'rgba(0, 0, 0, 0.05)',
-                                        borderRadius: '3px',
+                                        background: '#f8fafc',
+                                        borderRadius: '4px'
                                     },
                                     '&::-webkit-scrollbar-thumb': {
-                                        background: 'rgba(79, 156, 249, 0.3)',
-                                        borderRadius: '3px',
+                                        background: '#cbd5e1',
+                                        borderRadius: '4px'
                                     },
                                     '&::-webkit-scrollbar-thumb:hover': {
-                                        background: 'rgba(79, 156, 249, 0.5)',
-                                    },
+                                        background: '#94a3b8'
+                                    }
                                 }}
                             >
+                                <Box p={{ base: 4, md: 6 }} pb={{ base: 12, md: 16 }}>
                                 <VStack spacing={{ base: 4, md: 6, lg: 8 }} align="stretch" maxW="none" w="100%">
 
                                     {/* Meta-Voting Analysis */}
@@ -1211,6 +1245,7 @@ export function AdvancedAnalyticsModal({
                                     )}
 
                                 </VStack>
+                                </Box>
                             </TabPanel>
 
 

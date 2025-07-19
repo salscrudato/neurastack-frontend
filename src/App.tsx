@@ -1,99 +1,176 @@
+// -----------------------------------------------------------------------------
+//  App.tsx
+//  Root component: global layout, animated route transitions, auth lifecycle,
+//  and baseline accessibility helpers.
+//
+//  Key enhancements
+//  ● Respects OS “reduced-motion” setting (framer-motion’s useReducedMotion)
+//  ● Memoized variants/transition for performance
+//  ● Single <main> element with focus-management & skip-link
+//  ● Chakra-friendly MotionBox wrapper (keeps styling declarative)
+//  ● Strict import ordering & explicit typing for clarity
+// -----------------------------------------------------------------------------
+
 import { Box } from "@chakra-ui/react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Suspense, useEffect } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type Transition,
+  type Variants,
+} from "framer-motion";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
+import { authManager } from "./utils/authUtils";
 
 import "./styles/global.css";
 import "./styles/utilities.css";
-import { authManager } from "./utils/authUtils";
 import "./utils/mobileInit";
 
-// Unified page transition variants
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 },
-};
+// -----------------------------------------------------------------------------
+// Utility: Chakra-compatible motion wrapper
+// -----------------------------------------------------------------------------
+const MotionBox = motion(Box);
 
-const PageContentWrapper = ({ children }: { children: React.ReactNode }) => {
+/**
+ * PageContentWrapper
+ * — Injects <Header /> on all routes except the splash ("/")
+ * — Handles animated route transitions
+ */
+const PageContentWrapper: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const location = useLocation();
-  const isSplashPage = location.pathname === '/';
+  const isSplashPage = location.pathname === "/";
+  const prefersReducedMotion = useReducedMotion();
+
+  /* Variants & transition are memoized to avoid recalculation on every render */
+  const pageVariants = useMemo<Variants>(
+    () =>
+      prefersReducedMotion
+        ? {
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+          }
+        : {
+            initial: { opacity: 0, y: 20, scale: 0.98 },
+            animate: { opacity: 1, y: 0, scale: 1 },
+            exit: { opacity: 0, y: -20, scale: 1.02 },
+          },
+    [prefersReducedMotion]
+  );
+
+  const pageTransition = useMemo<Transition>(
+    () =>
+      prefersReducedMotion
+        ? { duration: 0.2 }
+        : { type: "spring", damping: 20, stiffness: 200, duration: 0.35 },
+    [prefersReducedMotion]
+  );
 
   return (
     <>
       {!isSplashPage && <Header />}
-      <Box
+
+      {/* Full-viewport, scrollable container that respects safe areas */}
+      <MotionBox
         w="100%"
         h="100vh"
-        position="relative"
+        minH="100vh"
+        maxH="100vh"
+        overflow="auto"
+        px="env(safe-area-inset-left)"
+        py="env(safe-area-inset-top)"
         sx={{
-          minHeight: '100vh',
-          height: '100vh',
-          maxHeight: '100vh',
-          '@supports (-webkit-touch-callout: none)': {
-            minHeight: '-webkit-fill-available',
-            height: '-webkit-fill-available',
-            maxHeight: '-webkit-fill-available',
+          "@supports (-webkit-touch-callout: none)": {
+            h: "-webkit-fill-available",
+            minH: "-webkit-fill-available",
+            maxH: "-webkit-fill-available",
           },
-          overflow: 'hidden',
-          paddingLeft: 'max(env(safe-area-inset-left), 0px)',
-          paddingRight: 'max(env(safe-area-inset-right), 0px)',
-          paddingTop: 'max(env(safe-area-inset-top), 0px)',
-          paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
         }}
       >
         <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
+          <MotionBox
+            key={location.pathname} // Triggers exit/enter animations
             initial="initial"
             animate="animate"
             exit="exit"
             variants={pageVariants}
-            transition={{
-              duration: 0.35,
-              ease: [0.25, 0.46, 0.45, 0.94],
-            }}
+            transition={pageTransition}
+            w="100%"
+            h="100%"
             style={{
-              width: "100%",
-              height: "100%",
               backfaceVisibility: "hidden",
               WebkitBackfaceVisibility: "hidden",
-              willChange: "opacity, transform",
+              willChange: "opacity, transform, scale",
             }}
           >
             {children}
-          </motion.div>
+          </MotionBox>
         </AnimatePresence>
-      </Box>
+      </MotionBox>
     </>
   );
 };
 
+// -----------------------------------------------------------------------------
+// Suspense fallback shown while lazy-loaded routes resolve
+// -----------------------------------------------------------------------------
 const Fallback = () => (
-  <LoadingSpinner
-    size="lg"
-    message="Loading page..."
-    fullScreen
-  />
+  <LoadingSpinner fullScreen size="lg" message="Loading page…" />
 );
 
+// -----------------------------------------------------------------------------
+// Root App component
+// -----------------------------------------------------------------------------
 export default function App() {
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  /** Auth lifecycle — initialise once on mount, clean up on unmount */
   useEffect(() => {
     authManager.initialize();
     return () => authManager.cleanup();
   }, []);
 
+  /** Accessibility — move keyboard focus into <main> on each route change */
+  useEffect(() => {
+    mainRef.current?.focus();
+  }, [location.pathname]);
+
+  /** Visually-hidden skip link (becomes visible via :focus in CSS) */
+  const skipLinkStyle: React.CSSProperties = {
+    position: "absolute",
+    left: -9999,
+    top: 0,
+    width: 1,
+    height: 1,
+    overflow: "hidden",
+    zIndex: 1000,
+  };
+
   return (
     <PageContentWrapper>
-      <a href="#main-content" className="skip-link" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden', zIndex: -1 }}>
+      <a href="#main-content" className="skip-link" style={skipLinkStyle}>
         Skip to main content
       </a>
+
       <Suspense fallback={<Fallback />}>
-        <div id="main-content" role="main" tabIndex={-1}>
+        {/* Single <main> element → semantic & a11y best practice */}
+        <Box
+          as="main"
+          id="main-content"
+          ref={mainRef}
+          tabIndex={-1}
+          w="100%"
+          h="100%"
+        >
           <Outlet />
-        </div>
+        </Box>
       </Suspense>
     </PageContentWrapper>
   );

@@ -10,36 +10,40 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useReducedMotion } from '../hooks/useAccessibility';
 
 interface LoaderProps {
-  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble' | 'innovative' | 'quantum' | 'glassmorph' | 'morphing' | 'chat' | 'neural' | 'holographic' | 'liquid' | 'ai-brain' | 'particle' | 'matrix';
+  variant?: 'spinner' | 'dots' | 'skeleton' | 'team' | 'futuristic' | 'modern' | 'ensemble' | 'innovative' | 'quantum' | 'glassmorph' | 'morphing' | 'chat' | 'neural' | 'holographic' | 'liquid' | 'ai-brain' | 'particle' | 'matrix' | 'neurastack' | 'premium';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   message?: string;
   fullScreen?: boolean;
   lines?: number;
 }
 
-// Enhanced InnovativeSpinner with modern, subtle design
-const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
-  const [activeRing, setActiveRing] = useState(0);
-  const [pulsePhase, setPulsePhase] = useState(0);
+// Revolutionary NeuraStack Spinner - Apple-inspired liquid glass design
+const NeuraStackSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
+  const [phase, setPhase] = useState(0);
+  const [breathePhase, setBreathePhase] = useState(0);
   const prefersReducedMotion = useReducedMotion();
 
   const sizeConfig = {
-    sm: { container: 48, ring: 20, core: 8 },
-    md: { container: 64, ring: 26, core: 10 },
-    lg: { container: 80, ring: 32, core: 12 },
-    xl: { container: 96, ring: 38, core: 14 }
+    sm: { container: 56, orb: 24, glow: 32, particles: 16 },
+    md: { container: 72, orb: 32, glow: 44, particles: 20 },
+    lg: { container: 88, orb: 40, glow: 56, particles: 24 },
+    xl: { container: 104, orb: 48, glow: 68, particles: 28 }
   };
 
   const config = sizeConfig[size];
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-    const intervals = [
-      setInterval(() => setActiveRing(prev => (prev + 1) % 3), 1800),
-      setInterval(() => setPulsePhase(prev => (prev + 1) % 4), 2400)
-    ];
-    return () => intervals.forEach(clearInterval);
+    const phaseInterval = setInterval(() => setPhase(p => (p + 1) % 8), 400);
+    const breatheInterval = setInterval(() => setBreathePhase(b => (b + 1) % 60), 100);
+    return () => {
+      clearInterval(phaseInterval);
+      clearInterval(breatheInterval);
+    };
   }, [prefersReducedMotion]);
+
+  const breatheScale = 1 + Math.sin(breathePhase * 0.1) * 0.05;
+  const glowIntensity = 0.6 + Math.sin(breathePhase * 0.15) * 0.3;
 
   return (
     <Box
@@ -50,88 +54,298 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
       alignItems="center"
       justifyContent="center"
       role="status"
-      aria-label="AI processing your request"
+      aria-label="NeuraStack AI processing"
       aria-live="polite"
     >
-      {/* Outer ring */}
+      {/* Ambient glow background */}
       <Box
         position="absolute"
         top="50%"
         left="50%"
-        transform="translate(-50%, -50%)"
-        w={`${config.ring + 16}px`}
-        h={`${config.ring + 16}px`}
+        transform={`translate(-50%, -50%) scale(${breatheScale})`}
+        w={`${config.glow}px`}
+        h={`${config.glow}px`}
         borderRadius="50%"
-        border="2px solid"
-        borderColor={activeRing === 0 ? "rgba(79, 156, 249, 0.4)" : "rgba(79, 156, 249, 0.1)"}
-        animation={prefersReducedMotion ? 'none' : "outerRing 3.6s ease-in-out infinite"}
+        bg="radial-gradient(circle, rgba(79, 156, 249, 0.15) 0%, rgba(139, 92, 246, 0.1) 40%, transparent 70%)"
+        filter="blur(8px)"
+        opacity={glowIntensity}
+        animation={prefersReducedMotion ? 'none' : 'ambientPulse 4s ease-in-out infinite'}
         sx={{
-          '@keyframes outerRing': {
+          '@keyframes ambientPulse': {
+            '0%, 100%': { opacity: 0.4, transform: 'translate(-50%, -50%) scale(1)' },
+            '50%': { opacity: 0.8, transform: 'translate(-50%, -50%) scale(1.1)' }
+          }
+        }}
+      />
+
+      {/* Liquid glass orb */}
+      <Box
+        position="absolute"
+        top="50%"
+        left="50%"
+        transform={`translate(-50%, -50%) scale(${breatheScale})`}
+        w={`${config.orb}px`}
+        h={`${config.orb}px`}
+        borderRadius="50%"
+        bg="linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(79, 156, 249, 0.15) 50%, rgba(139, 92, 246, 0.2) 100%)"
+        backdropFilter="blur(20px)"
+        border="1px solid rgba(255, 255, 255, 0.3)"
+        boxShadow={`
+          0 0 ${config.orb * 0.5}px rgba(79, 156, 249, ${glowIntensity * 0.4}),
+          0 0 ${config.orb * 0.8}px rgba(139, 92, 246, ${glowIntensity * 0.2}),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.1)
+        `}
+        animation={prefersReducedMotion ? 'none' : 'liquidFloat 6s ease-in-out infinite'}
+        sx={{
+          WebkitBackdropFilter: 'blur(20px)',
+          '@keyframes liquidFloat': {
             '0%, 100%': {
-              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
-              borderColor: 'rgba(79, 156, 249, 0.1)'
+              transform: 'translate(-50%, -50%) scale(1) rotateY(0deg)',
+              borderRadius: '50%'
             },
-            '33%': {
-              transform: 'translate(-50%, -50%) scale(1.05) rotate(120deg)',
-              borderColor: 'rgba(79, 156, 249, 0.4)'
+            '25%': {
+              transform: 'translate(-50%, -50%) scale(1.05) rotateY(90deg)',
+              borderRadius: '45% 55% 50% 50%'
+            },
+            '50%': {
+              transform: 'translate(-50%, -50%) scale(1.1) rotateY(180deg)',
+              borderRadius: '50% 50% 45% 55%'
+            },
+            '75%': {
+              transform: 'translate(-50%, -50%) scale(1.05) rotateY(270deg)',
+              borderRadius: '55% 45% 50% 50%'
             }
           }
         }}
       />
 
-      {/* Middle ring */}
+      {/* Neural network particles */}
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const angle = (i * 60) + (phase * 45);
+        const radius = config.particles + Math.sin((breathePhase + i * 10) * 0.1) * 4;
+        const x = Math.cos(angle * Math.PI / 180) * radius;
+        const y = Math.sin(angle * Math.PI / 180) * radius;
+        const isActive = phase % 6 === i;
+
+        return (
+          <Box
+            key={i}
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform={`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`}
+            w={isActive ? "4px" : "2px"}
+            h={isActive ? "4px" : "2px"}
+            borderRadius="50%"
+            bg={isActive
+              ? "linear-gradient(45deg, #4F9CF9, #8B5CF6)"
+              : "rgba(79, 156, 249, 0.4)"
+            }
+            boxShadow={isActive
+              ? "0 0 8px rgba(79, 156, 249, 0.8), 0 0 16px rgba(139, 92, 246, 0.4)"
+              : "0 0 4px rgba(79, 156, 249, 0.3)"
+            }
+            transition={prefersReducedMotion ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'}
+            animation={prefersReducedMotion ? 'none' : `particle${i} 3.6s ease-in-out infinite`}
+            sx={{
+              [`@keyframes particle${i}`]: {
+                '0%, 100%': {
+                  opacity: 0.4,
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`
+                },
+                [`${(i * 16.67)}%`]: {
+                  opacity: 1,
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1.5)`
+                }
+              }
+            }}
+          />
+        );
+      })}
+
+      {/* Central neural core */}
       <Box
         position="absolute"
         top="50%"
         left="50%"
         transform="translate(-50%, -50%)"
-        w={`${config.ring}px`}
-        h={`${config.ring}px`}
+        w="6px"
+        h="6px"
         borderRadius="50%"
-        border="2px solid"
-        borderColor={activeRing === 1 ? "rgba(139, 92, 246, 0.4)" : "rgba(139, 92, 246, 0.1)"}
-        animation={prefersReducedMotion ? 'none' : "middleRing 3.6s ease-in-out infinite 1.2s"}
+        bg="linear-gradient(45deg, #4F9CF9, #8B5CF6)"
+        boxShadow={`
+          0 0 12px rgba(79, 156, 249, ${glowIntensity}),
+          0 0 24px rgba(139, 92, 246, ${glowIntensity * 0.6}),
+          inset 0 1px 0 rgba(255, 255, 255, 0.6)
+        `}
+        animation={prefersReducedMotion ? 'none' : 'neuralCore 2s ease-in-out infinite'}
         sx={{
-          '@keyframes middleRing': {
+          '@keyframes neuralCore': {
             '0%, 100%': {
-              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
-              borderColor: 'rgba(139, 92, 246, 0.1)'
+              transform: 'translate(-50%, -50%) scale(1)',
+              opacity: 0.8
             },
-            '33%': {
-              transform: 'translate(-50%, -50%) scale(1.05) rotate(-120deg)',
-              borderColor: 'rgba(139, 92, 246, 0.4)'
+            '50%': {
+              transform: 'translate(-50%, -50%) scale(1.3)',
+              opacity: 1
             }
           }
         }}
       />
 
-      {/* Inner ring */}
-      <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        transform="translate(-50%, -50%)"
-        w={`${config.ring - 8}px`}
-        h={`${config.ring - 8}px`}
-        borderRadius="50%"
-        border="2px solid"
-        borderColor={activeRing === 2 ? "rgba(99, 102, 241, 0.4)" : "rgba(99, 102, 241, 0.1)"}
-        animation={prefersReducedMotion ? 'none' : "innerRing 3.6s ease-in-out infinite 2.4s"}
-        sx={{
-          '@keyframes innerRing': {
-            '0%, 100%': {
-              transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
-              borderColor: 'rgba(99, 102, 241, 0.1)'
-            },
-            '33%': {
-              transform: 'translate(-50%, -50%) scale(1.05) rotate(240deg)',
-              borderColor: 'rgba(99, 102, 241, 0.4)'
+      {/* Connection lines */}
+      {[0, 1, 2].map((i) => (
+        <Box
+          key={`line-${i}`}
+          position="absolute"
+          top="50%"
+          left="50%"
+          w="1px"
+          h={`${config.particles}px`}
+          bg={`linear-gradient(to bottom,
+            transparent 0%,
+            rgba(79, 156, 249, ${phase === i ? 0.6 : 0.2}) 50%,
+            transparent 100%
+          )`}
+          transform={`translate(-50%, -50%) rotate(${i * 120}deg)`}
+          transformOrigin="center"
+          animation={prefersReducedMotion ? 'none' : `connectionLine${i} 2.4s ease-in-out infinite`}
+          sx={{
+            [`@keyframes connectionLine${i}`]: {
+              '0%, 100%': { opacity: 0.2 },
+              [`${(i * 33.33)}%`]: { opacity: 0.8 }
             }
-          }
-        }}
-      />
+          }}
+        />
+      ))}
+    </Box>
+  );
+});
 
-      {/* Central core */}
+// Premium Spinner - Ultimate loading experience with multiple effects
+const PremiumSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }) => {
+  const [wavePhase, setWavePhase] = useState(0);
+  const [orbitalPhase, setOrbitalPhase] = useState(0);
+  const [energyLevel, setEnergyLevel] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
+
+  const sizeConfig = {
+    sm: { container: 64, core: 20, orbit: 28, wave: 36 },
+    md: { container: 80, core: 24, orbit: 36, wave: 48 },
+    lg: { container: 96, core: 28, orbit: 44, wave: 60 },
+    xl: { container: 112, core: 32, orbit: 52, wave: 72 }
+  };
+
+  const config = sizeConfig[size];
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const waveInterval = setInterval(() => setWavePhase(p => (p + 1) % 120), 50);
+    const orbitalInterval = setInterval(() => setOrbitalPhase(p => (p + 1) % 360), 100);
+    const energyInterval = setInterval(() => setEnergyLevel(e => (e + 1) % 100), 80);
+    return () => {
+      clearInterval(waveInterval);
+      clearInterval(orbitalInterval);
+      clearInterval(energyInterval);
+    };
+  }, [prefersReducedMotion]);
+
+  const waveIntensity = 0.5 + Math.sin(wavePhase * 0.1) * 0.3;
+  const energyGlow = 0.4 + Math.sin(energyLevel * 0.1) * 0.4;
+
+  return (
+    <Box
+      position="relative"
+      w={`${config.container}px`}
+      h={`${config.container}px`}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      role="status"
+      aria-label="Premium AI processing experience"
+      aria-live="polite"
+    >
+      {/* Multi-layer ambient field */}
+      {[0, 1, 2].map((layer) => (
+        <Box
+          key={`ambient-${layer}`}
+          position="absolute"
+          top="50%"
+          left="50%"
+          transform="translate(-50%, -50%)"
+          w={`${config.wave + layer * 12}px`}
+          h={`${config.wave + layer * 12}px`}
+          borderRadius="50%"
+          bg={`radial-gradient(circle,
+            rgba(79, 156, 249, ${0.1 - layer * 0.02}) 0%,
+            rgba(139, 92, 246, ${0.08 - layer * 0.02}) 30%,
+            rgba(99, 102, 241, ${0.06 - layer * 0.02}) 60%,
+            transparent 80%
+          )`}
+          filter={`blur(${4 + layer * 2}px)`}
+          opacity={waveIntensity - layer * 0.1}
+          animation={prefersReducedMotion ? 'none' : `ambientField${layer} ${4 + layer}s ease-in-out infinite`}
+          sx={{
+            [`@keyframes ambientField${layer}`]: {
+              '0%, 100%': {
+                transform: 'translate(-50%, -50%) scale(1) rotate(0deg)',
+                opacity: waveIntensity - layer * 0.1
+              },
+              '50%': {
+                transform: `translate(-50%, -50%) scale(${1.1 + layer * 0.05}) rotate(180deg)`,
+                opacity: (waveIntensity - layer * 0.1) * 1.3
+              }
+            }
+          }}
+        />
+      ))}
+
+      {/* Orbital particles system */}
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+        const baseAngle = (i * 45) + orbitalPhase;
+        const orbitRadius = config.orbit + Math.sin((orbitalPhase + i * 30) * Math.PI / 180) * 6;
+        const x = Math.cos(baseAngle * Math.PI / 180) * orbitRadius;
+        const y = Math.sin(baseAngle * Math.PI / 180) * orbitRadius;
+        const particleSize = 2 + Math.sin((energyLevel + i * 20) * 0.1) * 2;
+        const isHighEnergy = (energyLevel + i * 12.5) % 100 < 20;
+
+        return (
+          <Box
+            key={`orbital-${i}`}
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform={`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`}
+            w={`${particleSize}px`}
+            h={`${particleSize}px`}
+            borderRadius="50%"
+            bg={isHighEnergy
+              ? "linear-gradient(45deg, #4F9CF9, #8B5CF6, #6366F1)"
+              : "rgba(79, 156, 249, 0.6)"
+            }
+            boxShadow={isHighEnergy
+              ? `0 0 ${particleSize * 3}px rgba(79, 156, 249, 0.8), 0 0 ${particleSize * 6}px rgba(139, 92, 246, 0.4)`
+              : `0 0 ${particleSize * 2}px rgba(79, 156, 249, 0.4)`
+            }
+            animation={prefersReducedMotion ? 'none' : `orbitalParticle${i} 3s ease-in-out infinite`}
+            sx={{
+              [`@keyframes orbitalParticle${i}`]: {
+                '0%, 100%': {
+                  opacity: 0.6,
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1)`
+                },
+                '50%': {
+                  opacity: 1,
+                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1.4)`
+                }
+              }
+            }}
+          />
+        );
+      })}
+
+      {/* Central quantum core */}
       <Box
         position="absolute"
         top="50%"
@@ -140,50 +354,61 @@ const InnovativeSpinner = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | '
         w={`${config.core}px`}
         h={`${config.core}px`}
         borderRadius="50%"
-        bg="linear-gradient(135deg, rgba(79, 156, 249, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%)"
-        animation={prefersReducedMotion ? 'none' : "coreGlow 4.8s ease-in-out infinite"}
-        boxShadow="0 0 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)"
+        bg="linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(79, 156, 249, 0.8) 30%, rgba(139, 92, 246, 0.9) 70%, rgba(99, 102, 241, 0.8) 100%)"
+        backdropFilter="blur(10px)"
+        border="2px solid rgba(255, 255, 255, 0.4)"
+        boxShadow={`
+          0 0 ${config.core}px rgba(79, 156, 249, ${energyGlow}),
+          0 0 ${config.core * 1.5}px rgba(139, 92, 246, ${energyGlow * 0.7}),
+          0 0 ${config.core * 2}px rgba(99, 102, 241, ${energyGlow * 0.4}),
+          inset 0 2px 0 rgba(255, 255, 255, 0.6),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.2)
+        `}
+        animation={prefersReducedMotion ? 'none' : 'quantumCore 2.5s ease-in-out infinite'}
         sx={{
-          '@keyframes coreGlow': {
+          WebkitBackdropFilter: 'blur(10px)',
+          '@keyframes quantumCore': {
             '0%, 100%': {
-              transform: 'translate(-50%, -50%) scale(1)',
-              boxShadow: '0 0 12px rgba(79, 156, 249, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)'
+              transform: 'translate(-50%, -50%) scale(1) rotateY(0deg)',
+              filter: 'hue-rotate(0deg)'
             },
-            '50%': {
-              transform: 'translate(-50%, -50%) scale(1.1)',
-              boxShadow: '0 0 20px rgba(79, 156, 249, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
+            '33%': {
+              transform: 'translate(-50%, -50%) scale(1.1) rotateY(120deg)',
+              filter: 'hue-rotate(60deg)'
+            },
+            '66%': {
+              transform: 'translate(-50%, -50%) scale(1.05) rotateY(240deg)',
+              filter: 'hue-rotate(120deg)'
             }
           }
         }}
       />
 
-      {/* Subtle pulse indicators */}
-      {!prefersReducedMotion && Array.from({ length: 3 }, (_, i) => (
+      {/* Energy pulse rings */}
+      {[0, 1, 2].map((ring) => (
         <Box
-          key={`pulse-${i}`}
+          key={`pulse-ring-${ring}`}
           position="absolute"
           top="50%"
           left="50%"
-          w={`${config.core + (i + 1) * 8}px`}
-          h={`${config.core + (i + 1) * 8}px`}
+          transform="translate(-50%, -50%)"
+          w={`${config.core + (ring + 1) * 16}px`}
+          h={`${config.core + (ring + 1) * 16}px`}
           borderRadius="50%"
           border="1px solid"
-          borderColor={pulsePhase === i ? "rgba(79, 156, 249, 0.3)" : "rgba(79, 156, 249, 0.1)"}
-          transform="translate(-50%, -50%)"
-          animation={`pulseRing 4.8s ease-in-out infinite ${i * 1.6}s`}
+          borderColor={`rgba(79, 156, 249, ${0.3 - ring * 0.08})`}
+          animation={prefersReducedMotion ? 'none' : `pulseRing${ring} 3s ease-in-out infinite ${ring * 0.5}s`}
           sx={{
-            '@keyframes pulseRing': {
+            [`@keyframes pulseRing${ring}`]: {
               '0%, 100%': {
                 transform: 'translate(-50%, -50%) scale(1)',
-                opacity: 0.2
-              },
-              '25%': {
-                transform: 'translate(-50%, -50%) scale(1.1)',
-                opacity: 0.6
+                opacity: 0.1,
+                borderColor: `rgba(79, 156, 249, ${0.1 - ring * 0.02})`
               },
               '50%': {
-                transform: 'translate(-50%, -50%) scale(1)',
-                opacity: 0.2
+                transform: 'translate(-50%, -50%) scale(1.2)',
+                opacity: 0.6,
+                borderColor: `rgba(79, 156, 249, ${0.4 - ring * 0.08})`
               }
             }
           }}
@@ -1349,7 +1574,9 @@ const MatrixLoader = memo(({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' | 'xl' }
       case 'liquid': return <LiquidMetalLoader size={size} />;
       case 'particle': return <ParticlePhysicsLoader size={size} />;
       case 'matrix': return <MatrixLoader size={size} />;
-      case 'innovative': return <InnovativeSpinner size={size} />;
+      case 'neurastack': return <NeuraStackSpinner size={size} />;
+      case 'premium': return <PremiumSpinner size={size} />;
+      case 'innovative': return <NeuraStackSpinner size={size} />; // Use new design for innovative
       case 'chat': return <ChatLoader size={size} />;
       case 'ensemble': case 'modern': return <ModernEnsembleLoader size={size} />;
       case 'team': return <WaveAnimation size={size} />;
