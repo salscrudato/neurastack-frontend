@@ -747,7 +747,23 @@ select {
     ) !important;
     -webkit-overflow-scrolling: touch !important;
     overscroll-behavior: contain !important;
+    /* Ensure this container captures all scroll events */
+    touch-action: pan-y pinch-zoom !important;
+    /* Force hardware acceleration for smooth scrolling */
+    transform: translateZ(0) !important;
+    will-change: scroll-position !important;
   }
+
+  /* TARGETED SCROLL FIX: Only target chat message containers */
+  [role="log"][aria-label="Chat messages"] .chakra-stack,
+  [role="log"][aria-label="Chat messages"] .chakra-flex {
+    /* Remove scroll containment from these containers */
+    overflow: visible !important;
+    overscroll-behavior: none !important;
+    touch-action: inherit !important;
+  }
+
+
 
   @media (min-width: 769px) {
     [role="log"][aria-label="Chat messages"] {
@@ -1030,3 +1046,5 @@ select {
   border-radius: 0.25rem;
   z-index: 2000;
 }
+
+

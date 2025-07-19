@@ -38,8 +38,10 @@ const formatTimestamp = (timestamp: number): string =>
 
 // Constants
 const FONT_SIZES = {
-  content: { base: "13px", md: "14px" },
-  code: { base: "11px", md: "12px" }
+  content: { base: "12px", md: "13px" },
+  code: { base: "10px", md: "11px" },
+  timestamp: { base: "10px", md: "11px" },
+  analytics: { base: "12px", md: "13px" }
 } as const;
 
 // Helper function to get message styles
@@ -220,13 +222,25 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   }
 
   return (
-    <VStack spacing={{ base: 0.5, md: 1 }} w="100%" align="stretch">
+    <VStack
+      spacing={{ base: 0.5, md: 1 }}
+      w="100%"
+      align="stretch"
+      sx={{
+        // Ensure this container doesn't capture scroll events
+        overflow: 'visible',
+        touchAction: 'inherit',
+        overscrollBehavior: 'none',
+        transform: 'none',
+        willChange: 'auto'
+      }}
+    >
       <Flex align="center" w="100%" my={{ base: 1, md: 1.5 }}>
         <Box flex="1" h="1px" bg="var(--color-border-light)" opacity={0.4} />
         <Text
           px={{ base: 2, md: 3 }}
           py={0.5}
-          fontSize={{ base: "2xs", md: "xs" }}
+          fontSize={FONT_SIZES.timestamp}
           color="#6B7280"
           fontWeight="400"
           bg="transparent"
@@ -244,6 +258,12 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
         borderRadius="var(--radius-2xl)"
         p={isHighlighted ? 3 : 0}
         transition="var(--transition-normal)"
+        sx={{
+          // Ensure this container doesn't capture scroll events
+          overflow: 'visible',
+          touchAction: 'inherit',
+          overscrollBehavior: 'none'
+        }}
       >
         <Box
           bg={messageStyles.bg}
@@ -276,23 +296,15 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           minH={{ base: "44px", md: "auto" }}
           sx={{
-            // Prevent text selection from interfering with scrolling
-            touchAction: "manipulation",
-            WebkitTouchCallout: "none",
-            WebkitUserSelect: "text",
-            userSelect: "text",
-            // Ensure text content doesn't create scrollable areas
+            // Simple styling without scroll interference
             overflowWrap: "break-word",
             wordWrap: "break-word",
-            hyphens: "auto",
-            // Prevent horizontal scrolling within messages
-            overflowX: "hidden",
-            // Allow vertical scrolling only for very long content
-            overflowY: "visible",
-            // Enhanced visual styling
-            WebkitTapHighlightColor: 'transparent',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
+            // Ensure this container doesn't capture scroll events
+            overflow: 'visible',
+            touchAction: 'inherit',
+            overscrollBehavior: 'none',
             ...(isUser && {
               '&::before': {
                 content: '""',
@@ -341,7 +353,16 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
         >
           {!isUser && !isError && !isLoading && message.metadata && (
             <Box mb={1.5}>
-              <VStack spacing={1.5} align="stretch">
+              <VStack
+                spacing={1.5}
+                align="stretch"
+                sx={{
+                  // Ensure this container doesn't capture scroll events
+                  overflow: 'visible',
+                  touchAction: 'inherit',
+                  overscrollBehavior: 'none'
+                }}
+              >
                 <Flex justify="space-between" align="center" p={{ base: 2, md: 3 }} bg="rgba(255, 255, 255, 0.9)" borderRadius="lg" border="1px solid" borderColor="rgba(226, 232, 240, 0.4)" position="relative" backdropFilter="blur(20px)" sx={{ WebkitBackdropFilter: 'blur(20px)', '@keyframes shimmer': { '0%, 100%': { opacity: 0.2 }, '50%': { opacity: 0.4 } } }} overflow="hidden" _before={{ content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.3) 50%, transparent 100%)', animation: 'shimmer 4s ease-in-out infinite' }}>
                   <HStack justify="space-between" align="center" w="100%" spacing={2}>
                     <HStack spacing={2}>
@@ -357,7 +378,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                         bg="white"
                         color="#4F9CF9"
                         fontWeight="600"
-                        fontSize="11px"
+                        fontSize={FONT_SIZES.analytics}
                         border="1px solid rgba(79, 156, 249, 0.25)"
                         boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
                         minH="26px"
@@ -441,9 +462,15 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
               hyphens: "auto",
               // Prevent any internal scrolling
               overflow: "visible",
+              overflowX: "visible",
+              overflowY: "visible",
               // Ensure content fits within container
               minWidth: 0,
-              width: "100%"
+              width: "100%",
+              // Prevent scroll event capture
+              overscrollBehavior: "auto",
+              // Ensure no nested scroll containers
+              WebkitOverflowScrolling: "auto"
             }}
           >
             {isLoading ? (

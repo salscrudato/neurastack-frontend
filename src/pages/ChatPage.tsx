@@ -1,9 +1,9 @@
 import {
-  Box,
-  Flex,
-  IconButton,
-  Text,
-  useColorModeValue
+    Box,
+    Flex,
+    IconButton,
+    Text,
+    useColorModeValue
 } from '@chakra-ui/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
@@ -222,10 +222,8 @@ export function ChatPage() {
                 <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} color="gray.500" fontWeight="400">The team will look into it...</Text>
               </Flex>
             )}
-            {msgs.map((m, index) => (
-              <Box key={m.id} id={`message-${m.id}`} px={0} py={0} role="article" aria-label={`Message ${index + 1} from ${m.role === "user" ? "you" : "AI assistant"}`} aria-describedby={`message-content-${m.id}`} tabIndex={-1} _focus={{ outline: "none" }}>
-                <ChatMessage message={m} isHighlighted={false} />
-              </Box>
+            {msgs.map((m) => (
+              <ChatMessage key={m.id} message={m} isHighlighted={false} />
             ))}
             {isLoading && (
               <Box px={4} py={6}>

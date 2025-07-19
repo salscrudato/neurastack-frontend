@@ -215,33 +215,21 @@ const createMarkdownComponents = (fontSize: any) => ({
         borderRadius="lg"
         p={{ base: 3, md: 4 }}
         mb={3}
-        overflowX="auto"
-        overflowY="visible"
         fontSize={fontSize.code}
         fontFamily="'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace"
         lineHeight="1.5"
+        whiteSpace="pre-wrap"
+        wordBreak="break-all"
+        overflowWrap="break-word"
         sx={{
-          // Mobile-friendly scrolling for code blocks
-          touchAction: 'pan-x',
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain',
-          '&::-webkit-scrollbar': {
-            height: '6px',
-          },
-          '&::-webkit-scrollbar-track': {
-            bg: '#F1F5F9',
-            borderRadius: '3px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            bg: '#CBD5E1',
-            borderRadius: '3px',
-          },
-          '&::-webkit-scrollbar-thumb:hover': {
-            bg: '#94A3B8',
-          },
+          // Prevent code blocks from interfering with scroll
+          overflow: 'visible',
+          overflowX: 'visible',
+          touchAction: 'manipulation',
+          overscrollBehavior: 'auto',
         }}
       >
-        <Text as="code" color="#475569" whiteSpace="pre-wrap">
+        <Text as="code" color="#475569">
           {children}
         </Text>
       </Box>
@@ -251,26 +239,28 @@ const createMarkdownComponents = (fontSize: any) => ({
   table: ({ children }: any) => (
     <TableContainer
       mb={3}
-      overflowX="auto"
       sx={{
-        // Mobile-friendly table scrolling
-        touchAction: 'pan-x',
-        WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain',
-        '&::-webkit-scrollbar': {
-          height: '6px',
-        },
-        '&::-webkit-scrollbar-track': {
-          bg: '#F1F5F9',
-          borderRadius: '3px',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          bg: '#CBD5E1',
-          borderRadius: '3px',
-        },
+        // Prevent scroll interference in chat messages
+        overflowX: 'visible',
+        overflowY: 'visible',
+        touchAction: 'manipulation',
+        // Ensure table container doesn't capture scroll events
+        WebkitOverflowScrolling: 'auto',
       }}
     >
-      <Table size={{ base: "sm", md: "md" }} variant="simple">
+      <Table
+        size={{ base: "sm", md: "md" }}
+        variant="simple"
+        sx={{
+          tableLayout: 'fixed',
+          width: '100%',
+          '& td, & th': {
+            wordBreak: 'break-word',
+            overflowWrap: 'break-word',
+            whiteSpace: 'normal',
+          },
+        }}
+      >
         {children}
       </Table>
     </TableContainer>
@@ -475,21 +465,13 @@ export const UnifiedAIResponse = memo(({
       sx={{
         wordWrap: 'break-word',
         overflowWrap: 'break-word',
-        hyphens: 'auto',
-        // Prevent scrolling conflicts on mobile
-        touchAction: 'manipulation',
-        WebkitTouchCallout: 'none',
-        // Ensure content doesn't create internal scrollable areas
-        overflow: 'visible',
-        minWidth: 0,
         '& > *:first-of-type': { mt: 0 },
         '& > *:last-child': { mb: 0 },
-        // Ensure all child elements follow mobile-friendly scrolling
-        '& *': {
-          touchAction: 'manipulation',
-          overflowX: 'hidden',
-          overflowY: 'visible'
-        }
+        // Prevent scroll interference
+        overflow: 'visible',
+        touchAction: 'manipulation',
+        // Ensure no nested scroll containers
+        overscrollBehavior: 'auto',
       }}
     >
       <ReactMarkdown
