@@ -1,14 +1,14 @@
 import {
-  Badge,
-  Box,
-  Button,
-  Flex,
-  HStack,
-  IconButton,
-  Text,
-  Tooltip,
-  useClipboard,
-  VStack
+    Badge,
+    Box,
+    Button,
+    Flex,
+    HStack,
+    IconButton,
+    Text,
+    Tooltip,
+    useClipboard,
+    VStack
 } from "@chakra-ui/react";
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
@@ -23,9 +23,55 @@ interface ChatMessageProps {
   fullData?: any;
 }
 
-const processContent = (text: string): string => text ? text.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').replace(/\n{5,}/g, '\n\n\n\n').replace(/[ \t]{4,}/g, '   ').trim() : '';
+// Utility functions
+const processContent = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+    .replace(/\n{5,}/g, '\n\n\n\n')
+    .replace(/[ \t]{4,}/g, '   ')
+    .trim();
+};
 
-const formatTimestamp = (timestamp: number): string => new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+const formatTimestamp = (timestamp: number): string =>
+  new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+// Constants
+const FONT_SIZES = {
+  content: { base: "13px", md: "14px" },
+  code: { base: "11px", md: "12px" }
+} as const;
+
+// Helper function to get message styles
+const getMessageStyles = (isUser: boolean, isError: boolean) => {
+  if (isUser) {
+    return {
+      align: 'flex-end' as const,
+      bg: 'linear-gradient(135deg, #4F9CF9 0%, #3B82F6 100%)',
+      color: 'white',
+      shadow: '0 4px 12px rgba(79, 156, 249, 0.25)',
+      border: 'none'
+    };
+  }
+
+  if (isError) {
+    return {
+      align: 'flex-start' as const,
+      bg: 'linear-gradient(135deg, #FEF2F2 0%, #FECACA 100%)',
+      color: '#DC2626',
+      shadow: '0 2px 8px rgba(220, 38, 38, 0.1)',
+      border: '1px solid #FECACA'
+    };
+  }
+
+  return {
+    align: 'flex-start' as const,
+    bg: 'rgba(255, 255, 255, 0.95)',
+    color: '#1F2937',
+    shadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
+    border: '1px solid rgba(226, 232, 240, 0.6)'
+  };
+};
 
 const CopyButton = memo(({ text }: { text: string }) => {
   const { onCopy, hasCopied } = useClipboard(text);
@@ -87,11 +133,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(-1); // -1 for synthesized, 0+ for individual models
 
-  // Centralized typography scale — only sizes actually used
-  const fontSizes = {
-    content: { base: "13px", md: "14px" },
-    code: { base: "11px", md: "12px" }
-  } as const;
+  // Use centralized font sizes
 
   const processedContent = useMemo(() => processContent(message.text || ''), [message.text]);
 
@@ -127,33 +169,35 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
 
 
-  // Enhanced styling system with improved visual hierarchy
+  // Get message styles using helper function
   const messageStyles = useMemo(() => {
+    const baseStyles = getMessageStyles(isUser, isError);
+
+    // Add CSS variable-based styling for consistency
     if (isUser) {
       return {
+        ...baseStyles,
         bg: "var(--gradient-primary)",
-        color: "white",
         shadow: "var(--shadow-brand), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
-        align: "flex-end" as const,
         borderRadius: "var(--radius-2xl) var(--radius-lg) var(--radius-lg) var(--radius-2xl)"
       };
     } else if (isError) {
       return {
+        ...baseStyles,
         bg: "rgba(254, 242, 242, 0.95)",
         color: "var(--color-text-error)",
         shadow: "var(--shadow-card)",
         border: "1px solid rgba(239, 68, 68, 0.2)",
-        align: "flex-start" as const,
         borderRadius: "var(--radius-lg) var(--radius-2xl) var(--radius-2xl) var(--radius-lg)"
       };
     } else {
       return {
+        ...baseStyles,
         bg: "var(--color-surface-glass-strong)",
         color: "var(--color-text-primary)",
         shadow: "var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.8)",
         border: "none",
-        align: "flex-start" as const,
         borderRadius: "var(--radius-lg) var(--radius-2xl) var(--radius-2xl) var(--radius-lg)"
       };
     }
@@ -208,22 +252,22 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           py={{ base: 2.5, md: 3 }}
           borderRadius={messageStyles.borderRadius}
           w={{
-            base: isUser ? "85%" : "90%",
-            sm: isUser ? "80%" : "90%",
-            md: isUser ? "75%" : "90%",
-            lg: isUser ? "70%" : "90%"
+            base: isUser ? "94%" : "97%",
+            sm: isUser ? "92%" : "97%",
+            md: isUser ? "88%" : "97%",
+            lg: isUser ? "85%" : "97%"
           }}
           maxW={{
-            base: isUser ? "85%" : "90%",
-            sm: isUser ? "80%" : "90%",
-            md: isUser ? "75%" : "90%",
-            lg: isUser ? "70%" : "90%"
+            base: isUser ? "94%" : "97%",
+            sm: isUser ? "92%" : "97%",
+            md: isUser ? "88%" : "97%",
+            lg: isUser ? "85%" : "97%"
           }}
           minW={{
-            base: isUser ? "85%" : "90%",
-            sm: isUser ? "80%" : "90%",
-            md: isUser ? "75%" : "90%",
-            lg: isUser ? "70%" : "90%"
+            base: isUser ? "94%" : "97%",
+            sm: isUser ? "92%" : "97%",
+            md: isUser ? "88%" : "97%",
+            lg: isUser ? "85%" : "97%"
           }}
           position="relative"
           boxShadow={messageStyles.shadow}
@@ -402,7 +446,40 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
               width: "100%"
             }}
           >
-            {isLoading ? <Loader variant="team" size="sm" /> : isError ? <Text fontSize={fontSizes.content} color={messageStyles.color}>{processedContent || 'An error occurred'}</Text> : isUser ? <Text fontSize={fontSizes.content} lineHeight={{ base: "1.35", md: "1.4" }} fontWeight="500" letterSpacing="-0.01em" color="white" sx={{ textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)', wordBreak: 'break-word', overflowWrap: 'break-word', touchAction: 'manipulation' }}>{displayText}</Text> : <UnifiedAIResponse content={structuredResponse ? undefined : displayText} data={structuredResponse || undefined} fontSize={{ content: fontSizes.content as any, heading: { base: "15px", md: "16px" } as any, code: fontSizes.code as any, small: fontSizes.code as any }} />}
+            {isLoading ? (
+              <Loader variant="team" size="sm" />
+            ) : isError ? (
+              <Text fontSize={FONT_SIZES.content} color={messageStyles.color}>
+                {processedContent || 'An error occurred'}
+              </Text>
+            ) : isUser ? (
+              <Text
+                fontSize={FONT_SIZES.content}
+                lineHeight={{ base: "1.35", md: "1.4" }}
+                fontWeight="500"
+                letterSpacing="-0.01em"
+                color="white"
+                sx={{
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  touchAction: 'manipulation'
+                }}
+              >
+                {displayText}
+              </Text>
+            ) : (
+              <UnifiedAIResponse
+                content={structuredResponse ? undefined : displayText}
+                data={structuredResponse || undefined}
+                fontSize={{
+                  content: FONT_SIZES.content as any,
+                  heading: { base: "15px", md: "16px" } as any,
+                  code: FONT_SIZES.code as any,
+                  small: FONT_SIZES.code as any
+                }}
+              />
+            )}
           </Box>
           {!isUser && fullData && (
             <HStack spacing={2} mt={2} justify="flex-start">

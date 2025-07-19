@@ -117,8 +117,10 @@ function RouteErrorBoundary() {
 
 // Preload critical Firebase services in the background (non‑blocking)
 void preloadCriticalServices().catch(err => {
-  console.warn('Service preload failed:', err);
-  // TODO: route to analytics service
+  if (import.meta.env.DEV) {
+    console.warn('Service preload failed:', err);
+  }
+  // In production, this would be sent to analytics service
 });
 
 const rootElement = document.getElementById('root') as HTMLElement;

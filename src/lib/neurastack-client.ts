@@ -197,27 +197,29 @@ export class NeuraStackClient {
      * - No automatic localhost detection to prevent production issues
      */
 
-    // ALWAYS log backend URL configuration for debugging
-    console.group('🔧 NeuraStack Client Configuration');
-    console.log('');
-    console.log('📍 FINAL BACKEND URL:', `%c${backendUrl}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
-    console.log('');
-    console.log('🔍 Detection Details:');
-    console.log('  🌐 Current Hostname:', window.location.hostname);
-    console.log('  🏗️  Vite DEV Mode:', import.meta.env.DEV ? '✅ Enabled' : '❌ Disabled');
-    console.log('  🏗️  Vite PROD Mode:', import.meta.env.PROD ? '✅ Enabled' : '❌ Disabled');
-    console.log('  📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL || '❌ Not Set');
-    console.log('  🎯 Config BaseURL:', config.baseUrl || '❌ Not Provided');
-    console.log('  🔒 Mode:', import.meta.env.MODE);
-    console.log('');
+    // Log backend URL configuration for debugging (development only)
+    if (import.meta.env.DEV) {
+      console.group('🔧 NeuraStack Client Configuration');
+      console.log('');
+      console.log('📍 FINAL BACKEND URL:', `%c${backendUrl}`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
+      console.log('');
+      console.log('🔍 Detection Details:');
+      console.log('  🌐 Current Hostname:', window.location.hostname);
+      console.log('  🏗️  Vite DEV Mode:', import.meta.env.DEV ? '✅ Enabled' : '❌ Disabled');
+      console.log('  🏗️  Vite PROD Mode:', import.meta.env.PROD ? '✅ Enabled' : '❌ Disabled');
+      console.log('  📝 VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL || '❌ Not Set');
+      console.log('  🎯 Config BaseURL:', config.baseUrl || '❌ Not Provided');
+      console.log('  🔒 Mode:', import.meta.env.MODE);
+      console.log('');
 
-    // Show which detection method was used
-    if (config.baseUrl) {
-      console.log('🎯 URL Source: %cExplicit Config Override%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
-    } else if (import.meta.env.VITE_BACKEND_URL && import.meta.env.VITE_BACKEND_URL.trim() !== '') {
-      console.log('🎯 URL Source: %cEnvironment Variable (VITE_BACKEND_URL)%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
-    } else {
-      console.log('🎯 URL Source: %cDefault Production Backend%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
+      // Show which detection method was used
+      if (config.baseUrl) {
+        console.log('🎯 URL Source: %cExplicit Config Override%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
+      } else if (import.meta.env.VITE_BACKEND_URL && import.meta.env.VITE_BACKEND_URL.trim() !== '') {
+        console.log('🎯 URL Source: %cEnvironment Variable (VITE_BACKEND_URL)%c', 'color: #ff9500; font-weight: bold;', 'color: inherit;');
+      } else {
+        console.log('🎯 URL Source: %cDefault Production Backend%c', 'color: #0099ff; font-weight: bold;', 'color: inherit;');
+      }
     }
 
     // CRITICAL: Validate that we're not using localhost in production

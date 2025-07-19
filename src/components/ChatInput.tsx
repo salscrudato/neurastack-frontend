@@ -16,6 +16,32 @@ import { useChatStore } from "../store/useChatStore";
 import { debounce } from "../utils/performanceOptimizer";
 import { logSecurityEvent, validateInput } from "../utils/securityUtils";
 
+// Constants
+const MAX_CHARS = 10000;
+const PLACEHOLDER_SUGGESTIONS = [
+  "Explain quantum computing basics",
+  "Generate 2025 startup ideas",
+  "Design a sustainable workout plan",
+  "Analyze remote work trends",
+  "Create a persuasive business email",
+  "Solutions for climate change",
+  "Budget travel ideas for Europe",
+  "Tell me about neural networks",
+  "AI ethics discussion",
+  "Write a short sci-fi story"
+];
+
+// Simplified input configuration
+const INPUT_CONFIG = {
+  minHeight: { base: "48px", md: "52px" },
+  maxHeight: { base: "120px", md: "144px" },
+  fontSize: { base: "max(16px, 1rem)", md: "1rem" },
+  lineHeight: "1.5",
+  padding: { base: "1rem 1.25rem", md: "1.25rem 1.5rem" },
+  borderRadius: "var(--radius-3xl)",
+  sendButton: { base: "44px", md: "48px" }
+};
+
 // Enhanced SendButton component with improved animations
 const SendButton = memo(({ isActive, isLoading, onClick, isDisabled }: {
   isActive: boolean;
@@ -158,37 +184,23 @@ export default function ChatInput({ onSend }: ChatInputProps) {
 
 
 
-  const inputConfig = useMemo(() => ({
-    minHeight: { base: "48px", sm: "50px", md: "52px", lg: "54px", xl: "56px" },
-    maxHeight: { base: "120px", sm: "128px", md: "136px", lg: "144px", xl: "152px" },
-    fontSize: { base: "max(16px, 1rem)", sm: "max(16px, 1rem)", md: "1rem", lg: "1.0625rem", xl: "1.125rem" },
-    lineHeight: "1.5",
-    padding: { base: "1rem 1.25rem", sm: "1.125rem 1.375rem", md: "1.25rem 1.5rem", lg: "1.375rem 1.625rem", xl: "1.5rem 1.75rem" },
-    borderRadius: "var(--radius-3xl)",
-    sendButton: { base: "44px", sm: "46px", md: "48px", lg: "50px", xl: "52px" }
-  }), []);
-
+  // Use simplified configurations
   const animationConfig = useMemo(() => ({
     transition: prefersReducedMotion ? 'none' : 'var(--transition-normal)',
     hoverTransform: prefersReducedMotion ? 'none' : 'translateY(-1px)',
     focusTransform: prefersReducedMotion ? 'none' : 'translateY(-2px) scale(1.005)',
-    activeTransform: prefersReducedMotion ? 'none' : 'translateY(0px) scale(0.998)',
     shadowTransition: prefersReducedMotion ? 'none' : 'var(--transition-fast)'
   }), [prefersReducedMotion]);
-
-  const placeholderSuggestions = useMemo(() => [
-    "Explain quantum computing basics", "Generate 2025 startup ideas", "Design a sustainable workout plan", "Analyze remote work trends",
-    "Create a persuasive business email", "Solutions for climate change", "Budget travel ideas for Europe", "Tell me about neural networks",
-    "AI ethics discussion", "Write a short sci-fi story"
-  ], []);
-
-  const MAX_CHARS = 10000;
 
   const debouncedTextAnalysis = useMemo(() => debounce((text: string) => {
     setCharCount(text.length);
     const validation = validateInput(text);
     if (!validation.isValid && text.length > 100) {
-      logSecurityEvent({ action: 'suspicious_input_detected', severity: 'low', details: { reason: validation.reason, inputLength: text.length } });
+      logSecurityEvent({
+        action: 'suspicious_input_detected',
+        severity: 'low',
+        details: { reason: validation.reason, inputLength: text.length }
+      });
     }
   }, 100), []);
 
@@ -207,10 +219,10 @@ export default function ChatInput({ onSend }: ChatInputProps) {
 
   useEffect(() => {
     if (txt.length === 0 && !isFocused) {
-      const interval = setInterval(() => setCurrentPlaceholderIndex((prev) => (prev + 1) % placeholderSuggestions.length), 4000);
+      const interval = setInterval(() => setCurrentPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDER_SUGGESTIONS.length), 4000);
       return () => clearInterval(interval);
     }
-  }, [txt.length, isFocused, placeholderSuggestions.length]);
+  }, [txt.length, isFocused]);
 
   const handleAutoResize = useCallback(() => {
     const textarea = textareaRef.current;
@@ -403,13 +415,13 @@ export default function ChatInput({ onSend }: ChatInputProps) {
       <Box w="100%" maxW={{ base: "100%", md: "850px", lg: "950px", xl: "1050px" }} px={{ base: 3, md: 6, lg: 8, xl: 10 }} position="relative" overflow="visible">
         <ScaleFade in={true} initialScale={0.95}>
           <Flex direction="column" w="full">
-            <InputGroup bg="transparent" border="none" borderRadius={inputConfig.borderRadius} px={{ base: 2, md: 0 }} py={{ base: 0, md: 1 }} alignItems="center" transition={animationConfig.transition} position="relative" overflow="visible" role="group" aria-label="Message input area" aria-expanded={isFocused} aria-busy={busy}>
+            <InputGroup bg="transparent" border="none" borderRadius={INPUT_CONFIG.borderRadius} px={{ base: 2, md: 0 }} py={{ base: 0, md: 1 }} alignItems="center" transition={animationConfig.transition} position="relative" overflow="visible" role="group" aria-label="Message input area" aria-expanded={isFocused} aria-busy={busy}>
               <Textarea
                 ref={textareaRef}
                 flex={1}
                 variant="unstyled"
                 className="chat-input-modern"
-                placeholder={placeholderSuggestions[currentPlaceholderIndex]}
+                placeholder={PLACEHOLDER_SUGGESTIONS[currentPlaceholderIndex]}
                 value={txt}
                 onChange={(e) => {
                   const newValue = e.target.value;
@@ -426,8 +438,8 @@ export default function ChatInput({ onSend }: ChatInputProps) {
                 onCompositionEnd={handleCompositionEnd}
                 isDisabled={busy}
                 rows={1}
-                minH={inputConfig.minHeight}
-                maxH={inputConfig.maxHeight}
+                minH={INPUT_CONFIG.minHeight}
+                maxH={INPUT_CONFIG.maxHeight}
                 resize="none"
                 aria-label="Type your message here"
                 aria-describedby="input-hints"
@@ -438,16 +450,16 @@ export default function ChatInput({ onSend }: ChatInputProps) {
                 autoCorrect="on"
                 spellCheck="true"
                 border="none"
-                borderRadius={inputConfig.borderRadius}
+                borderRadius={INPUT_CONFIG.borderRadius}
                 bg="var(--color-surface-glass-strong)"
                 backdropFilter="blur(20px)"
-                lineHeight={inputConfig.lineHeight}
+                lineHeight={INPUT_CONFIG.lineHeight}
                 boxShadow={isFocused ? "0 0 0 2px var(--color-brand-primary), var(--shadow-brand-hover)" : "var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.6)"}
                 transition={animationConfig.transition}
                 _placeholder={{
                   color: "var(--color-text-muted)",
                   transition: animationConfig.transition,
-                  fontSize: inputConfig.fontSize,
+                  fontSize: INPUT_CONFIG.fontSize,
                   fontWeight: "400",
                   fontFamily: "var(--font-text)",
                   letterSpacing: "var(--letter-spacing-normal)",
@@ -474,7 +486,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
                   WebkitTouchCallout: 'none',
                   WebkitBackdropFilter: 'blur(40px)',
                   // Prevent zoom on iOS
-                  fontSize: isMobile ? '16px' : inputConfig.fontSize,
+                  fontSize: isMobile ? '16px' : INPUT_CONFIG.fontSize,
                   // Enhanced text rendering
                   fontFeatureSettings: "'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss02'",
                   // Smooth scrolling for long text
@@ -492,7 +504,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
                 pr={{ base: "3.5rem", sm: "4rem", md: "4.5rem", lg: "5rem" }}
                 pl={{ base: "0.75rem", md: "1rem" }}
                 py={{ base: "0.75rem", md: "1rem" }}
-                fontSize={inputConfig.fontSize}
+                fontSize={INPUT_CONFIG.fontSize}
                 fontWeight="450"
                 fontFamily="'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif"
                 letterSpacing="-0.011em"

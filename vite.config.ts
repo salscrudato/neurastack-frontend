@@ -13,8 +13,7 @@ import path from 'node:path';
 // Import bundle analyzer for performance optimization
 import { visualizer } from 'rollup-plugin-visualizer';
 
-// Import compression plugin for better performance
-import compression from 'vite-plugin-compression';
+// Note: Compression plugin removed - handled by hosting providers
 
 // Generate version information for cache busting
 const generateVersionInfo = () => {
@@ -49,15 +48,8 @@ export default defineConfig({
       brotliSize: true,
     }),
 
-    // Compression plugins for better performance
-    compression({
-      algorithm: 'gzip',
-      ext: '.gz',
-    }),
-    compression({
-      algorithm: 'brotliCompress',
-      ext: '.br',
-    }),
+    // Note: Compression is handled by hosting providers (Firebase, Vercel, etc.)
+    // Removed compression plugins to reduce build complexity
 
   ],
 
@@ -115,42 +107,48 @@ export default defineConfig({
           return `assets/[ext]/[name]-[hash].[ext]`;
         },
 
-        // Manual chunking for optimal performance
+        // Simplified chunking strategy for better caching
         manualChunks: {
-          // React core
-          'react-core': ['react', 'react-dom', 'react/jsx-runtime'],
-
-          // UI framework
-          'ui-framework': [
+          // React and core UI libraries
+          'vendor': [
+            'react',
+            'react-dom',
+            'react/jsx-runtime',
             '@chakra-ui/react',
-            '@chakra-ui/theme-tools',
             '@emotion/react',
             '@emotion/styled',
             'framer-motion'
           ],
 
-          // Firebase
-          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/analytics'],
+          // Firebase services
+          'firebase': [
+            'firebase/app',
+            'firebase/auth',
+            'firebase/firestore',
+            'firebase/analytics'
+          ],
 
-          // Utilities
-          'utils': ['axios', 'date-fns', 'nanoid', 'zustand'],
-
-          // Icons and markdown
-          'content': ['react-icons', 'react-markdown', 'remark-gfm'],
-
-          // Router
-          'router': ['react-router-dom']
+          // Utilities and content
+          'utils': [
+            'date-fns',
+            'nanoid',
+            'zustand',
+            'react-router-dom',
+            'react-icons',
+            'react-markdown',
+            'remark-gfm'
+          ]
         },
       },
 
       // Optimize external dependencies
       external: [],
 
-      // Conservative tree shaking to prevent initialization issues
+      // Optimized tree shaking for better bundle size
       treeshake: {
-        moduleSideEffects: true, // Keep side effects to prevent initialization issues
-        propertyReadSideEffects: true, // Keep property reads safe
-        tryCatchDeoptimization: true, // Keep try-catch safe
+        moduleSideEffects: false, // Enable aggressive tree shaking
+        propertyReadSideEffects: false, // Remove unused property reads
+        tryCatchDeoptimization: false, // Enable more optimizations
       },
     },
 
@@ -181,52 +179,31 @@ export default defineConfig({
     reportCompressedSize: true,
   },
 
-  // Advanced dependency optimization for leading performance
+  // Simplified dependency optimization
   optimizeDeps: {
     // Pre-bundle critical dependencies for faster dev startup
     include: [
       'react',
       'react-dom',
-      'react/jsx-runtime',
-      'react/jsx-dev-runtime',
       '@chakra-ui/react',
-      '@chakra-ui/theme-tools',
       '@emotion/react',
       '@emotion/styled',
-      '@emotion/cache',
       'zustand',
-      'zustand/middleware',
       'react-markdown',
       'remark-gfm',
       'react-router-dom',
       'framer-motion',
-      'styled-components',
-      'axios',
       'date-fns',
-      'date-fns/format',
-      'date-fns/formatDistanceToNow',
       'nanoid',
       'react-icons/pi',
     ],
 
-    // Exclude packages that work better unbundled
-    exclude: [
-      'firebase',
-      'firebase/app',
-      'firebase/auth',
-      'firebase/firestore',
-      'firebase/analytics',
-    ],
+    // Exclude Firebase for better performance
+    exclude: ['firebase'],
 
-    // Advanced optimization options
-    force: process.env.NODE_ENV === 'development',
-
-    // ESBuild options for dependency optimization
+    // ESBuild options
     esbuildOptions: {
       target: 'es2020',
-      supported: {
-        'top-level-await': true,
-      },
     },
   },
 
@@ -256,13 +233,19 @@ export default defineConfig({
         secure: true,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            console.log('proxy error', err);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('proxy error', err);
+            }
           });
           proxy.on('proxyReq', (_proxyReq, req, _res) => {
-            console.log('Sending Request to the Target:', req.method, req.url);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Sending Request to the Target:', req.method, req.url);
+            }
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+            }
           });
         },
       },

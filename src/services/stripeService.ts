@@ -98,8 +98,6 @@ class StripeService {
     try {
       // In a real application, this would call your backend API
       // For now, we'll simulate the API call
-      
-      // TODO: Replace with actual backend API call
       const response = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: {
