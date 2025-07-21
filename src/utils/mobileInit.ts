@@ -163,9 +163,13 @@ function runMobileInitialization(): void {
     preventIOSZoom();
     optimizeTouchInteractions();
     
-    console.log('✅ Mobile optimizations initialized successfully');
+    if (import.meta.env.DEV) {
+      console.log('✅ Mobile optimizations initialized successfully');
+    }
   } catch (error) {
-    console.warn('⚠️ Some mobile optimizations failed to initialize:', error);
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ Some mobile optimizations failed to initialize:', error);
+    }
   }
 }
 

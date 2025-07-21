@@ -228,7 +228,7 @@ export function ChatPage() {
             {isLoading && (
               <Box px={4} py={6}>
                 <Loader
-                  variant="premium"
+                  variant="spinner"
                   size="lg"
                   message="NeuraStack AI ensemble is processing your request..."
                 />

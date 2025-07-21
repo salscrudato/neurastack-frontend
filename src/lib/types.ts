@@ -23,7 +23,8 @@ export interface Message {
 
 /** Request interface for NeuraStack Ensemble API - matches backend documentation */
 export interface EnsembleRequest {
-  prompt: string; // Required. The user's question or request to the AI ensemble
+  prompt: string; // Required. The user's question or request to the AI ensemble (3-5000 characters)
+  explain?: boolean; // Optional. Enable detailed explanation mode (default: false)
 }
 
 /** Legacy request interface for backward compatibility */
@@ -47,8 +48,9 @@ export interface NeuraStackQueryRequest {
 /** Headers for NeuraStack API requests */
 export interface NeuraStackHeaders {
   'Content-Type': 'application/json';
-  'X-Session-Id'?: string; // Updated to match API documentation
-  'x-user-id'?: string; // Lowercase as required by backend
+  'X-Session-Id'?: string; // Session ID for conversation continuity
+  'X-User-Id'?: string; // User ID as required by API guide (capitalized)
+  'X-Correlation-ID'?: string; // Request tracking ID
   'Authorization'?: string;
   'X-Requested-With'?: string;
   [key: string]: string | undefined;
