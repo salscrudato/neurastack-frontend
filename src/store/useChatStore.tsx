@@ -112,6 +112,8 @@ interface ChatState {
   sendMessage: (text: string) => Promise<void>;
   /** Clear all messages and start a new session */
   clearMessages: () => void;
+  /** Load messages from a saved session */
+  loadMessages: (messages: Message[], sessionId?: string) => void;
   /** Delete a specific message by ID */
   deleteMessage: (id: string) => void;
   /** Retry a failed message */
@@ -482,6 +484,18 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           memoryUsage: 0,
           lastCleanup: Date.now()
         }); // New session when clearing
+      },
+
+      loadMessages: (messages: Message[], sessionId?: string) => {
+        const newMemoryUsage = calculateMemoryUsage(messages);
+        set({
+          messages,
+          sessionId: sessionId || generateSafeUUID(),
+          memoryUsage: newMemoryUsage,
+          lastCleanup: Date.now(),
+          isLoading: false,
+          error: null
+        });
       },
 
       deleteMessage: (id: string) => {

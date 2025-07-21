@@ -19,7 +19,6 @@ import { signOut } from 'firebase/auth';
 import { useCallback, useMemo, useRef } from 'react';
 import {
   PiChatCircleBold, PiClockCounterClockwiseBold,
-  PiCrownBold,
   PiListBold,
   PiSignOutBold,
   PiUserLight
@@ -56,7 +55,7 @@ export function Header() {
 
     if (user && !user.isAnonymous) {
       items.push({ label: 'History', path: '/history', icon: PiClockCounterClockwiseBold, disabled: false });
-      items.push({ label: 'Subscription', path: '/subscription', icon: PiCrownBold, disabled: false });
+      // items.push({ label: 'Subscription', path: '/subscription', icon: PiCrownBold, disabled: false });
     }
 
     return items;
@@ -406,7 +405,7 @@ export function Header() {
                   textAlign="center"
                   lineHeight="1.4"
                 >
-                  v5.16 • Designed by Pam in Hackensack
+                  v5.16 • Built in Hackensack
                 </Text>
               </VStack>
             </DrawerFooter>

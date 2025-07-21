@@ -81,7 +81,6 @@ export function AdvancedAnalyticsModal({
     onClose,
     analyticsData
 }: AdvancedAnalyticsModalProps) {
-    console.log('AdvancedAnalyticsModal props:', { isOpen, analyticsData });
 
     const analytics = useMemo(() => {
         if (!analyticsData?.data) return null;

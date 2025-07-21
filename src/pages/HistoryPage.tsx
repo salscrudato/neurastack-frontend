@@ -37,7 +37,7 @@ export default function HistoryPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { sessions, deleteSession, loadSession, isLoading } = useHistoryStore();
-  const { clearMessages } = useChatStore();
+  const { clearMessages, loadMessages } = useChatStore();
 
   const bgColor = '#FAFBFC';
   const cardBg = '#FFFFFF';
@@ -69,9 +69,16 @@ export default function HistoryPage() {
   const handleLoadSession = async (sessionId: string) => {
     try {
       clearMessages();
-      await loadSession(sessionId);
-      navigate('/chat');
-      console.log('Session loaded successfully');
+      const result = await loadSession(sessionId);
+
+      if (result.success && result.session) {
+        // Load the messages into the chat store
+        loadMessages(result.session.messages, result.session.newSessionId);
+        navigate('/chat');
+        console.log('Session loaded successfully');
+      } else {
+        console.error('Failed to load session: Session not found');
+      }
     } catch (error) {
       console.error('Failed to load session:', error);
     }
