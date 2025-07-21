@@ -82,7 +82,7 @@ export function RateLimitModal() {
         <ModalBody pb={4}>
           <VStack spacing={3} align="stretch">
             <Text color="gray.600" fontSize="sm" lineHeight="1.5">
-              Guest users can send one message per minute to ensure fair usage for everyone.
+              Guest users can send up to 5 messages every 2 minutes to ensure fair usage for everyone.
             </Text>
             
             <Box

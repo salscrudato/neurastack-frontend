@@ -203,7 +203,7 @@ export function validateApiResponse(response: any): { isValid: boolean; sanitize
     }
 
     return { isValid: true, sanitizedResponse: sanitizeObject(sanitized) };
-  } catch (error) {
+  } catch {
     return { isValid: false };
   }
 }

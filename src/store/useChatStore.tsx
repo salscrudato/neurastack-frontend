@@ -94,18 +94,12 @@ interface ChatState {
     isLimited: boolean;
   };
   guestRateLimit: {
-    lastRequestTime: number;
+    requestTimes: number[]; // Array of timestamps for recent requests
     isLimited: boolean;
   };
   rateLimitModal: {
     isOpen: boolean;
     timeRemaining: number;
-  };
-  // Performance metrics
-  performanceMetrics: {
-    averageResponseTime: number;
-    totalRequests: number;
-    failureRate: number;
   };
   // Core Methods
   /** Send a message to the AI with production-ready validation and error handling */
@@ -122,8 +116,6 @@ interface ChatState {
   initializeSession: () => void;
   // Memory management methods
   pruneOldMessages: () => void;
-  getMemoryStats: () => { messageCount: number; estimatedSize: number; oldestMessage: number };
-  optimizeMemory: () => void;
   // Production methods
   clearError: () => void;
   updateOnlineStatus: (isOnline: boolean) => void;
@@ -131,7 +123,6 @@ interface ChatState {
   checkGuestRateLimit: () => { allowed: boolean; timeUntilNext: number };
   showRateLimitModal: (timeRemaining: number) => void;
   closeRateLimitModal: () => void;
-  updatePerformanceMetrics: (responseTime: number, success: boolean) => void;
 }
 
 // Use centralized performance config
@@ -215,17 +206,12 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     isLimited: false,
   },
   guestRateLimit: {
-    lastRequestTime: 0,
+    requestTimes: [], // Track timestamps of recent requests
     isLimited: false,
   },
   rateLimitModal: {
     isOpen: false,
     timeRemaining: 0,
-  },
-  performanceMetrics: {
-    averageResponseTime: 0,
-    totalRequests: 0,
-    failureRate: 0,
   },
 
       sendMessage: async (text: string) => {
@@ -256,7 +242,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
 
 
 
-        // Guest user rate limiting check (1 request per minute)
+        // Guest user rate limiting check (5 requests per 2 minutes)
         const guestRateCheck = get().checkGuestRateLimit();
         if (!guestRateCheck.allowed) {
           get().showRateLimitModal(guestRateCheck.timeUntilNext);
@@ -328,8 +314,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
               throw new Error('Empty response received');
             }
 
-            // Update performance metrics
-            get().updatePerformanceMetrics(responseTime, true);
+
 
             // Simplified logging for MVP
             if (import.meta.env.DEV) {
@@ -347,17 +332,19 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             }
 
             // Log the processed response for debugging
-            console.group('🎯 Chat Store Processing');
-            console.log('📝 Original Answer Length:', response.answer?.length || 0);
-            console.log('✂️ Cleaned Answer Length:', cleanedAnswer.length);
-            console.log('🔍 Answer Preview:', cleanedAnswer.substring(0, 200) + (cleanedAnswer.length > 200 ? '...' : ''));
-            console.log('📊 Metadata:', {
-              ensembleMode: response.ensembleMode,
-              modelsUsed: response.modelsUsed,
-              executionTime: response.executionTime,
-              tokenCount: response.tokenCount
-            });
-            console.groupEnd();
+            if (import.meta.env.DEV) {
+              console.group('🎯 Chat Store Processing');
+              console.log('📝 Original Answer Length:', response.answer?.length || 0);
+              console.log('✂️ Cleaned Answer Length:', cleanedAnswer.length);
+              console.log('🔍 Answer Preview:', cleanedAnswer.substring(0, 200) + (cleanedAnswer.length > 200 ? '...' : ''));
+              console.log('📊 Metadata:', {
+                ensembleMode: response.ensembleMode,
+                modelsUsed: response.modelsUsed,
+                executionTime: response.executionTime,
+                tokenCount: response.tokenCount
+              });
+              console.groupEnd();
+            }
 
             const assistantMsg = {
               id: assistantId,
@@ -422,8 +409,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             retryCount++;
             set(() => ({ retryCount }));
 
-            // Update performance metrics for failure
-            get().updatePerformanceMetrics(Date.now() - startTime, false);
+
 
             // Simplified error logging for MVP
             if (import.meta.env.DEV) {
@@ -555,59 +541,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         }
       },
 
-      /**
-       * Get memory usage statistics
-       */
-      getMemoryStats: () => {
-        const state = get();
-        const oldestMessage = state.messages.length > 0
-          ? Math.min(...state.messages.map(m => m.timestamp))
-          : Date.now();
 
-        return {
-          messageCount: state.messages.length,
-          estimatedSize: state.memoryUsage,
-          oldestMessage
-        };
-      },
-
-      /**
-       * Optimize memory usage by removing large metadata and old messages
-       */
-      optimizeMemory: () => {
-        const state = get();
-
-        // Remove large metadata from older messages (keep last 20 messages intact)
-        const optimizedMessages = state.messages.map((message, index) => {
-          const isRecent = index >= state.messages.length - 20;
-          if (isRecent) return message;
-
-          // Strip large metadata from older messages
-          const optimizedMessage = { ...message };
-          if (optimizedMessage.metadata) {
-            const { individualResponses: _individualResponses, ...lightMetadata } = optimizedMessage.metadata;
-            optimizedMessage.metadata = lightMetadata;
-          }
-          return optimizedMessage;
-        });
-
-        // Prune if still too many messages
-        const finalMessages = optimizedMessages.length > state.maxMessages
-          ? optimizedMessages.slice(-state.maxMessages)
-          : optimizedMessages;
-
-        const newMemoryUsage = calculateMemoryUsage(finalMessages);
-
-        set({
-          messages: finalMessages,
-          memoryUsage: newMemoryUsage,
-          lastCleanup: Date.now()
-        });
-
-        if (import.meta.env.DEV) {
-          console.log(`🧠 Memory optimized: ${state.memoryUsage} → ${newMemoryUsage} bytes`);
-        }
-      },
 
       // Production-ready methods
       clearError: () => set({ error: null }),
@@ -654,7 +588,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
       checkGuestRateLimit: () => {
         const state = get();
         const now = Date.now();
-        const GUEST_RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute in milliseconds
+        const GUEST_RATE_LIMIT_WINDOW = 2 * 60 * 1000; // 2 minutes in milliseconds
+        const GUEST_MAX_REQUESTS = 5; // 5 requests per window
 
         // Check if user is a guest (anonymous)
         const user = auth.currentUser;
@@ -663,25 +598,31 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           return { allowed: true, timeUntilNext: 0 };
         }
 
-        // Check if enough time has passed since last request
-        const timeSinceLastRequest = now - state.guestRateLimit.lastRequestTime;
+        // Clean up old request timestamps (older than the window)
+        const recentRequests = state.guestRateLimit.requestTimes.filter(
+          timestamp => now - timestamp < GUEST_RATE_LIMIT_WINDOW
+        );
 
-        if (timeSinceLastRequest < GUEST_RATE_LIMIT_WINDOW) {
-          // Still within rate limit window
-          const timeUntilNext = GUEST_RATE_LIMIT_WINDOW - timeSinceLastRequest;
+        // Check if we've exceeded the limit
+        if (recentRequests.length >= GUEST_MAX_REQUESTS) {
+          // Find the oldest request in the window
+          const oldestRequest = Math.min(...recentRequests);
+          const timeUntilNext = GUEST_RATE_LIMIT_WINDOW - (now - oldestRequest);
+
           set({
             guestRateLimit: {
-              ...state.guestRateLimit,
+              requestTimes: recentRequests,
               isLimited: true,
             }
           });
           return { allowed: false, timeUntilNext };
         }
 
-        // Rate limit window has passed, allow request
+        // Allow request and add timestamp
+        const updatedRequestTimes = [...recentRequests, now];
         set({
           guestRateLimit: {
-            lastRequestTime: now,
+            requestTimes: updatedRequestTimes,
             isLimited: false,
           }
         });
@@ -702,23 +643,6 @@ export const useChatStore = create<ChatState>()((set, get) => ({
           rateLimitModal: {
             isOpen: false,
             timeRemaining: 0,
-          }
-        });
-      },
-
-      updatePerformanceMetrics: (responseTime: number, success: boolean) => {
-        const state = get();
-        const totalRequests = state.performanceMetrics.totalRequests + 1;
-        const failures = success ? 0 : 1;
-        const totalFailures = (state.performanceMetrics.failureRate * state.performanceMetrics.totalRequests) + failures;
-
-        set({
-          performanceMetrics: {
-            averageResponseTime: success
-              ? (state.performanceMetrics.averageResponseTime * state.performanceMetrics.totalRequests + responseTime) / totalRequests
-              : state.performanceMetrics.averageResponseTime,
-            totalRequests,
-            failureRate: totalFailures / totalRequests,
           }
         });
       }

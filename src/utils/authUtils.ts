@@ -99,16 +99,11 @@ export class AuthManager {
    * Enhanced sign out with cleanup
    */
   async signOut(): Promise<void> {
-    try {
-      this.clearSessionManagement();
-      await signOut(auth);
-      
-      // Clear any cached data
-      this.clearUserData();
-    } catch (error) {
-      // Silent fail for sign out errors
-      throw error;
-    }
+    this.clearSessionManagement();
+    await signOut(auth);
+
+    // Clear any cached data
+    this.clearUserData();
   }
 
   /**
