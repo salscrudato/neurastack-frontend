@@ -16,10 +16,7 @@ import { PageLoader } from './components/LoadingSpinner';
 import { SplashPage } from './pages/SplashPage';
 import { preloadCriticalServices } from './services/lazyFirebase';
 
-// Import test utilities in development mode
-if (import.meta.env.DEV) {
-  import('./utils/stripeTestUtils');
-}
+
 
 const HistoryPage = React.lazy(() => import('./pages/HistoryPage'));
 const SubscriptionPage = React.lazy(() => import('./pages/SubscriptionPage'));

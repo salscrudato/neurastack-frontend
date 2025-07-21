@@ -284,10 +284,10 @@ export class NeuraStackClient {
     const correlationId = `ensemble-${timestamp}-${userId || 'anonymous'}`;
 
     // Prepare request body according to backend documentation
+    // Note: sessionId goes in headers (X-Session-Id), NOT in request body
     const requestBody = {
       prompt: prompt || "Quick sanity check: explain AI in 1-2 lines.",
-      sessionId: sessionId,
-      explain: true
+      explain: (options as any).explain ?? false // Default to false per API guide
     };
 
     const headers: Record<string, string> = {

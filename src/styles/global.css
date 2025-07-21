@@ -763,8 +763,6 @@ select {
     touch-action: inherit !important;
   }
 
-
-
   @media (min-width: 769px) {
     [role="log"][aria-label="Chat messages"] {
       padding-top: calc(var(--header-height-desktop) + 24px) !important;
@@ -1046,5 +1044,3 @@ select {
   border-radius: 0.25rem;
   z-index: 2000;
 }
-
-

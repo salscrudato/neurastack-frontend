@@ -231,18 +231,18 @@ export default defineConfig({
         target: process.env.VITE_BACKEND_URL || 'https://neurastack-backend-638289111765.us-central1.run.app',
         changeOrigin: true,
         secure: true,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
             if (process.env.NODE_ENV === 'development') {
               console.log('proxy error', err);
             }
           });
-          proxy.on('proxyReq', (_proxyReq, req, _res) => {
+          proxy.on('proxyReq', (_proxyReq, req) => {
             if (process.env.NODE_ENV === 'development') {
               console.log('Sending Request to the Target:', req.method, req.url);
             }
           });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
+          proxy.on('proxyRes', (proxyRes, req) => {
             if (process.env.NODE_ENV === 'development') {
               console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
             }
