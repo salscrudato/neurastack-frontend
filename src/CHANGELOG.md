@@ -1,5 +1,36 @@
 # NeuraStack Frontend Changelog
 
+## Version 3.3.1 - Enhanced Analytics Data Formatting
+
+**Date:** 2025-08-21
+**Type:** Bug Fix & Enhancement Release
+
+### 🔧 Critical Fixes
+
+- **Processing Time Display**: Fixed processing time showing accurate values instead of always "0ms"
+- **Quality Metrics Accuracy**: Implemented comprehensive quality scoring algorithm with multi-factor analysis
+- **Advanced Features Formatting**: Added human-readable formatting for technical features
+
+### ✨ Data Accuracy Improvements
+
+- **Enhanced Data Extraction**: Robust logic checking multiple API response locations for processing time
+- **Dynamic Quality Scoring**: Multi-factor algorithm considering complexity, structure, and content length
+- **Professional Feature Display**: "diversity_analysis, meta_voting" → "Diversity Analysis, Meta-Voting"
+
+### 🎨 User Experience Enhancements
+
+- **Complexity Display**: Enhanced with uppercase formatting and better color coding
+- **Tooltip Readability**: Improved professional presentation of advanced features
+- **Visual Consistency**: Maintained design standards across all analytics components
+
+### 🚀 Deployment Status
+
+- **GitHub**: Successfully pushed to main branch (commit 9845824)
+- **Firebase**: Deployed to production at https://neurastackai-frontend.web.app
+- **Build**: Zero TypeScript errors, production ready
+
+---
+
 ## Version 3.3.0 - Intelligent Backend Integration Release
 
 **Date:** 2025-08-21
