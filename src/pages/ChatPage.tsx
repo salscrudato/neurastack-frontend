@@ -9,7 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PiArrowUpBold } from 'react-icons/pi';
 import ChatInput from '../components/ChatInput';
 import { ChatMessage } from '../components/ChatMessage';
-import { Loader } from '../components/LoadingSpinner';
+import { LazyRealTimeEnsembleVisualization } from '../components/LazyAnalyticsComponents';
+import { PredictiveInsightsDashboard } from '../components/PredictiveInsightsDashboard';
 import { RateLimitModal } from '../components/RateLimitModal';
 import { SaveSessionButton } from '../components/SaveSessionButton';
 import { useReducedMotion } from '../hooks/useAccessibility';
@@ -219,18 +220,34 @@ export function ChatPage() {
             {msgs.length === 0 && !isLoading && (
               <Flex direction="column" align="center" justify="center" minH="60vh" textAlign="center" px={4}>
                 <Text fontSize={{ base: "xl", sm: "2xl", md: "3xl" }} fontWeight="500" color="gray.800" mb={3} letterSpacing="-0.02em">What do you want to know?</Text>
-                <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} color="gray.500" fontWeight="400">The team will look into it...</Text>
+                <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} color="gray.500" fontWeight="400" mb={6}>The team will look into it...</Text>
+
+                {/* Predictive Insights Dashboard */}
+                <Box w="100%" maxW="600px">
+                  <PredictiveInsightsDashboard
+                    isVisible={true}
+                    compact={true}
+                    refreshInterval={30000}
+                  />
+                </Box>
               </Flex>
             )}
             {msgs.map((m) => (
-              <ChatMessage key={m.id} message={m} isHighlighted={false} />
+              <ChatMessage
+                key={m.id}
+                message={m}
+                isHighlighted={false}
+                fullData={m.metadata?.ensembleData?.data}
+              />
             ))}
             {isLoading && (
               <Box px={4} py={6}>
-                <Loader
-                  variant="spinner"
-                  size="lg"
-                  message="NeuraStack AI ensemble is processing your request..."
+                <LazyRealTimeEnsembleVisualization
+                  isProcessing={isLoading}
+                  overallProgress={Math.random() * 100} // Simulated progress
+                  consensusLevel={Math.random() * 0.8 + 0.2} // Simulated consensus
+                  estimatedTime={25} // Estimated processing time
+                  showAdvancedFeatures={true}
                 />
               </Box>
             )}

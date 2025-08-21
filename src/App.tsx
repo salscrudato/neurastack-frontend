@@ -13,17 +13,18 @@
 
 import { Box } from "@chakra-ui/react";
 import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-  type Transition,
-  type Variants,
+    AnimatePresence,
+    motion,
+    useReducedMotion,
+    type Transition,
+    type Variants,
 } from "framer-motion";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
+import { PerformanceMonitor } from "./components/PerformanceMonitor";
 import { authManager } from "./utils/authUtils";
 
 import "./styles/global.css";
@@ -172,6 +173,11 @@ export default function App() {
           <Outlet />
         </Box>
       </Suspense>
+
+      {/* Performance Monitor - only in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <PerformanceMonitor enabled={true} position="bottom-right" />
+      )}
     </PageContentWrapper>
   );
 }

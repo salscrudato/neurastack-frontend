@@ -1,5 +1,4 @@
 import {
-    Badge,
     Box,
     Button,
     Flex,
@@ -13,7 +12,13 @@ import {
 import { memo, useMemo, useState } from "react";
 import { PiCheckBold, PiCopyBold } from "react-icons/pi";
 import type { Message } from "../store/useChatStore";
-import { AdvancedAnalyticsModal } from "./AdvancedAnalyticsModal";
+import { useChatStore } from "../store/useChatStore";
+import { AdvancedErrorHandler } from "./AdvancedErrorHandler";
+import { EnhancedConfidenceIndicator } from "./EnhancedConfidenceIndicator";
+import {
+    LazyEnhancedAnalyticsModal,
+    LazyResponseComparisonModal
+} from "./LazyAnalyticsComponents";
 import { Loader } from "./LoadingSpinner";
 import { UnifiedAIResponse } from "./UnifiedAIResponse";
 
@@ -131,8 +136,9 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   const isError = message.role === 'error';
   const isLoading = !message.text;
 
-  // State for response selection and analytics modal
-  const [isAdvancedAnalyticsOpen, setIsAdvancedAnalyticsOpen] = useState(false);
+  // State for response selection and modals
+  const [isEnhancedAnalyticsOpen, setIsEnhancedAnalyticsOpen] = useState(false);
+  const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(-1); // -1 for synthesized, 0+ for individual models
 
   // Use centralized font sizes
@@ -205,11 +211,11 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
     }
   }, [isUser, isError]);
 
-  // Extract analytics from fullData
-  const confidence = fullData?.synthesis?.confidence?.score || 0;
-  const confidenceLevel = fullData?.synthesis?.confidence?.level || 'medium';
-  const winner = fullData?.voting?.winner || 'unknown';
-  const consensus = fullData?.voting?.consensus || 'medium';
+  // Extract analytics from fullData (for future use)
+  // const confidence = fullData?.synthesis?.confidence?.score || 0;
+  // const confidenceLevel = fullData?.synthesis?.confidence?.level || 'medium';
+  // const winner = fullData?.voting?.winner || 'unknown';
+  // const consensus = fullData?.voting?.consensus || 'medium';
 
   // Debug logging
   if (import.meta.env.DEV && !isUser && !isError) {
@@ -369,47 +375,90 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                       <Box w="5px" h="5px" borderRadius="full" bg="linear-gradient(45deg, #94A3B8, #64748B)" boxShadow="0 0 4px rgba(148, 163, 184, 0.3)" animation="pulse 3s ease-in-out infinite" sx={{ '@keyframes pulse': { '0%, 100%': { transform: 'scale(1)', opacity: 0.7 }, '50%': { transform: 'scale(1.1)', opacity: 0.9 } } }} />
                       <Text fontSize={{ base: "xs", md: "sm" }} fontWeight="600" color="#475569" letterSpacing="-0.025em">AI Ensemble</Text>
                     </HStack>
-                    <Button
-                        size="xs"
-                        onClick={() => {
-                          console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
-                          setIsAdvancedAnalyticsOpen(true);
-                        }}
-                        bg="white"
-                        color="#4F9CF9"
-                        fontWeight="600"
-                        fontSize={FONT_SIZES.analytics}
-                        border="1px solid rgba(79, 156, 249, 0.25)"
-                        boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
-                        minH="26px"
-                        px={2.5}
-                        py={1}
-                        h="26px"
-                        borderRadius="md"
-                        transition="all 0.15s ease"
-                        letterSpacing="-0.01em"
-                        sx={{
-                          touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent'
-                        }}
-                        _hover={{
-                          bg: "#4F9CF9",
-                          borderColor: "#4F9CF9",
-                          color: "white",
-                          transform: "translateY(-0.5px)",
-                          boxShadow: "0 2px 8px rgba(79, 156, 249, 0.2)"
-                        }}
-                        _active={{
-                          transform: "translateY(0)",
-                          boxShadow: "0 1px 2px rgba(79, 156, 249, 0.2)"
-                        }}
-                        _focus={{
-                          boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
-                          outline: "none"
-                        }}
-                      >
-                        Analytics
-                      </Button>
+                    <HStack spacing={2}>
+                      <Button
+                          size="xs"
+                          onClick={() => {
+                            console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
+                            setIsEnhancedAnalyticsOpen(true);
+                          }}
+                          bg="white"
+                          color="#4F9CF9"
+                          fontWeight="600"
+                          fontSize={FONT_SIZES.analytics}
+                          border="1px solid rgba(79, 156, 249, 0.25)"
+                          boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+                          minH="26px"
+                          px={2.5}
+                          py={1}
+                          h="26px"
+                          borderRadius="md"
+                          transition="all 0.15s ease"
+                          letterSpacing="-0.01em"
+                          sx={{
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent'
+                          }}
+                          _hover={{
+                            bg: "#4F9CF9",
+                            borderColor: "#4F9CF9",
+                            color: "white",
+                            transform: "translateY(-0.5px)",
+                            boxShadow: "0 2px 8px rgba(79, 156, 249, 0.2)"
+                          }}
+                          _active={{
+                            transform: "translateY(0)",
+                            boxShadow: "0 1px 2px rgba(79, 156, 249, 0.2)"
+                          }}
+                          _focus={{
+                            boxShadow: "0 0 0 2px rgba(79, 156, 249, 0.3)",
+                            outline: "none"
+                          }}
+                        >
+                          Analytics
+                        </Button>
+
+                        {hasIndividualResponses && (
+                          <Button
+                            size="xs"
+                            onClick={() => setIsComparisonModalOpen(true)}
+                            bg="white"
+                            color="#8B5CF6"
+                            fontWeight="600"
+                            fontSize={FONT_SIZES.analytics}
+                            border="1px solid rgba(139, 92, 246, 0.25)"
+                            boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+                            minH="26px"
+                            px={2.5}
+                            py={1}
+                            h="26px"
+                            borderRadius="md"
+                            transition="all 0.15s ease"
+                            letterSpacing="-0.01em"
+                            sx={{
+                              touchAction: 'manipulation',
+                              WebkitTapHighlightColor: 'transparent'
+                            }}
+                            _hover={{
+                              bg: "#8B5CF6",
+                              borderColor: "#8B5CF6",
+                              color: "white",
+                              transform: "translateY(-0.5px)",
+                              boxShadow: "0 2px 8px rgba(139, 92, 246, 0.2)"
+                            }}
+                            _active={{
+                              transform: "translateY(0)",
+                              boxShadow: "0 1px 2px rgba(139, 92, 246, 0.2)"
+                            }}
+                            _focus={{
+                              boxShadow: "0 0 0 2px rgba(139, 92, 246, 0.3)",
+                              outline: "none"
+                            }}
+                          >
+                            Compare
+                          </Button>
+                        )}
+                      </HStack>
                   </HStack>
                 </Flex>
 
@@ -476,9 +525,21 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
             {isLoading ? (
               <Loader variant="team" size="sm" />
             ) : isError ? (
-              <Text fontSize={FONT_SIZES.content} color={messageStyles.color}>
-                {processedContent || 'An error occurred'}
-              </Text>
+              <AdvancedErrorHandler
+                error={{
+                  message: processedContent || 'An error occurred',
+                  statusCode: message.metadata?.statusCode,
+                  correlationId: message.metadata?.correlationId,
+                  retryable: message.metadata?.retryable !== false
+                }}
+                onRetry={() => {
+                  // Trigger retry from chat store
+                  const { retryMessage } = useChatStore.getState();
+                  retryMessage(message.id);
+                }}
+                context="chat"
+                showRecoveryOptions={true}
+              />
             ) : isUser ? (
               <Text
                 fontSize={FONT_SIZES.content}
@@ -509,18 +570,29 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
             )}
           </Box>
           {!isUser && fullData && (
-            <HStack spacing={2} mt={2} justify="flex-start">
-              <Badge colorScheme={confidenceLevel === 'high' ? 'green' : confidenceLevel === 'medium' ? 'yellow' : 'red'}>
-                Confidence: {(confidence * 100).toFixed(0)}%
-              </Badge>
-              <Badge colorScheme="blue">Winner: {winner}</Badge>
-              <Badge colorScheme="purple">Consensus: {consensus}</Badge>
-            </HStack>
+            <EnhancedConfidenceIndicator
+              fullData={fullData}
+              isCompact={true}
+            />
           )}
           {!isUser && <HStack justify="flex-end" align="center" mt={1} spacing={1}><CopyButton text={displayContent} /></HStack>}
         </Box>
       </Flex>
-      <AdvancedAnalyticsModal isOpen={isAdvancedAnalyticsOpen} onClose={() => setIsAdvancedAnalyticsOpen(false)} analyticsData={message.metadata?.ensembleData} />
+      <LazyEnhancedAnalyticsModal
+        isOpen={isEnhancedAnalyticsOpen}
+        onClose={() => setIsEnhancedAnalyticsOpen(false)}
+        analyticsData={message.metadata?.ensembleData}
+      />
+      <LazyResponseComparisonModal
+        isOpen={isComparisonModalOpen}
+        onClose={() => setIsComparisonModalOpen(false)}
+        responses={individualResponses}
+        synthesizedResponse={displayText}
+        onPreferenceSelect={(modelId: string, preference: 'like' | 'dislike') => {
+          console.log(`User ${preference}d model ${modelId}`);
+          // Here you could track user preferences for future model selection
+        }}
+      />
     </VStack>
   );
 });
