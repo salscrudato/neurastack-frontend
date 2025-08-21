@@ -364,7 +364,7 @@ export const ResponseComparisonModal = ({
 
     if (validResponses.length === 0) {
         return (
-            <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
+            <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "xl" }} isCentered>
                 <ModalOverlay bg={overlayBg} backdropFilter="blur(8px)" />
                 <ModalContent>
                     <ModalHeader>Response Comparison</ModalHeader>
@@ -378,7 +378,7 @@ export const ResponseComparisonModal = ({
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
+        <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "6xl" }} isCentered>
             <ModalOverlay bg={overlayBg} backdropFilter="blur(8px)" />
             <MotionBox
                 as={ModalContent}

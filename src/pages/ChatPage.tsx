@@ -10,7 +10,6 @@ import { PiArrowUpBold } from 'react-icons/pi';
 import ChatInput from '../components/ChatInput';
 import { ChatMessage } from '../components/ChatMessage';
 import { LazyRealTimeEnsembleVisualization } from '../components/LazyAnalyticsComponents';
-import { PredictiveInsightsDashboard } from '../components/PredictiveInsightsDashboard';
 import { RateLimitModal } from '../components/RateLimitModal';
 import { SaveSessionButton } from '../components/SaveSessionButton';
 import { useReducedMotion } from '../hooks/useAccessibility';
@@ -104,7 +103,7 @@ export function ChatPage() {
     return () => container.removeEventListener("scroll", onScroll);
   }, [handleScroll]);
 
-  const scrollToBottom = useCallback(() => {
+  const scrollToChatBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
   }, [prefersReducedMotion]);
 
@@ -118,14 +117,14 @@ export function ChatPage() {
         if (e.key === "Home") {
           messagesContainerRef.current?.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
         } else {
-          scrollToBottom();
+          scrollToChatBottom();
         }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [prefersReducedMotion, scrollToBottom]);
+  }, [prefersReducedMotion, scrollToChatBottom]);
 
   const handleSendMessage = useCallback(async (prompt: string) => {
     await sendMessage(prompt);
@@ -222,14 +221,14 @@ export function ChatPage() {
                 <Text fontSize={{ base: "xl", sm: "2xl", md: "3xl" }} fontWeight="500" color="gray.800" mb={3} letterSpacing="-0.02em">What do you want to know?</Text>
                 <Text fontSize={{ base: "sm", sm: "md", md: "lg" }} color="gray.500" fontWeight="400" mb={6}>The team will look into it...</Text>
 
-                {/* Predictive Insights Dashboard */}
-                <Box w="100%" maxW="600px">
+                {/* Predictive Insights Dashboard - Temporarily disabled due to backend health endpoint issues */}
+                {/* <Box w="100%" maxW="600px">
                   <PredictiveInsightsDashboard
                     isVisible={true}
                     compact={true}
                     refreshInterval={30000}
                   />
-                </Box>
+                </Box> */}
               </Flex>
             )}
             {msgs.map((m) => (
@@ -287,7 +286,7 @@ export function ChatPage() {
             transform: prefersReducedMotion ? "none" : "scale(0.95)",
             bg: scrollButtonHoverBg
           }}
-          onClick={scrollToBottom}
+          onClick={scrollToChatBottom}
           zIndex={999}
           transform="rotate(180deg)"
           sx={{

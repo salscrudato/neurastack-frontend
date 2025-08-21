@@ -10,7 +10,6 @@
  */
 
 import {
-    Badge,
     Box,
     Circle,
     Flex,
@@ -25,7 +24,6 @@ import {
 import { motion } from "framer-motion";
 import { memo, useMemo } from "react";
 import {
-    PiBrainBold,
     PiLightningBold,
     PiShieldCheckBold,
     PiWarningBold
@@ -156,125 +154,93 @@ export const EnhancedConfidenceIndicator = memo<EnhancedConfidenceIndicatorProps
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 mt={3}
             >
-                <Flex
-                    bg={cardBg}
-                    border="1px solid"
-                    borderColor={borderColor}
-                    borderRadius="xl"
-                    p={3}
-                    align="center"
-                    justify="space-between"
-                    backdropFilter="blur(20px)"
-                    boxShadow="0 4px 12px rgba(0, 0, 0, 0.05)"
-                    _hover={{
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 6px 16px rgba(0, 0, 0, 0.1)"
-                    }}
-                    transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                >
-                    {/* Confidence Score */}
-                    <HStack spacing={3}>
-                        <Circle
-                            size="32px"
-                            bg={getConfidenceColor(analytics.overallConfidence)}
-                            color="white"
-                            position="relative"
-                        >
-                            <Icon as={PiShieldCheckBold} boxSize={4} />
-                            {analytics.abstentionTriggered && (
-                                <Circle
-                                    size="12px"
-                                    bg="#EF4444"
-                                    position="absolute"
-                                    top="-2px"
-                                    right="-2px"
-                                    border="2px solid white"
-                                >
-                                    <Icon as={PiWarningBold} boxSize={2} color="white" />
-                                </Circle>
-                            )}
-                        </Circle>
-                        <VStack spacing={0} align="start">
-                            <Text fontSize="sm" fontWeight="600" color="#1F2937">
-                                {(analytics.overallConfidence * 100).toFixed(0)}% Confidence
-                            </Text>
-                            <Text fontSize="xs" color="#6B7280">
-                                {analytics.confidenceLevel} • {analytics.consensusData.label}
-                            </Text>
-                        </VStack>
-                    </HStack>
+                <VStack spacing={3} align="stretch">
+                    <Flex
+                        bg={cardBg}
+                        border="1px solid"
+                        borderColor={borderColor}
+                        borderRadius="xl"
+                        p={3}
+                        align="center"
+                        justify="space-between"
+                        backdropFilter="blur(20px)"
+                        boxShadow="0 4px 12px rgba(0, 0, 0, 0.05)"
+                        _hover={{
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 6px 16px rgba(0, 0, 0, 0.1)"
+                        }}
+                        transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                    >
+                        {/* Confidence Score */}
+                        <HStack spacing={3} flex="1" minW="0">
+                            <Circle
+                                size="32px"
+                                bg={getConfidenceColor(analytics.overallConfidence)}
+                                color="white"
+                                position="relative"
+                                flexShrink={0}
+                            >
+                                <Icon as={PiShieldCheckBold} boxSize={4} />
+                                {analytics.abstentionTriggered && (
+                                    <Circle
+                                        size="12px"
+                                        bg="#EF4444"
+                                        position="absolute"
+                                        top="-2px"
+                                        right="-2px"
+                                        border="2px solid white"
+                                    >
+                                        <Icon as={PiWarningBold} boxSize={2} color="white" />
+                                    </Circle>
+                                )}
+                            </Circle>
+                            <VStack spacing={0} align="start" minW="0" flex="1">
+                                <Text fontSize="sm" fontWeight="600" color="#1F2937" noOfLines={1}>
+                                    {(analytics.overallConfidence * 100).toFixed(0)}% Confidence
+                                </Text>
+                                <Text fontSize="xs" color="#6B7280" noOfLines={1}>
+                                    {analytics.confidenceLevel} • {analytics.consensusData.label}
+                                </Text>
+                            </VStack>
+                        </HStack>
 
-                    {/* Voting Winner & Meta-Analysis */}
-                    <HStack spacing={2}>
-                        {analytics.metaVoting.used && (
+                        {/* Sophisticated Features Indicator */}
+                        {analytics.usedSophisticatedFeatures.length > 0 && (
                             <Tooltip
-                                label={`Meta-voting selected ${analytics.winner} based on: ${analytics.metaVoting.reasoning}`}
+                                label={`Advanced features used: ${formatAdvancedFeatures(analytics.usedSophisticatedFeatures)}`}
                                 hasArrow
                                 fontSize="xs"
                                 maxW="300px"
                             >
-                                <Badge
-                                    colorScheme="purple"
-                                    variant="subtle"
-                                    fontSize="xs"
-                                    px={2}
-                                    py={1}
-                                    borderRadius="md"
-                                >
-                                    <HStack spacing={1}>
-                                        <Icon as={PiBrainBold} boxSize={3} />
-                                        <Text>Meta-AI</Text>
-                                    </HStack>
-                                </Badge>
+                                <Circle size="24px" bg="#8B5CF6" color="white" flexShrink={0}>
+                                    <Icon as={PiLightningBold} boxSize={3} />
+                                </Circle>
                             </Tooltip>
                         )}
-                        
-                        <Badge
-                            colorScheme="blue"
-                            variant="subtle"
-                            fontSize="xs"
-                            px={2}
-                            py={1}
-                            borderRadius="md"
-                        >
-                            Winner: {analytics.winner}
-                        </Badge>
-                    </HStack>
+                    </Flex>
 
-                    {/* Sophisticated Features Indicator */}
-                    {analytics.usedSophisticatedFeatures.length > 0 && (
-                        <Tooltip
-                            label={`Advanced features used: ${formatAdvancedFeatures(analytics.usedSophisticatedFeatures)}`}
-                            hasArrow
-                            fontSize="xs"
-                            maxW="300px"
-                        >
-                            <Circle size="24px" bg="#8B5CF6" color="white">
-                                <Icon as={PiLightningBold} boxSize={3} />
-                            </Circle>
-                        </Tooltip>
-                    )}
-                </Flex>
 
-                {/* Consensus Progress Bar */}
-                <Box mt={2}>
-                    <Progress
-                        value={analytics.consensusData.score * 100}
-                        size="sm"
-                        colorScheme={analytics.consensusData.color.includes('green') ? 'green' : 
-                                   analytics.consensusData.color.includes('yellow') ? 'yellow' : 'red'}
-                        borderRadius="full"
-                        bg="rgba(226, 232, 240, 0.3)"
-                    />
-                    <HStack justify="space-between" mt={1}>
-                        <Text fontSize="xs" color="#6B7280">
-                            Consensus: {analytics.consensusData.label}
-                        </Text>
-                        <Text fontSize="xs" color="#6B7280">
-                            Quality: {(analytics.qualityScore * 100).toFixed(0)}%
-                        </Text>
-                    </HStack>
-                </Box>
+
+                    {/* Consensus Progress Bar */}
+                    <Box>
+                        <Progress
+                            value={analytics.consensusData.score * 100}
+                            size="sm"
+                            colorScheme={analytics.consensusData.color.includes('green') ? 'green' :
+                                       analytics.consensusData.color.includes('yellow') ? 'yellow' : 'red'}
+                            borderRadius="full"
+                            bg="rgba(226, 232, 240, 0.3)"
+                        />
+                        <HStack justify="space-between" mt={1}>
+                            <Text fontSize="xs" color="#6B7280">
+                                Consensus: {analytics.consensusData.label}
+                            </Text>
+                            <Text fontSize="xs" color="#6B7280">
+                                Quality: {(analytics.qualityScore * 100).toFixed(0)}%
+                            </Text>
+                        </HStack>
+                    </Box>
+                </VStack>
             </MotionBox>
         );
     }

@@ -17,6 +17,7 @@ import { AdvancedErrorHandler } from "./AdvancedErrorHandler";
 import { EnhancedConfidenceIndicator } from "./EnhancedConfidenceIndicator";
 import {
     LazyEnhancedAnalyticsModal,
+    LazyMetaVotingIntelligenceDashboard,
     LazyResponseComparisonModal
 } from "./LazyAnalyticsComponents";
 import { Loader } from "./LoadingSpinner";
@@ -139,6 +140,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
   // State for response selection and modals
   const [isEnhancedAnalyticsOpen, setIsEnhancedAnalyticsOpen] = useState(false);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
+  const [isMetaVotingDashboardOpen, setIsMetaVotingDashboardOpen] = useState(false);
   const [selectedResponseIndex, setSelectedResponseIndex] = useState<number>(-1); // -1 for synthesized, 0+ for individual models
 
   // Use centralized font sizes
@@ -377,7 +379,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                     </HStack>
                     <HStack spacing={2}>
                       <Button
-                          size="xs"
+                          size={{ base: "sm", md: "xs" }}
                           onClick={() => {
                             console.log('Analytics button clicked, ensembleData:', message.metadata?.ensembleData);
                             setIsEnhancedAnalyticsOpen(true);
@@ -420,7 +422,7 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
 
                         {hasIndividualResponses && (
                           <Button
-                            size="xs"
+                            size={{ base: "sm", md: "xs" }}
                             onClick={() => setIsComparisonModalOpen(true)}
                             bg="white"
                             color="#8B5CF6"
@@ -456,6 +458,48 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
                             }}
                           >
                             Compare
+                          </Button>
+                        )}
+
+                        {/* Meta-Voting Intelligence Dashboard Button */}
+                        {message.metadata?.ensembleData?.voting && (
+                          <Button
+                            size={{ base: "sm", md: "xs" }}
+                            onClick={() => setIsMetaVotingDashboardOpen(true)}
+                            bg="white"
+                            color="#10B981"
+                            fontWeight="600"
+                            fontSize={FONT_SIZES.analytics}
+                            border="1px solid rgba(16, 185, 129, 0.25)"
+                            boxShadow="0 1px 3px rgba(0, 0, 0, 0.1)"
+                            minH="26px"
+                            px={2.5}
+                            py={1}
+                            h="26px"
+                            borderRadius="md"
+                            transition="all 0.15s ease"
+                            letterSpacing="-0.01em"
+                            sx={{
+                              touchAction: 'manipulation',
+                              WebkitTapHighlightColor: 'transparent'
+                            }}
+                            _hover={{
+                              bg: "#10B981",
+                              borderColor: "#10B981",
+                              color: "white",
+                              transform: "translateY(-0.5px)",
+                              boxShadow: "0 2px 8px rgba(16, 185, 129, 0.2)"
+                            }}
+                            _active={{
+                              transform: "translateY(0)",
+                              boxShadow: "0 1px 2px rgba(16, 185, 129, 0.2)"
+                            }}
+                            _focus={{
+                              boxShadow: "0 0 0 2px rgba(16, 185, 129, 0.3)",
+                              outline: "none"
+                            }}
+                          >
+                            Meta-Voting
                           </Button>
                         )}
                       </HStack>
@@ -592,6 +636,13 @@ export const ChatMessage = memo<ChatMessageProps>(({ message, isHighlighted = fa
           console.log(`User ${preference}d model ${modelId}`);
           // Here you could track user preferences for future model selection
         }}
+      />
+      <LazyMetaVotingIntelligenceDashboard
+        isOpen={isMetaVotingDashboardOpen}
+        onClose={() => setIsMetaVotingDashboardOpen(false)}
+        votingData={message.metadata?.ensembleData?.voting}
+        rolesData={message.metadata?.individualResponses}
+        synthesisData={message.metadata?.ensembleData?.synthesis}
       />
     </VStack>
   );

@@ -24,7 +24,6 @@ import { Outlet, useLocation } from "react-router-dom";
 
 import { Header } from "./components/Header";
 import LoadingSpinner from "./components/LoadingSpinner";
-import { PerformanceMonitor } from "./components/PerformanceMonitor";
 import { authManager } from "./utils/authUtils";
 
 import "./styles/global.css";
@@ -174,10 +173,7 @@ export default function App() {
         </Box>
       </Suspense>
 
-      {/* Performance Monitor - only in development */}
-      {process.env.NODE_ENV === 'development' && (
-        <PerformanceMonitor enabled={true} position="bottom-right" />
-      )}
+
     </PageContentWrapper>
   );
 }

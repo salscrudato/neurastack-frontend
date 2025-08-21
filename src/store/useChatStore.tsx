@@ -25,6 +25,41 @@ const generateSafeUUID = (): string => {
   }
 };
 
+// Text similarity calculation for intelligent caching
+const calculateTextSimilarity = (text1: string, text2: string): number => {
+  const words1 = text1.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const words2 = text2.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+
+  if (words1.length === 0 || words2.length === 0) return 0;
+
+  const intersection = words1.filter(word => words2.includes(word));
+  const union = [...new Set([...words1, ...words2])];
+
+  return intersection.length / union.length;
+};
+
+// Clean old cache entries to prevent storage bloat
+const cleanOldCacheEntries = (): void => {
+  try {
+    const keys = Object.keys(localStorage).filter(key => key.startsWith('query_'));
+    const now = Date.now();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+    keys.forEach(key => {
+      try {
+        const cached = JSON.parse(localStorage.getItem(key) || '{}');
+        if (now - cached.timestamp > maxAge) {
+          localStorage.removeItem(key);
+        }
+      } catch {
+        localStorage.removeItem(key); // Remove corrupted entries
+      }
+    });
+  } catch (error) {
+    console.warn('Cache cleanup failed:', error);
+  }
+};
+
 
 
 /**
@@ -252,6 +287,60 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         // Clear any previous errors
         set({ error: null });
 
+        // Check intelligent cache first
+        const cacheKey = `query_${sanitizedText.toLowerCase().trim()}`;
+        const cachedResponse = localStorage.getItem(cacheKey);
+
+        if (cachedResponse) {
+          try {
+            const cached = JSON.parse(cachedResponse);
+            const cacheAge = Date.now() - cached.timestamp;
+
+            // Use cache if less than 1 hour old and similar enough
+            if (cacheAge < 60 * 60 * 1000) {
+              const similarity = calculateTextSimilarity(sanitizedText, cached.originalQuery);
+
+              if (similarity > 0.85) {
+                // Add user message
+                const userMsg: Message = {
+                  id: nanoid(),
+                  role: 'user',
+                  text: sanitizedText,
+                  timestamp: Date.now(),
+                  metadata: {
+                    sessionId: get().sessionId,
+                    sanitized: text !== sanitizedText,
+                    fromCache: true
+                  }
+                };
+
+                // Add cached assistant response
+                const assistantMsg: Message = {
+                  id: nanoid(),
+                  role: 'assistant',
+                  text: cached.response.answer,
+                  timestamp: Date.now(),
+                  metadata: {
+                    ...cached.response.metadata,
+                    fromCache: true,
+                    cacheAge: Math.round(cacheAge / 1000),
+                    ensembleData: cached.response.rawApiResponse
+                  }
+                };
+
+                set(state => ({
+                  messages: [...state.messages, userMsg, assistantMsg],
+                  isLoading: false
+                }));
+
+                return; // Exit early with cached response
+              }
+            }
+          } catch (error) {
+            console.warn('Cache parsing failed:', error);
+          }
+        }
+
         // Add user message with enhanced metadata
         const userMsg: Message = {
           id: nanoid(),
@@ -306,6 +395,29 @@ export const useChatStore = create<ChatState>()((set, get) => ({
             // Validate response
             if (!response?.answer) {
               throw new Error('Invalid response received');
+            }
+
+            // Store successful response in intelligent cache
+            try {
+              const cacheKey = `query_${sanitizedText.toLowerCase().trim()}`;
+              const cacheData = {
+                originalQuery: sanitizedText,
+                response,
+                timestamp: Date.now()
+              };
+
+              // Store with size limit check
+              const cacheString = JSON.stringify(cacheData);
+              if (cacheString.length < 100000) { // 100KB limit per entry
+                localStorage.setItem(cacheKey, cacheString);
+
+                // Clean old cache entries periodically
+                if (Math.random() < 0.1) { // 10% chance
+                  cleanOldCacheEntries();
+                }
+              }
+            } catch (error) {
+              console.warn('Cache storage failed:', error);
             }
 
             // Clean response text - basic formatting only

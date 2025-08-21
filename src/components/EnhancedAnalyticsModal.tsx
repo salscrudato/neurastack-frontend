@@ -1,14 +1,17 @@
 /**
- * Enhanced Analytics Modal Component
+ * Enhanced Analytics Modal Component - Advanced AI Ensemble Insights
  *
  * Comprehensive analytics experience with rich visualizations, actionable insights,
- * and detailed performance metrics from the NeuraStack AI ensemble.
+ * and detailed performance metrics from the NeuraStack AI ensemble. Features
+ * innovative data utilization showcasing meta-voting, diversity analysis, and
+ * sophisticated ensemble decision-making processes.
  */
 
 import {
     Badge,
     Box,
     Circle,
+    Divider,
     Grid,
     HStack,
     Icon,
@@ -19,6 +22,11 @@ import {
     ModalHeader,
     ModalOverlay,
     Progress,
+    SimpleGrid,
+    Stat,
+    StatHelpText,
+    StatLabel,
+    StatNumber,
     Tab,
     TabList,
     TabPanel,
@@ -38,12 +46,202 @@ import {
     PiClockBold,
     PiGaugeBold,
     PiLightningBold,
+    PiNetworkBold,
     PiScalesBold,
     PiShieldCheckBold,
+    PiStarBold,
     PiTrendUpBold
 } from "react-icons/pi";
 
 const MotionBox = motion(Box);
+
+// Advanced Meta-Voting Analysis Component
+const MetaVotingAnalysis = ({ voting }: { voting: any }) => {
+    const metaVoting = voting?.metaVoting;
+    const diversityAnalysis = voting?.diversityAnalysis;
+    const abstention = voting?.abstention;
+
+    if (!metaVoting) return null;
+
+    return (
+        <VStack spacing={4} align="stretch">
+            <HStack spacing={2} align="center">
+                <Icon as={PiStarBold} color="purple.500" boxSize={5} />
+                <Text fontSize="lg" fontWeight="600" color="gray.800">
+                    AI Meta-Voting Analysis
+                </Text>
+            </HStack>
+
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                {/* Meta-Voting Decision */}
+                <Box p={4} bg="purple.50" borderRadius="lg" border="1px solid" borderColor="purple.200">
+                    <VStack spacing={3} align="stretch">
+                        <HStack justify="space-between">
+                            <Text fontSize="sm" fontWeight="600" color="purple.700">
+                                Meta-Voting Winner
+                            </Text>
+                            <Badge colorScheme="purple" variant="solid">
+                                {(metaVoting.confidence * 100).toFixed(0)}% confidence
+                            </Badge>
+                        </HStack>
+                        <Text fontSize="lg" fontWeight="700" color="purple.800" textTransform="capitalize">
+                            {metaVoting.winner}
+                        </Text>
+                        <Text fontSize="sm" color="purple.600" lineHeight="1.4">
+                            {metaVoting.reasoning}
+                        </Text>
+                    </VStack>
+                </Box>
+
+                {/* Diversity Analysis */}
+                <Box p={4} bg="blue.50" borderRadius="lg" border="1px solid" borderColor="blue.200">
+                    <VStack spacing={3} align="stretch">
+                        <HStack justify="space-between" align="center">
+                            <Text fontSize="sm" fontWeight="600" color="blue.700">
+                                Response Diversity
+                            </Text>
+                            <Circle
+                                size="40px"
+                                bg="blue.500"
+                                color="white"
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="center"
+                            >
+                                <Text fontSize="xs" fontWeight="bold" lineHeight="1">
+                                    {(diversityAnalysis?.overallDiversity * 100).toFixed(0)}%
+                                </Text>
+                            </Circle>
+                        </HStack>
+                        <Progress
+                            value={diversityAnalysis?.overallDiversity * 100}
+                            colorScheme="blue"
+                            size="md"
+                            borderRadius="full"
+                            bg="blue.100"
+                        />
+                        <Text fontSize="xs" color="blue.600" lineHeight="1.4">
+                            Higher diversity indicates more varied perspectives from models
+                        </Text>
+                    </VStack>
+                </Box>
+            </SimpleGrid>
+
+            {/* Quality Assurance Analysis */}
+            {abstention && (
+                <Box
+                    p={4}
+                    bg={abstention.triggered ? "orange.50" : "green.50"}
+                    borderRadius="lg"
+                    border="1px solid"
+                    borderColor={abstention.triggered ? "orange.200" : "green.200"}
+                >
+                    <VStack spacing={3} align="stretch">
+                        <HStack justify="space-between" align="center">
+                            <HStack spacing={3}>
+                                <Icon
+                                    as={PiShieldCheckBold}
+                                    color={abstention.triggered ? "orange.500" : "green.500"}
+                                    boxSize={5}
+                                />
+                                <Text
+                                    fontSize="sm"
+                                    fontWeight="600"
+                                    color={abstention.triggered ? "orange.700" : "green.700"}
+                                >
+                                    Quality Assurance: {abstention.triggered ? "Abstention Considered" : "Quality Approved"}
+                                </Text>
+                            </HStack>
+                        </HStack>
+                        <HStack spacing={4} justify="space-between">
+                            <VStack spacing={1} align="start" flex={1}>
+                                <Text fontSize="xs" color="gray.600" fontWeight="500">
+                                    Overall Quality
+                                </Text>
+                                <Text fontSize="sm" fontWeight="600" color={abstention.triggered ? "orange.700" : "green.700"}>
+                                    {(abstention.qualityMetrics?.overallQuality * 100).toFixed(0)}%
+                                </Text>
+                            </VStack>
+                            <VStack spacing={1} align="start" flex={1}>
+                                <Text fontSize="xs" color="gray.600" fontWeight="500">
+                                    Success Rate
+                                </Text>
+                                <Text fontSize="sm" fontWeight="600" color={abstention.triggered ? "orange.700" : "green.700"}>
+                                    {(abstention.qualityMetrics?.successRate * 100).toFixed(0)}%
+                                </Text>
+                            </VStack>
+                        </HStack>
+                    </VStack>
+                </Box>
+            )}
+        </VStack>
+    );
+};
+
+// Sophisticated Voting Breakdown Component
+const VotingBreakdown = ({ voting }: { voting: any }) => {
+    const traditional = voting?.traditionalVoting;
+    const hybrid = voting?.hybridVoting;
+    const tieBreaking = voting?.tieBreaking;
+
+    return (
+        <VStack spacing={4} align="stretch">
+            <HStack spacing={2} align="center">
+                <Icon as={PiScalesBold} color="green.500" boxSize={5} />
+                <Text fontSize="lg" fontWeight="600" color="gray.800">
+                    Voting Process Breakdown
+                </Text>
+            </HStack>
+
+            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={4}>
+                {/* Traditional Voting */}
+                <Box p={4} bg="gray.50" borderRadius="lg" border="1px solid" borderColor="gray.200">
+                    <VStack spacing={2} align="stretch">
+                        <Text fontSize="sm" fontWeight="600" color="gray.700">Traditional Voting</Text>
+                        <Text fontSize="lg" fontWeight="700" color="gray.800" textTransform="capitalize">
+                            {traditional?.winner || 'N/A'}
+                        </Text>
+                        <Text fontSize="xs" color="gray.600">
+                            Basic confidence-based selection
+                        </Text>
+                    </VStack>
+                </Box>
+
+                {/* Hybrid Voting */}
+                <Box p={4} bg="blue.50" borderRadius="lg" border="1px solid" borderColor="blue.200">
+                    <VStack spacing={2} align="stretch">
+                        <Text fontSize="sm" fontWeight="600" color="blue.700">Hybrid Voting</Text>
+                        <Text fontSize="lg" fontWeight="700" color="blue.800" textTransform="capitalize">
+                            {hybrid?.winner || 'N/A'}
+                        </Text>
+                        <Text fontSize="xs" color="blue.600">
+                            {hybrid?.confidence ? `${(hybrid.confidence * 100).toFixed(0)}% confidence` : 'Enhanced algorithm'}
+                        </Text>
+                    </VStack>
+                </Box>
+
+                {/* Tie Breaking */}
+                <Box p={4} bg={tieBreaking?.used ? "orange.50" : "green.50"}
+                     borderRadius="lg" border="1px solid"
+                     borderColor={tieBreaking?.used ? "orange.200" : "green.200"}>
+                    <VStack spacing={2} align="stretch">
+                        <Text fontSize="sm" fontWeight="600"
+                              color={tieBreaking?.used ? "orange.700" : "green.700"}>
+                            Tie Breaking
+                        </Text>
+                        <Text fontSize="lg" fontWeight="700"
+                              color={tieBreaking?.used ? "orange.800" : "green.800"}>
+                            {tieBreaking?.used ? "Applied" : "Not Needed"}
+                        </Text>
+                        <Text fontSize="xs" color="gray.600">
+                            {tieBreaking?.strategy || 'Standard resolution'}
+                        </Text>
+                    </VStack>
+                </Box>
+            </SimpleGrid>
+        </VStack>
+    );
+};
 
 interface EnhancedAnalyticsModalProps {
     isOpen: boolean;
@@ -330,6 +528,40 @@ export const EnhancedAnalyticsModal = ({
 }: EnhancedAnalyticsModalProps) => {
     const overlayBg = useColorModeValue("rgba(0, 0, 0, 0.4)", "rgba(0, 0, 0, 0.6)");
 
+    // Reusable tab style to prevent code duplication and ensure consistency
+    const tabStyle = {
+        borderRadius: "xl",
+        px: { base: 3, md: 4 },
+        py: 2.5,
+        fontSize: { base: "xs", md: "sm" },
+        fontWeight: "500",
+        color: "gray.600",
+        bg: "transparent",
+        minW: "fit-content",
+        maxW: { base: "120px", md: "none" },
+        whiteSpace: "nowrap" as const,
+        textOverflow: "ellipsis",
+        overflow: "hidden",
+        flex: "0 0 auto",
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        _selected: {
+            bg: "white",
+            color: "blue.600",
+            fontWeight: "600",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06)",
+            transform: "translateY(-1px)",
+            zIndex: 1
+        },
+        _hover: {
+            bg: "rgba(255, 255, 255, 0.5)",
+            color: "blue.500",
+            transform: "translateY(-0.5px)"
+        },
+        _focus: {
+            boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.1)"
+        }
+    };
+
     const analytics = useMemo(() => {
         if (!analyticsData?.data) return null;
 
@@ -407,7 +639,7 @@ export const EnhancedAnalyticsModal = ({
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
+        <Modal isOpen={isOpen} onClose={onClose} size={{ base: "full", md: "6xl" }} isCentered>
             <ModalOverlay bg={overlayBg} backdropFilter="blur(8px)" />
             <MotionBox
                 as={ModalContent}
@@ -428,21 +660,85 @@ export const EnhancedAnalyticsModal = ({
                 </ModalHeader>
                 <ModalCloseButton />
 
-                <ModalBody pb={6}>
-                    <Tabs variant="soft-rounded" colorScheme="blue">
-                        <TabList mb={6}>
-                            <Tab>Overview</Tab>
-                            <Tab>Model Performance</Tab>
-                            <Tab>Consensus Analysis</Tab>
-                            <Tab>Quality Metrics</Tab>
+                <ModalBody pb={6} overflowX="hidden">
+                    <Tabs variant="unstyled" colorScheme="blue">
+                        <TabList
+                            mb={6}
+                            bg="gray.50"
+                            borderRadius="2xl"
+                            p={2}
+                            gap={2}
+                            overflowX="auto"
+                            display="flex"
+                            flexWrap={{ base: "nowrap", md: "wrap" }}
+                            justifyContent={{ base: "flex-start", md: "center" }}
+                            sx={{
+                                '&::-webkit-scrollbar': {
+                                    height: '4px'
+                                },
+                                '&::-webkit-scrollbar-track': {
+                                    background: 'transparent'
+                                },
+                                '&::-webkit-scrollbar-thumb': {
+                                    background: 'rgba(0,0,0,0.1)',
+                                    borderRadius: '2px'
+                                },
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'rgba(0,0,0,0.1) transparent'
+                            }}
+                        >
+                            <Tab {...tabStyle}>
+                                Overview
+                            </Tab>
+                            <Tab {...tabStyle}>
+                                AI Meta-Voting
+                            </Tab>
+                            <Tab {...tabStyle}>
+                                Model Performance
+                            </Tab>
+                            <Tab {...tabStyle}>
+                                Consensus Analysis
+                            </Tab>
+                            <Tab {...tabStyle}>
+                                Quality Metrics
+                            </Tab>
                         </TabList>
 
                         <TabPanels>
                             {/* Overview Tab */}
                             <TabPanel p={0}>
                                 <VStack spacing={6} align="stretch">
+                                    {/* AI Meta-Voting Analysis - Priority Display */}
+                                    <MetaVotingAnalysis voting={analytics.voting} />
+
+                                    <Divider />
+
+                                    {/* Overall Confidence & Quality Score */}
+                                    <Box p={4} bg="gradient.glass" borderRadius="lg" border="1px solid" borderColor="blue.200">
+                                        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                                            <Stat>
+                                                <StatLabel color="blue.700">Overall Confidence Score</StatLabel>
+                                                <StatNumber color="blue.800" fontSize="2xl">
+                                                    {(analytics.synthesis?.confidence?.score * 100).toFixed(0)}%
+                                                </StatNumber>
+                                                <StatHelpText color="blue.600">
+                                                    {analytics.synthesis?.confidence?.level} confidence level
+                                                </StatHelpText>
+                                            </Stat>
+                                            <Stat>
+                                                <StatLabel color="green.700">Quality Score</StatLabel>
+                                                <StatNumber color="green.800" fontSize="2xl">
+                                                    {(analytics.voting?.analytics?.qualityScore * 100).toFixed(0)}%
+                                                </StatNumber>
+                                                <StatHelpText color="green.600">
+                                                    Based on {analytics.stats.totalModels} models
+                                                </StatHelpText>
+                                            </Stat>
+                                        </SimpleGrid>
+                                    </Box>
+
                                     {/* Key Metrics Grid */}
-                                    <Grid templateColumns="repeat(auto-fit, minmax(200px, 1fr))" gap={4}>
+                                    <Grid templateColumns={{ base: "1fr", md: "repeat(auto-fit, minmax(200px, 1fr))" }} gap={4}>
                                         <MetricCard
                                             icon={PiBrainBold}
                                             label="Models Used"
@@ -505,6 +801,36 @@ export const EnhancedAnalyticsModal = ({
                                 </VStack>
                             </TabPanel>
 
+                            {/* AI Meta-Voting Tab */}
+                            <TabPanel p={0}>
+                                <VStack spacing={6} align="stretch">
+                                    <MetaVotingAnalysis voting={analytics.voting} />
+                                    <Divider />
+                                    <VotingBreakdown voting={analytics.voting} />
+
+                                    {/* Sophisticated Features Used */}
+                                    <Box p={4} bg="gray.50" borderRadius="lg" border="1px solid" borderColor="gray.200">
+                                        <VStack spacing={3} align="stretch">
+                                            <HStack spacing={2} align="center">
+                                                <Icon as={PiNetworkBold} color="gray.600" boxSize={5} />
+                                                <Text fontSize="lg" fontWeight="600" color="gray.800">
+                                                    Advanced Features Utilized
+                                                </Text>
+                                            </HStack>
+                                            <Wrap spacing={2}>
+                                                {analytics.voting?.analytics?.sophisticatedFeaturesUsed?.map((feature: string, index: number) => (
+                                                    <WrapItem key={index}>
+                                                        <Badge colorScheme="blue" variant="subtle" textTransform="capitalize">
+                                                            {feature.replace(/_/g, ' ')}
+                                                        </Badge>
+                                                    </WrapItem>
+                                                ))}
+                                            </Wrap>
+                                        </VStack>
+                                    </Box>
+                                </VStack>
+                            </TabPanel>
+
                             {/* Model Performance Tab */}
                             <TabPanel p={0}>
                                 <ModelPerformanceChart models={analytics.roles} />
@@ -525,7 +851,7 @@ export const EnhancedAnalyticsModal = ({
                                         Response Quality Analysis
                                     </Text>
 
-                                    <Grid templateColumns="repeat(auto-fit, minmax(250px, 1fr))" gap={4}>
+                                    <Grid templateColumns={{ base: "1fr", md: "repeat(auto-fit, minmax(250px, 1fr))" }} gap={4}>
                                         {analytics.roles.map((model: any, index: number) => (
                                             <Box key={index} p={4} bg="gray.50" borderRadius="lg">
                                                 <VStack spacing={3} align="stretch">

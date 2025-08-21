@@ -12,9 +12,27 @@ import { Box, Spinner, Text, VStack } from '@chakra-ui/react';
 import React, { lazy, Suspense } from 'react';
 
 // Lazy load heavy analytics components
-const EnhancedAnalyticsModal = lazy(() => 
+const EnhancedAnalyticsModal = lazy(() =>
   import('./EnhancedAnalyticsModal').then(module => ({
     default: module.EnhancedAnalyticsModal
+  }))
+);
+
+const MetaVotingIntelligenceDashboard = lazy(() =>
+  import('./MetaVotingIntelligenceDashboard').then(module => ({
+    default: module.MetaVotingIntelligenceDashboard
+  }))
+);
+
+const PredictiveInsightsEngine = lazy(() =>
+  import('./PredictiveInsightsEngine').then(module => ({
+    default: module.PredictiveInsightsEngine
+  }))
+);
+
+const EnhancedEnsembleVisualization = lazy(() =>
+  import('./EnhancedEnsembleVisualization').then(module => ({
+    default: module.EnhancedEnsembleVisualization
   }))
 );
 
@@ -75,6 +93,24 @@ export const LazyRealTimeEnsembleVisualization = (props: any) => (
   </Suspense>
 );
 
+export const LazyMetaVotingIntelligenceDashboard = (props: any) => (
+  <Suspense fallback={<AnalyticsLoadingFallback message="Loading meta-voting intelligence..." />}>
+    <MetaVotingIntelligenceDashboard {...props} />
+  </Suspense>
+);
+
+export const LazyPredictiveInsightsEngine = (props: any) => (
+  <Suspense fallback={<AnalyticsLoadingFallback message="Analyzing predictive insights..." />}>
+    <PredictiveInsightsEngine {...props} />
+  </Suspense>
+);
+
+export const LazyEnhancedEnsembleVisualization = (props: any) => (
+  <Suspense fallback={<AnalyticsLoadingFallback message="Loading enhanced visualization..." />}>
+    <EnhancedEnsembleVisualization {...props} />
+  </Suspense>
+);
+
 // Preloader utility for smart preloading
 export class AnalyticsPreloader {
   private static preloadedComponents = new Set<string>();
@@ -123,6 +159,9 @@ export class AnalyticsPreloader {
         this.preloadEnhancedAnalytics();
         this.preloadResponseComparison();
         this.preloadEnsembleVisualization();
+        this.preloadMetaVotingDashboard();
+        this.preloadPredictiveInsights();
+        this.preloadEnhancedVisualization();
       }, { timeout: 5000 });
     } else {
       // Fallback for browsers without requestIdleCallback
@@ -130,8 +169,24 @@ export class AnalyticsPreloader {
         this.preloadEnhancedAnalytics();
         this.preloadResponseComparison();
         this.preloadEnsembleVisualization();
+        this.preloadMetaVotingDashboard();
+        this.preloadPredictiveInsights();
+        this.preloadEnhancedVisualization();
       }, 3000);
     }
+  }
+
+  // Preload new advanced components
+  static preloadMetaVotingDashboard() {
+    import('./MetaVotingIntelligenceDashboard').catch(() => {});
+  }
+
+  static preloadPredictiveInsights() {
+    import('./PredictiveInsightsEngine').catch(() => {});
+  }
+
+  static preloadEnhancedVisualization() {
+    import('./EnhancedEnsembleVisualization').catch(() => {});
   }
 }
 
